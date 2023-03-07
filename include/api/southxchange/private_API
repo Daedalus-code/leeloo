@@ -40,11 +40,10 @@ function checkMarket {
   local BASE=$1
   local MARKETS
   MARKETS="$(curl -s https://www.southxchange.com/api/markets)"
-  if [[ "$MARKETS" =~ $BASE ]] &>/dev/null; then
+  if [[ "$(echo "$MARKETS" | grep "$BASE" | wc -l)" -gt "0" ]] &>/dev/null; then
     CHECK_MARKET="$(echo "$MARKETS" | tr -d '[],' | egrep "[aA0-zZ9]+" | tr '"' '\n' | egrep "[aA0-zZ9]+" | sort -n | awk '!a[$0]++')"
     CHECK_COUNT="$(echo "$CHECK_MARKET" | wc -l)"
     echo "Found the $CHECK_COUNT market(s) for $BASE:"
-    echo "$MARKETS"
   else
     echo "No markets found for $BASE."
   fi
