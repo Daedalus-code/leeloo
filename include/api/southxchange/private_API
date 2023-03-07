@@ -37,13 +37,14 @@ function listBalances {
 # Example: checkMarket BTC
 
 function checkMarket {
-  local BASE=$1
+  local SYMBOL=$1
   local MARKETS
   MARKETS="$(curl -s https://www.southxchange.com/api/markets)"
-  if [[ "$(echo "$MARKETS" | grep "$BASE" | wc -l)" -gt "0" ]] &>/dev/null; then
-    CHECK_MARKET="$(echo "$MARKETS" | grep "$BASE" | tr -d '[],' | egrep "[aA0-zZ9]+" | tr '"' '\n' | egrep "[aA0-zZ9]+" | sort -n | awk '!a[$0]++')"
-    CHECK_COUNT="$(echo "$CHECK_MARKET" | wc -l)"
-    echo "Found the $CHECK_COUNT market(s) for $BASE:"
+  if [[ "$(echo "$MARKETS" | grep -c "$SYMBOL" | wc -l)" -gt "0" ]] &>/dev/null; then
+    CHECK_MARKET="$(echo "$MARKETS" | grep -o "$SYMBOL" | tr -d '[],' | egrep "[aA0-zZ9]+" | tr '"' '\n' | egrep "[aA0-zZ9]+" | sort -n | awk '!a[$0]++')"
+    CHECK_COUNT="$(echo "$MARKETS" | grep -c "$SYMBOL")"
+    echo "Found the $CHECK_COUNT market(s) for $SYMBOL:"
+    echo "$CHECK_MARKET"
   else
     echo "No markets found for $BASE."
   fi
