@@ -26,11 +26,24 @@ case $CHOICE in
 
 "1")
 
-  source include/api/southxchange/private_API
+  function result_jq() {
+    source include/api/southxchange/private_API
+    listBalances
+    cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+  }
 
-  listBalances
+  # update data every n seconds
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "15" ]] &>/dev/null; then
+    result_jq
+    # update data if missing
+  elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+    result_jq
+    # update data if empty
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+    result_jq
+  fi
 
-  cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+  sleep 1
 
   ;;
 
