@@ -40,7 +40,7 @@ function checkMarket {
   local SYMBOL=$1
   local MARKETS
   MARKETS="$(curl -s https://www.southxchange.com/api/markets)"
-  if [[ "$(echo "$MARKETS" | grep -c "$SYMBOL" | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(echo "$MARKETS" | grep "$SYMBOL" | wc -l)" -gt "0" ]] &>/dev/null; then
     CHECK_MARKET="$(echo "$MARKETS" | tr -d '"' | egrep -o "$SYMBOL,[aA0-zZ9]+" | tr -d ']')"
     if [[ -z "$CHECK_MARKET" ]] &>/dev/null; then
       CHECK_MARKET="$(echo "$MARKETS" | tr -d '"' | egrep -o "[aA0-zZ9]+,$SYMBOL" | tr -d ']')"
