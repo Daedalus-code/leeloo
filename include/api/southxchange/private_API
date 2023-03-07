@@ -5,7 +5,7 @@
 
 source /usr/local/bin/include/leeloo/broker.conf
 
-################################################################################
+# listBalances #################################################################
 
 function listBalances {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
@@ -20,29 +20,51 @@ function listBalances {
 EOF
   )
 
-  # calculate HMAC-SHA512 hash
-  API_SOUTHX_HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  # send API request
-  RESULT="$(curl -s -H "Hash: $API_SOUTHX_HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances)"
-
   function result_jq() {
+    # calculate HMAC-SHA512 hash
+    HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+    # send API request
+    RESULT="$(curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances)"
     echo "$RESULT" | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
   }
 
   # update data every n seconds
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/broker/balances 2>/dev/null)))" 2>/dev/null)" -gt "15" ]] &>/dev/null; then
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "15" ]] &>/dev/null; then
     result_jq
     # update data if missing
-  elif [[ ! -f "${LOG_DIR:?}"/broker/balances ]] &>/dev/null; then
+  elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
     result_jq
     # update data if empty
-  elif [[ ! -s "${LOG_DIR:?}"/broker/balances ]] &>/dev/null; then
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
     result_jq
   fi
 
   sleep 1
 }
 
-################################################################################
+# placeOrder ###################################################################
+
+function placeOrder {
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+
+  # construct JSON data string
+  JSON_DATA=$(
+    cat <<EOF
+  {
+    "nonce": "$API_SOUTHX_NONCE",
+    "key": "$API_SOUTHX_KEY",
+    "TYPE": "$API_SOUTHX_TYPE",
+    "PRICE": "$API_SOUTHX_PRICE",
+    "AMOUNT": "$API_SOUTHX_AMOUNT",
+    "MARKET": "$API_SOUTHX_MARKET"
+  }
+EOF
+  )
+
+  # calculate HMAC-SHA512 hash
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  # send API request
+  RESULT="$(curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder)"
+}
 
 # END
