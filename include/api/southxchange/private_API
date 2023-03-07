@@ -70,4 +70,116 @@ function listOrders {
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" -X POST https://www.southxchange.com/api/listOrders
 }
 
+# getOrder #####################################################################
+# https://www.southxchange.com/api/getOrder
+# Example: getOrder "$ORDER_CODE"
+
+function getOrder {
+  ORDER_CODE="$1"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"code\":\"$ORDER_CODE\",\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getOrder
+}
+
+# getOrders ####################################################################
+# https://www.southxchange.com/api/getOrders
+# Example: getOrders CODE1,CODE2 0 10, to retrieve the first page of 10 orders
+
+function getOrders {
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  CODES="$1"
+  PAGE_INDEX="$2"
+  PAGE_SIZE="$3"
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"code\":$CODES,\"pageIndex\":$PAGE_INDEX,\"pageSize\":$PAGE_SIZE,\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getOrders
+}
+
+# generateNewAddress ###########################################################
+# https://www.southxchange.com/api/generateNewAddress
+# Example generateNewAddress "$CURRENCY"
+
+function generateNewAddress() {
+  CURRENCY="$1"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/generateNewAddress
+}
+
+# generateNewAddress ###########################################################
+# https://www.southxchange.com/api/listAddresses
+# Example: listAddresses "$CURRENCY" 1 50, list the first 50 "$CURRENCY" addresses.
+
+function listAddresses {
+  CURRENCY="$1"
+  PAGE_INDEX="$2"
+  PAGE_SIZE="$3"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"pageIndex\":$PAGE_INDEX,\"pageSize\":$PAGE_SIZE,\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listAddresses
+}
+
+# getLNInvoice #################################################################
+# https://www.southxchange.com/api/getLNInvoice
+# Example: getLNInvoice "$CURRENCY" "$AMOUNT"
+
+function getLNInvoice {
+  CURRENCY="$1"
+  AMOUNT="$2"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"amount\":$AMOUNT,\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getLNInvoice
+}
+
+# withdraw #####################################################################
+# https://www.southxchange.com/api/withdraw
+# Example: withdraw "$CURRENCY" 0 "$AMOUNT"
+
+withdraw() {
+  CURRENCY="$1"
+  DESTINATION="$2"
+  DESTINATION_TYPE="$3"
+  AMOUNT="$4"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"destination\":\"$DESTINATION\",\"destinationType\":$DESTINATION_TYPE,\"amount\":$AMOUNT,\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/withdraw
+}
+
+# listTransactions #############################################################
+# https://www.southxchange.com/api/listTransactions
+# Example: listTransactions BTC deposits "" 1 50 "" false
+# This will list the first 50 BTC deposit transactions.
+# If you want to list all transactions (including trades, withdrawals, etc.),
+# you can omit the second argument: listTransactions BTC "" "" 1 50 "" false
+
+function listTransactions {
+  CURRENCY="$1"
+  TRANSACTION_TYPE="${2:-transactions}" # Optional argument, defaults to "transactions"
+  OPTIONAL_FILTER="$3"
+  PAGE_INDEX="$4"
+  PAGE_SIZE="$5"
+  SORT_FIELD="$6"
+  DESCENDING="$7"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"transactionType\":\"$TRANSACTION_TYPE\",\"optionalFilter\":\"$OPTIONAL_FILTER\",\"pageIndex\":$PAGE_INDEX,\"pageSize\":$PAGE_SIZE,\"sortField\":\"$SORT_FIELD\",\"descending\":$DESCENDING,\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listTransactions
+}
+
+# getUserInfo ##################################################################
+# https://www.southxchange.com/api/getUserInfo
+# Example: getUserInfo
+
+function getUserInfo {
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getUserInfo
+}
+
 # END
