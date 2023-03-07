@@ -41,13 +41,13 @@ function checkMarket {
   local MARKETS
   MARKETS="$(curl -s https://www.southxchange.com/api/markets)"
   if [[ "$(echo "$MARKETS" | grep "$SYMBOL" | wc -l)" -gt "0" ]] &>/dev/null; then
-    CHECK_MARKET="$(echo "$MARKETS" | tr -d '"' | egrep -o "$SYMBOL,[aA0-zZ9]+" | tr -d '[]')"
-    if [[ -z "$CHECK_MARKET" ]] &>/dev/null; then
-      CHECK_MARKET="$(echo "$MARKETS" | tr -d '"' | egrep -o "[aA0-zZ9]+,$SYMBOL" | tr -d '[]')"
-    fi
-    CHECK_COUNT="$(echo "$CHECK_MARKET" | wc -l)"
+    CHECK_MARKETS_MAIN="$(echo "$MARKETS" | tr -d '"' | egrep -o "$SYMBOL,[aA0-zZ9]+" | tr -d '[]')"
+    CHECK_MARKETS_SECOND="$(echo "$MARKETS" | tr -d '"' | egrep -o "[aA0-zZ9]+,$SYMBOL" | tr -d '[]')"
+    CHECK_COUNT_MAIN="$(echo "$CHECK_MARKETS_MAIN" | wc -l)"
+    CHECK_COUNT_SECOND="$(echo "$CHECK_MARKETS_SECOND" | wc -l)"
+    CHECK_COUNT="$(echo "$CHECK_COUNT_MAIN+$CHECK_COUNT_SECOND" | bc)"
     echo "Found $CHECK_COUNT market(s) for $SYMBOL:"
-    echo "$CHECK_MARKET"
+    echo "$CHECK_MARKETS"
   else
     echo "No markets found for $SYMBOL."
   fi
