@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# menu
+
+HEIGHT=16
+WIDTH=45
+CHOICE_HEIGHT=9
+BACKTITLE="Leeloo (Multipass)"
+TITLE="Main Menu"
+MENU="Multipass $(date | xargs)"
+
+OPTIONS=(1 "Balance          View portfolio")
+
+CHOICE=$(dialog --clear \
+  --backtitle "$BACKTITLE" \
+  --title "$TITLE" \
+  --menu "$MENU" \
+  $HEIGHT $WIDTH $CHOICE_HEIGHT \
+  "${OPTIONS[@]}" \
+  2>&1 >/dev/tty)
+
+clear
+case $CHOICE in
+
+"1")
+
+  source include/api/southxchange/listBalances
+
+  listBalances
+
+  ;;
+
+"2")
+
+  echo "You chose Option 2"
+
+  ;;
+
+"3")
+
+  echo "You chose Option 3"
+
+  ;;
+
+esac
+
+# END
