@@ -18,22 +18,6 @@ function listBalances {
   echo "$RESULT" | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
 }
 
-# checkMarket ##################################################################
-# Example: checkMarket BTC
-
-function checkMarket {
-  local MARKET_INPUT=$1
-  local MARKET_LIST
-  MARKET_LIST="$(curl -s https://www.southxchange.com/api/MARKET_LIST)"
-  MARKET_CHECK="$(echo "$MARKET_LIST" | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," / | grep -o "$MARKET_INPUT")"
-  MARKET_COUNT="$(echo "$MARKET_CHECK" | grep -o "$MARKET_INPUT" | wc -l)"
-  if [[ "$MARKET_COUNT" -gt "0" ]] &>/dev/null; then
-    echo "Ok found $MARKET_COUNT market(s) for $MARKET_INPUT"
-  else
-    echo "No market(s) found for $MARKET_INPUT"
-  fi
-}
-
 # placeOrder ###################################################################
 # https://www.southxchange.com/api/placeOrder
 # Places an order in a given market. Permission required: Place Order
