@@ -33,6 +33,21 @@ function listBalances {
   sleep 1
 }
 
+# checkMarket ##################################################################
+# Example: checkMarket BTC
+
+function checkMarket {
+  local BASE=$1
+  local MARKETS
+  MARKETS="$(curl -s https://www.southxchange.com/api/markets)"
+  if [[ "$MARKETS" =~ $BASE ]] &>/dev/null; then
+    echo "Found the following markets for $BASE:"
+    echo "$MARKETS" | grep -E "$BASE\/[A-Z]{3,5}" | awk '{print $1}'
+  else
+    echo "No markets found for $BASE."
+  fi
+}
+
 # placeOrder ###################################################################
 # https://www.southxchange.com/api/placeOrder
 # Places an order in a given market. Permission required: Place Order
