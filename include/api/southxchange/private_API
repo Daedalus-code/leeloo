@@ -63,9 +63,9 @@ function placeOrder {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   # construct JSON data string
   if [ "$LIMIT_ORDER" = "true" ] &>/dev/null; then
-    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"type\":\"$TYPE\",\"price\":$PRICE,\"amount\":$AMOUNT,\"market\":\"$MARKET\"}"
+    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"type\":\"$TYPE\",\"price\":$PRICE,\"amount\":$AMOUNT,\"market\":\"$LIMIT_ORDER\"}"
   else
-    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"type\":\"$TYPE\",\"amount\":$AMOUNT,\"market\":\"$MARKET\"}"
+    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"type\":\"$TYPE\",\"amount\":$AMOUNT,\"market\":\"$LIMIT_ORDER\"}"
   fi
   # calculate HMAC-SHA512 hash
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
