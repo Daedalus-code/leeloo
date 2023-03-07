@@ -8,7 +8,6 @@ source /usr/local/bin/include/leeloo/broker.conf
 
 function listBalances {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
-
   # construct JSON data string
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
 
@@ -37,24 +36,16 @@ function listBalances {
 # placeOrder ###################################################################
 # https://www.southxchange.com/api/placeOrder
 # Places an order in a given market. Permission required: Place Order
+# Example: placeOrder "$TYPE" "$PRICE" "$AMOUNT" "$MARKET" "true"
 
 function placeOrder {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
-
   # construct JSON data string
-  JSON_DATA=$(
-    cat <<EOF
-  {
-    "nonce": "$API_SOUTHX_NONCE",
-    "key": "$API_SOUTHX_KEY",
-    "TYPE": "$API_SOUTHX_TYPE",
-    "PRICE": "$API_SOUTHX_PRICE",
-    "AMOUNT": "$API_SOUTHX_AMOUNT",
-    "MARKET": "$API_SOUTHX_MARKET"
-  }
-EOF
-  )
-
+  if [ "$LIMIT_ORDER" = "true" ] &>/dev/null; then
+    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"type\":\"$TYPE\",\"price\":$PRICE,\"amount\":$AMOUNT,\"market\":\"$MARKET\"}"
+  else
+    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"type\":\"$TYPE\",\"amount\":$AMOUNT,\"market\":\"$MARKET\"}"
+  fi
   # calculate HMAC-SHA512 hash
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
   # send API request
