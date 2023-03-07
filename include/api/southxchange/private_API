@@ -10,11 +10,8 @@ source /usr/local/bin/include/leeloo/broker.conf
 
 function listBalances {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
-  # construct JSON data string
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
-  # calculate HMAC-SHA512 hash
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  # send API request
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances
 }
 
@@ -25,16 +22,52 @@ function listBalances {
 
 function placeOrder {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
-  # construct JSON data string, limit order, true or false
   if [ "$LIMIT_ORDER" = "true" ] &>/dev/null; then
     JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"type\":\"$TYPE\",\"amount\":$AMOUNT,\"amountInReferenceCurrency\":$AMOUNT_IN_REFERENCE_CURRENCY,\"limitPrice\":$PRICE,\"key\":\"$API_SOUTHX_KEY\"}"
   else
     JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"type\":\"$TYPE\",\"amount\":$AMOUNT,\"amountInReferenceCurrency\":$AMOUNT_IN_REFERENCE_CURRENCY,\"key\":\"$API_SOUTHX_KEY\"}"
   fi
-  # calculate HMAC-SHA512 hash
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  # send API request
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder
+}
+
+# cancelOrder ##################################################################
+# https://www.southxchange.com/api/cancelOrder
+# Cancels a given order. Permission required: Cancel Order
+# Example: cancelOrder "$ORDER_ID"
+
+function cancelOrder {
+  ORDER_ID="$1"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"orderCode\":\"$ORDER_ID\",\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/cancelOrder
+}
+
+# cancelMarketOrders ###########################################################
+# https://www.southxchange.com/api/cancelMarketOrders
+# Example: cancelMarketOrders "$LISTING_CURRENCY" "$REFERENCE_CURRENCY"
+
+function cancelMarketOrders() {
+  LISTING_CURRENCY="$1"
+  REFERENCE_CURRENCY="$2"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/cancelMarketOrders
+}
+
+# listOrders ###################################################################
+# https://www.southxchange.com/api/listOrders
+# Example: listOrders "$LISTING_CURRENCY" "$REFERENCE_CURRENCY"
+
+function listOrders {
+  LISTING_CURRENCY="$1"
+  REFERENCE_CURRENCY="$2"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"key\":\"$API_SOUTHX_KEY\",\"Code\":\"\",\"Type\":\"\",\"Amount\":0,\"OriginalAmount\":0,\"LimitPrice\":0,\"ListingCurrency\":\"\",\"ReferenceCurrency\":\"\",\"DateAdded\":\"\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" -X POST https://www.southxchange.com/api/listOrders
 }
 
 # END
