@@ -30,7 +30,7 @@ case $CHOICE in
 
   function result_jq() {
     source include/api/southxchange/private_API
-    listBalances
+    listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
     cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
   }
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034  # Unused variables left for readability
+
 source /usr/local/bin/include/leeloo/broker.conf
 
 # listBalances #################################################################
@@ -10,31 +12,29 @@ function listBalances {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   # construct JSON data string
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
-
   # calculate HMAC-SHA512 hash
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
   # send API request
-  RESULT="$(curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances)"
-  echo "$RESULT" | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances
 }
 
 # placeOrder ###################################################################
 # https://www.southxchange.com/api/placeOrder
 # Places an order in a given market. Permission required: Place Order
-# Example: placeOrder "$TYPE" "$PRICE" "$AMOUNT" "$MARKET" "true"
+# Example: placeOrder "$TYPE" "$PRICE" "$AMOUNT" "$MARKET" false
 
 function placeOrder {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
-  # construct JSON data string
+  # construct JSON data string, limit order, true or false
   if [ "$LIMIT_ORDER" = "true" ] &>/dev/null; then
-    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"type\":\"$TYPE\",\"price\":$PRICE,\"amount\":$AMOUNT,\"market\":\"$LIMIT_ORDER\"}"
+    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"type\":\"$TYPE\",\"amount\":$AMOUNT,\"amountInReferenceCurrency\":$AMOUNT_IN_REFERENCE_CURRENCY,\"limitPrice\":$PRICE,\"key\":\"$API_SOUTHX_KEY\"}"
   else
-    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"type\":\"$TYPE\",\"amount\":$AMOUNT,\"market\":\"$LIMIT_ORDER\"}"
+    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"type\":\"$TYPE\",\"amount\":$AMOUNT,\"amountInReferenceCurrency\":$AMOUNT_IN_REFERENCE_CURRENCY,\"key\":\"$API_SOUTHX_KEY\"}"
   fi
   # calculate HMAC-SHA512 hash
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
   # send API request
-  RESULT="$(curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder)"
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder
 }
 
 # END
