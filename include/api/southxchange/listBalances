@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# https://www.southxchange.com/api/listBalances
+# Lists balances for all currencies. Permission required: List Balances
+
+source /usr/local/bin/include/leeloo/broker.conf
+
+function list_balances {
+  local API_SOUTHX_KEY="$1"
+  local API_SOUTHX_SECRET_KEY="$2"
+  local API_SOUTHX_NONCE
+  local API_SOUTHX_MESSAGE
+  local API_SOUTHX_RESPONSE
+
+  API_SOUTHX_NONCE="$(date +%s%N)"
+  API_SOUTHX_MESSAGE="$(echo -n "POST/listBalances${API_SOUTHX_NONCE}" | openssl sha512 -hmac ${API_SOUTHX_SECRET_KEY} | awk '{print $NF}')"
+  API_SOUTHX_RESPONSE=$(curl -X POST \
+    -H "Content-Type: application/json" \
+    -H "Authorization: ${API_SOUTHX_KEY}:${API_SOUTHX_NONCE}:${API_SOUTHX_MESSAGE}" \
+    https://www.southxchange.com/api/listBalances)
+
+  echo "${API_SOUTHX_RESPONSE}"
+}
