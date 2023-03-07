@@ -7,14 +7,31 @@ source /usr/local/bin/include/leeloo/broker.conf
 
 function listBalances {
   local API_SOUTHX_KEY="$1"
-  local API_SOUTHX_SECRET_KEY="$2"
+  local API_SOUTHX_SECRET="$2"
   local API_SOUTHX_NONCE
-  local API_SOUTHX_MESSAGE
-  local API_SOUTHX_RESPONSE
 
-  API_SOUTHX_NONCE="$(date +%s%N)"
-  API_SOUTHX_MESSAGE="$(echo -n "POST/listBalances${API_SOUTHX_NONCE}" | openssl sha512 -hmac "${API_SOUTHX_SECRET_KEY}" | awk '{print $NF}')"
-  API_SOUTHX_RESPONSE="$(curl -X POST -H "Content-Type: application/json" -H "Authorization: ${API_SOUTHX_KEY}:${API_SOUTHX_NONCE}:${API_SOUTHX_MESSAGE}" https://www.southxchange.com/api/listBalances)"
+  API_SOUTHX_NONCE="$(date +%s)"
 
-  echo "${API_SOUTHX_RESPONSE}"
+  # construct JSON data string
+  JSON_DATA=$(
+    cat <<EOF
+      {
+        "nonce": "$API_SOUTHX_NONCE",
+        "key": "$API_SOUTHX_KEY"
+      }
+EOF
+  )
+
+  # calculate HMAC-SHA512 hash
+  API_SOUTHX_HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  # send API request
+  RESULT="$(curl -s -H "Hash: $API_SOUTHX_HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances)"
+
+  # check for errors and log to file
+  if [[ "$RESULT" == *"error"* ]]; then
+    echo "$(date): Error while getting balances: $RESULT" >>/path/to/logfile.log
+  fi
+
+  # return response
+  echo "$RESULT"
 }
