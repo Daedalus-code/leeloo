@@ -41,8 +41,8 @@ function checkMarket {
   local MARKETS
   MARKETS="$(curl -s https://www.southxchange.com/api/markets)"
   if [[ "$(echo "$MARKETS" | grep "$SYMBOL" | wc -l)" -gt "0" ]] &>/dev/null; then
-    CHECK_MARKETS_MAIN="$(echo "$MARKETS" | tr -d '"' | egrep -o "$SYMBOL,[aA0-zZ9]+" | tr -d '[]')"
-    CHECK_MARKETS_SECOND="$(echo "$MARKETS" | tr -d '"' | egrep -o "[aA0-zZ9]+,$SYMBOL" | tr -d '[]')"
+    CHECK_MARKETS_MAIN="$(echo "$MARKETS" | tr -d '"' | egrep -o "$SYMBOL,[aA0-zZ9]+" | tr -d '[]' | sed '/^$/d')"
+    CHECK_MARKETS_SECOND="$(echo "$MARKETS" | tr -d '"' | egrep -o "[aA0-zZ9]+,$SYMBOL" | tr -d '[]' | sed '/^$/d')"
     CHECK_COUNT_MAIN="$(echo "$CHECK_MARKETS_MAIN" | wc -l)"
     CHECK_COUNT_SECOND="$(echo "$CHECK_MARKETS_SECOND" | wc -l)"
     CHECK_COUNT="$(echo "$CHECK_COUNT_MAIN+$CHECK_COUNT_SECOND" | bc)"
