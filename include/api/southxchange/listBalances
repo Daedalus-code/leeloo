@@ -21,7 +21,7 @@ EOF
   # calculate HMAC-SHA512 hash
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
   # send API request
-  RESULT="$(curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" "$API_SOUTHX_BALANCES")"
+  RESULT="$(curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" $API_SOUTHX_BALANCES)"
   # result_jq function
   function result_jq() {
     echo "$RESULT" | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
