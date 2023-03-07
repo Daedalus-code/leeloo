@@ -11,7 +11,9 @@ BACKTITLE="Leeloo (Multipass)"
 TITLE="Main Menu"
 MENU="Multipass $(date | xargs)"
 
-OPTIONS=(1 "Balance          View portfolio")
+OPTIONS=(1 "Balance          View Portfolio"
+  2 "Market           View Market"
+  3 "Check            Check Market")
 
 CHOICE=$(dialog --clear \
   --backtitle "$BACKTITLE" \
@@ -55,7 +57,23 @@ case $CHOICE in
 
 "3")
 
-  echo "You chose Option 3"
+  source include/api/southxchange/private_API
+
+  # market (example)
+  INPUT_MARKET=$(
+    dialog --title "Market (BTC/USDT)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+
+  display_result() {
+    dialog --title "Result:" \
+      --no-collapse \
+      --msgbox "$RESULT" 0 0
+  }
+
+  RESULT="$(checkMarket "$INPUT_MARKET")"
+  display_result 2>/dev/null
 
   ;;
 
