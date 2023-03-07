@@ -18,11 +18,9 @@ function listBalances {
 EOF
   )
 
-  # API url
-  API_SOUTHX_BALANCES="https://www.southxchange.com/api/listBalances"
   # calculate HMAC-SHA512 hash
   API_SOUTHX_HASH=$(echo -n "$API_SOUTHX_JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
   # send API request
-  RESULT="$(curl -s -H "Hash: $API_SOUTHX_HASH" -H "Content-Type: application/json" -d "$JSON_DATA" $API_SOUTHX_BALANCES)"
+  RESULT="$(curl -s -H "Hash: $API_SOUTHX_HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances)"
   echo "$RESULT" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
 }
