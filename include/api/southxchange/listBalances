@@ -14,10 +14,7 @@ function listBalances {
 
   API_SOUTHX_NONCE="$(date +%s%N)"
   API_SOUTHX_MESSAGE="$(echo -n "POST/listBalances${API_SOUTHX_NONCE}" | openssl sha512 -hmac "${API_SOUTHX_SECRET_KEY}" | awk '{print $NF}')"
-  API_SOUTHX_RESPONSE=$(curl -X POST \
-    -H "Content-Type: application/json" \
-    -H "Authorization: ${API_SOUTHX_KEY}:${API_SOUTHX_NONCE}:${API_SOUTHX_MESSAGE}" \
-    https://www.southxchange.com/api/listBalances)
+  API_SOUTHX_RESPONSE="$(curl -X POST -H "Content-Type: application/json" -H "Authorization: ${API_SOUTHX_KEY}:${API_SOUTHX_NONCE}:${API_SOUTHX_MESSAGE}" https://www.southxchange.com/api/listBalances)"
 
   echo "${API_SOUTHX_RESPONSE}"
 }
