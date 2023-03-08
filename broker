@@ -51,7 +51,22 @@ case $CHOICE in
 
 "2")
 
-  echo "You chose Option 2"
+  source include/api/southxchange/public_API
+
+  MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
+  MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k6 -n -r)"
+  MARKET_COUNT="$(echo "$MARKET_RESULT" | grep -c "$MARKET_INPUT")"
+
+  display_result() {
+    dialog --title "Search result: $MARKET_COUNT" \
+      --no-collapse \
+      --msgbox "$RESULT" 20 70
+  }
+
+  RESULT="Market:  Bid      Ask      Last     Variation (%)  Volume (crypto)
+
+$MARKET_RESULT"
+  display_result 2>/dev/null
 
   ;;
 
