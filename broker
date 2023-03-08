@@ -13,7 +13,8 @@ MENU="Multipass $(date | xargs)"
 
 OPTIONS=(1 "Balance          View Portfolio"
   2 "Market           View Market"
-  3 "Search           Search Market")
+  3 "Search           Search Market"
+  4 "Order            Buy/Sell order")
 
 CHOICE=$(dialog --clear \
   --backtitle "$BACKTITLE" \
@@ -116,6 +117,53 @@ $MARKET_RESULT"
     RESULT="No data found!"
     display_result 2>/dev/null
   fi
+
+  ;;
+
+"4")
+
+  # order menu
+  HEIGHT=10
+  WIDTH=45
+  CHOICE_HEIGHT=4
+  BACKTITLE="Leeloo (Multipass)"
+  TITLE="Order Menu"
+  MENU="Multipass $(date | xargs)"
+
+  OPTIONS=(1 "Buy              BuyOrder"
+    2 "Sell             Sell Order"
+    3 "Orders           List Orders")
+
+  CHOICE=$(dialog --clear \
+    --backtitle "$BACKTITLE" \
+    --title "$TITLE" \
+    --menu "$MENU" \
+    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${OPTIONS[@]}" \
+    2>&1 >/dev/tty)
+
+  clear
+  case $CHOICE in
+
+  "1")
+
+    echo "You chose Option 1"
+
+    ;;
+
+  "2")
+
+    echo "You chose Option 2"
+
+    ;;
+
+  "3")
+
+    echo "You chose Option 3"
+
+    ;;
+
+  esac
 
   ;;
 
