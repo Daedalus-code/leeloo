@@ -46,6 +46,7 @@ function cancelOrder {
 
 # cancelMarketOrders ###########################################################
 # https://www.southxchange.com/api/cancelMarketOrders
+# Cancels all orders in a given market. Permission required: Cancel Order
 # Example: cancelMarketOrders "$LISTING_CURRENCY" "$REFERENCE_CURRENCY"
 
 function cancelMarketOrders() {
@@ -59,6 +60,7 @@ function cancelMarketOrders() {
 
 # listOrders ###################################################################
 # https://www.southxchange.com/api/listOrders
+# Lists all pending orders. Permission required: List Orders
 # Example: listOrders "$LISTING_CURRENCY" "$REFERENCE_CURRENCY"
 
 function listOrders {
@@ -72,6 +74,7 @@ function listOrders {
 
 # getOrder #####################################################################
 # https://www.southxchange.com/api/getOrder
+# Gets a given order. Permission required: List Orders
 # Example: getOrder "$ORDER_CODE"
 
 function getOrder {
@@ -84,6 +87,7 @@ function getOrder {
 
 # getOrders ####################################################################
 # https://www.southxchange.com/api/getOrders
+# Gets given orders. Permission required: List Orders
 # Example: getOrders CODE1,CODE2 0 10, to retrieve the first page of 10 orders
 
 function getOrders {
@@ -98,6 +102,7 @@ function getOrders {
 
 # generateNewAddress ###########################################################
 # https://www.southxchange.com/api/generateNewAddress
+# Generates a new address for a given cryptocurrency. Permission required: Generate New Address
 # Example generateNewAddress "$CURRENCY"
 
 function generateNewAddress() {
@@ -108,8 +113,9 @@ function generateNewAddress() {
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/generateNewAddress
 }
 
-# generateNewAddress ###########################################################
+# listAddresses ################################################################
 # https://www.southxchange.com/api/listAddresses
+# Lists addresses of a given currency. Permission required: Generate New Address
 # Example: listAddresses "$CURRENCY" 1 50, list the first 50 "$CURRENCY" addresses.
 
 function listAddresses {
@@ -124,6 +130,7 @@ function listAddresses {
 
 # getLNInvoice #################################################################
 # https://www.southxchange.com/api/getLNInvoice
+# Generates a new Lightning Network invoice for a given cryptocurrency. Permission required: Generate New Address
 # Example: getLNInvoice "$CURRENCY" "$AMOUNT"
 
 function getLNInvoice {
@@ -137,6 +144,7 @@ function getLNInvoice {
 
 # withdraw #####################################################################
 # https://www.southxchange.com/api/withdraw
+# Withdraws to a given address. Permission required: Withdraw
 # Example: withdraw "$CURRENCY" 0 "$AMOUNT"
 
 function withdraw {
@@ -152,10 +160,8 @@ function withdraw {
 
 # listTransactions #############################################################
 # https://www.southxchange.com/api/listTransactions
-# Example: listTransactions BTC deposits "" 1 50 "" false
-# This will list the first 50 BTC deposit transactions.
-# If you want to list all transactions (including trades, withdrawals, etc.),
-# you can omit the second argument: listTransactions BTC "" "" 1 50 "" false
+# List all transactions. Permission required: List Balances
+# Example: listTransactions "$CURRENCY" deposits "" 1 50 "" false
 
 function listTransactions {
   CURRENCY="$1"
@@ -173,6 +179,7 @@ function listTransactions {
 
 # getUserInfo ##################################################################
 # https://www.southxchange.com/api/getUserInfo
+# Gets user information. Permission required: Get info
 # Example: getUserInfo
 
 function getUserInfo {
