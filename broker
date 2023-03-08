@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034  # Unused variables left for readability
+
 source /usr/local/bin/include/leeloo/broker.conf
 source include/api/southxchange/private_API
 source include/api/southxchange/public_API
@@ -139,6 +141,7 @@ $MARKET_RESULT"
         --inputbox "Enter amount:" 8 40 \
         3>&1 1>&2 2>&3 3>&-
     )
+    MARKET="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
   }
 
   function setup_ref_order {
@@ -163,6 +166,7 @@ $MARKET_RESULT"
         --inputbox "Enter amount:" 8 40 \
         3>&1 1>&2 2>&3 3>&-
     )
+    MARKET="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
   }
 
   function last_log {
@@ -226,7 +230,7 @@ $MARKET_RESULT"
     "1")
 
       setup_order
-      placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+      placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
 
       ;;
@@ -234,7 +238,7 @@ $MARKET_RESULT"
     "2")
 
       setup_ref_order
-      placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+      placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
 
       ;;
@@ -271,7 +275,7 @@ $MARKET_RESULT"
     "1")
 
       setup_order
-      placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+      placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
 
       ;;
@@ -279,7 +283,7 @@ $MARKET_RESULT"
     "2")
 
       setup_ref_order
-      placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+      placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
 
       ;;
