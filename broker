@@ -147,13 +147,79 @@ $MARKET_RESULT"
 
   "1")
 
-    echo "You chose Option 1"
+    HEIGHT=10
+    WIDTH=32
+    CHOICE_HEIGHT=2
+    BACKTITLE="Backtitle here"
+    TITLE="Title here"
+    MENU="Choose one of the following options:"
+
+    OPTIONS=(1 "Market Order"
+      2 "Limit Order")
+
+    CHOICE=$(dialog --clear \
+      --backtitle "$BACKTITLE" \
+      --title "$TITLE" \
+      --menu "$MENU" \
+      $HEIGHT $WIDTH $CHOICE_HEIGHT \
+      "${OPTIONS[@]}" \
+      2>&1 >/dev/tty)
+
+    clear
+    case $CHOICE in
+
+    "1")
+
+      placeOrder "$TYPE" "$AMOUNT" "false" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY"
+
+      ;;
+
+    "2")
+
+      placeOrder "$TYPE" "$PRICE" "$AMOUNT" "false" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY"
+
+      ;;
+
+    esac
 
     ;;
 
   "2")
 
-    echo "You chose Option 2"
+    HEIGHT=10
+    WIDTH=32
+    CHOICE_HEIGHT=2
+    BACKTITLE="Backtitle here"
+    TITLE="Title here"
+    MENU="Choose one of the following options:"
+
+    OPTIONS=(1 "Market Order"
+      2 "Limit Order")
+
+    CHOICE=$(dialog --clear \
+      --backtitle "$BACKTITLE" \
+      --title "$TITLE" \
+      --menu "$MENU" \
+      $HEIGHT $WIDTH $CHOICE_HEIGHT \
+      "${OPTIONS[@]}" \
+      2>&1 >/dev/tty)
+
+    clear
+    case $CHOICE in
+
+    "1")
+
+      placeOrder "$TYPE" "$PRICE" "$AMOUNT" "true" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY"
+
+      ;;
+
+    "2")
+
+      placeOrder "$TYPE" "$PRICE" "$AMOUNT" "true" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY"
+
+      ;;
+
+    esac
 
     ;;
 
