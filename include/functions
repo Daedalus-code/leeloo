@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034  # Unused variables left for readability
+
 # setup_order ##################################################################
 
 function setup_order {
@@ -13,9 +15,13 @@ function setup_order {
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
+  LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+  REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+
   AMOUNT=$(
     dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
-      --inputbox "Enter amount:" 8 40 \
+      --inputbox "Enter amount:
+$LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
 }
@@ -33,6 +39,9 @@ function setup_limit_order {
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
+  LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+  REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+
   AMOUNT=$(
     dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
       --inputbox "Enter amount:" 8 40 \
