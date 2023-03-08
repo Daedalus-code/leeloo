@@ -16,7 +16,8 @@ MENU="Multipass $(date | xargs)"
 OPTIONS=(1 "Balance          View Portfolio"
   2 "Market           View Market"
   3 "Search           Search Market"
-  4 "Order            Buy/Sell order")
+  4 "Order            Buy/Sell order"
+  0 "Quit             Exit Menu")
 
 CHOICE=$(dialog --clear \
   --backtitle "$BACKTITLE" \
@@ -121,7 +122,7 @@ $MARKET_RESULT"
   # order menu
   HEIGHT=11
   WIDTH=40
-  CHOICE_HEIGHT=4
+  CHOICE_HEIGHT=3
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Order Menu"
   MENU="$(date | xargs)"
@@ -170,6 +171,17 @@ $MARKET_RESULT"
 
   ;;
 
+"0")
+
+  echo "Exiting..."
+  exit 0
+
+  ;;
+
 esac
+
+# shellcheck disable=SC2093 # dialog exec
+exec /bin/bash "$0" "$@"
+clear
 
 # END
