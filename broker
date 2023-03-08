@@ -146,7 +146,7 @@ $MARKET_RESULT"
     MARKET="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
   }
 
-  function setup_ref_order {
+  function setup_limit_order {
     LIMIT_ORDER="true"
     LISTING_CURRENCY=$(
       dialog --title "Listing Currency (BTC)" \
@@ -206,6 +206,7 @@ $MARKET_RESULT"
 
   "1")
 
+    REFERENCE_CURRENCY="false"
     TYPE="buy"
     HEIGHT=9
     WIDTH=23
@@ -241,7 +242,7 @@ $MARKET_RESULT"
 
     "2")
 
-      setup_ref_order
+      setup_limit_order
       PLACE_ORDER="$(placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER")"
       echo "${DATE:?} :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $PRICE $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       echo "${DATE:?} :: Manual $TYPE ::  Limit Order :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
@@ -255,6 +256,7 @@ $MARKET_RESULT"
 
   "2")
 
+    REFERENCE_CURRENCY="true"
     TYPE="sell"
     HEIGHT=9
     WIDTH=23
@@ -290,7 +292,7 @@ $MARKET_RESULT"
 
     "2")
 
-      setup_ref_order
+      setup_limit_order
       PLACE_ORDER="$(placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER")"
       echo "${DATE:?} :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $PRICE $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       echo "${DATE:?} :: Manual $TYPE ::  Limit Order :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
