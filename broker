@@ -66,8 +66,8 @@ case $CHOICE in
       3>&1 1>&2 2>&3 3>&-
   )
 
-  MARKET_RESULT="$(prices | egrep "Market|Last|Volume24Hr" | awk -F: '{ print $2 }' | xargs | awk '{ print $1,$2,$3 }' | grep "$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')")"
-  MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
+  MARKET_RESULT="$(prices | egrep "Market|Last|Volume24Hr" | egrep -A2 "$(grep "$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')")" | tr -d '-')"
+  MARKET_COUNT="$(echo "$MARKET_RESULT" | grep -c "Market")"
 
   display_result() {
     dialog --title "Result: $MARKET_COUNT" \
