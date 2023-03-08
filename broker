@@ -1,6 +1,8 @@
 #!/bin/bash
 
 source /usr/local/bin/include/leeloo/broker.conf
+source include/api/southxchange/private_API
+source include/api/southxchange/public_API
 source include/install
 
 # menu
@@ -28,8 +30,6 @@ clear
 case $CHOICE in
 
 "1")
-
-  source include/api/southxchange/private_API
 
   function result_jq() {
     listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
@@ -61,8 +61,6 @@ case $CHOICE in
 
 "2")
 
-  source include/api/southxchange/public_API
-
   MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
   MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r)"
   MARKET_COUNT="$(echo "$MARKET_RESULT" | grep -c "$MARKET_INPUT")"
@@ -81,8 +79,6 @@ $MARKET_RESULT"
   ;;
 
 "3")
-
-  source include/api/southxchange/public_API
 
   # market (example)
   MARKET_INPUT=$(
@@ -123,8 +119,8 @@ $MARKET_RESULT"
 "4")
 
   # order menu
-  HEIGHT=10
-  WIDTH=45
+  HEIGHT=11
+  WIDTH=40
   CHOICE_HEIGHT=4
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Order Menu"
@@ -159,7 +155,14 @@ $MARKET_RESULT"
 
   "3")
 
-    echo "You chose Option 3"
+    display_result() {
+      dialog --title "Orders:" \
+        --no-collapse \
+        --msgbox "$RESULT" 0 0
+    }
+
+    RESULT="$(getOrders)"
+    display_result 2>/dev/null
 
     ;;
 
