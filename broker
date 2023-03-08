@@ -4,7 +4,8 @@
 
 source /usr/local/bin/include/leeloo/broker.conf
 source include/api/southxchange/private_API
-source include/api/southxchange/public_API
+source include/api/southxchange/private_API
+source include/functions
 source include/install
 
 DATE="$(date | xargs)"
@@ -21,6 +22,8 @@ OPTIONS=(1 "Balance          Account Balance"
   2 "Market           View Market"
   3 "Search           Search Market"
   4 "Order            Buy/Sell order"
+  5 "Update           New law & order"
+  l "Debug            Debug logs"
   0 "Quit             Exit Menu")
 
 CHOICE=$(dialog --clear \
@@ -125,57 +128,6 @@ $MARKET_RESULT"
   ;;
 
 "4")
-
-  function setup_order {
-    LISTING_CURRENCY=$(
-      dialog --title "Listing Currency (BTC)" \
-        --inputbox "Enter name:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-    REFERENCE_CURRENCY=$(
-      dialog --title "Reference Currency (USDT)" \
-        --inputbox "Enter name:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-    AMOUNT=$(
-      dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
-        --inputbox "Enter amount:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-  }
-
-  function setup_limit_order {
-    LISTING_CURRENCY=$(
-      dialog --title "Listing Currency (BTC)" \
-        --inputbox "Enter name:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-    REFERENCE_CURRENCY=$(
-      dialog --title "Reference Currency (USDT)" \
-        --inputbox "Enter name:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-    AMOUNT=$(
-      dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
-        --inputbox "Enter amount:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-    PRICE=$(
-      dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
-        --inputbox "Enter amount:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-  }
-
-  function last_log {
-    display_result() {
-      dialog --title "Log Message: $(wc -l "${LOG_DIR:?}"/leeloo/broker.log)" \
-        --no-collapse \
-        --tailbox "$RESULT" 30 110
-    }
-    RESULT="${LOG_DIR:?}/leeloo/broker.log"
-    display_result 2>/dev/null
-  }
 
   # order menu
   HEIGHT=10
@@ -314,6 +266,25 @@ $MARKET_RESULT"
     ;;
 
   esac
+
+  ;;
+
+"5")
+
+  display_result() {
+    dialog --title "Orders:" \
+      --no-collapse \
+      --msgbox "$RESULT" 0 0
+  }
+
+  RESULT="$(cd || exit && cd leeloo || exit && git pull)"
+  display_result 2>/dev/null
+
+  ;;
+
+"l")
+
+  last_log
 
   ;;
 

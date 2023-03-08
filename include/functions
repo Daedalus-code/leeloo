@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# setup_order ##################################################################
+
+function setup_order {
+  LISTING_CURRENCY=$(
+    dialog --title "Listing Currency (BTC)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  REFERENCE_CURRENCY=$(
+    dialog --title "Reference Currency (USDT)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  AMOUNT=$(
+    dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+      --inputbox "Enter amount:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+}
+
+# setup_limit_order ############################################################
+
+function setup_limit_order {
+  LISTING_CURRENCY=$(
+    dialog --title "Listing Currency (BTC)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  REFERENCE_CURRENCY=$(
+    dialog --title "Reference Currency (USDT)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  AMOUNT=$(
+    dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+      --inputbox "Enter amount:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  PRICE=$(
+    dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+      --inputbox "Enter amount:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+}
+
+# last_log #####################################################################
+
+function last_log {
+  display_result() {
+    dialog --title "Log Message: $(wc -l "${LOG_DIR:?}"/leeloo/broker.log)" \
+      --no-collapse \
+      --tailbox "$RESULT" 30 110
+  }
+  RESULT="${LOG_DIR:?}/leeloo/broker.log"
+  display_result 2>/dev/null
+}
