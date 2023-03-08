@@ -7,13 +7,15 @@ source include/api/southxchange/private_API
 source include/api/southxchange/public_API
 source include/install
 
+DATE="${DATE:?}"
+
 # menu
 HEIGHT=16
 WIDTH=45
 CHOICE_HEIGHT=9
 BACKTITLE="Leeloo (Multipass)"
 TITLE="Main Menu"
-MENU="Multipass $(date | xargs)"
+MENU="Multipass ${DATE:?}"
 
 OPTIONS=(1 "Balance          Account Balance"
   2 "Market           View Market"
@@ -173,9 +175,9 @@ $MARKET_RESULT"
     display_result() {
       dialog --title "Log Message:" \
         --no-collapse \
-        --msgbox "$RESULT" 0 0
+        --msgbox "$RESULT" 35 100
     }
-    RESULT="$(tail -1 "${LOG_DIR:?}"/leeloo/broker.log)"
+    RESULT="$(tail -30 "${LOG_DIR:?}"/leeloo/broker.log)"
     display_result 2>/dev/null
   }
 
@@ -185,7 +187,7 @@ $MARKET_RESULT"
   CHOICE_HEIGHT=3
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Order Menu"
-  MENU="$(date | xargs)"
+  MENU="${DATE:?}"
 
   OPTIONS=(1 "Buy              Buy Order"
     2 "Sell             Sell Order"
@@ -231,7 +233,7 @@ $MARKET_RESULT"
 
       setup_order
       placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
-      echo "$(data | xargs) :: Manual $TYPE ::  Market Order :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+      echo "${DATE:?} :: Manual $TYPE ::  Market Order :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
 
       ;;
@@ -240,7 +242,7 @@ $MARKET_RESULT"
 
       setup_ref_order
       placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
-      echo "$(data | xargs) :: Manual $TYPE ::  Limit Order :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $PRICE $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+      echo "${DATE:?} :: Manual $TYPE ::  Limit Order :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $PRICE $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
 
       ;;
