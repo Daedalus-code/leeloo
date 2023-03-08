@@ -66,8 +66,8 @@ case $CHOICE in
       3>&1 1>&2 2>&3 3>&-
   )
 
-  MARKET_INPUT="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-  MARKET_RESULT="$(prices | grep "$MARKET_INPUT")"
+  MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
+  MARKET_RESULT="$(prices | grep "$MARKET_SEARCH")"
   MARKET_COUNT="$(echo "$MARKET_RESULT" | grep -c "Market")"
 
   display_result() {
@@ -78,7 +78,7 @@ case $CHOICE in
 
   RESULT="Market:  Bid      Ask      Last     Variation (%)  Volume (crypto)
 
-$(grep "$(echo "$SEARCH_MARKET" | tr '[:lower:]' '[:upper:]')" "${LOG_DIR:?}"/broker/market 2>/dev/null | sort -n)"
+$MARKET_RESULT"
   display_result 2>/dev/null
 
   ;;
