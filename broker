@@ -66,20 +66,32 @@ case $CHOICE in
       3>&1 1>&2 2>&3 3>&-
   )
 
-  MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-  MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k6 -n -r)"
-  MARKET_COUNT="$(echo "$MARKET_RESULT" | grep -c "$MARKET_INPUT")"
+  if [[ -z "$MARKET_INPUT" ]] &>/dev/null; then
 
-  display_result() {
-    dialog --title "Search result: $MARKET_COUNT" \
-      --no-collapse \
-      --msgbox "$RESULT" 20 70
-  }
+    MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
+    MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k6 -n -r)"
+    MARKET_COUNT="$(echo "$MARKET_RESULT" | grep -c "$MARKET_INPUT")"
 
-  RESULT="Market:  Bid      Ask      Last     Variation (%)  Volume (crypto)
+    display_result() {
+      dialog --title "Search result: $MARKET_COUNT" \
+        --no-collapse \
+        --msgbox "$RESULT" 20 70
+    }
+
+    RESULT="Market:  Bid      Ask      Last     Variation (%)  Volume (crypto)
 
 $MARKET_RESULT"
-  display_result 2>/dev/null
+    display_result 2>/dev/null
+  else
+    display_result() {
+      dialog --title "Search result: empty!" \
+        --no-collapse \
+        --msgbox "$RESULT" 0 0
+    }
+
+    RESULT="No data"
+    display_result 2>/dev/null
+  fi
 
   ;;
 
