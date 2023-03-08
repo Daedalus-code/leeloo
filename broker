@@ -66,7 +66,7 @@ case $CHOICE in
       3>&1 1>&2 2>&3 3>&-
   )
 
-  MARKET_RESULT="$(prices | grep "Market" | awk -F: '{ print $2 }' | sort -n | grep "$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')")"
+  MARKET_RESULT="$(prices | egrep "Market|Last|Volume24Hr" | awk -F: '{ print $2 }' | xargs | awk '{ print $1,$2,$3 }' | grep "$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')")"
   MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
 
   display_result() {
@@ -75,7 +75,8 @@ case $CHOICE in
       --msgbox "$RESULT" 0 0
   }
 
-  RESULT="$(echo "$MARKET_RESULT")"
+  RESULT="$(echo "Market Last Volume24Hr
+$MARKET_RESULT")"
   display_result 2>/dev/null
 
   ;;
