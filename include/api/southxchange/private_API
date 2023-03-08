@@ -18,15 +18,16 @@ function listBalances {
 # placeOrder ###################################################################
 # https://www.southxchange.com/api/placeOrder
 # Places an order in a given market. Permission required: Place Order
-# Example: placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER"
+# Example: placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER"
 
 function placeOrder {
   TYPE="$1"
-  LISTING_CURRENCY="$2"
-  REFERENCE_CURRENCY="$3"
-  PRICE="$4"
-  AMOUNT="$5"
-  LIMIT_ORDER="$6"
+  MARKET="$2"
+  LISTING_CURRENCY="$3"
+  REFERENCE_CURRENCY="$4"
+  PRICE="$5"
+  AMOUNT="$6"
+  LIMIT_ORDER="$7"
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   if [ "$LIMIT_ORDER" = "true" ] &>/dev/null; then
     JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"type\":\"$TYPE\",\"amount\":$AMOUNT,\"amountInReferenceCurrency\":$AMOUNT_IN_REFERENCE_CURRENCY,\"limitPrice\":$PRICE,\"key\":\"$API_SOUTHX_KEY\"}"
