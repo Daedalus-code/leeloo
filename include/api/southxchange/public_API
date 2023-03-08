@@ -1,21 +1,27 @@
 #!/bin/bash
 
 # checkMarket ##################################################################
+# https://www.southxchange.com/api/markets
 # Example: checkMarket BTC
 
 function checkMarket {
-  local MARKET_INPUT=$1
-  local MARKET_LIST
-  MARKET_LIST="$(curl -s https://www.southxchange.com/api/markets)"
-  MARKET_CHECK="$(echo "$MARKET_LIST" | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," /)"
-  MARKET_SEARCH="$(echo "$MARKET_CHECK" | grep "$MARKET_INPUT")"
-  MARKET_COUNT="$(echo "$MARKET_CHECK" | grep "$MARKET_INPUT" | wc -l)"
-  if [[ "$MARKET_COUNT" -gt "0" ]] &>/dev/null; then
-    echo "Ok found $MARKET_COUNT market(s) for $MARKET_INPUT"
-    echo "$MARKET_SEARCH"
-  else
-    echo "No market(s) found for $MARKET_INPUT"
-  fi
+  curl -s https://www.southxchange.com/api/markets | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," /
+}
+
+# prices #######################################################################
+# https://market.southxchange.com/api/v4/prices
+# Example: prices
+
+function prices {
+  curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[]' | tr -d '{},[] "'
+}
+
+# fees #########################################################################
+# https://market.southxchange.com/api/v4/fees
+# Example: fees
+
+function fees {
+  curl -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" | jq -r '.[]' | tr -d '{},[] "'
 }
 
 # END
