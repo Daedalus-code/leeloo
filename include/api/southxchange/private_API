@@ -15,25 +15,37 @@ function listBalances {
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances
 }
 
-# placeOrder ###################################################################
+# placeOrder_market ############################################################
 # https://www.southxchange.com/api/placeOrder
 # Places an order in a given market. Permission required: Place Order
-# Example: placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER"
+# Example: placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT"
 
-function placeOrder {
+function placeOrder_market {
+  TYPE="$1"
+  LISTING_CURRENCY="$2"
+  REFERENCE_CURRENCY="$3"
+  AMOUNT="$4"
+  AMOUNT_IN_REFERENCE_CURRENCY="$5"
+  API_SOUTHX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$TARGET\",\"referenceCurrency\":\"$REFERENCE\",\"type\":\"$TYPE\",\"amount\":\"$AMOUNT\",\"amountInReferenceCurrency\":\"$AMOUNT_IN_REFERENCE_CURRENCY\",\"key\":\"$API_SOUTHX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder
+}
+
+# placeOrder_limit #############################################################
+# https://www.southxchange.com/api/placeOrder
+# Places an order in a given market. Permission required: Place Order
+# Example: placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT"
+
+function placeOrder_limit {
   TYPE="$1"
   LISTING_CURRENCY="$2"
   REFERENCE_CURRENCY="$3"
   PRICE="$4"
   AMOUNT="$5"
-  LIMIT_ORDER="$6"
-  AMOUNT_IN_REFERENCE_CURRENCY="$7"
+  AMOUNT_IN_REFERENCE_CURRENCY="$6"
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
-  if [ "$LIMIT_ORDER" = "true" ] &>/dev/null; then
-    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"type\":\"$TYPE\",\"amount\":\"$AMOUNT\",\"amountInReferenceCurrency\":\"$AMOUNT_IN_REFERENCE_CURRENCY\",\"limitPrice\":\"$PRICE\",\"key\":\"$API_SOUTHX_KEY\"}"
-  else
-    JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$TARGET\",\"referenceCurrency\":\"$REFERENCE\",\"type\":\"$TYPE\",\"amount\":\"$AMOUNT\",\"amountInReferenceCurrency\":\"$AMOUNT_IN_REFERENCE_CURRENCY\",\"key\":\"$API_SOUTHX_KEY\"}"
-  fi
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"type\":\"$TYPE\",\"amount\":\"$AMOUNT\",\"amountInReferenceCurrency\":\"$AMOUNT_IN_REFERENCE_CURRENCY\",\"limitPrice\":\"$PRICE\",\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder
 }
