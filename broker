@@ -71,14 +71,14 @@ case $CHOICE in
   MARKET_COUNT="$(echo "$MARKET_RESULT" | grep -c "Market")"
 
   display_result() {
-    dialog --title "Result: $MARKET_COUNT" \
+    dialog --title "Search result: $MARKET_COUNT" \
       --no-collapse \
-      --msgbox "$RESULT" 0 0
+      --msgbox "$RESULT" 20 70
   }
 
-  RESULT="$(echo "Market Last Volume24Hr
+  RESULT="Market:  Bid      Ask      Last     Variation (%)  Volume (crypto)
 
-$MARKET_RESULT")"
+$(grep "$(echo "$SEARCH_MARKET" | tr '[:lower:]' '[:upper:]')" "${LOG_DIR:?}"/broker/market 2>/dev/null | sort -n)"
   display_result 2>/dev/null
 
   ;;
