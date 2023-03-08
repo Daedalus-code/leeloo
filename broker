@@ -28,10 +28,10 @@ case $CHOICE in
 
 "1")
 
+  source include/api/southxchange/private_API
+
   function result_jq() {
-    source include/api/southxchange/private_API
     listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
-    cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
   }
 
   # update data every n seconds
@@ -46,6 +46,15 @@ case $CHOICE in
   fi
 
   sleep 1
+
+  display_result() {
+    dialog --title "Portfolio" \
+      --no-collapse \
+      --msgbox "$RESULT" 0 0
+  }
+
+  RESULT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
+  display_result 2>/dev/null
 
   ;;
 
