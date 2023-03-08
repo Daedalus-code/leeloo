@@ -173,9 +173,9 @@ $MARKET_RESULT"
 
   function last_log {
     display_result() {
-      dialog --title "Log Message:" \
+      dialog --title "Log Message: $(wc -l "${LOG_DIR:?}"/leeloo/broker.log)" \
         --no-collapse \
-        --msgbox "$RESULT" 35 100
+        --msgbox "$RESULT" 30 110
     }
     RESULT="$(tail -30 "${LOG_DIR:?}"/leeloo/broker.log)"
     display_result 2>/dev/null
@@ -280,7 +280,7 @@ $MARKET_RESULT"
 
       setup_order
       placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
-      echo "$(data | xargs) :: Manual $TYPE ::  Market Order :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+      echo "${DATE:?} :: Manual $TYPE ::  Market Order :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
 
       ;;
@@ -289,7 +289,7 @@ $MARKET_RESULT"
 
       setup_ref_order
       placeOrder "$TYPE" "$MARKET" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
-      echo "$(data | xargs) :: Manual $TYPE ::  Limit Order :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $PRICE $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+      echo "${DATE:?} :: Manual $TYPE ::  Limit Order :: /placeOrder $TYPE $MARKET $LISTING_CURRENCY $REFERENCE_CURRENCY $PRICE $AMOUNT $LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
 
       ;;
