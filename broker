@@ -123,10 +123,26 @@ $MARKET_RESULT"
 "4")
 
   function setup_order {
-kek
+    LIMIT_ORDER="false"
+    LISTING_CURRENCY=$(
+      dialog --title "Listing Currency (BTC)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+    REFERENCE_CURRENCY=$(
+      dialog --title "Reference Currency (USDT)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+    AMOUNT=$(
+      dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+        --inputbox "Enter amount:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
   }
 
   function setup_ref_order {
+    LIMIT_ORDER="true"
     LISTING_CURRENCY=$(
       dialog --title "Listing Currency (BTC)" \
         --inputbox "Enter name:" 8 40 \
@@ -209,8 +225,6 @@ kek
 
     "1")
 
-      LIMIT_ORDER="false"
-
       setup_order
       placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
@@ -218,8 +232,6 @@ kek
       ;;
 
     "2")
-
-      LIMIT_ORDER="true"
 
       setup_ref_order
       placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
@@ -258,32 +270,12 @@ kek
 
     "1")
 
-      LIMIT_ORDER="false"
-
-      LISTING_CURRENCY=$(
-        dialog --title "Listing Currency (BTC)" \
-          --inputbox "Enter name:" 8 40 \
-          3>&1 1>&2 2>&3 3>&-
-      )
-      REFERENCE_CURRENCY=$(
-        dialog --title "Reference Currency (USDT)" \
-          --inputbox "Enter name:" 8 40 \
-          3>&1 1>&2 2>&3 3>&-
-      )
-      AMOUNT=$(
-        dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
-          --inputbox "Enter amount:" 8 40 \
-          3>&1 1>&2 2>&3 3>&-
-      )
-
       placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
       last_log
 
       ;;
 
     "2")
-
-      LIMIT_ORDER="true"
 
       setup_ref_order
       placeOrder "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$LIMIT_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
