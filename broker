@@ -72,10 +72,6 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
 "2")
 
-  MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-  MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r)"
-  MARKET_COUNT="$(echo "$MARKET_RESULT" | grep -c "$MARKET_INPUT")"
-
   display_result() {
     dialog --title "Search result: $MARKET_COUNT" \
       --no-collapse \
@@ -84,7 +80,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
   RESULT="Market:    Bid      Ask       Last      Variation (%)      Volume (crypto)
 
-$MARKET_RESULT"
+$(prices | sort -k2 -n -r)"
   display_result 2>/dev/null
 
   ;;
