@@ -87,16 +87,19 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
     result_market
   fi
 
+  MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)"
+  WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+11" | bc)"
+
   display_result() {
     dialog --title "Market: +$(prices | wc -l) $DATE" \
       --no-collapse \
       --scrollbar \
-      --msgbox "$RESULT" 0 0
+      --msgbox "$RESULT" 25 "$WIDTH"
   }
 
-  RESULT="Market:    Bid      Ask       Last      Variation (%)      Volume (crypto)
+  RESULT="Market:       Bid           Ask           Last        (%)        Volume24Hr
 
-$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)"
+$MARKET_RESULT"
   display_result 2>/dev/null
 
   ;;
