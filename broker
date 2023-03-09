@@ -310,6 +310,21 @@ $MARKET_RESULT"
 
   "3")
 
+    function result_orders {
+      listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t | sort -r >"${LOG_DIR:?}"/leeloo/southxchange/orders
+    }
+
+    # update data every n seconds
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "15" ]] &>/dev/null; then
+      result_orders
+      # update data if missing
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
+      result_orders
+      # update data if empty
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
+      result_orders
+    fi
+
     display_result() {
       dialog --title "Orders:" \
         --no-collapse \
@@ -317,7 +332,7 @@ $MARKET_RESULT"
     }
 
     RESULT="OrderID:    Type  Amount      Original    LimitPrice     List   Ref  DateAdded
-$(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t | sort -r)"
+$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
     display_result 2>/dev/null
 
     ;;
