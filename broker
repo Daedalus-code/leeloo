@@ -110,12 +110,18 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)"
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
     MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | column -t)"
     MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
+    "$N=${#MARKET_RESULT}"
 
     display_result() {
       dialog --title "Search result: +$MARKET_COUNT $DATE" \
         --no-collapse \
-        --msgbox "$RESULT" "$(echo "$MARKET_COUNT+6" | bc)" 95
+        --msgbox "$RESULT" "$(echo "$MARKET_COUNT+6" | bc)" "$(echo "$N")"
     }
+
+    str="kek"
+    n=${#str}
+
+    echo "$n"
 
     RESULT="Market:       Bid           Ask           Last        (%)        Volume24Hr
 
