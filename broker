@@ -91,6 +91,10 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
   MARKET_RESULT="$(head -100 "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)"
   WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+11" | bc)"
 
+  if [[ -z "$WIDTH" ]] &>/dev/null; then
+    WIDTH="100"
+  fi
+
   display_result() {
     dialog --title "100 Market: +$(prices | wc -l) $DATE" \
       --no-collapse \
@@ -119,6 +123,9 @@ $MARKET_RESULT"
 
     if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
       LENGTH="25"
+    fi
+    if [[ -z "$WIDTH" ]] &>/dev/null; then
+      WIDTH="100"
     fi
 
     display_result() {

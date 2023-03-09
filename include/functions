@@ -68,6 +68,9 @@ function setup_limit_order {
 
 function last_log {
   WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')+7" | bc)"
+  if [[ -z "$WIDTH" ]] &>/dev/null; then
+    WIDTH="100"
+  fi
   display_result() {
     dialog --title "Log Message: $(wc -l "${LOG_DIR:?}"/leeloo/broker.log)" \
       --no-collapse \
