@@ -75,7 +75,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 "2")
 
   function result_market {
-    prices | sort -k2 -n -r | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
+    prices | sort -k2 -n -r | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
   }
 
   # update data every n seconds
@@ -118,7 +118,7 @@ $MARKET_RESULT"
   if [[ ! -z "$MARKET_INPUT" ]] &>/dev/null; then
 
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-    MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | column -t)"
+    MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t)"
     MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
     LENGTH="$(echo "$MARKET_COUNT+7" | bc)"
     WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+11" | bc)"
