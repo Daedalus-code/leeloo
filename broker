@@ -111,8 +111,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)"
     MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | column -t)"
     MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
     LENGTH="$(echo "$MARKET_COUNT+6" | bc)"
-    "$N=${#MARKET_RESULT}"
-    WIDTH="$(echo "$N+20" | bc)"
+    WIDTH="$(echo "$MARKET_COUNT" | wc -w)"
 
     display_result() {
       dialog --title "Search result: +$MARKET_COUNT $DATE" \
