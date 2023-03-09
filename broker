@@ -316,7 +316,7 @@ $MARKET_RESULT"
         --msgbox "$RESULT" 0 0
     }
 
-    RESULT="Code:   Type   Amount   OriginalAmount   LimitPrice   ListingCurrency   ReferenceCurrency   DateAdded
+    RESULT="Code: Type Amount OriginalAmount LimitPrice ListingCurrency ReferenceCurrency DateAdded
 $(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t | sort -r)"
     display_result 2>/dev/null
 
