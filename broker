@@ -171,7 +171,7 @@ $MARKET_RESULT"
 
   OPTIONS=(1 "Buy              Buy Order"
     2 "Sell             Sell Order"
-    3 "Orders           List Orders")
+    3 "Orders           Open Orders")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -325,8 +325,10 @@ $MARKET_RESULT"
       result_orders
     fi
 
+    ORDER_TOTAL="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }')"
+
     display_result() {
-      dialog --title "Orders:" \
+      dialog --title "Open Orders: +$ORDER_TOTAL" \
         --no-collapse \
         --msgbox "$RESULT" 0 0
     }
