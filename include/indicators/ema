@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# get_ema ######################################################################
+# https://min-api.cryptocompare.com/data/v2/histoday
+# Example: get_ema 6 20 BTC
+
+get_ema() {
+  SHORT_EMA=$1
+  LONG_EMA=$2
+  SYMBOL=$3
+  API_EMA_EXCHANGE="CCCAGG"
+  EMA_LONG=$((SHORT_EMA * 2))
+  TMP_FILE=$(mktemp)
+  curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=${EMA_LONG}&aggregate=1&e=${API_EMA_EXCHANGE}" >"$TMP_FILE"
+  PRICES=$(jq -r '.Data.Data[].close' "$TMP_FILE")
+  SHORT=$(echo "$PRICES" | awk -v ema=$SHORT_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }')
+  LONG=$(echo "$PRICES" | awk -v ema=$LONG_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }')
+  echo "Short EMA ($SHORT_EMA): $SHORT"
+  echo "Long EMA ($LONG_EMA): $LONG"
+  rm "$TMP_FILE"
+}
+
+# END
