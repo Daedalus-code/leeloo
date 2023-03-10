@@ -40,20 +40,24 @@ function setup_market_order_strategy {
     dialog --title "Listing Currency (BTC)" \
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
+  )
+  REFERENCE_CURRENCY=$(
+    dialog --title "Reference Currency (USDT)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
 
-    REFERENCE_CURRENCY=$(
-      dialog --title "Reference Currency (USDT)" \
-        --inputbox "Enter name:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-
-      LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-
-      TRIGGER_AMOUNT=$(
-        dialog --title "Trigger $LISTING_CURRENCY" \
-          --inputbox "Enter trigger amount:
+  TRIGGER_AMOUNT=$(
+    dialog --title "Trigger $LISTING_CURRENCY" \
+      --inputbox "Enter trigger amount:
 $LISTING_CURRENCY_AMOUNT" 8 40 \
-          3>&1 1>&2 2>&3 3>&-
+      3>&1 1>&2 2>&3 3>&-
+  )
 
+  if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+    if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      if [[ ! -z "$TRIGGER_AMOUNT" ]] &>/dev/null; then
         # is this a strategy
         if [[ -f "${LOG_DIR:?}"/leeloo/creating_strategy ]] &>/dev/null; then
           echo "ListingCurrency.........: $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
@@ -61,9 +65,9 @@ $LISTING_CURRENCY_AMOUNT" 8 40 \
           echo "ListingCurrencyAmount...: $LISTING_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
           echo "TriggerAmount...........: $TRIGGER_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
         fi
-      )
-    )
-  )
+      fi
+    fi
+  fi
 }
 
 # setup_market_order ###########################################################
@@ -98,26 +102,31 @@ function setup_limit_order_strategy {
     dialog --title "Listing Currency (BTC)" \
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
+  )
+  REFERENCE_CURRENCY=$(
+    dialog --title "Reference Currency (USDT)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+  LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $4 }' | head -1)"
 
-    REFERENCE_CURRENCY=$(
-      dialog --title "Reference Currency (USDT)" \
-        --inputbox "Enter name:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-
-      LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-      LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $4 }' | head -1)"
-
-      TRIGGER_AMOUNT=$(
-        dialog --title "Trigger $LISTING_CURRENCY" \
-          --inputbox "Enter trigger amount:
+  TRIGGER_AMOUNT=$(
+    dialog --title "Trigger $LISTING_CURRENCY" \
+      --inputbox "Enter trigger amount:
 $LISTING_CURRENCY_AMOUNT" 8 40 \
-          3>&1 1>&2 2>&3 3>&-
+      3>&1 1>&2 2>&3 3>&-
+  )
+  TRIGGER_PRICE=$(
+    dialog --title "Trigger Price $LISTING_CURRENCY_PRICE" \
+      --inputbox "Enter trigger price:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
 
-        TRIGGER_PRICE=$(
-          dialog --title "Trigger Price $LISTING_CURRENCY_PRICE" \
-            --inputbox "Enter trigger price:" 8 40 \
-            3>&1 1>&2 2>&3 3>&-
-
+  if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+    if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      if [[ ! -z "$TRIGGER_AMOUNT" ]] &>/dev/null; then
+        if [[ ! -z "$TRIGGER_PRICE" ]] &>/dev/null; then
           # is this a strategy
           if [[ -f "${LOG_DIR:?}"/leeloo/creating_strategy ]] &>/dev/null; then
             echo "ListingCurrency.........: $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
@@ -127,10 +136,10 @@ $LISTING_CURRENCY_AMOUNT" 8 40 \
             echo "TriggerAmount...........: $TRIGGER_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
             echo "TriggerPrice............: $TRIGGER_PRICE" >>"${LOG_DIR:?}"/leeloo/creating_strategy
           fi
-        )
-      )
-    )
-  )
+        fi
+      fi
+    fi
+  fi
 }
 
 # setup_limit_order ############################################################
