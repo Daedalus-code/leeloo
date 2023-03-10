@@ -52,7 +52,7 @@ function setup_market_order_strategy {
   SETUP_TYPE_ORDER=(
     --backtitle "Listing/Reference setup"
     --title "Setup type of orders:"
-    --yesno "Using Listing market?"
+    --yesno "Using Listing market? No if using Reference."
     0 0
   )
   dialog "${SETUP_TYPE_ORDER[@]}"
@@ -127,6 +127,7 @@ function setup_limit_order_strategy {
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
+
   LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
   LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $4 }' | head -1)"
 
@@ -142,6 +143,32 @@ $LISTING_CURRENCY_AMOUNT" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
 
+  SETUP_TYPE_ORDER=(
+    --backtitle "Listing/Reference setup"
+    --title "Setup type of orders:"
+    --yesno "Using Listing market? No if using Reference."
+    0 0
+  )
+  dialog "${SETUP_TYPE_ORDER[@]}"
+  DIALOG_RESULT=$?
+  if [ $DIALOG_RESULT -eq 0 ] &>/dev/null; then
+    TRIGGER_AMOUNT=$(
+      dialog --title "Trigger $LISTING_CURRENCY" \
+        --inputbox "Enter trigger amount:
+  $LISTING_CURRENCY_AMOUNT" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+    echo "ReferenceCurrencyAmount.: $LISTING_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+  else
+    TRIGGER_AMOUNT=$(
+      dialog --title "Trigger $REFERENCE_CURRENCY" \
+        --inputbox "Enter trigger amount:
+  $REFERENCE_CURRENCY_AMOUNT" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+    echo "ListingCurrencyAmount...: $REFERENCE_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+  fi
+
   if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
     if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
       if [[ ! -z "$TRIGGER_AMOUNT" ]] &>/dev/null; then
@@ -150,7 +177,6 @@ $LISTING_CURRENCY_AMOUNT" 8 40 \
           if [[ -f "${LOG_DIR:?}"/leeloo/creating_strategy ]] &>/dev/null; then
             echo "ListingCurrency.........: $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
             echo "ReferenceCurrency.......: $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-            echo "ListingCurrencyAmount...: $LISTING_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
             echo "ListingCurrencyPrice....: $LISTING_CURRENCY_PRICE" >>"${LOG_DIR:?}"/leeloo/creating_strategy
             echo "TriggerAmount...........: $TRIGGER_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
             echo "TriggerPrice............: $TRIGGER_PRICE" >>"${LOG_DIR:?}"/leeloo/creating_strategy
