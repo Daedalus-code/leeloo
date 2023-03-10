@@ -33,6 +33,38 @@ function setup_type_order {
   fi
 }
 
+# setup_market_order_strategy ##################################################
+
+function setup_market_order_strategy {
+  LISTING_CURRENCY=$(
+    dialog --title "Listing Currency (BTC)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  REFERENCE_CURRENCY=$(
+    dialog --title "Reference Currency (USDT)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+  REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+
+  TRIGGER_AMOUNT=$(
+    dialog --title "Trigger $LISTING_CURRENCY" \
+      --inputbox "Enter trigger amount:
+$LISTING_CURRENCY_AMOUNT" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  # is this a strategy
+  if [[ -f "${LOG_DIR:?}"/leeloo/creating_strategy ]] &>/dev/null; then
+    echo "ListingCurrency.........: $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "ReferenceCurrency.......: $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "ListingCurrencyAmount...: $LISTING_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "ReferenceCurrencyAmount.: $REFERENCE_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "TriggerAmount...........: $TRIGGER_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+  fi
+}
+
 # setup_market_order ###########################################################
 
 function setup_market_order {
@@ -55,13 +87,47 @@ function setup_market_order {
 $LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
+}
+
+# setup_limit_order_strategy ###################################################
+
+function setup_limit_order_strategy {
+  LISTING_CURRENCY=$(
+    dialog --title "Listing Currency (BTC)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  REFERENCE_CURRENCY=$(
+    dialog --title "Reference Currency (USDT)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+  REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+  LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $4 }' | head -1)"
+  REFERENCE_CURRENCY_PRICE="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $4 }' | head -1)"
+
+  TRIGGER_AMOUNT=$(
+    dialog --title "Trigger $LISTING_CURRENCY" \
+      --inputbox "Enter trigger amount:
+$LISTING_CURRENCY_AMOUNT" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  TRIGGER_PRICE=$(
+    dialog --title "Trigger Price" \
+      --inputbox "Enter trigger price:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
   # is this a strategy
   if [[ -f "${LOG_DIR:?}"/leeloo/creating_strategy ]] &>/dev/null; then
     echo "ListingCurrency.........: $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
     echo "ReferenceCurrency.......: $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
     echo "ListingCurrencyAmount...: $LISTING_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
     echo "ReferenceCurrencyAmount.: $REFERENCE_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-    echo "Amount..................: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "ListingCurrencyPrice....: $LISTING_CURRENCY_PRICE" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "ReferenceCurrencyPrice..: $REFERENCE_CURRENCY_PRICE" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "TriggerAmount...........: $TRIGGER_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "TriggerPrice............: $TRIGGER_PRICE" >>"${LOG_DIR:?}"/leeloo/creating_strategy
   fi
 }
 
@@ -95,17 +161,6 @@ $LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
 $LISTING_CURRENCY_PRICE $REFERENCE_CURRENCY_PRICE" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
-  # is this a strategy
-  if [[ -f "${LOG_DIR:?}"/leeloo/creating_strategy ]] &>/dev/null; then
-    echo "ListingCurrency.........: $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-    echo "ReferenceCurrency.......: $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-    echo "ListingCurrencyAmount...: $LISTING_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-    echo "ReferenceCurrencyAmount.: $REFERENCE_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-    echo "ListingCurrencyPrice....: $LISTING_CURRENCY_PRICE" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-    echo "ReferenceCurrencyPrice..: $REFERENCE_CURRENCY_PRICE" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-    echo "Amount..................: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-    echo "Price...................: $PRICE" >>"${LOG_DIR:?}"/leeloo/creating_strategy
-  fi
 }
 
 # last_log #####################################################################
