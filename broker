@@ -212,7 +212,7 @@ $MARKET_RESULT"
 
     "1")
 
-      setup_order
+      setup_market_order
       if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
         if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
           if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
@@ -274,7 +274,7 @@ $MARKET_RESULT"
 
     "1")
 
-      setup_order
+      setup_market_order
       if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
         if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
           if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
@@ -378,11 +378,11 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
   TITLE="Strategy Menu"
   MENU="Multipass $(date | xargs)"
 
-  OPTIONS=(D "Dashbord         Strategy status"
-    1 "Create           Create strategy"
-    2 "Start            Start strategy"
-    S "Stop             Stop strategy"
-    4 "Logs             robot.log")
+  OPTIONS=(1 "Dashbord         Strategy status"
+    2 "Create           Create strategy"
+    3 "Start            Start strategy"
+    4 "Stop             Stop strategy"
+    5 "Logs             robot.log")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -403,7 +403,91 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
 
   "2")
 
-    echo "You chose Option 2"
+    function setup_type_order_strategy {
+      echo "Market.: $(setup_type_order)" >"${LOG_DIR:?}"/leeloo/creating_strategy
+      ORDER_TYPE="$(grep "Market" "${LOG_DIR:?}"/leeloo/creating_strategy | awk '{ print $2 }')"
+    }
+
+    HEIGHT=12
+    WIDTH=44
+    CHOICE_HEIGHT=6
+    BACKTITLE="Leeloo (Multipass)"
+    TITLE="Strategies"
+    MENU="Multipass $(date | xargs)"
+
+    OPTIONS=(1 "Buy on trigger"
+      2 "Sell on trigger"
+      3 "EMA trading"
+      4 "RSI trading"
+      5 "Custom")
+
+    CHOICE=$(dialog --clear \
+      --backtitle "$BACKTITLE" \
+      --title "$TITLE" \
+      --menu "$MENU" \
+      $HEIGHT $WIDTH $CHOICE_HEIGHT \
+      "${OPTIONS[@]}" \
+      2>&1 >/dev/tty)
+
+    clear
+    case $CHOICE in
+
+    "1")
+
+      setup_type_order_strategy
+      if [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_market_order
+      elif [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_limit_order
+      fi
+
+      ;;
+
+    "2")
+
+      setup_type_order_strategy
+      if [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_market_order
+      elif [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_limit_order
+      fi
+
+      ;;
+
+    "3")
+
+      setup_type_order_strategy
+      if [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_market_order
+      elif [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_limit_order
+      fi
+
+      ;;
+
+    "4")
+
+      setup_type_order_strategy
+      if [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_market_order
+      elif [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_limit_order
+      fi
+
+      ;;
+
+    "5")
+
+      setup_type_order_strategy
+      if [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_market_order
+      elif [[ "$ORDER_TYPE" == "true" ]] &>/dev/null; then
+        setup_limit_order
+      fi
+
+      ;;
+
+    esac
 
     ;;
 

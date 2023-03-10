@@ -12,9 +12,28 @@ function search {
   )
 }
 
-# setup_order ##################################################################
+# setup_type_order #############################################################
 
-function setup_order {
+function setup_type_order {
+  # Define the dialog options
+  setup_type_order=(
+    --backtitle "Market/Limit setup"
+    --title "Setup type of orders:"
+    --yesno "Using Market orders?"
+    0 0
+  )
+  dialog "${setup_type_order[@]}"
+  DIALOG_RESULT=$?
+  if [ $DIALOG_RESULT -eq 0 ] &>/dev/null; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
+# setup_market_order ###########################################################
+
+function setup_market_order {
   LISTING_CURRENCY=$(
     dialog --title "Listing Currency (BTC)" \
       --inputbox "Enter name:" 8 40 \
