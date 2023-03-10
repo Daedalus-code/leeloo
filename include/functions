@@ -64,7 +64,7 @@ function setup_market_order_strategy {
   $LISTING_CURRENCY_AMOUNT" 8 40 \
         3>&1 1>&2 2>&3 3>&-
     )
-    echo "ListingCurrencyAmount...: $LISTING_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "ReferenceCurrencyAmount.: $LISTING_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
   else
     TRIGGER_AMOUNT=$(
       dialog --title "Trigger $REFERENCE_CURRENCY" \
@@ -72,7 +72,7 @@ function setup_market_order_strategy {
   $REFERENCE_CURRENCY_AMOUNT" 8 40 \
         3>&1 1>&2 2>&3 3>&-
     )
-    echo "ReferenceCurrency.......: $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+    echo "ListingCurrencyAmount...: $REFERENCE_CURRENCY_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
   fi
 
   if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
@@ -81,6 +81,7 @@ function setup_market_order_strategy {
         # is this a strategy
         if [[ -f "${LOG_DIR:?}"/leeloo/creating_strategy ]] &>/dev/null; then
           echo "ListingCurrency.........: $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
+          echo "ReferenceCurrency.......: $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/creating_strategy
           echo "TriggerAmount...........: $TRIGGER_AMOUNT" >>"${LOG_DIR:?}"/leeloo/creating_strategy
         fi
       fi
