@@ -443,16 +443,16 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
       dialog "${DIALOG_OPTIONS[@]}"
       DIALOG_RESULT=$?
 
-      if [ $DIALOG_RESULT -eq 0 ] &>/dev/null; then
-        cp include/strategies/buy_sell_trigger /usr/local/bin/include/robot
-      else
+      if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
+        cp include/strategies/buy_sell_trigger /usr/local/bin/include/leeloo/robot
         display_result() {
           dialog --title "Creating strategy" \
             --no-collapse \
             --msgbox "$RESULT" 0 0
         }
 
-        RESULT="Nothing was installed."
+        RESULT="Installed.
+$(ls -l /usr/local/bin/include/leeloo/robot* 2>/dev/null)"
         display_result 2>/dev/null
       fi
 
