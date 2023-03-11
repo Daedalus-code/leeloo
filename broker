@@ -420,8 +420,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
 $(get_ema 6 20 "$COIN_TOKEN")
 $(get_ema 8 20 "$COIN_TOKEN")
 $(get_ema 12 26 "$COIN_TOKEN")
-$(get_ema 50 200 "$COIN_TOKEN")
-EMA Signal:" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
+$(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
 
     BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
     BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
@@ -432,8 +431,10 @@ EMA Signal:" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
 
     if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
+      echo "" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
       echo "Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
+      echo "" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
       echo "Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     fi
 
