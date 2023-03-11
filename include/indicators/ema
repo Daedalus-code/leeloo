@@ -15,8 +15,12 @@ get_ema() {
   PRICES=$(jq -r '.Data.Data[].close' "$TMP_FILE")
   SHORT=$(echo "$PRICES" | awk -v ema=$SHORT_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }')
   LONG=$(echo "$PRICES" | awk -v ema=$LONG_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }')
-  echo "Short EMA ($SHORT_EMA): $SHORT"
-  echo "Long EMA ($LONG_EMA): $LONG"
+  if [[ "$(echo "$SHORT" | awk -F. '{ print $1 }' | sed 's/^0*//')" -gt "$(echo "$LONG" | awk -F. '{ print $1 }' | sed 's/^0*//')" ]]; then
+    BEAR_BULL="Bullish"
+  else
+    BEAR_BULL="Bullish"
+  fi
+  echo "Short EMA ($SHORT_EMA): $SHORT Long EMA ($LONG_EMA): $LONG :: $BEAR_BULL"
   rm "$TMP_FILE"
 }
 
