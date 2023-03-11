@@ -415,12 +415,13 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
         3>&1 1>&2 2>&3 3>&-
     )
 
-    echo "
-    $(get_ema 6 20 "$COIN_TOKEN")
-    $(get_ema 8 20 "$COIN_TOKEN")
-    $(get_ema 12 26 "$COIN_TOKEN")
-    $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
-    echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
+    echo "Indicators
+
+$(get_ema 6 20 "$COIN_TOKEN")
+$(get_ema 8 20 "$COIN_TOKEN")
+$(get_ema 12 26 "$COIN_TOKEN")
+$(get_ema 50 200 "$COIN_TOKEN")
+" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
 
     BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
     BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
@@ -431,10 +432,12 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
     BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
 
     if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
-      EMA_INDICATORS_SIGNAL="Bearish ${BEARISH_PERCENTAGE:?}%"
+      echo "Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
-      EMA_INDICATORS_SIGNAL="Bullish ${BULLISH_PERCENTAGE:?}%"
+      echo "Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     fi
+
+    echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
 
     LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+7" | bc)"
     WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+5" | bc)"
@@ -445,11 +448,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
-    RESULT="EMA Indicators
-
-$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null)
-
-EMA Signal: $EMA_INDICATORS_SIGNAL"
+    RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null)"
     display_result 2>/dev/null
 
     ;;
