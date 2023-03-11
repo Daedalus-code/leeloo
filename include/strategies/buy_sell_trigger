@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+source /usr/local/bin/include/leeloo/broker.conf
+
+# southxchange api
+source include/api/southxchange/private_API
+source include/api/southxchange/public_API
+
+################################################################################
+# buy-sell strategy configuration
+################################################################################
+
+# type
+REFERENCE_STATUS="false" # reference status
+TYPE="sell"              # sell or buy order
+MARKET_LIMIT="market"    # market or limit order
+# listing
+LISTING_CURRENCY=""     # listing currency
+LISTING_TRIGGER="1"     # listing trigger (amount)
+LISTING_ALLOCATED="100" # account allocated (100%)
+# reference
+REFERENCE_CURRENCY="BTC"  # reference currency
+REFERENCE_TRIGGER="false" # listing trigger (amount)
+REFERENCE_ALLOCATED="100" # account allocated (100%)
+
+################################################################################
+# listing and reference data
+################################################################################
+
+# get available listing data
+LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')"
+LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+LISTING_PRICE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
+
+# get available reference data
+REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')"
+REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+REFERENCE_PRICE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
+
+# listing trigger
+if [[ ! "$LISTING_TRIGGER" == "false" ]] &>/dev/null; then
+  if [[ "$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+    TRIGGER_L="1"
+  else
+    TRIGGER_L="0"
+  fi
+fi
+
+# reference trigger
+if [[ ! "$REFERENCE_TRIGGER" == "false" ]] &>/dev/null; then
+  if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+    TRIGGER_R="1"
+  else
+    TRIGGER_R="0"
+  fi
+fi
+
+# get total trigger
+TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
+# if zero, then zero
+if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
+  TOTAL_TRIGGER="0"
+fi
+
+################################################################################
+# strategy
+################################################################################
+
+# trigger greater than zero, continue
+if [[ "$TOTAL_TRIGGER" -gt "0" ]] &>/dev/null; then
+  # reference false
+  if [[ "$REFERENCE_STATUS" == "false" ]] &>/dev/null; then
+    # market
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+      echo "$(date | xargs) :: Strategy $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+      # limit
+    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+      echo "$(date | xargs) :: Strategy $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+    fi
+  # reference true
+  elif [[ "$REFERENCE_STATUS" == "true" ]] &>/dev/null; then
+    # market
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+      echo "$(date | xargs) :: Strategy $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+      # limit
+    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+      echo "$(date | xargs) :: Strategy $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+    fi
+  fi
+fi
+
+################################################################################
+
+# END
