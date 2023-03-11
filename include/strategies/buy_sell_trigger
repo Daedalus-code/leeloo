@@ -35,7 +35,7 @@ REFERENCE_ALLOCATED="100" # account allocated (100%)
 if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+")" ]] &>/dev/null; then
 
   # get available listing data
-  LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')"
+  LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
   LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
   LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
 
@@ -50,7 +50,7 @@ fi
 if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+")" ]] &>/dev/null; then
 
   # get available reference data
-  REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')"
+  REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
   REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
   REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
 
