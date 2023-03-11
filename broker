@@ -429,13 +429,14 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
     BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc)"
     BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
 
+    echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
+
     if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
       echo "Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
       echo "Signal :: Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     fi
 
-    echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
 
     LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+7" | bc)"
