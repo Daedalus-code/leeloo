@@ -422,6 +422,15 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
     $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
 
+    BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
+    BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
+
+    if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
+      EMA_INDICATORS_SIGNAL="Bearish"
+    elif [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
+      EMA_INDICATORS_SIGNAL="Bullish"
+    fi
+
     LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+7" | bc)"
     WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+5" | bc)"
 
@@ -431,7 +440,9 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
-    RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null)"
+    RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null)
+
+Signal: $EMA_INDICATORS_SIGNAL"
     display_result 2>/dev/null
 
     ;;
