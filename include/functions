@@ -86,4 +86,20 @@ function last_log {
   display_result 2>/dev/null
 }
 
+# last_log_robot ###############################################################
+
+function last_log_robot {
+  WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/robot.log | awk '{ print $1 }')+7" | bc)"
+  if [[ -z "$WIDTH" ]] &>/dev/null; then
+    WIDTH="100"
+  fi
+  display_result() {
+    dialog --title "Log Message: $(wc -l "${LOG_DIR:?}"/leeloo/robot.log)" \
+      --no-collapse \
+      --tailbox "$RESULT" 25 "$WIDTH"
+  }
+  RESULT="${LOG_DIR:?}/leeloo/robot.log"
+  display_result 2>/dev/null
+}
+
 # END
