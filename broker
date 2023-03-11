@@ -431,9 +431,8 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
 
     "1")
 
-      # installing strategy
-      cp include/strategies/buy_sell_trigger /usr/local/bin/include/leeloo/robot
-      nano /usr/local/bin/include/leeloo/robot/buy_sell_trigger
+      cp include/strategies/buy_sell_trigger "${LOG_DIR:?}"/stg.tmp &>/dev/null
+      nano "${LOG_DIR:?}"/stg.tmp
 
       DIALOG_OPTIONS=(
         --backtitle "Leeloo (Multipass)"
@@ -446,18 +445,22 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
       DIALOG_RESULT=$?
 
       if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
+        # installing strategy
+
         display_result() {
           dialog --title "Creating strategy" \
             --no-collapse \
             --msgbox "$RESULT" 0 0
         }
 
+        mv "${LOG_DIR:?}"/stg.tmp /usr/local/bin/include/leeloo/robot/buy_sell_trigger."$(date +%s)"
+
         RESULT="Installed.
 $(ls -l /usr/local/bin/include/leeloo/robot* 2>/dev/null)"
         display_result 2>/dev/null
       else
         # not installing strategy
-        rm /usr/local/bin/include/leeloo/robot/buy_sell_trigger &>/dev/null
+        rm "${LOG_DIR:?}"/stg.tmp &>/dev/null
       fi
 
       ;;
