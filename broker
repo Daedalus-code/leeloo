@@ -425,10 +425,11 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
     BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
     BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
 
+    TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc)"
     if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
-      EMA_INDICATORS_SIGNAL="Bearish"
-    elif [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
-      EMA_INDICATORS_SIGNAL="Bullish"
+      EMA_INDICATORS_SIGNAL="Bearish $BEARISH_SIGNAL/$TOTAL_SIGNAL"
+    elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
+      EMA_INDICATORS_SIGNAL="Bullish $BULLISH_SIGNAL/$TOTAL_SIGNAL"
     fi
 
     LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+7" | bc)"
