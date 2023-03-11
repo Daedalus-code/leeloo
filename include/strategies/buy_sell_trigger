@@ -83,13 +83,14 @@ fi
 ################################################################################
 
 # calculate days into seconds
-COOLDOWN_DAYS="$(echo "$COOLDOWN*86400" | bc)"
+COOLDOWN_DAYS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null)"
+COOLDOWN_BST="$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/cd_bst 2>/dev/null)))" 2>/dev/null)"
 
 if [[ ! -f "${LOG_DIR:?}"/leeloo/cd_bst ]] &>/dev/null; then
-  touch "${LOG_DIR:?}"/leeloo/cd_bst
+  touch "${LOG_DIR:?}"/leeloo/cd_bst &>/dev/null
 fi
 
-if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/cd_bst 2>/dev/null)))" 2>/dev/null)" -gt "$COOLDOWN_DAYS" ]] &>/dev/null; then
+if [[ "$COOLDOWN_BST" -gt "$COOLDOWN_DAYS" ]] &>/dev/null; then
   rm "${LOG_DIR:?}"/leeloo/cd_bst &>/dev/null
 fi
 
