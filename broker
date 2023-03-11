@@ -420,12 +420,13 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
     $(get_ema 8 20 "$COIN_TOKEN")
     $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
     echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
+    LENGTH="$(echo "$(wc -l /tmp/leeloo/indicators/ema_indicators | awk '{ print $1 }')+1" | bc)"
     WIDTH="$(wc -L /tmp/leeloo/indicators/ema_indicators | awk '{ print $1 }')"
 
     display_result() {
       dialog --title "EMA Indicators ($COIN_TOKEN)" \
         --no-collapse \
-        --msgbox "$RESULT" 0 "$WIDTH"
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
     RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null)"
