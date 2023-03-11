@@ -381,7 +381,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
   MENU="Multipass $(date | xargs)"
 
   OPTIONS=(1 "Dashbord         Strategy status"
-    I "Indicators       Current conditions"
+    i "Indicators       Current conditions"
     2 "Create           Create strategy"
     3 "Start            Start strategy"
     4 "Stop             Stop strategy"
@@ -401,6 +401,28 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
   "1")
 
     echo "You chose Option 1"
+
+    ;;
+
+  "i")
+
+    COIN_TOKEN=$(
+      dialog --title "Market (BTC)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+
+    display_result() {
+      dialog --title "EMA Indicators" \
+        --no-collapse \
+        --msgbox "$RESULT" 0 0
+    }
+
+    RESULT="$(echo "
+EMA 6 20 $COIN_TOKEN: $(get_ema 6 20 "$COIN_TOKEN")
+EMA 8 20 $COIN_TOKEN: $(get_ema 8 20 "$COIN_TOKEN")
+EMA 50 200 $COIN_TOKEN: $(get_ema 50 200 "$COIN_TOKEN")")"
+    display_result 2>/dev/null
 
     ;;
 
