@@ -13,16 +13,18 @@ source include/api/southxchange/public_API
 ################################################################################
 
 # type
-REFERENCE_STATUS="false" # reference status
 TYPE="sell"              # sell or buy order
 MARKET_LIMIT="market"    # market or limit order
+REFERENCE_STATUS="false" # reference status
+
 # listing
 LISTING_CURRENCY=""     # listing currency
-LISTING_TRIGGER="1"     # listing trigger (amount)
+LISTING_TRIGGER=""      # listing trigger  (execute when amount is reached)
 LISTING_ALLOCATED="100" # account allocated (100%)
+
 # reference
-REFERENCE_CURRENCY="BTC"  # reference currency
-REFERENCE_TRIGGER="false" # listing trigger (amount)
+REFERENCE_CURRENCY=""     # reference currency
+REFERENCE_TRIGGER=""      # listing trigger (execute when amount is reached)
 REFERENCE_ALLOCATED="100" # account allocated (100%)
 
 ################################################################################
@@ -40,7 +42,7 @@ REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)
 REFERENCE_PRICE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }' | head -1)"
 
 # listing trigger
-if [[ ! "$LISTING_TRIGGER" == "false" ]] &>/dev/null; then
+if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+")" ]] &>/dev/null; then
   if [[ "$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
     TRIGGER_L="1"
   else
@@ -49,7 +51,7 @@ if [[ ! "$LISTING_TRIGGER" == "false" ]] &>/dev/null; then
 fi
 
 # reference trigger
-if [[ ! "$REFERENCE_TRIGGER" == "false" ]] &>/dev/null; then
+if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+")" ]] &>/dev/null; then
   if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
     TRIGGER_R="1"
   else
@@ -59,6 +61,7 @@ fi
 
 # get total trigger
 TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
+
 # if zero, then zero
 if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
   TOTAL_TRIGGER="0"
