@@ -74,14 +74,17 @@ $LISTING_CURRENCY_PRICE $REFERENCE_CURRENCY_PRICE" 8 40 \
 
 function last_log {
   echo "$(cat "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log
+  LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/broker.log)"
   WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')+7" | bc 2>/dev/null)"
   if [[ -z "$WIDTH" ]] &>/dev/null; then
+    LOG_COUNT="0"
     WIDTH="100"
   elif [[ "$WIDTH" -lt "100" ]] &>/dev/null; then
+    LOG_COUNT="0"
     WIDTH="100"
   fi
   display_result() {
-    dialog --title "Log Message: $(wc -l "${LOG_DIR:?}"/leeloo/broker.log)" \
+    dialog --title "Log Message: $LOG_COUNT" \
       --no-collapse \
       --tailbox "$RESULT" 25 "$WIDTH"
   }
@@ -93,14 +96,17 @@ function last_log {
 
 function last_log_robot {
   echo "$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/robot.log
+  LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
   WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/robot.log | awk '{ print $1 }')+7" | bc 2>/dev/null)"
   if [[ -z "$WIDTH" ]] &>/dev/null; then
+    LOG_COUNT="0"
     WIDTH="100"
   elif [[ "$WIDTH" -lt "100" ]] &>/dev/null; then
+    LOG_COUNT="0"
     WIDTH="100"
   fi
   display_result() {
-    dialog --title "Log Message: $(wc -l "${LOG_DIR:?}"/leeloo/robot.log)" \
+    dialog --title "Log Message: $LOG_COUNT" \
       --no-collapse \
       --tailbox "$RESULT" 25 "$WIDTH"
   }
