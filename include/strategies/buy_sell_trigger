@@ -83,6 +83,10 @@ if [[ ! -f "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" ]] &>/dev/null; then
   COOLDOWN_SECONDS="0"
 fi
 
+if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+  COOLDOWN_SECONDS="0"
+fi
+
 function cooldown {
   echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY"
 }
