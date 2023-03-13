@@ -2,8 +2,6 @@
 
 # shellcheck disable=SC2034  # Unused variables left for readability
 
-source /usr/local/bin/include/leeloo/install
-
 source /usr/local/bin/include/leeloo/broker.conf
 source /usr/local/bin/include/leeloo/functions
 
@@ -373,6 +371,7 @@ $(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(
   }
 
   RESULT="$(cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull 2>/dev/null)"
+  cd "${HOME_DIR:?}"/leeloo || exit && bash include/install
   display_result 2>/dev/null
   exit
 
