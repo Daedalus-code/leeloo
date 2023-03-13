@@ -2,6 +2,8 @@
 
 # shellcheck disable=SC2034  # Unused variables left for readability
 
+source /usr/local/bin/include/leeloo/broker.conf
+
 ################################################################################
 # buy-sell strategy configuration
 ################################################################################
@@ -21,5 +23,13 @@ LISTING_ALLOCATED="100" # account allocated (100%)
 REFERENCE_CURRENCY=""     # reference currency
 REFERENCE_TRIGGER=""      # listing trigger (execute when amount is reached)
 REFERENCE_ALLOCATED="100" # account allocated (100%)
+
+################################################################################
+# strategy
+################################################################################
+
+# get strategy id.config, run strategy
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
+bash "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".strategy
 
 # END

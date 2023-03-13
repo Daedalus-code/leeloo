@@ -8,12 +8,6 @@ source /usr/local/bin/include/leeloo/functions
 source /usr/local/bin/include/leeloo/api/southxchange/private_API
 source /usr/local/bin/include/leeloo/api/southxchange/public_API
 
-# get strategy id.config
-BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
-# strategy configuration
-# shellcheck source=/usr/local/bin/include/leeloo/robot
-. "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config
-
 DATE="$(date | xargs)"
 
 ################################################################################
@@ -70,6 +64,8 @@ fi
 
 # calculate days into seconds
 COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+# get strategy id.config
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
 
 if [[ ! -f "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" ]] &>/dev/null; then
   touch "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" &>/dev/null
