@@ -66,7 +66,7 @@ fi
 BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
 
 # calculate days into seconds
-COOLDOWN_SECONDS="$(echo "$(grep "COOLDOWN=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | egrep "[0-9]+.[0-9]+")*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+COOLDOWN_SECONDS="$(echo "$(grep "COOLDOWN=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | egrep -o "[0-9]+.[0-9]+")*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
 if [[ ! -f "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" ]] &>/dev/null; then
   touch "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" &>/dev/null
