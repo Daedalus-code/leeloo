@@ -370,8 +370,10 @@ $(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(
       --msgbox "$RESULT" 0 0
   }
 
-  RESULT="$(cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull 2>/dev/null)"
-  cd "${HOME_DIR:?}"/leeloo || exit && bash include/install
+  RESULT="$(
+    cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull
+    cd "${HOME_DIR:?}"/leeloo || exit && bash include/install
+  )"
   display_result 2>/dev/null
   exit
 
