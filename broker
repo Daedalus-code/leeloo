@@ -506,7 +506,7 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
 
       DIALOG_OPTIONS=(
         --backtitle "Leeloo (Multipass)"
-        --title "Creating strategy"
+        --title "Creating Buy/Sell strategy"
         --yesno "Install new strategy?"
         0 0
       )
@@ -518,7 +518,7 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
         # installing strategy
 
         display_result() {
-          dialog --title "Creating strategy" \
+          dialog --title "Creating Buy/Sell strategy" \
             --no-collapse \
             --msgbox "$RESULT" 0 0
         }
@@ -542,7 +542,43 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
     "2")
 
-      # code
+      cp "${HOME_DIR:?}"/leeloo/include/strategies/buy_sell_config "${LOG_DIR:?}"/stgc.tmp &>/dev/null
+      cp "${HOME_DIR:?}"/leeloo/include/strategies/buy_sell_strategy "${LOG_DIR:?}"/stgt.tmp &>/dev/null
+      nano "${LOG_DIR:?}"/stgc.tmp
+
+      DIALOG_OPTIONS=(
+        --backtitle "Leeloo (Multipass)"
+        --title "Creating EMA strategy"
+        --yesno "Install new strategy?"
+        0 0
+      )
+
+      dialog "${DIALOG_OPTIONS[@]}"
+      DIALOG_RESULT=$?
+
+      if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
+        # installing strategy
+
+        display_result() {
+          dialog --title "Creating EMA strategy" \
+            --no-collapse \
+            --msgbox "$RESULT" 0 0
+        }
+
+        # create strategy.robot_id
+        ROBOT_CONFIG="$(egrep "EMA_SHORT|EMA_LONG|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY" "${LOG_DIR:?}"/stgc.tmp | head -6 | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ' | tr 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' '0123456789876543210123456789876543210')"
+        # install new strategy.robot_id
+        mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/bst."$ROBOT_CONFIG".config
+        mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/bst."$ROBOT_CONFIG".strategy
+
+        RESULT="ema.robot installed!
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
+        display_result 2>/dev/null
+      else
+        # not installing strategy
+        rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
+        rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
+      fi
 
       ;;
 
