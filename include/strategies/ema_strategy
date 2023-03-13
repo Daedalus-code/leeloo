@@ -65,7 +65,7 @@ if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.'
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish" >>"${LOG_DIR:?}"/leeloo/robot.log
 
   # is this a bearish signal?
-  if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1)" -eq "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1)" ]] &>/dev/null; then
+  if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
     if [[ "$(tail -1 "${LOG_DIR:?}"/leeloo/ema_signal | grep -c "Bearish")" -eq "1" ]] &>/dev/null; then
 
       # sell order #############################################################
@@ -92,7 +92,7 @@ elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }')" -lt "$(echo "$EMA_REAL_
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish" >>"${LOG_DIR:?}"/leeloo/robot.log
 
   # is this a bullish signal?
-  if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1)" -eq "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1)" ]] &>/dev/null; then
+  if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
     if [[ "$(tail -1 "${LOG_DIR:?}"/leeloo/ema_signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
 
       # buy order ##############################################################
