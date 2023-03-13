@@ -9,6 +9,28 @@ source /usr/local/bin/include/leeloo/api/southxchange/private_API
 source /usr/local/bin/include/leeloo/api/southxchange/public_API
 
 DATE="$(date | xargs)"
+# get strategy id.config
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
+
+################################################################################
+# buy-sell strategy configuration (static)
+################################################################################
+
+# type
+TYPE="$(grep "TYPE=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"                         # sell or buy order
+COOLDOWN="$(grep "COOLDOWN=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"                 # execute cooldown (days)
+MARKET_LIMIT="$(grep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"         # market or limit order
+REFERENCE_STATUS="$(grep "REFERENCE_STATUS=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # reference status
+
+# listing
+LISTING_CURRENCY="$(grep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # listing currency
+LISTING_TRIGGER="$(grep "LISTING_TRIGGER=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"     # listing trigger  (execute when amount is reached)
+LISTING_ALLOCATED="$(grep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (100%)
+
+# reference
+REFERENCE_CURRENCY="$(grep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # reference currency
+REFERENCE_TRIGGER="$(grep "REFERENCE_TRIGGER=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }')"                                      # listing trigger (execute when amount is reached)
+REFERENCE_ALLOCATED="$(grep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (100%)
 
 ################################################################################
 # listing and reference data
@@ -61,9 +83,6 @@ fi
 ################################################################################
 # strategy
 ################################################################################
-
-# get strategy id.config
-BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
 
 # calculate days into seconds
 COOLDOWN_SECONDS="$(echo "$(grep "COOLDOWN=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | egrep -o "[0-9]+.[0-9]+")*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
