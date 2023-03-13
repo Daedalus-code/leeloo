@@ -94,6 +94,11 @@ function cooldown {
   echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG"
 }
 
+if [[ ! -f "${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG" ]] &>/dev/null; then
+  echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG"
+  COOLDOWN_SECONDS="0"
+fi
+
 if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG" 2>/dev/null)))" 2>/dev/null)" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
 
   # trigger greater than zero, continue
