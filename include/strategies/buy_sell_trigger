@@ -86,11 +86,11 @@ if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" 2>/dev/nu
   COOLDOWN_SECONDS="0"
 fi
 
-function cooldown {
-  echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY"
-}
-
 if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
+
+  function cooldown {
+    echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY"
+  }
 
   # trigger greater than zero, continue
   if [[ "$TOTAL_TRIGGER" -gt "0" ]] &>/dev/null; then
