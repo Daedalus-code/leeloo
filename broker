@@ -518,11 +518,12 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
             --msgbox "$RESULT" 0 0
         }
 
-        mv "${LOG_DIR:?}"/stg.tmp "${SYS_DIR:?}"/robot/bst."$(date +%s)"
-        ROBOT_ID="$(ls -t "${SYS_DIR:?}"/robot/ | head -1 | awk -F. '{ print $NF }')"
-        echo "ID: $ROBOT_ID" >"${SYS_DIR:?}"/robot/bst."$ROBOT_ID".cd
+        # create strategy.robot_id
+        ROBOT_CONFIG="$(egrep "TYPE|COOLDOWN|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY" "${LOG_DIR:?}"/stg.tmp | head -6 | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '"' | xargs | tr -d ' ' | tr 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' '0123456789876543210123456789876543210')"
+        # install new strategy.robot_id
+        mv "${LOG_DIR:?}"/stg.tmp "${SYS_DIR:?}"/robot/bst."$ROBOT_CONFIG"
 
-        RESULT="bst.$(date +%s) installed.
+        RESULT="bst.$ROBOT_CONFIG strategy installed.
 $(ls -l "${SYS_DIR:?}"/robot* 2>/dev/null)"
         display_result 2>/dev/null
       else
