@@ -61,32 +61,6 @@ echo "$(tail -21 "${LOG_DIR:?}"/leeloo/ema_signal)" >"${LOG_DIR:?}"/leeloo/ema_s
 
 if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
 
-  # bullish trend?
-  echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish" >>"${LOG_DIR:?}"/leeloo/robot.log
-
-  # is this a bullish signal?
-  if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1)" -eq "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1)" ]] &>/dev/null; then
-    if [[ "$(tail -1 "${LOG_DIR:?}"/leeloo/ema_signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
-
-      # buy order ##############################################################
-
-      TYPE="buy"
-      REFERENCE_STATUS="false"
-
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-        PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        echo "$DATE :: Strategy $STRATEGY_TYPE $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
-        # limit
-      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
-        PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        echo "$DATE :: Strategy $STRATEGY_TYPE $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
-      fi
-      echo "$DATE :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot.log
-    fi
-  fi
-
-elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }')" -lt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }')" ]] &>/dev/null; then
-
   # bearish trend?
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish" >>"${LOG_DIR:?}"/leeloo/robot.log
 
@@ -109,6 +83,32 @@ elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }')" -lt "$(echo "$EMA_REAL_
         echo "$DATE :: Strategy $STRATEGY_TYPE $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
       fi
       echo "$DATE :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot.log
+    fi
+  fi
+
+elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }')" -lt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }')" ]] &>/dev/null; then
+
+  # bullish trend?
+  echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish" >>"${LOG_DIR:?}"/leeloo/robot.log
+
+  # is this a bullish signal?
+  if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1)" -eq "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1)" ]] &>/dev/null; then
+    if [[ "$(tail -1 "${LOG_DIR:?}"/leeloo/ema_signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
+
+      # buy order ##############################################################
+
+      TYPE="buy"
+      REFERENCE_STATUS="false"
+
+      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+        PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+        echo "$DATE :: Strategy $STRATEGY_TYPE $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+        # limit
+      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+        PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+        echo "$DATE :: Strategy $STRATEGY_TYPE $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+      fi
+      echo "$DATE :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot.log
     fi
   fi
 fi
