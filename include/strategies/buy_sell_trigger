@@ -8,27 +8,12 @@ source /usr/local/bin/include/leeloo/functions
 source /usr/local/bin/include/leeloo/api/southxchange/private_API
 source /usr/local/bin/include/leeloo/api/southxchange/public_API
 
+# get strategy id.config
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
+# strategy configuration
+bash "${SYS_DIR:?}"/strategies/bst."$BASENAME_STRATEGY".config
+
 DATE="$(date | xargs)"
-
-################################################################################
-# buy-sell strategy configuration
-################################################################################
-
-# type
-TYPE="sell"              # sell or buy order
-COOLDOWN="1"             # execute cooldown (days)
-MARKET_LIMIT="market"    # market or limit order
-REFERENCE_STATUS="false" # reference status
-
-# listing
-LISTING_CURRENCY=""     # listing currency
-LISTING_TRIGGER=""      # listing trigger  (execute when amount is reached)
-LISTING_ALLOCATED="100" # account allocated (100%)
-
-# reference
-REFERENCE_CURRENCY=""     # reference currency
-REFERENCE_TRIGGER=""      # listing trigger (execute when amount is reached)
-REFERENCE_ALLOCATED="100" # account allocated (100%)
 
 ################################################################################
 # listing and reference data
@@ -84,7 +69,6 @@ fi
 
 # calculate days into seconds
 COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
 TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" 2>/dev/null)))" 2>/dev/null)"
 
 if [[ -z "$COOLDOWN_SECONDS" ]] &>/dev/null; then
