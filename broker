@@ -432,12 +432,21 @@ $(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(
 
     if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
 
-      echo "
+      display_result() {
+        dialog --title "Getting data ($COIN_TOKEN)" \
+          --no-collapse \
+          --msgbox 0 0 0
+      }
+
+      RESULT="$(
+        echo "
 $(get_ema 6 20 "$COIN_TOKEN")
 $(get_ema 8 20 "$COIN_TOKEN")
 $(get_ema 10 38 "$COIN_TOKEN")
 $(get_ema 12 26 "$COIN_TOKEN")
 $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators | pv
+      )"
+      display_result 2>/dev/null
 
       BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
       BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
