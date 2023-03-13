@@ -84,7 +84,7 @@ fi
 
 # calculate days into seconds
 COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-BASENAME_STRATEGY="$(echo "$(basename "$0" | awk -F. '{ print $2 }')" | head -6 | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '"' | xargs | tr -d ' ' | tr 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' '0123456789876543210123456789876543210')"
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
 ROBOT_CONFIG="$(egrep "TYPE|COOLDOWN|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/bst."$(echo "$BASENAME_STRATEGY" | awk '{ print $2 }')")"
 TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG" 2>/dev/null)))" 2>/dev/null)"
 
