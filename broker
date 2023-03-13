@@ -428,6 +428,9 @@ $(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(
       dialog --title "Market (BTC)" \
         --inputbox "Enter name:" 8 40 \
         3>&1 1>&2 2>&3 3>&-
+    )
+
+    if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
 
       echo "
 $(get_ema 6 20 "$COIN_TOKEN")
@@ -465,7 +468,7 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
 
       RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null)"
       display_result 2>/dev/null
-    )
+    fi
 
     ;;
 
