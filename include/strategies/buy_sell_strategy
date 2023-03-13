@@ -37,7 +37,7 @@ REFERENCE_ALLOCATED="$(grep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/bst."$BA
 ################################################################################
 
 # listing trigger
-if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+")" ]] &>/dev/null; then
+if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
 
   # get available listing data
   LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
@@ -52,7 +52,7 @@ if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+")" ]] &>/dev/null; then
 fi
 
 # reference trigger
-if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+")" ]] &>/dev/null; then
+if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
 
   # get available reference data
   REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
