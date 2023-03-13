@@ -15,7 +15,7 @@ get_ema() {
   PRICES=$(jq -r '.Data.Data[].close' "$TMP_FILE")
   SHORT=$(echo "$PRICES" | awk -v ema=$SHORT_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }')
   LONG=$(echo "$PRICES" | awk -v ema=$LONG_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }')
-  if [[ "$(echo "$SHORT" | awk -F. '{ print $1,$2 }' | tr -d '.' | sed 's/^0*//' | awk '{ print $1 }')" -gt "$(echo "$LONG" | awk -F. '{ print $1,$2 }' | tr -d '.' | sed 's/^0*//' | awk '{ print $1 }')" ]] &>/dev/null; then
+  if [[ "$(echo "$SHORT" | awk -F. '{ print $1,$2 }' | tr -d '.' | awk '{ print $1 }' | sed 's/^0*//')" -gt "$(echo "$LONG" | awk -F. '{ print $1,$2 }' | tr -d '.' | awk '{ print $1 }' | sed 's/^0*//')" ]] &>/dev/null; then
     BEAR_BULL="Bullish"
   else
     BEAR_BULL="Bearish"
