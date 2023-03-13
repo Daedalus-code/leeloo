@@ -62,10 +62,11 @@ fi
 # strategy
 ################################################################################
 
-# calculate days into seconds
-COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 # get strategy id.config
 BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
+
+# calculate days into seconds
+COOLDOWN_SECONDS="$(echo "$(grep "COOLDOWN=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $1 }')*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
 if [[ ! -f "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" ]] &>/dev/null; then
   touch "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" &>/dev/null
