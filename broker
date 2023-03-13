@@ -605,13 +605,19 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null)"
 
     "2")
 
-      # code
+      bash "${SYS_DIR:?}"/robot/leeloo
 
       ;;
 
     "3")
 
-      # code
+      screen -X -S leeloo quit &>/dev/null
+      if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
+        killall screen &>/dev/null
+      fi
+      echo "Remove leeloo line"
+      sleep 1
+      crontab -e
 
       ;;
 
