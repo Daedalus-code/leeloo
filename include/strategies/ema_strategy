@@ -8,6 +8,9 @@ source /usr/local/bin/include/leeloo/functions
 source /usr/local/bin/include/leeloo/api/southxchange/private_API
 source /usr/local/bin/include/leeloo/api/southxchange/public_API
 
+# indicators
+source /usr/local/bin/include/leeloo/indicators/ema
+
 DATE="$(date | xargs)"
 # get strategy id.config, run strategy
 BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
@@ -43,9 +46,9 @@ REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/
 REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
 REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
 
-EMA_REAL_RAW="$(get_ema "$EMA_SHORT" "$EMA_LONG")"
-EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $1 }')"
-EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $2 }')"
+EMA_REAL_RAW="$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY")"
+EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $5 }')"
+EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $8 }')"
 
 if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }')" ]] &>/dev/null; then
   BEAR_BULL="Bullish"
