@@ -87,10 +87,6 @@ COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $
 ROBOT_CONFIG="$(egrep "TYPE|COOLDOWN|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/bst."$(basename "$0" | awk -F. '{ print $2 }')" | head -6 | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '"' | xargs | tr -d ' ' | tr 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' '0123456789876543210123456789876543210')"
 TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG" 2>/dev/null)))" 2>/dev/null)"
 
-# robot pool
-echo "$ROBOT_CONFIG $TX_TIME/$COOLDOWN_SECONDS" >>"${SYS_DIR:?}"/robot/pool
-echo "$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | sort -r | awk '!a[tolower($1)]++')" >"${SYS_DIR:?}"/robot/pool
-
 function cooldown {
   echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG"
 }
@@ -132,6 +128,8 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
       fi
     fi
   fi
+else
+  echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cooldown $TX_TIME/$COOLDOWN_SECONDS"
 fi
 
 ################################################################################
