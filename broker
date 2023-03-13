@@ -428,44 +428,44 @@ $(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(
       dialog --title "Market (BTC)" \
         --inputbox "Enter name:" 8 40 \
         3>&1 1>&2 2>&3 3>&-
-    )
 
-    echo "
+      echo "
 $(get_ema 6 20 "$COIN_TOKEN")
 $(get_ema 8 20 "$COIN_TOKEN")
 $(get_ema 10 38 "$COIN_TOKEN")
 $(get_ema 12 26 "$COIN_TOKEN")
 $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
 
-    BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
-    BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
+      BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
+      BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
 
-    TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc)"
+      TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc)"
 
-    BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc)"
-    BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
+      BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc)"
+      BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
 
-    echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
+      echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
 
-    if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
-      echo "Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
-    elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
-      echo "Signal :: Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
-    fi
+      if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
+        echo "Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
+      elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
+        echo "Signal :: Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
+      fi
 
-    echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
+      echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
 
-    LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+7" | bc)"
-    WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+5" | bc)"
+      LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+7" | bc)"
+      WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')+5" | bc)"
 
-    display_result() {
-      dialog --title "Indicators ($COIN_TOKEN)" \
-        --no-collapse \
-        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
-    }
+      display_result() {
+        dialog --title "Indicators ($COIN_TOKEN)" \
+          --no-collapse \
+          --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+      }
 
-    RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null)"
-    display_result 2>/dev/null
+      RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null)"
+      display_result 2>/dev/null
+    )
 
     ;;
 
