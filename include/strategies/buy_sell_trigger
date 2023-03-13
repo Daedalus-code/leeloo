@@ -84,9 +84,11 @@ fi
 
 # calculate days into seconds
 COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc | awk -F. '{ print $1 }')"
+ROBOT_CONFIG="$(egrep "TYPE|COOLDOWN|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/bst."$(basename $0 | awk -F. '{ print $2 }')" | head -6 | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '"' | xargs | tr -d ' ' | tr 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' '0123456789876543210123456789876543210')"
 
 # robot pool
-echo "$(date +%s) $COOLDOWN_SECONDS" >>"${SYS_DIR:?}"/robot/pool
+echo "$ROBOT_CONFIG $COOLDOWN_SECONDS" >>"${SYS_DIR:?}"/robot/pool
+echo "$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/pool
 
 # trigger greater than zero, continue
 if [[ "$TOTAL_TRIGGER" -gt "0" ]] &>/dev/null; then
