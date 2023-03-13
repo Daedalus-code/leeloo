@@ -82,7 +82,7 @@ function last_log {
     WIDTH="100"
   fi
   display_result() {
-    dialog --title "Log Message: $LOG_COUNT" \
+    dialog --title "Broker Log: $LOG_COUNT" \
       --no-collapse \
       --tailbox "$RESULT" 25 "$WIDTH"
   }
@@ -95,14 +95,14 @@ function last_log {
 function last_log_robot {
   echo "$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/robot.log
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
-  WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/robot.log | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+  WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/robot.log | awk '{ print $1 }')+2" | bc 2>/dev/null)"
   if [[ -z "$WIDTH" ]] &>/dev/null; then
     WIDTH="100"
   elif [[ "$WIDTH" -lt "100" ]] &>/dev/null; then
     WIDTH="100"
   fi
   display_result() {
-    dialog --title "Log Message: $LOG_COUNT" \
+    dialog --title "Robot Log: $LOG_COUNT" \
       --no-collapse \
       --tailbox "$RESULT" 25 "$WIDTH"
   }
