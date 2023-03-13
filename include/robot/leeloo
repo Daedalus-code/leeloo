@@ -2,6 +2,9 @@
 
 source /usr/local/bin/include/leeloo/broker.conf
 source /usr/local/bin/include/leeloo/functions
+# southxchange api
+source /usr/local/bin/include/leeloo/api/southxchange/private_API
+source /usr/local/bin/include/leeloo/api/southxchange/public_API
 
 # loop
 for (( ; ; )); do
@@ -9,6 +12,49 @@ for (( ; ; )); do
   for f in "${SYS_DIR:?}"/robot/*.strategy; do
     bash "$f"
   done
+
+  function result_balance() {
+    listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+  }
+  # update data every n seconds
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "15" ]] &>/dev/null; then
+    result_balance
+    # update data if missing
+  elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+    result_balance
+    # update data if empty
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+    result_balance
+  fi
+
+  function result_orders() {
+    listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
+  }
+  # update data every n seconds
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "15" ]] &>/dev/null; then
+    result_orders
+    # update data if missing
+  elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
+    result_orders
+    # update data if empty
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
+    result_orders
+  fi
+
+  function result_market {
+    prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
+  }
+  # update data every n seconds
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "15" ]] &>/dev/null; then
+    result_market
+    # update data if missing
+  elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+    result_market
+    # update data if empty
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+    result_market
+  fi
+
   cleanup_log
   cleanup_log_robot
   sleep "$BOT_TIMER"
