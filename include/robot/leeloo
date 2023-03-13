@@ -29,6 +29,7 @@ for (( ; ; )); do
   elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
     result_balance
   fi
+  sleep 1
 
   function result_orders() {
     listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
@@ -43,6 +44,7 @@ for (( ; ; )); do
   elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
     result_orders
   fi
+  sleep 1
 
   function result_market {
     prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
