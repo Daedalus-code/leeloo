@@ -70,6 +70,12 @@ fi
 
 # calculate days into seconds
 COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+
+if [[ ! -f "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" ]] &>/dev/null; then
+  touch "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" &>/dev/null
+  COOLDOWN_SECONDS="0"
+fi
+
 TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" 2>/dev/null)))" 2>/dev/null)"
 
 if [[ -z "$COOLDOWN_SECONDS" ]] &>/dev/null; then
@@ -77,11 +83,6 @@ if [[ -z "$COOLDOWN_SECONDS" ]] &>/dev/null; then
 fi
 if [[ -z "$TX_TIME" ]] &>/dev/null; then
   TX_TIME="0"
-fi
-
-if [[ ! -f "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" ]] &>/dev/null; then
-  touch "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" &>/dev/null
-  COOLDOWN_SECONDS="0"
 fi
 
 if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/txid."$BASENAME_STRATEGY" 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
