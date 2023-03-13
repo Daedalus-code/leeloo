@@ -89,7 +89,7 @@ TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/txid."$ROBO
 
 # robot pool
 echo "$ROBOT_CONFIG $TX_TIME/$COOLDOWN_SECONDS" >>"${SYS_DIR:?}"/robot/pool
-echo "$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '!a[tolower($1)]++')" >"${SYS_DIR:?}"/robot/pool
+echo "$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | sort -r | awk '!a[tolower($1)]++')" >"${SYS_DIR:?}"/robot/pool
 
 function cooldown {
   echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG"
