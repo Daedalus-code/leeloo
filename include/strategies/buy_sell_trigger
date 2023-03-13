@@ -94,14 +94,14 @@ if [[ -z "$TX_TIME" ]] &>/dev/null; then
   TX_TIME="0"
 fi
 
+if [[ ! -f "${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG" ]] &>/dev/null; then
+  touch "${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG" &>/dev/null
+  COOLDOWN_SECONDS="0"
+fi
+
 function cooldown {
   echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG"
 }
-
-if [[ ! -f "${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG" ]] &>/dev/null; then
-  echo "$DATE :: Starting" >"${SYS_DIR:?}"/robot/txid."$ROBOT_CONFIG"
-  COOLDOWN_SECONDS="0"
-fi
 
 if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
 
