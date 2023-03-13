@@ -50,10 +50,10 @@ EMA_REAL_RAW="$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY")"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $5 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $8 }')"
 
-if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }')" ]] &>/dev/null; then
-  BEAR_BULL="Bullish"
-elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }')" -lt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }')" ]] &>/dev/null; then
+if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
   BEAR_BULL="Bearish"
+elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }')" -lt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }')" ]] &>/dev/null; then
+  BEAR_BULL="Bullish"
 fi
 
 echo "$BEAR_BULL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${LOG_DIR:?}"/leeloo/ema_signal
