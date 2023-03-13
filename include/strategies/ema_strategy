@@ -37,13 +37,13 @@ REFERENCE_ALLOCATED="$(grep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/ema."$BA
 ################################################################################
 
 # get available listing data
-LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
+LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
 
 # get available reference data
-REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
+REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
 
 EMA_REAL_RAW="$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY")"

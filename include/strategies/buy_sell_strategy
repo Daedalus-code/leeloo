@@ -40,8 +40,8 @@ REFERENCE_ALLOCATED="$(grep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/bst."$BA
 if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
 
   # get available listing data
-  LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-  LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+  LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
+  LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
 
   if [[ "$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
@@ -55,8 +55,8 @@ fi
 if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
 
   # get available reference data
-  REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-  REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+  REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
+  REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
 
   if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
