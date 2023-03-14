@@ -391,20 +391,20 @@ $(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(
 
 "A")
 
-  HEIGHT=13
+  HEIGHT=14
   WIDTH=47
-  CHOICE_HEIGHT=7
+  CHOICE_HEIGHT=8
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Strategy Menu"
   MENU="Multipass $(date | xargs)"
 
   OPTIONS=(1 "Dashbord         Strategy status"
-    i "Info             Current conditions"
-    o "Orders           Order status"
-    c "Config           Configurations"
-    2 "Create           Create strategy"
-    3 "Control          Robot controller"
-    5 "Logs             robot.log")
+    2 "Info             Current conditions"
+    3 "Orders           Order status"
+    4 "Config           Configurations"
+    5 "Create           Create strategy"
+    6 "Control          Robot controller"
+    7 "Logs             robot.log")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -423,7 +423,7 @@ $(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(
 
     ;;
 
-  "i")
+  "2")
 
     COIN_TOKEN=$(
       dialog --title "Market (Example: BTC)" \
@@ -474,7 +474,7 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
 
     ;;
 
-  "o")
+  "3")
 
     BST_ORDER="$(cat "${SYS_DIR:?}"/robot/bst.txid.*)"
     EMA_ORDER="$(cat "${SYS_DIR:?}"/robot/ema.txid.*)"
@@ -493,7 +493,7 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
 
     ;;
 
-  "c")
+  "4")
 
     while true; do
       CONFIG_FILES=(/usr/local/bin/include/leeloo/robot/*.config)
@@ -523,7 +523,7 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
 
     ;;
 
-  "2")
+  "5")
 
     HEIGHT=12
     WIDTH=45
@@ -655,7 +655,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
     ;;
 
-  "3")
+  "6")
 
     HEIGHT=10
     WIDTH=41
@@ -714,67 +714,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
     ;;
 
-  "4")
-
-    HEIGHT=12
-    WIDTH=45
-    CHOICE_HEIGHT=6
-    BACKTITLE="Leeloo (Multipass)"
-    TITLE="Stop strategies"
-    MENU="Multipass $(date | xargs)"
-
-    OPTIONS=(1 "BST              Buy/Sell trigger"
-      2 "EMA              EMA trading"
-      3 "RSI              RSI trading"
-      4 "MACD             MACD trading"
-      5 "Custom           Custom")
-
-    CHOICE=$(dialog --clear \
-      --backtitle "$BACKTITLE" \
-      --title "$TITLE" \
-      --menu "$MENU" \
-      $HEIGHT $WIDTH $CHOICE_HEIGHT \
-      "${OPTIONS[@]}" \
-      2>&1 >/dev/tty)
-
-    clear
-    case $CHOICE in
-
-    "1")
-
-      # code
-
-      ;;
-
-    "2")
-
-      # code
-
-      ;;
-
-    "3")
-
-      # code
-
-      ;;
-
-    "4")
-
-      # code
-
-      ;;
-
-    "5")
-
-      # code
-
-      ;;
-
-    esac
-
-    ;;
-
-  "5")
+  "7")
 
     last_log_robot
 
