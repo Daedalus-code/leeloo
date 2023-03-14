@@ -476,11 +476,13 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
 
   "3")
 
-    BST_ORDER="$(cat "${SYS_DIR:?}"/robot/bst.txid.*)"
-    EMA_ORDER="$(cat "${SYS_DIR:?}"/robot/ema.txid.*)"
+    for BST_UPDATES in "${SYS_DIR:?}"/robot/bst.txid.*; do
+      getOrder <"$BST_UPDATES" | jq -s >>"${LOG_DIR:?}"/leeloo/bst.orders 2>/dev/null
+    done
 
-    getOrder "${#BST_ORDER[@]}" | jq -s
-    getOrder "${#EMA_ORDER[@]}" | jq -s
+    for EMA_UPDATES in "${SYS_DIR:?}"/robot/ema.txid.*; do
+      getOrder <"$EMA_UPDATES" | jq -s >>"${LOG_DIR:?}"/leeloo/ema.orders 2>/dev/null
+    done
 
     display_result() {
       dialog --title "Order status:" \
@@ -488,7 +490,7 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
         --msgbox 0 0 0
     }
 
-    RESULT="$(cat "${LOG_DIR:?}"/leeloo/robot_orders 2>/dev/null)"
+    RESULT="$(cat "${LOG_DIR:?}"/leeloo/*.orders 2>/dev/null)"
     display_result 2>/dev/null
 
     ;;
