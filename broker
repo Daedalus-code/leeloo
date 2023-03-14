@@ -477,6 +477,7 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
 
     CONFIG_FILES=(/usr/local/bin/include/leeloo/robot/*.config)
     NUM_FILES="${#CONFIG_FILES[@]}"
+    WIDTH="$(echo "$(wc -L "${CONFIG_FILES:?}" | awk '{ print $1 }')+3" | bc 2>/dev/null)"
 
     if [ $NUM_FILES -eq 0 ] &>/dev/null; then
       echo "Error: No config files found in $SYS_DIR/robot"
@@ -489,7 +490,7 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
     done
 
     while true; do
-      CHOICE=$(dialog --clear --title "Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+4" | bc)" 0 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+      CHOICE=$(dialog --clear --title "Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+4" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
       if [ $? -eq 0 ] &>/dev/null; then
         SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
         nano "$SELECTED_FILE"
