@@ -476,7 +476,35 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
 
   "3")
 
-    # code
+    # create order.list
+    cat "${SYS_DIR:?}"/robot/bst.txid.* 2>/dev/null | egrep "[0-9]+" >"${LOG_DIR:?}"/leeloo/bst.txid 2>/dev/null
+    cat "${SYS_DIR:?}"/robot/ema.txid.* 2>/dev/null | egrep "[0-9]+" >"${LOG_DIR:?}"/leeloo/ema.txid 2>/dev/null
+
+    readarray -t BST_ORDERS <"${LOG_DIR:?}"/leeloo/bst.txid 2>/dev/null
+    readarray -t EMA_ORDERS <"${LOG_DIR:?}"/leeloo/ema.txid 2>/dev/null
+
+    for ORDER_CODE in "${BST_ORDERS[@]}"; do
+      # already exist, skip
+      if ! grep -q "$ORDER_CODE" "${LOG_DIR:?}"/leeloo/bst.orders &>/dev/null; then
+        getOrder "$ORDER_CODE" 2>/dev/null | jq -s >>"${LOG_DIR:?}"/leeloo/bst.orders 2>/dev/null
+      fi
+    done
+
+    for ORDER_CODE in "${EMA_ORDERS[@]}"; do
+      # already exist, skip
+      if ! grep -q "$ORDER_CODE" "${LOG_DIR:?}"/leeloo/ema.orders &>/dev/null; then
+        getOrder "$ORDER_CODE" 2>/dev/null | jq -s >>"${LOG_DIR:?}"/leeloo/ema.orders 2>/dev/null
+      fi
+    done
+
+    display_result() {
+      dialog --title "Last Auto Orders (alpha)" \
+        --no-collapse \
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+    }
+
+    RESULT="$(cat "${LOG_DIR:?}"/leeloo/*.orders | column -t | tr -d '[]{};:",' | grep -v "API" 2>/dev/null)"
+    display_result 2>/dev/null
 
     ;;
 
