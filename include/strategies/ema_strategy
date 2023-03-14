@@ -61,8 +61,11 @@ echo "$(tail -21 "${LOG_DIR:?}"/leeloo/ema_signal)" >"${LOG_DIR:?}"/leeloo/ema_s
 
 if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
 
+  EMA_DIFFERENCE="$(echo "$EMA_REAL_SHORT-$EMA_REAL_LONG" | bc -l)"
+  EMA_PERCENTAGE="$(echo "100/$EMA_REAL_SHORT*$EMA_DIFFERENCE" | bc -l | awk '{ printf "%.4f\n", $1 }')"
+
   # bearish trend?
-  echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish" >>"${LOG_DIR:?}"/leeloo/robot.log
+  echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
 
   # is this a bearish signal?
   if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
@@ -88,8 +91,11 @@ if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.'
 
 elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
 
+  EMA_DIFFERENCE="$(echo "$EMA_REAL_LONG-$EMA_REAL_SHORT" | bc -l)"
+  EMA_PERCENTAGE="$(echo "100/$EMA_REAL_LONG*$EMA_DIFFERENCE" | bc -l | awk '{ printf "%.4f\n", $1 }')"
+
   # bullish trend?
-  echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish" >>"${LOG_DIR:?}"/leeloo/robot.log
+  echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
 
   # is this a bullish signal?
   if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
