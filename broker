@@ -485,19 +485,19 @@ $(get_ema 50 200 "$COIN_TOKEN")" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicator
 
     for ORDER_CODE in "${BST_ORDERS[@]}"; do
       # already exist, skip
-      if ! grep -q "$ORDER_CODE" "${LOG_DIR:?}"/leeloo/bst.orders &>/dev/null; then
-        getOrder "$ORDER_CODE" 2>/dev/null | jq -s >>"${LOG_DIR:?}"/leeloo/bst.orders 2>/dev/null
+      if ! grep -q "$ORDER_CODE" "${LOG_DIR:?}"/leeloo/auto.orders &>/dev/null; then
+        getOrder "$ORDER_CODE" 2>/dev/null | jq -s >>"${LOG_DIR:?}"/leeloo/auto.orders 2>/dev/null
       fi
     done
 
     for ORDER_CODE in "${EMA_ORDERS[@]}"; do
       # already exist, skip
-      if ! grep -q "$ORDER_CODE" "${LOG_DIR:?}"/leeloo/ema.orders &>/dev/null; then
-        getOrder "$ORDER_CODE" 2>/dev/null | jq -s >>"${LOG_DIR:?}"/leeloo/ema.orders 2>/dev/null
+      if ! grep -q "$ORDER_CODE" "${LOG_DIR:?}"/leeloo/auto.orders &>/dev/null; then
+        getOrder "$ORDER_CODE" 2>/dev/null | jq -s >>"${LOG_DIR:?}"/leeloo/auto.orders 2>/dev/null
       fi
     done
 
-    cat "${LOG_DIR:?}"/leeloo/*.orders 2>/dev/null | column -t | tr -d '[]{};:",' | grep -v "API" >"${LOG_DIR:?}"/leeloo/auto.orders
+    echo "$(cat "${LOG_DIR:?}"/leeloo/auto.orders 2>/dev/null | column -t | tr -d '[]{};:",' | grep -v "API")" >"${LOG_DIR:?}"/leeloo/auto.orders
 
     display_result() {
       dialog --title "Last Auto Orders (alpha)" \
