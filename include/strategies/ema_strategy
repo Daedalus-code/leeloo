@@ -59,7 +59,7 @@ fi
 echo "$BEAR_BULL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${LOG_DIR:?}"/leeloo/ema_signal
 echo "$(tail -21 "${LOG_DIR:?}"/leeloo/ema_signal)" >"${LOG_DIR:?}"/leeloo/ema_signal
 
-if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
 
   # bearish trend?
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish" >>"${LOG_DIR:?}"/leeloo/robot.log
@@ -86,7 +86,7 @@ if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.'
     fi
   fi
 
-elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }')" -lt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }')" ]] &>/dev/null; then
+elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
 
   # bullish trend?
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish" >>"${LOG_DIR:?}"/leeloo/robot.log
