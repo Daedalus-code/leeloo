@@ -339,7 +339,7 @@ $MARKET_RESULT"
     }
 
     RESULT="OrderID:    Type  Amount      Original    LimitPrice     List   Ref  DateAdded
-$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
+$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
     display_result 2>/dev/null
 
     ;;
@@ -353,7 +353,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
     }
 
     RESULT="OrderID:    Type  Amount      Original    LimitPrice     List   Ref  DateAdded
-$(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | column -t)"
+$(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | column -t | sort -r)"
     display_result 2>/dev/null
 
     ;;
