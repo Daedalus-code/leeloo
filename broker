@@ -457,6 +457,15 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/e
 
         RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/ema_indicators 2>/dev/null)"
         display_result 2>/dev/null
+      else
+        display_result() {
+          dialog --title "Market info (404)" \
+            --no-collapse \
+            --msgbox "$RESULT" 0 0
+        }
+
+        RESULT="No $COIN_TOKEN EMA found!"
+        display_result 2>/dev/null
       fi
     else
       display_result() {
@@ -465,7 +474,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/e
           --msgbox "$RESULT" 0 0
       }
 
-      RESULT="$(echo "Nothing found.")"
+      RESULT="No data found!"
       display_result 2>/dev/null
     fi
 
