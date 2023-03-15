@@ -426,7 +426,7 @@ $(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)
 $(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)
 $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
 
-      if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+      if [[ ! "$(grep "EMA" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators | awk '{ print $5 }')" == "0.00000000" ]] &>/dev/null; then
 
         BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
         BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/ema_indicators)"
