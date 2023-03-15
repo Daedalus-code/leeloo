@@ -166,17 +166,16 @@ $MARKET_RESULT"
 "4")
 
   # order menu
-  HEIGHT=11
+  HEIGHT=10
   WIDTH=40
-  CHOICE_HEIGHT=4
+  CHOICE_HEIGHT=3
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Order Menu"
   MENU="${DATE:?}"
 
   OPTIONS=(1 "Buy              Buy Order"
     2 "Sell             Sell Order"
-    3 "Status           Open Orders"
-    4 "Transactions     List Orders")
+    3 "Status           Open Orders")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -340,20 +339,6 @@ $MARKET_RESULT"
 
     RESULT="OrderID:    Type  Amount      Original    LimitPrice     List   Ref  DateAdded
 $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
-    display_result 2>/dev/null
-
-    ;;
-
-  "4")
-
-    display_result() {
-      dialog --title "Transactions" \
-        --no-collapse \
-        --msgbox "$RESULT" 0 0
-    }
-
-    RESULT="OrderID:    Type  Amount      Original    LimitPrice     List   Ref  DateAdded
-$(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | sort -r | column -t)"
     display_result 2>/dev/null
 
     ;;
