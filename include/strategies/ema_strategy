@@ -46,7 +46,22 @@ REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/
 REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
 
-EMA_REAL_RAW="$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY")"
+# keep data
+function result_ema() {
+  get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY" >"${LOG_DIR:?}"/leeloo/ema_data 2>/dev/null
+}
+# update data every n seconds
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/ema_data 2>/dev/null)))" 2>/dev/null)" -gt "90" ]] &>/dev/null; then
+  result_ema
+  # update data if missing
+elif [[ ! -f "${LOG_DIR:?}"/leeloo/ema_data ]] &>/dev/null; then
+  result_ema
+  # update data if empty
+elif [[ ! -s "${LOG_DIR:?}"/leeloo/ema_data ]] &>/dev/null; then
+  result_ema
+fi
+
+EMA_REAL_RAW="$(cat "${LOG_DIR:?}"/leeloo/ema_data 2>/dev/null)"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $5 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $8 }')"
 
