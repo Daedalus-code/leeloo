@@ -48,20 +48,20 @@ REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/l
 
 # keep data
 function result_ema() {
-  get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY" >"${LOG_DIR:?}"/leeloo/ema_data 2>/dev/null
+  get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null
 }
 # update data every n seconds
-if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/ema_data 2>/dev/null)))" 2>/dev/null)" -gt "90" ]] &>/dev/null; then
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)" -gt "90" ]] &>/dev/null; then
   result_ema
   # update data if missing
-elif [[ ! -f "${LOG_DIR:?}"/leeloo/ema_data ]] &>/dev/null; then
+elif [[ ! -f "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data ]] &>/dev/null; then
   result_ema
   # update data if empty
-elif [[ ! -s "${LOG_DIR:?}"/leeloo/ema_data ]] &>/dev/null; then
+elif [[ ! -s "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data ]] &>/dev/null; then
   result_ema
 fi
 
-EMA_REAL_RAW="$(cat "${LOG_DIR:?}"/leeloo/ema_data 2>/dev/null)"
+EMA_REAL_RAW="$(cat "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null)"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $5 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $8 }')"
 
