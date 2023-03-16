@@ -480,33 +480,21 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/e
 
     echo "$(cat "${SYS_DIR:?}"/robot/bst.*.txid 2>/dev/null | egrep "[0-9]+")" >"${SYS_DIR:?}"/robot/bst.txid
     echo "$(cat "${SYS_DIR:?}"/robot/ema.*.txid 2>/dev/null | egrep "[0-9]+")" >"${SYS_DIR:?}"/robot/ema.txid
-    truncate -s 0 "${SYS_DIR:?}"/robot/bst.pool &>/dev/null
-    truncate -s 0 "${SYS_DIR:?}"/robot/ema.pool &>/dev/null
+    truncate -s 0 "${SYS_DIR:?}"/robot/*.pool &>/dev/null
 
-    (
-      TOTAL_COUNT="$(cat "${SYS_DIR:?}"/robot/*.*.txid 2>/dev/null | wc -l)"
-      ITEMS="$TOTAL_COUNT"
-      PROCESSED=0
-      while [ $PROCESSED -le $ITEMS ] &>/dev/null; do
-        PCT=$(($PROCESSED * 100 / $ITEMS))
-        if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/bst.txid | wc -l)" -gt "0" ]] &>/dev/null; then
-          while read TXID; do
-            getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/bst.pool
-            sleep 0.5
-          done <"${SYS_DIR:?}"/robot/bst.txid
-        fi
-        echo "Processing item $PROCESSED"
-        if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/ema.txid | wc -l)" -gt "0" ]] &>/dev/null; then
-          while read TXID; do
-            getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/ema.pool
-            sleep 0.5
-          done <"${SYS_DIR:?}"/robot/ema.txid
-        fi
-        echo "$PCT"
-        PROCESSED=$((PROCESSED + 1))
-        sleep 0.1
-      done
-    ) | dialog --title "Fetching orders..." --gauge "Please wait..." 10 60 0
+    if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/bst.txid | wc -l)" -gt "0" ]] &>/dev/null; then
+      while read TXID; do
+        getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/bst.pool
+        sleep 0.5
+      done <"${SYS_DIR:?}"/robot/bst.txid
+    fi
+
+    if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/ema.txid | wc -l)" -gt "0" ]] &>/dev/null; then
+      while read TXID; do
+        getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/ema.pool
+        sleep 0.5
+      done <"${SYS_DIR:?}"/robot/ema.txid
+    fi
 
     display_result() {
       dialog --title "Last Auto Orders (alpha)" \
