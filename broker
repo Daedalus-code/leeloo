@@ -480,8 +480,10 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/e
 
     echo "$(cat "${SYS_DIR:?}"/robot/bst.*.txid 2>/dev/null | egrep "[0-9]+")" >"${SYS_DIR:?}"/robot/bst.txid
     echo "$(cat "${SYS_DIR:?}"/robot/ema.*.txid 2>/dev/null | egrep "[0-9]+")" >"${SYS_DIR:?}"/robot/ema.txid
+
     truncate -s 0 "${SYS_DIR:?}"/robot/*.pool &>/dev/null
 
+    # if empty skip
     if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/bst.txid | wc -l)" -gt "0" ]] &>/dev/null; then
       while read TXID; do
         getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/bst.pool
@@ -489,6 +491,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/e
       done <"${SYS_DIR:?}"/robot/bst.txid
     fi
 
+    # if empty skip
     if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/ema.txid | wc -l)" -gt "0" ]] &>/dev/null; then
       while read TXID; do
         getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/ema.pool
@@ -497,7 +500,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/e
     fi
 
     display_result() {
-      dialog --title "Last Auto Orders (alpha)" \
+      dialog --title "Last Auto Orders" \
         --no-collapse \
         --msgbox "$RESULT" 0 0
     }
