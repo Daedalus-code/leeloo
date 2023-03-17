@@ -11,6 +11,7 @@ source /usr/local/bin/include/leeloo/api/southxchange/public_API
 
 # indicators
 source /usr/local/bin/include/leeloo/indicators/ema
+source /usr/local/bin/include/leeloo/indicators/rsi
 
 DATE="$(date | xargs)"
 
@@ -435,7 +436,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/c
         BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc)"
         BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
 
-        echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/ema_indicators
+        echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
 
         if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
           echo "Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
