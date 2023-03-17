@@ -20,6 +20,8 @@ BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
 # snp strategy configuration (static)
 ################################################################################
 
+STRATEGY_TYPE="Sniper"
+
 # type
 MARKET_LIMIT="$(grep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # market or limit order
 
@@ -32,8 +34,10 @@ REFERENCE_ALLOCATED="$(grep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/snp."$BA
 ################################################################################
 
 function worst_drop {
-  # get top n coins that have significantly highs
-  cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n | grep "/$HODL_CURRENCY" | tail -25 >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
+  # get top n coins that have dropped significantly
+  cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n -r | grep "/$HODL_CURRENCY" | tail -30 >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
+  # disregard w ignore list
+  echo "$(grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".ignored)" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
 }
 
 if [[ ! -f "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market ]] &>/dev/null; then
@@ -41,10 +45,21 @@ if [[ ! -f "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market ]] &>/dev/null; 
 fi
 
 # update data every n seconds
-if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market 2>/dev/null)))" 2>/dev/null)" -gt "300" ]] &>/dev/null; then
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market 2>/dev/null)))" 2>/dev/null)" -gt "900" ]] &>/dev/null; then
   worst_drop
 fi
 
-# get rsi status on random coin from list
+echo "$DATE :: Strategy $STRATEGY_TYPE :: Looking with $HODL_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot.log
+
+# target random coin from list
+SNIPER_TARGET="$(sort -R "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market | head -1)"
+echo "$DATE :: Strategy $STRATEGY_TYPE :: Found $SNIPER_TARGET with $HODL_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot.log
+
+get_rsi 14 "$SNIPER_TARGET" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target
+
+if [[ "$(egrep "null|error" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target | wc -l)" -gt "0" ]]; then
+  echo "$DATE :: Strategy $STRATEGY_TYPE :: Ignoring $SNIPER_TARGET." >>"${LOG_DIR:?}"/leeloo/robot.log
+  echo "$(grep -v "$SNIPER_TARGET" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".ignored
+fi
 
 # END
