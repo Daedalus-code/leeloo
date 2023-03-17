@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+source /usr/local/bin/include/leeloo/broker.conf
+source /usr/local/bin/include/leeloo/functions
+# southxchange api
+source /usr/local/bin/include/leeloo/api/southxchange/private_API
+source /usr/local/bin/include/leeloo/api/southxchange/public_API
+
+# indicators
+source /usr/local/bin/include/leeloo/indicators/rsi
+source /usr/local/bin/include/leeloo/indicators/ema
+
+DATE="$(date | xargs)"
+# get strategy id.config, run strategy
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
+
+################################################################################
+# snp strategy configuration (static)
+################################################################################
+
+# type
+MARKET_LIMIT="$(grep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # market or limit order
+
+# currency
+HODL_CURRENCY="$(grep "HODL_CURRENCY=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"             # hodl currency
+REFERENCE_ALLOCATED="$(grep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (90%)
+
+################################################################################
+# strategy
+################################################################################
+
+# update data every n seconds
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market 2>/dev/null)))" 2>/dev/null)" -gt "300" ]] &>/dev/null; then
+  # get top 10 coins that have dropped significantly
+  cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n -r | grep "/$HODL_CURRENCY" | tail -10 >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
+fi
+
+# get rsi status on random coin from list
+
+# END
