@@ -55,8 +55,8 @@ echo "$DATE :: Strategy $STRATEGY_TYPE :: Looking :: $HODL_CURRENCY" >>"${LOG_DI
 
 # target random coin from list
 SNIPER_TARGET="$(sort -R "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market | head -1 | awk -F/ '{ print $1 }')"
-echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET" >>"${LOG_DIR:?}"/leeloo/robot.log
-
+SNIPER_STATUS="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target | awk '{ print $1 }')"
 get_rsi 14 "$SNIPER_TARGET" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target
+echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET :: $SNIPER_STATUS" >>"${LOG_DIR:?}"/leeloo/robot.log
 
 # END
