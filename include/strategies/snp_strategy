@@ -59,11 +59,4 @@ echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET" >>"${LOG_DIR:?}
 
 get_rsi 14 "$SNIPER_TARGET" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target
 
-if [[ "$(egrep "null|error" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target | wc -l)" -gt "0" ]] &>/dev/null; then
-  echo "$DATE :: Strategy $STRATEGY_TYPE :: Ignoring $SNIPER_TARGET." >>"${LOG_DIR:?}"/leeloo/robot.log
-  echo "$(grep -v "$SNIPER_TARGET" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".ignored
-fi
-
-echo "$(grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".ignored)" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
-
 # END
