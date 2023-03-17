@@ -31,10 +31,18 @@ REFERENCE_ALLOCATED="$(grep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/snp."$BA
 # strategy
 ################################################################################
 
-# update data every n seconds
-if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market 2>/dev/null)))" 2>/dev/null)" -gt "300" ]] &>/dev/null; then
+function worst_drop {
   # get top 10 coins that have dropped significantly
   cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n -r | grep "/$HODL_CURRENCY" | tail -10 >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
+}
+
+if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+  worst_drop
+fi
+
+# update data every n seconds
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market 2>/dev/null)))" 2>/dev/null)" -gt "300" ]] &>/dev/null; then
+  worst_drop
 fi
 
 # get rsi status on random coin from list
