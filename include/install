@@ -33,12 +33,17 @@ sudo chown "$(whoami)":"$(whoami)" /usr/local/bin/broker
 cp -a "${HOME_DIR:?}"/leeloo/include/indicators/ "$SYS_DIR" &>/dev/null
 cp -a "${HOME_DIR:?}"/leeloo/include/strategies/ "$SYS_DIR" &>/dev/null
 
-# update strategies
+# update buy and sell strategy
 for BST_UPDATES in "$SYS_DIR"/robot/bst.*.strategy; do
   cat "${HOME_DIR:?}"/leeloo/include/strategies/buy_sell_strategy >"$BST_UPDATES"
 done
+# update EMA strategy
 for EMA_UPDATES in "$SYS_DIR"/robot/ema.*.strategy; do
   cat "${HOME_DIR:?}"/leeloo/include/strategies/ema_strategy >"$EMA_UPDATES"
+done
+# update Sniper strategy
+for SNP_UPDATES in "$SYS_DIR"/robot/snp.*.strategy; do
+  cat "${HOME_DIR:?}"/leeloo/include/strategies/snp_strategy >"$SNP_UPDATES"
 done
 
 cat "${HOME_DIR:?}"/leeloo/include/strategies/buy_sell_strategy >"$SYS_DIR"/robot/bst.*.strategy
