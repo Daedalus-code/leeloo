@@ -60,13 +60,15 @@ get_rsi 14 "$SNIPER_TARGET" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".targe
 SNIPER_VALUE="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target | awk '{ print $5 }' | awk -F. '{ print $1 }')"
 echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET :: $SNIPER_STATUS $SNIPER_VALUE" >>"${LOG_DIR:?}"/leeloo/robot.log
 
-# disregard no data coins/tokens
+# list of no data coins/tokens
 if [[ "$SNIPER_VALUE" -eq "0" ]] &>/dev/null; then
   echo "$SNIPER_TARGET :: No data :: $SNIPER_VALUE" >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
 fi
 
 cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep -o "Sniper :: Target [aA0-zZ9]+ :: [aA0-zZ9]+" | awk '{ print $4,$6 }' >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 echo "$(tail -100 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
+# disregard no data coins/tokens
+echo "$(grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 
 grep -c "Oversold" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".oversold
 grep -c "Neutral" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".neutral
