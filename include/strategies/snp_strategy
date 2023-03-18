@@ -36,6 +36,10 @@ HODL_COINS="$(grep "HODL_COINS=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".c
 # strategy
 ################################################################################
 
+function tx_id {
+  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".txid
+}
+
 function worst_drop {
   # get top n coins that have dropped significantly
   cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n -r | grep "/$HODL_CURRENCY" | tail -"$HODL_COINS" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
@@ -135,6 +139,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
       # placeorder market
       PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+      tx_id
 
       echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
 
@@ -147,6 +152,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
       # placeorder limit
       PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+      tx_id
 
       echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
 
@@ -192,6 +198,7 @@ if [[ "$(echo "$SNIPER_GAINS" | awk -F. '{ print $1 }')" -gt "100" ]] &>/dev/nul
 
     # placeorder market
     PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+    tx_id
 
     echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE :: $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
 
@@ -203,6 +210,7 @@ if [[ "$(echo "$SNIPER_GAINS" | awk -F. '{ print $1 }')" -gt "100" ]] &>/dev/nul
 
     # placeorder limit
     PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+    tx_id
 
     echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE :: $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
 
