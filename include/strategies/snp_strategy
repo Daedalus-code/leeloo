@@ -89,19 +89,19 @@ OVERBOUGHT="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".overbought)"
 
 echo "$DATE :: Strategy $STRATEGY_TYPE :: Total $TOTAL Oversold $OVERSOLD Neutral $NEUTRAL Overbought $OVERBOUGHT" >>"${LOG_DIR:?}"/leeloo/robot.log
 
-# get oversold targets
-cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | grep "Oversold" | awk '{ print $1 }' >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
-
-# get target in sight
-TARGET_IN_SIGHT="$(tail -1 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight)"
-
-TARGET_CHECK="$(get_rsi 14 "$TARGET_IN_SIGHT")"
-TARGET_STATUS="$(echo "$TARGET_CHECK" | awk '{ print $1 }')"
-TARGET_VALUE="$(echo "$TARGET_CHECK" | awk '{ print $5 }' | awk -F. '{ print $1 }')"
-
-echo "$DATE :: Strategy $STRATEGY_TYPE :: Tango in sight! $TARGET_IN_SIGHT :: $TARGET_STATUS :: $TARGET_VALUE" >>"${LOG_DIR:?}"/leeloo/robot.log
-
 if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $1 }')" ]] &>/dev/null; then
+
+  # get oversold targets
+  cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | grep "Oversold" | awk '{ print $1 }' >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
+
+  # get target in sight
+  TARGET_IN_SIGHT="$(tail -1 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight)"
+
+  TARGET_CHECK="$(get_rsi 14 "$TARGET_IN_SIGHT")"
+  TARGET_STATUS="$(echo "$TARGET_CHECK" | awk '{ print $1 }')"
+  TARGET_VALUE="$(echo "$TARGET_CHECK" | awk '{ print $5 }' | awk -F. '{ print $1 }')"
+
+  echo "$DATE :: Strategy $STRATEGY_TYPE :: Tango in sight! $TARGET_IN_SIGHT :: $TARGET_STATUS :: $TARGET_VALUE" >>"${LOG_DIR:?}"/leeloo/robot.log
 
   # if still below oversold, take tango down
   if [[ "$TARGET_VALUE" -lt "30" ]] &>/dev/null; then
@@ -110,7 +110,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
     TYPE="buy"
     REFERENCE_STATUS="false"
-    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_COINS" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)"
+    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_CURRENCY" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)"
     LISTING_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $1 }')"
     REFERENCE_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $2 }')"
     LISTING_AVAILABLE_BALANCE="$(grep "$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
@@ -122,7 +122,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
       # placeorder market
       #      PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
 
-      echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE :: Tango down! $TARGET_IN_SIGHT :: $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+      echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE $TARGET_IN_SIGHT :: $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
       echo "$TARGET_IN_SIGHT Price $LISTING_PRICE" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
 
       # limit
@@ -131,7 +131,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
       # placeorder limit
       #      PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
 
-      echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE :: Tango down! $TARGET_IN_SIGHT :: $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+      echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE $TARGET_IN_SIGHT :: $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
       echo "$TARGET_IN_SIGHT Price $LISTING_PRICE" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
 
     fi
@@ -146,7 +146,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
     TYPE="sell"
     REFERENCE_STATUS="true"
-    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_COINS" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)"
+    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_CURRENCY" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)"
     LISTING_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $1 }')"
     REFERENCE_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $2 }')"
     REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
