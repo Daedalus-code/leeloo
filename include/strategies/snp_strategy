@@ -46,8 +46,8 @@ fi
 if [[ ! -f "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market ]] &>/dev/null; then
   worst_drop
 fi
-# update data if empty
-if [[ ! -s "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market ]] &>/dev/null; then
+# update data if less than n lines
+if [[ "$(wc -l "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market | awk '{ print $1 }')" -lt "3" ]] &>/dev/null; then
   worst_drop
 fi
 
