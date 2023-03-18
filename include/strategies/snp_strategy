@@ -110,7 +110,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
     TYPE="buy"
     REFERENCE_STATUS="false"
-    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market)"
+    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $1 }' | tr -d ':')"
     LISTING_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $2 }')"
     REFERENCE_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $1 }')"
     LISTING_AVAILABLE_BALANCE="$(grep "$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
@@ -146,7 +146,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
     TYPE="sell"
     REFERENCE_STATUS="true"
-    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market)"
+    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $1 }' | tr -d ':')"
     LISTING_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $2 }')"
     REFERENCE_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $1 }')"
     REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
