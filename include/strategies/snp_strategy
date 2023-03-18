@@ -156,6 +156,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
       if [[ "$(grep "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | wc -l)" -eq "0" ]]; then
         echo "$TARGET_IN_SIGHT Price $LISTING_PRICE Amount $LISTING_AMOUNT" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+        echo "$(grep -v "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
       fi
 
       ##########################################################################
@@ -171,6 +172,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
       if [[ "$(grep "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | wc -l)" -eq "0" ]]; then
         echo "$TARGET_IN_SIGHT Price $LISTING_PRICE Amount $LISTING_AMOUNT" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+        echo "$(grep -v "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
       fi
 
     fi
@@ -218,8 +220,9 @@ if [[ "$(echo "$SNIPER_GAINS" | awk -F. '{ print $1 }')" -gt "100" ]] &>/dev/nul
 
     echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE :: $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
 
-    # clean up hodling list
+    # clean up lists
     echo "$(grep -v "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+    echo "$(grep -v "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
 
     ############################################################################
 
@@ -232,8 +235,9 @@ if [[ "$(echo "$SNIPER_GAINS" | awk -F. '{ print $1 }')" -gt "100" ]] &>/dev/nul
 
     echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE :: $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
 
-    # clean up hodling list
+    # clean up lists
     echo "$(grep -v "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+    echo "$(grep -v "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
 
   fi
 
