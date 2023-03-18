@@ -153,7 +153,8 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
   SNIPER_PRICE="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $2 }')"
   SNIPER_GAINS="$(echo "100/$LISTING_PRICE*$SNIPER_PRICE" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 
-  if [[ "$(echo "$SNIPER_PRICE" | awk -F. '{ print $1 }' | sed 's/^0*//')" -gt "$(echo "$LISTING_PRICE" | awk -F. '{ print $1 }' | sed 's/^0*//')" ]] &>/dev/null; then
+  # sell if any profit
+  if [[ "$(echo "$SNIPER_PRICE" | awk -F. '{ print $1 }' | sed 's/^0*//')" -lt "$(echo "$LISTING_PRICE" | awk -F. '{ print $1 }' | sed 's/^0*//')" ]] &>/dev/null; then
 
     TYPE="sell"
     REFERENCE_STATUS="true"
