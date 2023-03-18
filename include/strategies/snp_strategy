@@ -59,4 +59,7 @@ SNIPER_STATUS="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target | awk 
 get_rsi 14 "$SNIPER_TARGET" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target
 echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET :: $SNIPER_STATUS" >>"${LOG_DIR:?}"/leeloo/robot.log
 
+cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep -o "Sniper :: Target [aA0-zZ9]+ :: [aA0-zZ9]+" | awk '{ print $4,$6 }' >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
+echo "$(tail -100 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
+
 # END
