@@ -65,6 +65,7 @@ echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET :: $SNIPER_STATU
 # list of no data coins/tokens
 if [[ "$SNIPER_VALUE" -eq "0" ]] &>/dev/null; then
   echo "$SNIPER_TARGET :: No data :: $SNIPER_VALUE" >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
+  echo "$(tail -100 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
 fi
 
 cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep -o "Sniper :: Target [aA0-zZ9]+ :: [aA0-zZ9]+" | awk '{ print $4,$6 }' >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
