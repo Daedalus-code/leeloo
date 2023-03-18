@@ -29,13 +29,16 @@ MARKET_LIMIT="$(grep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 HODL_CURRENCY="$(grep "HODL_CURRENCY=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # hodl currency
 HODL_ALLOCATED="$(grep "HODL_ALLOCATED=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (90%)
 
+# coins
+HODL_COINS="$(grep "HODL_COINS=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (90%)
+
 ################################################################################
 # strategy
 ################################################################################
 
 function worst_drop {
   # get top n coins that have dropped significantly
-  cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n -r | grep "/$HODL_CURRENCY" | tail -100 >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
+  cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n -r | grep "/$HODL_CURRENCY" | tail -"$HODL_COINS" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
 }
 
 # update data every n seconds
@@ -65,11 +68,12 @@ echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET :: $SNIPER_STATU
 # list of no data coins/tokens
 if [[ "$SNIPER_VALUE" -eq "0" ]] &>/dev/null; then
   echo "$SNIPER_TARGET :: No data :: $SNIPER_VALUE" >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
-  echo "$(tail -100 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
+  HODL_NODATA="$(echo "$HODL_COINS/2" | bc)"
+  echo "$(tail -"$HODL_NODATA" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
 fi
 
 cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep -o "Sniper :: Target [aA0-zZ9]+ :: [aA0-zZ9]+" | awk '{ print $4,$6 }' >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
-echo "$(tail -100 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
+echo "$(tail -"$HODL_COINS" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 # disregard no data coins/tokens
 echo "$(grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 echo "$(grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata | awk '{ print $1 }' | egrep -v "::|D")" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
