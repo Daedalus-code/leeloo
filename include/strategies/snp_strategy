@@ -36,27 +36,8 @@ HODL_COINS="$(grep "HODL_COINS=" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".c
 # strategy
 ################################################################################
 
-function tx_id {
-  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".txid
-}
-
-function worst_drop {
-  # get top n coins that have dropped significantly
-  cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n -r | grep "/$HODL_CURRENCY" | tail -"$HODL_COINS" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
-}
-
-# update data every n seconds
-if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market 2>/dev/null)))" 2>/dev/null)" -gt "900" ]] &>/dev/null; then
-  worst_drop
-fi
-# update data if missing
-if [[ ! -f "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market ]] &>/dev/null; then
-  worst_drop
-fi
-# update data if less than n lines
-if [[ "$(wc -l "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market | awk '{ print $1 }')" -lt "3" ]] &>/dev/null; then
-  worst_drop
-fi
+# get top n coins that have dropped significantly
+cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n -r | grep "/$HODL_CURRENCY" | tail -"$HODL_COINS" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
 
 ################################################################################
 
