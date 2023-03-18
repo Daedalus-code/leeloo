@@ -101,4 +101,79 @@ TARGET_VALUE="$(echo "$TARGET_CHECK" | awk '{ print $5 }' | awk -F. '{ print $1 
 
 echo "$DATE :: Strategy $STRATEGY_TYPE :: Tango in sight! $TARGET_IN_SIGHT :: $TARGET_STATUS :: $TARGET_VALUE" >>"${LOG_DIR:?}"/leeloo/robot.log
 
+if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $1 }')" ]] &>/dev/null; then
+
+  # if still below oversold, take tango down
+  if [[ "$TARGET_VALUE" -lt "30" ]] &>/dev/null; then
+
+    # buy order ################################################################
+
+    TYPE="buy"
+    REFERENCE_STATUS="false"
+    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_COINS" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)"
+    LISTING_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $1 }')"
+    REFERENCE_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $2 }')"
+    LISTING_AVAILABLE_BALANCE="$(grep "$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
+    LISTING_AMOUNT="$(echo "$(echo "$HODL_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+    LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
+
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+
+      # placeorder market
+      #      PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+
+      echo "$DATE :: Strategy $STRATEGY_TYPE :: Tango down! $TARGET_IN_SIGHT :: $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+      echo "$TARGET_IN_SIGHT Price $LISTING_PRICE" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+
+      # limit
+    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+
+      # placeorder limit
+      #      PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+
+      echo "$DATE :: Strategy $STRATEGY_TYPE :: Tango down! $TARGET_IN_SIGHT :: $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+      echo "$TARGET_IN_SIGHT Price $LISTING_PRICE" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+
+    fi
+  fi
+
+  # sell order #################################################################
+
+  SNIPER_PRICE="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $2 }')"
+  SNIPER_GAINS="$(echo "100/$LISTING_PRICE*$SNIPER_PRICE" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+
+  if [[ "$(echo "$SNIPER_PRICE" | awk -F. '{ print $1 }' | sed 's/^0*//')" -gt "$(echo "$LISTING_PRICE" | awk -F. '{ print $1 }' | sed 's/^0*//')" ]] &>/dev/null; then
+
+    TYPE="sell"
+    REFERENCE_STATUS="true"
+    SNIPER_MARKET="$(egrep "$TARGET_IN_SIGHT/$HODL_COINS" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)"
+    LISTING_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $1 }')"
+    REFERENCE_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $2 }')"
+    REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
+    REFERENCE_AMOUNT="$(echo "$(echo "$HODL_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+    REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
+
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+
+      # placeorder market
+      #      PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+
+      echo "$DATE :: Strategy $STRATEGY_TYPE :: Tango down! $TARGET_IN_SIGHT :: $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+      echo "$TARGET_IN_SIGHT Price $LISTING_PRICE" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+
+      # limit
+    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+
+      # placeorder limit
+      #      PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+
+      echo "$DATE :: Strategy $STRATEGY_TYPE :: Tango down! $TARGET_IN_SIGHT :: $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+      echo "$TARGET_IN_SIGHT Price $LISTING_PRICE" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+
+    fi
+
+    echo "$DATE :: Strategy $STRATEGY_TYPE :: Reloading! $TARGET_IN_SIGHT :: $SNIPER_PRICE :: $LISTING_PRICE :: ${SNIPER_GAINS:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
+  fi
+fi
+
 # END
