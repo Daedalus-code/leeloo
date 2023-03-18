@@ -405,14 +405,15 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   "1")
 
+    echo "$(echo "Currency Amount Result
+$(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | column -t)" >"${LOG_DIR:?}"/leeloo/robot.hodl
+    WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/robot.hodl | awk '{ print $1 }')+3" | bc)"
+
     display_result() {
       dialog --title "Dashbord Status" \
         --no-collapse \
-        --msgbox "$RESULT" 15 35
+        --msgbox "$RESULT" 15 "$WIDTH"
     }
-
-    echo "$(echo "Currency Amount Result
-$(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | column -t)" >"${LOG_DIR:?}"/leeloo/robot.hodl
 
     RESULT="$(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)"
     display_result 2>/dev/null
