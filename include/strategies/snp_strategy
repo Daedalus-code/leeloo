@@ -119,7 +119,14 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
     REFERENCE_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $2 }')"
     LISTING_AVAILABLE_BALANCE="$(grep "$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
     LISTING_AMOUNT="$(echo "$(echo "$HODL_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-    LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }' | head -1)"
+    LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $3 }' | head -1)"
+
+    if [[ -z "$LISTING_AMOUNT" ]] &>/dev/null; then
+      LISTING_AMOUNT="0"
+    fi
+    if [[ -z "$LISTING_PRICE" ]] &>/dev/null; then
+      LISTING_PRICE="0"
+    fi
 
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
 
@@ -155,7 +162,14 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
     REFERENCE_CURRENCY="$(echo "$SNIPER_MARKET" | awk -F/ '{ print $2 }')"
     REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
     REFERENCE_AMOUNT="$(echo "$(echo "$HODL_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-    REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }' | head -1)"
+    REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $3 }' | head -1)"
+
+    if [[ -z "$REFERENCE_AMOUNT" ]] &>/dev/null; then
+      REFERENCE_AMOUNT="0"
+    fi
+    if [[ -z "$REFERENCE_PRICE" ]] &>/dev/null; then
+      REFERENCE_PRICE="0"
+    fi
 
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
 
