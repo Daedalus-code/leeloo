@@ -185,7 +185,7 @@ SNIPER_VICTIM="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk
 LISTING_PRICE="$(grep "$SNIPER_VICTIM/$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $3 }' | head -1)"
 SNIPER_PRICE="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $3 }')"
 SNIPER_GAINS="$(echo "100/$LISTING_PRICE*$SNIPER_PRICE" | bc -l | awk '{ printf "%.2f\n", $1 }')"
-SNIPED_BALANCE="$(echo "$SNIPER_VICTIM" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $5 }')"
+SNIPED_BALANCE="$(echo "$SNIPER_VICTIM" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $5 }')"
 REAL_GAINS="$(echo "$SNIPER_GAINS-100" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 
 echo "$SNIPER_VICTIM $LISTING_PRICE $SNIPED_BALANCE ${REAL_GAINS:?}%" >"${LOG_DIR:?}"/leeloo/robot.hodl
