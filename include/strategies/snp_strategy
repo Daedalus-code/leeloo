@@ -45,8 +45,6 @@ function worst_drop {
   cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k5 -n -r | grep "/$HODL_CURRENCY" | tail -"$HODL_COINS" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
 }
 
-################################################################################
-
 # update data every n seconds
 if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market 2>/dev/null)))" 2>/dev/null)" -gt "900" ]] &>/dev/null; then
   worst_drop
@@ -81,6 +79,7 @@ if [[ "$SNIPER_VALUE" -eq "0" ]] &>/dev/null; then
   echo "$(tail -"$HODL_NODATA" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
 fi
 
+# create a universe
 cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep -o "Sniper :: Target [aA0-zZ9]+ :: [aA0-zZ9]+" | awk '{ print $4,$6 }' >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 echo "$(tail -"$HODL_COINS" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 
