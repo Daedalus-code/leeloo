@@ -68,7 +68,7 @@ echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET :: $SNIPER_STATU
 # list of no data coins/tokens
 if [[ "$SNIPER_VALUE" -eq "0" ]] &>/dev/null; then
   echo "$SNIPER_TARGET :: No data :: $SNIPER_VALUE" >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
-  HODL_NODATA="$(echo "$HODL_COINS/2" | bc)"
+  HODL_NODATA="$(echo "$HODL_COINS/3" | bc)"
   echo "$(tail -"$HODL_NODATA" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
 fi
 
@@ -88,5 +88,17 @@ NEUTRAL="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".neutral)"
 OVERBOUGHT="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".overbought)"
 
 echo "$DATE :: Strategy $STRATEGY_TYPE :: Total $TOTAL Oversold $OVERSOLD Neutral $NEUTRAL Overbought $OVERBOUGHT" >>"${LOG_DIR:?}"/leeloo/robot.log
+
+# get oversold targets
+cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | grep "Oversold" | awk '{ print $1 }' >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
+
+# get target in sight
+TARGET_IN_SIGHT="$(tail -1 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight)"
+
+TARGET_CHECK="$(get_rsi 14 "$TARGET_IN_SIGHT")"
+TARGET_STATUS="$(echo "$OS_CHECK" | awk '{ print $1 }')"
+TARGET_VALUE="$(echo "$OS_CHECK" | awk '{ print $5 }' | awk -F. '{ print $1 }')"
+
+echo "$DATE :: Strategy $STRATEGY_TYPE :: Tango in sight! $TARGET_IN_SIGHT :: $TARGET_STATUS :: $TARGET_VALUE" >>"${LOG_DIR:?}"/leeloo/robot.log
 
 # END
