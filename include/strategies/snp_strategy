@@ -56,7 +56,9 @@ echo "$DATE :: Strategy $STRATEGY_TYPE :: Looking :: $HODL_CURRENCY" >>"${LOG_DI
 # target random coin from list
 SNIPER_TARGET="$(sort -R "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market | head -1 | awk -F/ '{ print $1 }')"
 SNIPER_STATUS="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target | awk '{ print $1 }')"
+
 get_rsi 14 "$SNIPER_TARGET" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target
+
 SNIPER_VALUE="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".target | awk '{ print $5 }' | awk -F. '{ print $1 }')"
 echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET :: $SNIPER_STATUS $SNIPER_VALUE" >>"${LOG_DIR:?}"/leeloo/robot.log
 
@@ -68,7 +70,7 @@ fi
 cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep -o "Sniper :: Target [aA0-zZ9]+ :: [aA0-zZ9]+" | awk '{ print $4,$6 }' >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 echo "$(tail -100 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 # disregard no data coins/tokens
-echo "$(grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
+echo "$(grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
 
 grep -c "Oversold" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".oversold
 grep -c "Neutral" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".neutral
