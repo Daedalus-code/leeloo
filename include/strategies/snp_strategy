@@ -82,10 +82,9 @@ fi
 # create a universe
 cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep -o "Sniper :: Target [aA0-zZ9]+ :: [aA0-zZ9]+" | awk '{ print $4,$6 }' >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 echo "$(tail -"$HODL_COINS" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
-grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market.tmp
-mv "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market.tmp "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
 
 # disregard no data coins/tokens
+echo "$(grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".market
 echo "$(grep -v "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 
 # count oversold, neutral and overbought
