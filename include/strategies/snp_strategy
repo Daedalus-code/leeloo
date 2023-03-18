@@ -156,11 +156,14 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
   # sell order #################################################################
 
-  SNIPER_PRICE="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $2 }')"
+  SNIPER_VICTIM="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $1 }')"
+  LISTING_PRICE="$(grep "$SNIPER_VICTIM/$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $3 }' | head -1)"
+  SNIPER_PRICE="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $3 }')"
   SNIPER_GAINS="$(echo "100/$LISTING_PRICE*$SNIPER_PRICE" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+  REAL_GAINS="$(echo "$SNIPER_GAINS-100" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 
   # sell if any profit
-  if [[ "$(echo "$SNIPER_PRICE" | awk -F. '{ print $1 }' | sed 's/^0*//')" -lt "$(echo "$LISTING_PRICE" | awk -F. '{ print $1 }' | sed 's/^0*//')" ]] &>/dev/null; then
+  if [[ "$(echo "$SNIPER_GAINS" | awk -F. '{ print $1 }')" -gt "100" ]] &>/dev/null; then
 
     TYPE="sell"
     REFERENCE_STATUS="true"
@@ -197,7 +200,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
 
     fi
 
-    echo "$DATE :: Strategy $STRATEGY_TYPE :: Reloading! $TARGET_IN_SIGHT :: $SNIPER_PRICE :: $LISTING_PRICE :: ${SNIPER_GAINS:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
+    echo "$DATE :: Strategy $STRATEGY_TYPE :: Reloading! $TARGET_IN_SIGHT :: $SNIPER_PRICE :: $LISTING_PRICE :: ${REAL_GAINS:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
   fi
 fi
 
