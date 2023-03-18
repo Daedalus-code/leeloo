@@ -63,10 +63,14 @@ cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep -o "Sniper :: Target [aA
 echo "$(tail -100 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | awk '!a[$0]++' | sort)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe
 
 grep -c "Oversold" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".oversold
+grep -c "Neutral" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".neutral
 grep -c "Overbought" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".overbought
 
+TOTAL="$(wc -l "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe | awk '{ print $1 }')"
 OVERSOLD="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".oversold)"
+NEUTRAL="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".neutral)"
 OVERBOUGHT="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".overbought)"
-echo "$DATE :: Strategy $STRATEGY_TYPE :: OS $OVERSOLD OB $OVERBOUGHT" >>"${LOG_DIR:?}"/leeloo/robot.log
+
+echo "$DATE :: Strategy $STRATEGY_TYPE :: T $TOTAL OS $OVERSOLD N $NEUTRAL OB $OVERBOUGHT" >>"${LOG_DIR:?}"/leeloo/robot.log
 
 # END
