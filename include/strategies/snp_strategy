@@ -136,7 +136,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
       echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
 
       if [[ "$(grep "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | wc -l)" -eq "0" ]]; then
-        echo "$TARGET_IN_SIGHT Price $LISTING_PRICE" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+        echo "$TARGET_IN_SIGHT Price $LISTING_PRICE Amount $LISTING_AMOUNT" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
       fi
 
       # limit
@@ -148,7 +148,7 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
       echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
 
       if [[ "$(grep "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | wc -l)" -eq "0" ]]; then
-        echo "$TARGET_IN_SIGHT Price $LISTING_PRICE" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
+        echo "$TARGET_IN_SIGHT Price $LISTING_PRICE Amount $LISTING_AMOUNT" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
       fi
 
     fi
@@ -160,7 +160,10 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
   LISTING_PRICE="$(grep "$SNIPER_VICTIM/$HODL_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $3 }' | head -1)"
   SNIPER_PRICE="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $3 }')"
   SNIPER_GAINS="$(echo "100/$LISTING_PRICE*$SNIPER_PRICE" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+  SNIPED_BALANCE="$(echo "$SNIPER_VICTIM" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $5 }')"
   REAL_GAINS="$(echo "$SNIPER_GAINS-100" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+
+  echo "$SNIPER_VICTIM $SNIPED_BALANCE ${REAL_GAINS:?}%" >"${LOG_DIR:?}"/leeloo/robot.hodl
 
   # sell if any profit
   if [[ "$(echo "$SNIPER_GAINS" | awk -F. '{ print $1 }')" -gt "100" ]] &>/dev/null; then
@@ -187,6 +190,8 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
       PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
 
       echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE :: $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+
+      # clean up hodling list
       echo "$(grep -v "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
 
       # limit
@@ -196,6 +201,8 @@ if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEG
       PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
 
       echo "$DATE :: Strategy $STRATEGY_TYPE :: $TYPE :: $TARGET_IN_SIGHT @ $LISTING_PRICE :: $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+
+      # clean up hodling list
       echo "$(grep -v "$TARGET_IN_SIGHT" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling
 
     fi
