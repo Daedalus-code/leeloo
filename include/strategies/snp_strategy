@@ -101,11 +101,14 @@ TARGET_IN_SIGHT="$(tail -1 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
 
 if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $1 }')" ]] &>/dev/null; then
 
+  # check rsi value again
   TARGET_CHECK="$(get_rsi 14 "$TARGET_IN_SIGHT")"
-  TARGET_STATUS="$(echo "$TARGET_CHECK" | awk '{ print $1 }')"
+  # get target
+  TARGET_COIN_TOKEN="$(echo "$TARGET_CHECK" | awk '{ print $1 }')"
+  # get target rsi value
   TARGET_VALUE="$(echo "$TARGET_CHECK" | awk '{ print $5 }' | awk -F. '{ print $1 }')"
 
-  echo "$DATE :: Strategy $STRATEGY_TYPE :: Sniping! $TARGET_IN_SIGHT :: $TARGET_STATUS :: $TARGET_VALUE" >>"${LOG_DIR:?}"/leeloo/robot.log
+  echo "$DATE :: Strategy $STRATEGY_TYPE :: Found target! $TARGET_IN_SIGHT :: $TARGET_COIN_TOKEN :: $TARGET_VALUE" >>"${LOG_DIR:?}"/leeloo/robot.log
 
   # if still below oversold, take target down
   if [[ "$TARGET_VALUE" -lt "30" ]] &>/dev/null; then
