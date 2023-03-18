@@ -89,13 +89,13 @@ OVERBOUGHT="$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".overbought)"
 
 echo "$DATE :: Strategy $STRATEGY_TYPE :: Total $TOTAL Oversold $OVERSOLD Neutral $NEUTRAL Overbought $OVERBOUGHT" >>"${LOG_DIR:?}"/leeloo/robot.log
 
+# get oversold targets
+cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | grep "Oversold" | awk '{ print $1 }' >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
+
+# get target in sight
+TARGET_IN_SIGHT="$(tail -1 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight)"
+
 if [[ ! "$TARGET_IN_SIGHT" == "$(cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".hodling | awk '{ print $1 }')" ]] &>/dev/null; then
-
-  # get oversold targets
-  cat "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".universe 2>/dev/null | grep "Oversold" | awk '{ print $1 }' >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight
-
-  # get target in sight
-  TARGET_IN_SIGHT="$(tail -1 "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".insight)"
 
   TARGET_CHECK="$(get_rsi 14 "$TARGET_IN_SIGHT")"
   TARGET_STATUS="$(echo "$TARGET_CHECK" | awk '{ print $1 }')"
