@@ -76,7 +76,7 @@ echo "$DATE :: Strategy $STRATEGY_TYPE :: Target $SNIPER_TARGET :: $SNIPER_STATU
 if [[ "$SNIPER_VALUE" -eq "0" ]] &>/dev/null; then
   echo "$SNIPER_TARGET :: No data :: $SNIPER_VALUE" >>"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
   HODL_NODATA="$(echo "$HODL_COINS/3" | bc)"
-  echo "$(tail -"$HODL_NODATA" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
+  echo "$(tail -"$HODL_NODATA" "${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata | awk '!a[$0]++' | sort)" >"${SYS_DIR:?}"/robot/snp."$BASENAME_STRATEGY".nodata
 fi
 
 # create a universe
