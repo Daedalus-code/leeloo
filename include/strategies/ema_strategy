@@ -46,6 +46,10 @@ REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/
 REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
 
+################################################################################
+# S I G N A L
+################################################################################
+
 # keep data
 function result_ema() {
   get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null
@@ -66,15 +70,7 @@ EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | awk '{ print $1 }')"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $5 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $8 }')"
 
-if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
-  BEAR_BULL="Bearish"
-fi
-
-if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
-  BEAR_BULL="Bullish"
-fi
-
-echo "$BEAR_BULL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${LOG_DIR:?}"/leeloo/ema_signal
+echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${LOG_DIR:?}"/leeloo/ema_signal
 # keep n lines
 echo "$(tail -21 "${LOG_DIR:?}"/leeloo/ema_signal)" >"${LOG_DIR:?}"/leeloo/ema_signal
 
@@ -94,7 +90,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
   # bullish trend?
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
 
-  # is this a bullish signal?
+  # is this a bullish cross?
   if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
     if [[ "$(tail -1 "${LOG_DIR:?}"/leeloo/ema_signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
 
@@ -130,7 +126,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
   # bearish trend?
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
 
-  # is this a bearish signal?
+  # is this a bearish cross?
   if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
     if [[ "$(tail -1 "${LOG_DIR:?}"/leeloo/ema_signal | grep -c "Bearish")" -eq "1" ]] &>/dev/null; then
 
