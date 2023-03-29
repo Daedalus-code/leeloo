@@ -70,9 +70,9 @@ EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | awk '{ print $1 }')"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $5 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $8 }')"
 
-echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${LOG_DIR:?}"/leeloo/ema_signal
+echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
 # keep n lines
-echo "$(tail -21 "${LOG_DIR:?}"/leeloo/ema_signal)" >"${LOG_DIR:?}"/leeloo/ema_signal
+echo "$(tail -21 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
 
 function tx_id {
   echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".txid
@@ -95,8 +95,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
 
   # is this a bullish cross?
-  if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-    if [[ "$(tail -1 "${LOG_DIR:?}"/leeloo/ema_signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
+  if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+    if [[ "$(tail -1 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
 
       # buy order ##############################################################
 
@@ -135,8 +135,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
 
   # is this a bearish cross?
-  if [[ ! "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${LOG_DIR:?}"/leeloo/ema_signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-    if [[ "$(tail -1 "${LOG_DIR:?}"/leeloo/ema_signal | grep -c "Bearish")" -eq "1" ]] &>/dev/null; then
+  if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+    if [[ "$(tail -1 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | grep -c "Bearish")" -eq "1" ]] &>/dev/null; then
 
       # sell order #############################################################
 
