@@ -8,10 +8,6 @@ source /usr/local/bin/include/leeloo/api/southxchange/public_API
 
 # loop
 for (( ; ; )); do
-  # run all strategies installed
-  for f in "${SYS_DIR:?}"/robot/*.strategy; do
-    bash "$f"
-  done
 
   cleanup_log
   cleanup_log_robot
@@ -59,6 +55,15 @@ for (( ; ; )); do
   elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
     result_market
   fi
+
+  ##############################################################################
+
+  # run all strategies installed
+  for f in "${SYS_DIR:?}"/robot/*.strategy; do
+    bash "$f"
+  done
+
+  ##############################################################################
 
   sleep "$BOT_TIMER"
 done
