@@ -814,9 +814,10 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
       CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+4" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
-      if [ -n "$CHOICE" ]; then
+      if [ -n "$CHOICE" ] &>/dev/null; then
         SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
-        rm "$SELECTED_FILE"
+        rm "$SELECTED_FILE" &>/dev/null
+        rm "${SYS_DIR:?}"/robot/*."$(echo "$SELECTED_FILE" | egrep "[0-9]+")".* &>/dev/null
         break
       else
         break
