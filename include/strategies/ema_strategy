@@ -109,8 +109,9 @@ if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.'
       echo "$DATE :: Strategy $STRATEGY_TYPE $TYPE :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot.log
     fi
   fi
+fi
 
-elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
 
   EMA_DIFFERENCE="$(echo "$EMA_REAL_SHORT-$EMA_REAL_LONG" | bc -l)"
   EMA_PERCENTAGE="$(echo "100/$EMA_REAL_SHORT*$EMA_DIFFERENCE" | bc -l | awk '{ printf "%.4f\n", $1 }')"
