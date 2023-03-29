@@ -37,6 +37,10 @@ function setup_market_order {
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
+
+  LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+  REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+
   LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
   REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
 
@@ -61,6 +65,10 @@ function setup_limit_order {
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
+
+  LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+  REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+
   LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
   REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
   LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $4 }' | head -1)"
