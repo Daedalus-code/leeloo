@@ -87,6 +87,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
   EMA_DIFFERENCE="$(echo "$EMA_REAL_SHORT-$EMA_REAL_LONG" | bc -l)"
   EMA_PERCENTAGE="$(echo "100/$EMA_REAL_SHORT*$EMA_DIFFERENCE" | bc -l | awk '{ printf "%.4f\n", $1 }')"
 
+  if [[ -z "$EMA_PERCENTAGE" ]] &>/dev/null; then
+    EMA_PERCENTAGE="0"
+  fi
+
   # bullish trend?
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
 
@@ -122,6 +126,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
 
   EMA_DIFFERENCE="$(echo "$EMA_REAL_SHORT-$EMA_REAL_LONG" | bc -l)"
   EMA_PERCENTAGE="$(echo "100/$EMA_REAL_SHORT*$EMA_DIFFERENCE" | bc -l | awk '{ printf "%.4f\n", $1 }')"
+
+  if [[ -z "$EMA_PERCENTAGE" ]] &>/dev/null; then
+    EMA_PERCENTAGE="0"
+  fi
 
   # bearish trend?
   echo "$DATE :: Strategy $STRATEGY_TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
