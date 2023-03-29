@@ -62,12 +62,15 @@ elif [[ ! -s "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data ]] &>/dev/null; 
 fi
 
 EMA_REAL_RAW="$(cat "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null)"
+EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | awk '{ print $1 }')"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $5 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $8 }')"
 
-if [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
   BEAR_BULL="Bearish"
-elif [[ "$(echo "$EMA_REAL_SHORT" | awk '{ print $1 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$EMA_REAL_LONG" | awk '{ print $2 }' | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+fi
+
+if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
   BEAR_BULL="Bullish"
 fi
 
