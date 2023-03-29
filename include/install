@@ -33,29 +33,29 @@ sudo chown "$(whoami)":"$(whoami)" /usr/local/bin/broker
 cp -a "${HOME_DIR:?}"/leeloo/include/indicators/ "$SYS_DIR" &>/dev/null
 cp -a "${HOME_DIR:?}"/leeloo/include/strategies/ "$SYS_DIR" &>/dev/null
 
-# update buy and sell strategy
+# if configuration exist, continue
 if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | egrep "bst.*.config" | wc -l)" -gt "0" ]] &>/dev/null; then
+  # update buy and sell strategy
   for BST_UPDATES in "$SYS_DIR"/robot/bst.*.strategy; do
     cat "${HOME_DIR:?}"/leeloo/include/strategies/buy_sell_strategy >"$BST_UPDATES"
   done
 fi
 
-# update EMA strategy
+# if configuration exist, continue
 if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | egrep "ema.*.config" | wc -l)" -gt "0" ]] &>/dev/null; then
+  # update EMA strategy
   for EMA_UPDATES in "$SYS_DIR"/robot/ema.*.strategy; do
     cat "${HOME_DIR:?}"/leeloo/include/strategies/ema_strategy >"$EMA_UPDATES"
   done
 fi
 
-# update Sniper strategy
+# if configuration exist, continue
 if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | egrep "snp.*.config" | wc -l)" -gt "0" ]] &>/dev/null; then
+  # update Sniper strategy
   for SNP_UPDATES in "$SYS_DIR"/robot/snp.*.strategy; do
     cat "${HOME_DIR:?}"/leeloo/include/strategies/snp_strategy >"$SNP_UPDATES"
   done
 fi
-
-cat "${HOME_DIR:?}"/leeloo/include/strategies/buy_sell_strategy >"$SYS_DIR"/robot/bst.*.strategy
-cat "${HOME_DIR:?}"/leeloo/include/strategies/ema_strategy >"$SYS_DIR"/robot/ema.*.strategy
 
 cp "${HOME_DIR:?}"/leeloo/include/functions "$SYS_DIR" &>/dev/null
 cp "${HOME_DIR:?}"/leeloo/include/install "$SYS_DIR" &>/dev/null
