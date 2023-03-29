@@ -542,7 +542,11 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
         OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
       done
 
-      CHOICE=$(dialog --clear --title "Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+5" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+      if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
+        NUM_FILES="3"
+      fi
+
+      CHOICE=$(dialog --clear --title "Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
       if [ -n "$CHOICE" ]; then
         SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
@@ -812,7 +816,11 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
       done
 
-      CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+5" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+      if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
+        NUM_FILES="3"
+      fi
+
+      CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
       if [ -n "$CHOICE" ] &>/dev/null; then
         SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
