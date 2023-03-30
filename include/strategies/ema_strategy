@@ -95,10 +95,6 @@ fi
 # keep n lines
 echo "$(tail -21 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
 
-function tx_id {
-  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".txid
-}
-
 # latest signal
 EMA_REAL_SIGNAL="$(tail -1 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | awk '{ print $1 }')"
 
@@ -106,6 +102,12 @@ EMA_REAL_SIGNAL="$(tail -1 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal 
 if [[ -z "$EMA_REAL_SIGNAL" ]] &>/dev/null; then
   EMA_REAL_SIGNAL="Idling"
 fi
+
+################################################################################
+
+function tx_id {
+  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".txid
+}
 
 ################################################################################
 # B U L L I S H - S I G N A L
