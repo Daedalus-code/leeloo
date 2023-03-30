@@ -99,6 +99,14 @@ function tx_id {
   echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".txid
 }
 
+# latest signal
+EMA_REAL_SIGNAL="$(tail -1 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | awk '{ print $1 }')"
+
+# if zero, skip
+if [[ -z "$EMA_REAL_SIGNAL" ]] &>/dev/null; then
+  EMA_REAL_SIGNAL="Idling"
+fi
+
 ################################################################################
 # B U L L I S H - S I G N A L
 ################################################################################
