@@ -85,7 +85,12 @@ EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | awk '{ print $1 }')"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $5 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $8 }')"
 
-echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
+# if zero, skip
+if [[ ! -z "$EMA_REAL_SHORT" ]] &>/dev/null; then
+elif [[ ! -z "$EMA_REAL_LONG" ]] &>/dev/null; then
+  echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
+fi
+
 # keep n lines
 echo "$(tail -21 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
 
