@@ -68,6 +68,9 @@ fi
 function result_ema() {
   get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null
 }
+
+################################################################################
+
 # update data every n seconds
 if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)" -gt "90" ]] &>/dev/null; then
   result_ema
@@ -129,8 +132,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
     echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: Joining the ride!" >>"${LOG_DIR:?}"/leeloo/robot.log
   fi
 
-  # log bullish trend
-  echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
+  # if zero, skip
+  if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+    if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      # log bullish trend
+      echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
+    fi
+  fi
 
   # is this a bullish cross?
   if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
@@ -185,8 +193,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
     echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: Leaving the ride!" >>"${LOG_DIR:?}"/leeloo/robot.log
   fi
 
-  # log bearish trend
-  echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
+  # if zero, skip
+  if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+    if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      # log bearish trend
+      echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish ${EMA_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/robot.log
+    fi
+  fi
 
   # is this a bearish cross?
   if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
