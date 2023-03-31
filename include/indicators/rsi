@@ -12,7 +12,7 @@ get_rsi() {
   SOURCE="close"
   API_RSI_EXCHANGE="CCCAGG"
   TMP_FILE=$(mktemp)
-  torify curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 1))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
+  torify curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
   PRICES=$(jq -r '.Data.Data[].'"$SOURCE" "$TMP_FILE")
   CHANGE=$(echo "$PRICES" | awk '{if (NR>1) {print $1-prev} ; prev=$1 }' | tail -n+2)
   UP=$(echo "$CHANGE" | awk '{if ($1>=0) sum+= $1} END {printf "%.8f", sum}')
@@ -26,7 +26,11 @@ get_rsi() {
   else
     BEAR_BULL="Neutral"
   fi
-  echo "$BEAR_BULL :: RSI_$PERIOD :: $(echo "$RSI" | awk '{ printf "%.8f\n", $1 }')"
+  SMA=$(echo "$PRICES" | tail -n "$PERIOD" | awk '{sum += $1} END {printf "%.8f", sum/NR}')
+  STDEV=$(echo "$PRICES" | tail -n "$PERIOD" | awk '{sum += $1; sumsq += $1*$1} END {printf "%.8f", sqrt(sumsq/NR - (sum/NR)^2)}')
+  BB_UPPER=$(echo "$SMA + 2*$STDEV" | bc -l)
+  BB_LOWER=$(echo "$SMA - 2*$STDEV" | bc -l)
+  echo "$BEAR_BULL :: RSI_$PERIOD :: $(echo "$RSI" | awk '{ printf "%.8f\n", $1 }') :: BB_UPPER :: $(echo "$BB_UPPER" | awk '{ printf "%.8f\n", $1 }') :: BB_LOWER :: $(echo "$BB_LOWER" | awk '{ printf "%.8f\n", $1 }')"
   rm "$TMP_FILE"
 }
 
