@@ -768,36 +768,41 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
   "0")
 
-    while true; do
-      CONFIG_FILES=("${SYS_DIR:?}"/robot/*.config)
-      NUM_FILES="${#CONFIG_FILES[@]}"
-      WIDTH="$(echo "$(wc -L "${CONFIG_FILES:?}" | awk '{ print $1 }')+3" | bc 2>/dev/null)"
+    if dialog --stdout --title "DELETE WARNING!" \
+      --backtitle "DELETING" \
+      --yesno "Yes: Delete!, No:  Go back!" 5 30; then
 
-      if [ $NUM_FILES -eq 0 ] &>/dev/null; then
-        echo "Error: No config files found in $SYS_DIR/robot"
-        exit 1
-      fi
+      while true; do
+        CONFIG_FILES=("${SYS_DIR:?}"/robot/*.config)
+        NUM_FILES="${#CONFIG_FILES[@]}"
+        WIDTH="$(echo "$(wc -L "${CONFIG_FILES:?}" | awk '{ print $1 }')+3" | bc 2>/dev/null)"
 
-      OPTIONS=()
-      for ((i = 0; i < "$NUM_FILES"; i++)); do
-        OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
+        if [ $NUM_FILES -eq 0 ] &>/dev/null; then
+          echo "Error: No config files found in $SYS_DIR/robot"
+          exit 1
+        fi
+
+        OPTIONS=()
+        for ((i = 0; i < "$NUM_FILES"; i++)); do
+          OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
+        done
+
+        if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
+          NUM_FILES="4"
+        fi
+
+        CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+        if [ -n "$CHOICE" ] &>/dev/null; then
+          SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
+          rm "$SELECTED_FILE" &>/dev/null
+          rm "${SYS_DIR:?}"/robot/*."$(echo "$SELECTED_FILE" | egrep -o "[0-9]+")".* &>/dev/null
+          break
+        else
+          break
+        fi
       done
-
-      if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
-        NUM_FILES="4"
-      fi
-
-      CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
-
-      if [ -n "$CHOICE" ] &>/dev/null; then
-        SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
-        rm "$SELECTED_FILE" &>/dev/null
-        rm "${SYS_DIR:?}"/robot/*."$(echo "$SELECTED_FILE" | egrep -o "[0-9]+")".* &>/dev/null
-        break
-      else
-        break
-      fi
-    done
+    fi
 
     ;;
 
