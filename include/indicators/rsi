@@ -26,11 +26,7 @@ get_rsi() {
   else
     BEAR_BULL="Neutral"
   fi
-  SMA=$(echo "$PRICES" | tail -n "$PERIOD" | awk '{sum += $1} END {printf "%.8f", sum/NR}')
-  STDEV=$(echo "$PRICES" | tail -n "$PERIOD" | awk '{sum += $1; sumsq += $1*$1} END {printf "%.8f", sqrt(sumsq/NR - (sum/NR)^2)}')
-  BB_UPPER=$(echo "$SMA + 2*$STDEV" | bc -l)
-  BB_LOWER=$(echo "$SMA - 2*$STDEV" | bc -l)
-  echo "$BEAR_BULL :: RSI_$PERIOD :: $(echo "$RSI" | awk '{ printf "%.8f\n", $1 }') :: BB_UPPER :: $(echo "$BB_UPPER" | awk '{ printf "%.8f\n", $1 }') :: BB_LOWER :: $(echo "$BB_LOWER" | awk '{ printf "%.8f\n", $1 }')"
+  echo "$BEAR_BULL :: RSI_$PERIOD :: $(echo "$RSI" | awk '{ printf "%.8f\n", $1 }')"
   rm "$TMP_FILE"
 }
 
