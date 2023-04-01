@@ -393,7 +393,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
     4 "Config           Configurations"
     5 "Create           Create strategy"
     6 "Control          Robot controller"
-    7 "Logs             robot.log"
+    7 "Debug            robot.log"
     0 "Delete           Remove strategy")
 
   CHOICE=$(dialog --clear \
@@ -406,6 +406,8 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   clear
   case $CHOICE in
+
+  # dashbord
 
   "1")
 
@@ -423,6 +425,8 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
     display_result 2>/dev/null
 
     ;;
+
+    # check
 
   "2")
 
@@ -494,6 +498,8 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
     ;;
 
+    # orders
+
   "3")
 
     echo "$(cat "${SYS_DIR:?}"/robot/bst.*.txid 2>/dev/null | egrep "[0-9]+")" >"${SYS_DIR:?}"/robot/bst.txid
@@ -528,6 +534,8 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
     ;;
 
+    # configurations
+
   "4")
 
     while true; do
@@ -561,6 +569,8 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
     done
 
     ;;
+
+    # create strategies
 
   "5")
 
@@ -693,6 +703,8 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
     ;;
 
+    # robot controller
+
   "6")
 
     HEIGHT=11
@@ -740,11 +752,15 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
     "3")
 
       screen -X -S leeloo quit &>/dev/null
+
       if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
         killall screen &>/dev/null
       fi
-      echo "Remove leeloo line"
-      sleep 1
+
+      echo "leeloo line: */1 * * * * bash /usr/local/bin/include/leeloo/robot/looper"
+      echo "Remove leeloo line for total stop"
+      read -r -p "Press Enter to continue" </dev/tty
+      echo
       crontab -e
 
       ;;
