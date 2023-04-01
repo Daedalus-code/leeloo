@@ -101,7 +101,7 @@ if [[ -z "$TX_TIME" ]] &>/dev/null; then
   TX_TIME="0"
 fi
 if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".txid | wc -l)" -eq "0" ]] &>/dev/null; then
-  echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: (0)" >>"${LOG_DIR:?}"/leeloo/robot.log
+  echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: (0)" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   COOLDOWN_SECONDS="0"
 fi
 
@@ -118,12 +118,12 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
       # market
       if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
         PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+        echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
         tx_id
         # limit
       elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
         PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+        echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
         tx_id
       fi
     # reference true
@@ -131,12 +131,12 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
       # market
       if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
         PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+        echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
         tx_id
         # limit
       elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
         PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot.log
+        echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
         tx_id
       fi
     fi
@@ -148,7 +148,7 @@ else
     CALCULATE_SECONDS="0"
   fi
   ORDER_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$CALCULATE_SECONDS/3600")) $(("$CALCULATE_SECONDS%3600/60")) $(("$CALCULATE_SECONDS%60")))
-  echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cooldown $ORDER_COOLDOWN" >>"${LOG_DIR:?}"/leeloo/robot.log
+  echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cooldown $ORDER_COOLDOWN" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
 fi
 
 ################################################################################
