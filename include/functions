@@ -111,7 +111,6 @@ function last_log {
 # last_log_robot ###############################################################
 
 function last_log_robot {
-  echo "$(sort -n "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot.log
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
   WIDTH="$(echo "$(tail -25 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
   if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -146,6 +145,7 @@ function cleanup_log_robot {
   else
     echo "$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
+  echo "$(sort -n "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot.log
 }
 
 # dnt address ##################################################################
