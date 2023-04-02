@@ -782,6 +782,47 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
     ;;
 
+  "8")
+
+    while true; do
+      CONFIG_FILES=("${LOG_DIR:?}"/leeloo/robot.*.log)
+      NUM_FILES="${#CONFIG_FILES[@]}"
+      WIDTH="$(echo "$(wc -L "${CONFIG_FILES:?}" | awk '{ print $1 }')-26" | bc 2>/dev/null)"
+
+      if [ $NUM_FILES -eq 0 ] &>/dev/null; then
+        echo "Error: No log files found in $LOG_DIR/leeloo"
+        exit 1
+      fi
+
+      OPTIONS=()
+      for ((i = 0; i < "$NUM_FILES"; i++)); do
+        OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
+      done
+
+      if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
+        NUM_FILES="4"
+      fi
+
+      CHOICE=$(dialog --clear --title "Robot logs" --menu "Choose one of the following robot logs:" "$(echo "$NUM_FILES+3" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+      if [ -n "$CHOICE" ]; then
+        SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
+        WIDTH="$(echo "$(wc -L "${SELECTED_FILE:?}" | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+        display_result() {
+          dialog --title "Robot $SELECTED_FILE: $LOG_COUNT" \
+            --no-collapse \
+            --tailbox "$RESULT" 25 "$WIDTH"
+        }
+        RESULT="${SELECTED_FILE:?}"
+        display_result 2>/dev/null
+        break
+      else
+        break
+      fi
+    done
+
+    ;;
+
   "0")
 
     if dialog --stdout --title "DELETE WARNING!" \
@@ -823,47 +864,6 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
     ;;
 
   esac
-
-  ;;
-
-"8")
-
-  while true; do
-    CONFIG_FILES=("${LOG_DIR:?}"/leeloo/robot.*.log)
-    NUM_FILES="${#CONFIG_FILES[@]}"
-    WIDTH="$(echo "$(wc -L "${CONFIG_FILES:?}" | awk '{ print $1 }')-26" | bc 2>/dev/null)"
-
-    if [ $NUM_FILES -eq 0 ] &>/dev/null; then
-      echo "Error: No log files found in $LOG_DIR/leeloo"
-      exit 1
-    fi
-
-    OPTIONS=()
-    for ((i = 0; i < "$NUM_FILES"; i++)); do
-      OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
-    done
-
-    if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
-      NUM_FILES="4"
-    fi
-
-    CHOICE=$(dialog --clear --title "Robot logs" --menu "Choose one of the following robot logs:" "$(echo "$NUM_FILES+3" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
-
-    if [ -n "$CHOICE" ]; then
-      SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
-      WIDTH="$(echo "$(wc -L "${SELECTED_FILE:?}" | awk '{ print $1 }')+7" | bc 2>/dev/null)"
-      display_result() {
-        dialog --title "Robot $SELECTED_FILE: $LOG_COUNT" \
-          --no-collapse \
-          --tailbox "$RESULT" 25 "$WIDTH"
-      }
-      RESULT="${SELECTED_FILE:?}"
-      display_result 2>/dev/null
-      break
-    else
-      break
-    fi
-  done
 
   ;;
 
