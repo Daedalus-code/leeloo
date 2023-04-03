@@ -111,8 +111,6 @@ function last_log {
 # last_log_robot ###############################################################
 
 function last_log_robot {
-  # sort by date
-  echo "$(sort -k 1.5M -k 1.3n -k 1.4n -k 2n -k 3.1n -k 3.2n "${LOG_DIR:?}"/leeloo/robot.log)" >"${LOG_DIR:?}"/leeloo/robot.log
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
   WIDTH="$(echo "$(tail -25 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
   if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -142,6 +140,8 @@ function cleanup_log {
 # cleanup_log_robot ############################################################
 
 function cleanup_log_robot {
+  # sort by date
+  echo "$(sort -k 1.5M -k 1.3n -k 1.4n -k 2n -k 3.1n -k 3.2n "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "4320" ]] &>/dev/null; then
     echo "$(tail -512 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   else
