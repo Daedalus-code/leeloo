@@ -111,6 +111,8 @@ function last_log {
 # last_log_robot ###############################################################
 
 function last_log_robot {
+  # sort by date
+  echo "$(sort -k 1.5M -k 1.3n -k 1.4n -k 2n -k 3.1n -k 3.2n "${LOG_DIR:?}"/leeloo/robot.log)" >"${LOG_DIR:?}"/leeloo/robot.log
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
   WIDTH="$(echo "$(tail -25 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
   if [[ -z "$WIDTH" ]] &>/dev/null; then
