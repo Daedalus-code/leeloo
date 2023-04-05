@@ -443,14 +443,44 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
 
-      echo "$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-      echo "$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+      echo "" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+
+      GET_RSI_14="$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)"
+      GET_RSI_21="$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)"
+
+      GET_RSI_14_NR="$(echo "$GET_RSI_14" | awk '{ print $NF }')"
+      GET_RSI_21_NR="$(echo "$GET_RSI_21" | awk '{ print $NF }')"
+
+      GET_EMA_6_20="$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)"
+      GET_EMA_8_20="$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)"
+      GET_EMA_10_38="$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)"
+      GET_EMA_12_26="$(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)"
+      GET_EMA_50_200="$(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)"
+
+      echo "$GET_RSI_14" >"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+      echo "$GET_RSI_21" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+
       echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-      echo "$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-      echo "$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-      echo "$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-      echo "$(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-      echo "$(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+
+      GET_RSI_CALC="$(echo "$GET_RSI_14_NR+$GET_RSI_21_NR" | bc -l | awk '{ printf "%.0f\n", $1 }')"
+      GET_RSI_SIGNAL="$(echo "$GET_RSI_CALC/2" | bc -l | awk '{ printf "%.0f\n", $1 }')"
+
+      if (($(echo "$GET_RSI_SIGNAL > 70" | bc -l))); then
+        echo "RSI_Signal :: Overbought ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+      elif (($(echo "$GET_RSI_SIGNAL < 30" | bc -l))); then
+        echo "RSI_Signal :: Oversold ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+      else
+        echo "RSI_Signal :: Neutral ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+      fi
+
+      echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+
+      echo "$GET_EMA_6_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+      echo "$GET_EMA_8_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+      echo "$GET_EMA_10_38" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+      echo "$GET_EMA_12_26" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+      echo "$GET_EMA_50_200" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+
       echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
 
       if [[ ! "$(grep "EMA" "${LOG_DIR:?}"/leeloo/indicators/check_indicators | awk '{ print $5 }' | head -1)" == "0.00000000" ]] &>/dev/null; then
@@ -464,9 +494,9 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
         BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
 
         if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
-          echo "Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+          echo "EMA_Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
         elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
-          echo "Signal :: Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+          echo "EMA_Signal :: Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
         fi
 
         echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_indicators 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/check_indicators
