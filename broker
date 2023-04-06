@@ -368,8 +368,16 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating
 
+  # restart looper if any updates
   if [[ "$(grep "leeloo" "${LOG_DIR:?}"/leeloo/updating | grep "+" | wc -l)" -eq "1" ]] &>/dev/null; then
-    echo "[OK] Robot updated!"
+    echo "$DATE :: [OK] Robot updated!" >>"${LOG_DIR:?}"/leeloo/updating
+    screen -X -S leeloo quit &>/dev/null
+    echo "$DATE :: [!!] Robot stopping!" >>"${LOG_DIR:?}"/leeloo/updating
+    if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
+      killall screen &>/dev/null
+    fi
+    bash "${SYS_DIR:?}"/robot/looper
+    echo "$DATE :: [OK] Robot restarting!" >>"${LOG_DIR:?}"/leeloo/updating
   fi
 
   RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
