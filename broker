@@ -677,7 +677,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
     echo "$(cat "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | egrep "[0-9]+" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/last.txid
 
-    function get_txid() {
+    function get_auto_txids() {
       truncate -s 0 "${SYS_DIR:?}"/robot/pool &>/dev/null
       # if empty skip
       if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
@@ -690,14 +690,14 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/pool 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
-      get_txid
+      get_auto_txids
     fi
 
     if [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
-      GET_LAST_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
+      GET_AUTO_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
     else
-      get_txid
-      GET_LAST_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
+      get_auto_txids
+      GET_AUTO_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
     fi
 
     display_result() {
@@ -706,7 +706,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
         --msgbox "$RESULT" 0 0
     }
 
-    RESULT="$GET_LAST_TXIDS"
+    RESULT="$GET_AUTO_TXIDS"
     display_result 2>/dev/null
 
     ;;
