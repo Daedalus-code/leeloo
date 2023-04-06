@@ -570,15 +570,16 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
       GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-      elif [[ ! -z "$GET_RSI_CUSTOM" ]] &>/dev/null; then
-        display_result() {
-          dialog --title "RSI $COIN_TOKEN" \
-            --no-collapse \
-            --msgbox "$RESULT" 5 42
-        }
+        if [[ ! -z "$GET_RSI_CUSTOM" ]] &>/dev/null; then
+          display_result() {
+            dialog --title "RSI $COIN_TOKEN" \
+              --no-collapse \
+              --msgbox "$RESULT" 5 42
+          }
 
-        RESULT="$RSI_VALUE_OUTPUT $GET_RSI_CUSTOM"
-        display_result 2>/dev/null
+          RESULT="$RSI_VALUE_OUTPUT $GET_RSI_CUSTOM"
+          display_result 2>/dev/null
+        fi
       fi
 
       ;;
@@ -592,15 +593,16 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
       GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-      elif [[ ! -z "$GET_RSI_CUSTOM" ]] &>/dev/null; then
-        display_result() {
-          dialog --title "EMA $COIN_TOKEN" \
-            --no-collapse \
-            --msgbox "$RESULT" 5 42
-        }
+        if [[ ! -z "$GET_RSI_CUSTOM" ]] &>/dev/null; then
+          display_result() {
+            dialog --title "EMA $COIN_TOKEN" \
+              --no-collapse \
+              --msgbox "$RESULT" 5 42
+          }
 
-        RESULT="$GET_EMA_CUSTOM"
-        display_result 2>/dev/null
+          RESULT="$GET_EMA_CUSTOM"
+          display_result 2>/dev/null
+        fi
       fi
 
       ;;
