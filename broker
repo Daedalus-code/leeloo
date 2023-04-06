@@ -680,7 +680,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
     truncate -s 0 "${SYS_DIR:?}"/robot/pool &>/dev/null
 
     # if empty skip
-    if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/*.txid | wc -l)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
       while read TXID; do
         getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
         sleep 1
