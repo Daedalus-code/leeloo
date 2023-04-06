@@ -388,8 +388,9 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
     ROBOT_RUNNING="Online"
-    ROBOT_RUNTIME="$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
-    ROBOT_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${ROBOT_RUNTIME:?}" 2>&1)/3600")) $(("$(echo "${ROBOT_RUNTIME:?}" 2>&1)%3600/60")) $(("$(echo "${ROBOT_RUNTIME:?}" 2>&1)%60")))
+    ROBOT_PID="$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
+    ROBOT_TIME=$(ps -p $ROBOT_PID -o etimes=)
+    ROBOT_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${ROBOT_TIME:?}" 2>&1)/3600")) $(("$(echo "${ROBOT_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${ROBOT_TIME:?}" 2>&1)%60")))
   else
     ROBOT_RUNNING="Offline"
     ROBOT_RUNTIME="0h:0m:0s"
@@ -402,7 +403,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
   TITLE="Robot Strategy Menu"
   MENU="Multipass $(date | xargs)
 
-Robot: $ROBOT_RUNNING - $ROBOT_RUNTIME"
+Robot: $ROBOT_RUNNING - $ROBOT_UPTIME"
 
   OPTIONS=(1 "Dashbord         Strategy status"
     2 "Check            Indicator info"
