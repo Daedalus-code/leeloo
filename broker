@@ -887,9 +887,10 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
         if [ -n "$CHOICE" ] &>/dev/null; then
           SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
+          FILE_NAME="$(echo "$SELECTED_FILE" | awk -F. '{ print $1 }')"
           rm "$SELECTED_FILE" &>/dev/null
-          rm "${SYS_DIR:?}"/robot/"$(echo "$SELECTED_FILE" | awk -F. '{ print $1 }')"* &>/dev/null
-          rm "${LOG_DIR:?}"/leeloo/*."$(echo "$SELECTED_FILE" | awk -F. '{ print $1 }')".* &>/dev/null
+          rm "${SYS_DIR:?}"/robot/"$FILE_NAME".* &>/dev/null
+          rm "${LOG_DIR:?}"/leeloo/robot."$FILE_NAME".* &>/dev/null
           break
         else
           break
