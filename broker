@@ -366,7 +366,9 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
       --msgbox "$RESULT" 0 0
   }
 
-  RESULT="$(cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull 2>/dev/null)"
+  cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating
+
+  RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
   display_result 2>/dev/null
   cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && bash include/install 2>/dev/null
   rm "${LOG_DIR:?}"/leeloo/repo &>/dev/null
