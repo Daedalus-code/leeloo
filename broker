@@ -672,7 +672,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
   "3")
 
-    echo "$(cat "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | egrep "[0-9]+")" >"${SYS_DIR:?}"/robot/last.txid
+    echo "$(cat "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | egrep "[0-9]+" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/last.txid
 
     truncate -s 0 "${SYS_DIR:?}"/robot/*.pool &>/dev/null
 
@@ -681,7 +681,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
       while read TXID; do
         getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/*.pool
         sleep 1
-      done <"${SYS_DIR:?}"/robot/*.txid
+      done <"${SYS_DIR:?}"/robot/last.txid
     fi
 
     display_result() {
