@@ -539,25 +539,16 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
   "3")
 
-    echo "$(cat "${SYS_DIR:?}"/robot/bst.*.txid 2>/dev/null | egrep "[0-9]+")" >"${SYS_DIR:?}"/robot/bst.txid
-    echo "$(cat "${SYS_DIR:?}"/robot/ema.*.txid 2>/dev/null | egrep "[0-9]+")" >"${SYS_DIR:?}"/robot/ema.txid
+    echo "$(cat "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | egrep "[0-9]+")" >"${SYS_DIR:?}"/robot/last.txid
 
     truncate -s 0 "${SYS_DIR:?}"/robot/*.pool &>/dev/null
 
     # if empty skip
-    if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/bst.txid | wc -l)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/*.txid | wc -l)" -gt "0" ]] &>/dev/null; then
       while read TXID; do
-        getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/bst.pool
+        getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/*.pool
         sleep 1
-      done <"${SYS_DIR:?}"/robot/bst.txid
-    fi
-
-    # if empty skip
-    if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/ema.txid | wc -l)" -gt "0" ]] &>/dev/null; then
-      while read TXID; do
-        getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/ema.pool
-        sleep 1
-      done <"${SYS_DIR:?}"/robot/ema.txid
+      done <"${SYS_DIR:?}"/robot/*.txid
     fi
 
     display_result() {
