@@ -813,8 +813,9 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
     while true; do
       CONFIG_FILES=("${LOG_DIR:?}"/leeloo/robot.*.log)
       NUM_FILES="${#CONFIG_FILES[@]}"
-      WIDTH="$(wc -l "${CONFIG_FILES:?}" | awk '{ print $1 }')"
-      WIDTH="$(echo "$WIDTH+25" | bc)"
+      # shellcheck disable=SC2128
+      WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
+      WIDTH="$(echo "$WIDTH+11" | bc)"
 
       if [[ "$WIDTH" -lt "25" ]] &>/dev/null; then
         WIDTH="45"
