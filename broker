@@ -515,6 +515,17 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
           echo "$GET_EMA_12_26" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_EMA_50_200" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
+          BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
+          TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc)"
+          BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc)"
+          BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
+          if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
+            echo "EMA_Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
+            echo "EMA_Signal :: Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          fi
+          echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
         }
 
         # update data every n seconds
@@ -532,22 +543,6 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
         if [[ ! "$(grep "EMA" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $5 }' | head -1)" == "0.00000000" ]] &>/dev/null; then
 
-          BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
-          BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
-
-          TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc)"
-
-          BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc)"
-          BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
-
-          if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
-            echo "EMA_Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-          elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
-            echo "EMA_Signal :: Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-          fi
-
-          echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-
           LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+7" | bc)"
           WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc)"
 
@@ -557,7 +552,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
               --msgbox "$RESULT" "$LENGTH" "$WIDTH"
           }
 
-          RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)"
+          RESULT="$GET_RSI_EMA"
           display_result 2>/dev/null
         else
           display_result() {
