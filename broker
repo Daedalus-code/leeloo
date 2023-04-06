@@ -564,18 +564,21 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
     "2")
 
       coin_token_search
-      value_output
+      rsi_value_output
 
-      GET_RSI_CUSTOM="$(get_rsi "$VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+      COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
+      GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
 
-      display_result() {
-        dialog --title "RSI $VALUE_OUTPUT ($COIN_TOKEN)" \
-          --no-collapse \
-          --msgbox "$RESULT" 0 0
-      }
+      if [[ ! -z "$GET_RSI_CUSTOM" ]] &>/dev/null; then
+        display_result() {
+          dialog --title "RSI $VALUE_OUTPUT ($COIN_TOKEN)" \
+            --no-collapse \
+            --msgbox "$RESULT" 5 30
+        }
 
-      RESULT="RSI $VALUE_OUTPUT $GET_RSI_CUSTOM"
-      display_result 2>/dev/null
+        RESULT="RSI $VALUE_OUTPUT $GET_RSI_CUSTOM"
+        display_result 2>/dev/null
+      fi
 
       ;;
 
