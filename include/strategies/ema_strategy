@@ -144,35 +144,40 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
     fi
   fi
 
+  ##############################################################################
+
   # is this a bullish cross?
-  if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-    if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
+  if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -c "Bullish+Cross")" -gt "0" ]] &>/dev/null; then
 
-      # buy order ##############################################################
+    if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+      if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
 
-      TYPE="buy"
-      AMOUNT_IN_REFERENCE_CURRENCY="true"
+        # buy order ############################################################
 
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+        TYPE="buy"
+        AMOUNT_IN_REFERENCE_CURRENCY="true"
 
-        # placeOrder market ####################################################
-        PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        ########################################################################
+        if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
 
-        echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-        tx_id
+          # placeOrder market ##################################################
+          PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          ######################################################################
 
-      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+          echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          tx_id
 
-        # placeOrder limit #####################################################
-        PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        ########################################################################
+        elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
-        echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-        tx_id
+          # placeOrder limit ###################################################
+          PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          ######################################################################
+
+          echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          tx_id
+        fi
+
+        echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${REFERENCE_ALLOCATED:?}% :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       fi
-
-      echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${REFERENCE_ALLOCATED:?}% :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     fi
   fi
 fi
@@ -207,35 +212,40 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
     fi
   fi
 
+  ##############################################################################
+
   # is this a bearish cross?
-  if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-    if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | grep -c "Bearish")" -eq "1" ]] &>/dev/null; then
+  if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -c "Bearish+Cross")" -gt "0" ]] &>/dev/null; then
 
-      # sell order #############################################################
+    if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+      if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | grep -c "Bearish")" -eq "1" ]] &>/dev/null; then
 
-      TYPE="sell"
-      AMOUNT_IN_REFERENCE_CURRENCY="false"
+        # sell order ###########################################################
 
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+        TYPE="sell"
+        AMOUNT_IN_REFERENCE_CURRENCY="false"
 
-        # placeOrder market ####################################################
-        PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        ########################################################################
+        if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
 
-        echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-        tx_id
+          # placeOrder market ##################################################
+          PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          ######################################################################
 
-      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+          echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          tx_id
 
-        # placeOrder limit #####################################################
-        PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        ########################################################################
+        elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
-        echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-        tx_id
+          # placeOrder limit ###################################################
+          PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          ######################################################################
+
+          echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          tx_id
+        fi
+
+        echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${LISTING_ALLOCATED:?}% :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       fi
-
-      echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${LISTING_ALLOCATED:?}% :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     fi
   fi
 fi
