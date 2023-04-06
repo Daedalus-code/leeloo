@@ -368,6 +368,10 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating
 
+  if [[ "$(grep "leeloo" "${LOG_DIR:?}"/leeloo/updating | wc -l)" -eq "1" ]] &>/dev/null; then
+    echo "[OK] Robot updated!"
+  fi
+
   RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
   display_result 2>/dev/null
   cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && bash include/install 2>/dev/null
