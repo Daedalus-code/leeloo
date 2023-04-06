@@ -486,50 +486,55 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
         COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
 
-        echo "-" >"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+        function get_rsi_ema() {
+          echo "-" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          GET_RSI_14="$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)"
+          GET_RSI_21="$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)"
+          GET_RSI_14_NR="$(echo "$GET_RSI_14" | awk '{ print $NF }')"
+          GET_RSI_21_NR="$(echo "$GET_RSI_21" | awk '{ print $NF }')"
+          GET_EMA_6_20="$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)"
+          GET_EMA_8_20="$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)"
+          GET_EMA_10_38="$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)"
+          GET_EMA_12_26="$(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)"
+          GET_EMA_50_200="$(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)"
+          echo "$GET_RSI_14" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          echo "$GET_RSI_21" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          GET_RSI_CALC="$(echo "$GET_RSI_14_NR+$GET_RSI_21_NR" | bc -l | awk '{ printf "%.8f\n", $1 }')"
+          GET_RSI_SIGNAL="$(echo "$GET_RSI_CALC/2" | bc -l | awk '{ printf "%.8f\n", $1 }')"
+          if (($(echo "$GET_RSI_SIGNAL > 70" | bc -l))); then
+            echo "RSI_Signal :: Overbought ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          elif (($(echo "$GET_RSI_SIGNAL < 30" | bc -l))); then
+            echo "RSI_Signal :: Oversold ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          else
+            echo "RSI_Signal :: Neutral ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          fi
+          echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          echo "$GET_EMA_6_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          echo "$GET_EMA_8_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          echo "$GET_EMA_10_38" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          echo "$GET_EMA_12_26" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          echo "$GET_EMA_50_200" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+          echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+        }
 
-        GET_RSI_14="$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)"
-        GET_RSI_21="$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)"
-
-        GET_RSI_14_NR="$(echo "$GET_RSI_14" | awk '{ print $NF }')"
-        GET_RSI_21_NR="$(echo "$GET_RSI_21" | awk '{ print $NF }')"
-
-        GET_EMA_6_20="$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)"
-        GET_EMA_8_20="$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)"
-        GET_EMA_10_38="$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)"
-        GET_EMA_12_26="$(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)"
-        GET_EMA_50_200="$(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)"
-
-        echo "$GET_RSI_14" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-        echo "$GET_RSI_21" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-
-        echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-
-        GET_RSI_CALC="$(echo "$GET_RSI_14_NR+$GET_RSI_21_NR" | bc -l | awk '{ printf "%.8f\n", $1 }')"
-        GET_RSI_SIGNAL="$(echo "$GET_RSI_CALC/2" | bc -l | awk '{ printf "%.8f\n", $1 }')"
-
-        if (($(echo "$GET_RSI_SIGNAL > 70" | bc -l))); then
-          echo "RSI_Signal :: Overbought ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-        elif (($(echo "$GET_RSI_SIGNAL < 30" | bc -l))); then
-          echo "RSI_Signal :: Oversold ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-        else
-          echo "RSI_Signal :: Neutral ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+        # update data every n seconds
+        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)))" 2>/dev/null)" -gt "180" ]] &>/dev/null; then
+          get_rsi_ema
+          GET_RSI_EMA="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)"
         fi
 
-        echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+        if [[ -f "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" ]] &>/dev/null; then
+          GET_RSI_EMA="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)"
+        else
+          get_rsi_ema
+          GET_RSI_EMA="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)"
+        fi
 
-        echo "$GET_EMA_6_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-        echo "$GET_EMA_8_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-        echo "$GET_EMA_10_38" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-        echo "$GET_EMA_12_26" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-        echo "$GET_EMA_50_200" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+        if [[ ! "$(grep "EMA" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $5 }' | head -1)" == "0.00000000" ]] &>/dev/null; then
 
-        echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
-
-        if [[ ! "$(grep "EMA" "${LOG_DIR:?}"/leeloo/indicators/check_indicators | awk '{ print $5 }' | head -1)" == "0.00000000" ]] &>/dev/null; then
-
-          BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_indicators)"
-          BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_indicators)"
+          BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
+          BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
 
           TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc)"
 
@@ -537,15 +542,15 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
           BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
 
           if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
-            echo "EMA_Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+            echo "EMA_Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
-            echo "EMA_Signal :: Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+            echo "EMA_Signal :: Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           fi
 
-          echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_indicators 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/check_indicators
+          echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
 
-          LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/check_indicators | awk '{ print $1 }')+7" | bc)"
-          WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/check_indicators | awk '{ print $1 }')+5" | bc)"
+          LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+7" | bc)"
+          WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc)"
 
           display_result() {
             dialog --title "Indicators ($COIN_TOKEN)" \
@@ -553,7 +558,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
               --msgbox "$RESULT" "$LENGTH" "$WIDTH"
           }
 
-          RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_indicators 2>/dev/null)"
+          RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)"
           display_result 2>/dev/null
         else
           display_result() {
@@ -586,17 +591,17 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
 
       # update data every n seconds
-      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
+      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
         GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-        echo "$GET_RSI_CUSTOM" >"${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT"
+        echo "$GET_RSI_CUSTOM" >"${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT"
       fi
 
-      if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" ]] &>/dev/null; then
-        GET_RSI_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)"
+      if [[ -f "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" ]] &>/dev/null; then
+        GET_RSI_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)"
       else
         GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-        echo "$GET_RSI_CUSTOM" >"${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT"
-        GET_RSI_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)"
+        echo "$GET_RSI_CUSTOM" >"${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT"
+        GET_RSI_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)"
       fi
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
@@ -622,17 +627,17 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
 
       # update data every n seconds
-      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
+      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
         GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-        echo "$GET_EMA_CUSTOM" >"${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT"
+        echo "$GET_EMA_CUSTOM" >"${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT"
       fi
 
-      if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" ]] &>/dev/null; then
-        GET_EMA_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)"
+      if [[ -f "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" ]] &>/dev/null; then
+        GET_EMA_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)"
       else
         GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-        echo "$GET_EMA_CUSTOM" >"${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT"
-        GET_EMA_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)"
+        echo "$GET_EMA_CUSTOM" >"${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT"
+        GET_EMA_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)"
       fi
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
