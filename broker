@@ -391,19 +391,21 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
     ROBOT_PID="$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
     ROBOT_TIME=$(ps -p $ROBOT_PID -o etimes=)
     ROBOT_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${ROBOT_TIME:?}" 2>&1)/3600")) $(("$(echo "${ROBOT_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${ROBOT_TIME:?}" 2>&1)%60")))
+    ROBOT_STRAT="$(ls -l "${SYS_DIR:?}"/robot/*.strategy | wc -l)"
   else
     ROBOT_RUNNING="Offline"
     ROBOT_RUNTIME="0h:0m:0s"
   fi
 
-  HEIGHT=19
+  HEIGHT=18
   WIDTH=45
   CHOICE_HEIGHT=10
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Robot Strategy Menu"
   MENU="Multipass $(date | xargs)
 
-Robot: $ROBOT_RUNNING - $ROBOT_UPTIME"
+Robot......: $ROBOT_RUNNING - $ROBOT_UPTIME
+Strategies.: $ROBOT_STRAT"
 
   OPTIONS=(1 "Dashbord         Strategy status"
     2 "Check            Indicator info"
