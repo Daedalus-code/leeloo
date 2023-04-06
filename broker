@@ -58,7 +58,7 @@ case $CHOICE in
   }
 
   # update data every n seconds
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$(echo "$BOT_TIMER*2" | bc)" ]] &>/dev/null; then
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$(echo "$BOT_TIMER*2" | bc 2>/dev/null)" ]] &>/dev/null; then
     result_balance
     # update data if missing
   elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
@@ -90,7 +90,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
   }
 
   # update data every n seconds
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$(echo "$BOT_TIMER*2" | bc)" ]] &>/dev/null; then
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$(echo "$BOT_TIMER*2" | bc 2>/dev/null)" ]] &>/dev/null; then
     result_market
     # update data if missing
   elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
@@ -102,7 +102,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
   # 450 max before dialog breaks
   MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k2 -n -r | head -100)"
-  WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+13" | bc)"
+  WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+13" | bc 2>/dev/null)"
 
   if [[ -z "$WIDTH" ]] &>/dev/null; then
     WIDTH="100"
@@ -131,8 +131,8 @@ $MARKET_RESULT"
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
     MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t)"
     MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
-    LENGTH="$(echo "$MARKET_COUNT+7" | bc)"
-    WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+16" | bc)"
+    LENGTH="$(echo "$MARKET_COUNT+7" | bc 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+16" | bc 2>/dev/null)"
 
     if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
       LENGTH="25"
@@ -436,7 +436,7 @@ Bot(s).: $ROBOT_STRAT $ROBOT_RUNNING"
 
     echo "$(echo "Currency Amount Result
 $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -t)" >"${LOG_DIR:?}"/leeloo/robot.hodl
-    WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/robot.hodl | awk '{ print $1 }')+7" | bc)"
+    WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/robot.hodl | awk '{ print $1 }')+7" | bc 2>/dev/null)"
 
     display_result() {
       dialog --title "Dashbord Status" \
@@ -499,11 +499,11 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
           echo "$GET_RSI_14" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_RSI_21" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-          GET_RSI_CALC="$(echo "$GET_RSI_14_NR+$GET_RSI_21_NR" | bc -l | awk '{ printf "%.8f\n", $1 }')"
-          GET_RSI_SIGNAL="$(echo "$GET_RSI_CALC/2" | bc -l | awk '{ printf "%.8f\n", $1 }')"
-          if (($(echo "$GET_RSI_SIGNAL > 70" | bc -l))); then
+          GET_RSI_CALC="$(echo "$GET_RSI_14_NR+$GET_RSI_21_NR" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+          GET_RSI_SIGNAL="$(echo "$GET_RSI_CALC/2" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+          if (($(echo "$GET_RSI_SIGNAL > 70" | bc -l 2>/dev/null))); then
             echo "RSI_Signal :: Overbought ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-          elif (($(echo "$GET_RSI_SIGNAL < 30" | bc -l))); then
+          elif (($(echo "$GET_RSI_SIGNAL < 30" | bc -l 2>/dev/null))); then
             echo "RSI_Signal :: Oversold ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           else
             echo "RSI_Signal :: Neutral ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
@@ -517,9 +517,9 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
           echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
           BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
-          TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc)"
-          BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc)"
-          BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc)"
+          TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc 2>/dev/null)"
+          BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc 2>/dev/null)"
+          BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc 2>/dev/null)"
           if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
             echo "EMA_Signal :: Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
@@ -543,8 +543,8 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
         if [[ ! "$(grep "EMA" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $5 }' | head -1)" == "0.00000000" ]] &>/dev/null; then
 
-          LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+7" | bc)"
-          WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc)"
+          LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+          WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
 
           display_result() {
             dialog --title "Indicators ($COIN_TOKEN)" \
@@ -689,7 +689,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
       NUM_FILES="${#CONFIG_FILES[@]}"
       # shellcheck disable=SC2128
       WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-      WIDTH="$(echo "$WIDTH+11" | bc)"
+      WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
 
       if [ $NUM_FILES -eq 0 ] &>/dev/null; then
         echo "Error: No config files found in $SYS_DIR/robot"
@@ -705,7 +705,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
         NUM_FILES="4"
       fi
 
-      CHOICE=$(dialog --clear --title "Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+      CHOICE=$(dialog --clear --title "Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
       if [ -n "$CHOICE" ]; then
         SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
@@ -935,7 +935,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
       NUM_FILES="${#CONFIG_FILES[@]}"
       # shellcheck disable=SC2128
       WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-      WIDTH="$(echo "$WIDTH+11" | bc)"
+      WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
 
       if [[ "$WIDTH" -lt "25" ]] &>/dev/null; then
         WIDTH="45"
@@ -955,7 +955,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         NUM_FILES="4"
       fi
 
-      CHOICE=$(dialog --clear --title "Robot logs" --menu "Choose one of the following robot logs:" "$(echo "$NUM_FILES+3" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+      CHOICE=$(dialog --clear --title "Robot logs" --menu "Choose one of the following robot logs:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
       if [ -n "$CHOICE" ]; then
         SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
@@ -990,7 +990,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         NUM_FILES="${#CONFIG_FILES[@]}"
         # shellcheck disable=SC2128
         WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-        WIDTH="$(echo "$WIDTH+11" | bc)"
+        WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
 
         if [ $NUM_FILES -eq 0 ] &>/dev/null; then
           echo "Error: No config files found in $SYS_DIR/robot"
@@ -1006,7 +1006,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
           NUM_FILES="4"
         fi
 
-        CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+        CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
         if [ -n "$CHOICE" ] &>/dev/null; then
           SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
