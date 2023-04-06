@@ -567,7 +567,20 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
       rsi_value_output
 
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
-      GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+
+      # update data every n seconds
+      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
+        GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+        echo "$GET_RSI_CUSTOM" >"${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT"
+      fi
+
+      if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" ]] &>/dev/null; then
+        GET_RSI_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)"
+      else
+        GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+        echo "$GET_RSI_CUSTOM" >"${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT"
+        GET_RSI_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)"
+      fi
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
         if [[ ! -z "$GET_RSI_CUSTOM" ]] &>/dev/null; then
@@ -590,7 +603,20 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
       ema_value_output
 
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
-      GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+
+      # update data every n seconds
+      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
+        GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+        echo "$GET_EMA_CUSTOM" >"${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT"
+      fi
+
+      if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" ]] &>/dev/null; then
+        GET_EMA_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)"
+      else
+        GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+        echo "$GET_EMA_CUSTOM" >"${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT"
+        GET_EMA_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/southxchange/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)"
+      fi
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
         if [[ ! -z "$GET_EMA_CUSTOM" ]] &>/dev/null; then
