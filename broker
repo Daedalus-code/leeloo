@@ -571,12 +571,12 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
       if [[ ! -z "$GET_RSI_CUSTOM" ]] &>/dev/null; then
         display_result() {
-          dialog --title "RSI $VALUE_OUTPUT ($COIN_TOKEN)" \
+          dialog --title "RSI $RSI_VALUE_OUTPUT ($COIN_TOKEN)" \
             --no-collapse \
             --msgbox "$RESULT" 5 42
         }
 
-        RESULT="RSI $VALUE_OUTPUT $GET_RSI_CUSTOM"
+        RESULT="RSI $RSI_VALUE_OUTPUT $GET_RSI_CUSTOM"
         display_result 2>/dev/null
       fi
 
@@ -584,7 +584,22 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
     "3")
 
-      echo "You chose Option 3"
+      coin_token_search
+      ema_value_output
+
+      COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
+      GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+
+      if [[ ! -z "$GET_EMA_CUSTOM" ]] &>/dev/null; then
+        display_result() {
+          dialog --title "EMA $EMA_SHORT_OUTPUT $EMA_LONG_OUTPUT ($COIN_TOKEN)" \
+            --no-collapse \
+            --msgbox "$RESULT" 5 42
+        }
+
+        RESULT="EMA $GET_EMA_CUSTOM"
+        display_result 2>/dev/null
+      fi
 
       ;;
 
