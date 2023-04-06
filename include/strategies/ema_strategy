@@ -19,18 +19,20 @@ BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
 # ema strategy configuration (static)
 ################################################################################
 
+STRATEGY_NAME="$(egrep "STRATEGY_NAME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+
 STRATEGY_TYPE="EMA"
-MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # market or limit order
-EMA_SHORT="$(egrep "EMA_SHORT=" "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"       # EMA short
-EMA_LONG="$(egrep "EMA_LONG=" "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"         # EMA long
+MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # market or limit order
+EMA_SHORT="$(egrep "EMA_SHORT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"       # EMA short
+EMA_LONG="$(egrep "EMA_LONG=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"         # EMA long
 
 # listing
-LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # listing currency
-LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (90%)
+LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # listing currency
+LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (90%)
 
 # reference
-REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # reference currency
-REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (90%)
+REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # reference currency
+REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (90%)
 
 ################################################################################
 # strategy
@@ -66,23 +68,23 @@ fi
 
 # keep data
 function result_ema() {
-  get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null
+  get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
 }
 
 ################################################################################
 
 # update data every n seconds
-if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)" -gt "90" ]] &>/dev/null; then
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)" -gt "90" ]] &>/dev/null; then
   result_ema
   # update data if missing
-elif [[ ! -f "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data ]] &>/dev/null; then
+elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
   result_ema
   # update data if empty
-elif [[ ! -s "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data ]] &>/dev/null; then
+elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
   result_ema
 fi
 
-EMA_REAL_RAW="$(cat "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".data 2>/dev/null)"
+EMA_REAL_RAW="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)"
 EMA_REAL_STRATEGY="$(echo "$EMA_REAL_RAW" | awk '{ print $NF }')"
 EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | awk '{ print $1 }')"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $5 }')"
@@ -91,15 +93,15 @@ EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $8 }')"
 # if zero, skip signal
 if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
   if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
-    echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
+    echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
   fi
 fi
 
 # keep n lines
-echo "$(tail -21 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
+echo "$(tail -21 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
 
 # latest signal
-EMA_REAL_SIGNAL="$(tail -1 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | awk '{ print $1 }')"
+EMA_REAL_SIGNAL="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | awk '{ print $1 }')"
 
 # if zero, skip
 if [[ -z "$EMA_REAL_SIGNAL" ]] &>/dev/null; then
@@ -109,7 +111,7 @@ fi
 ################################################################################
 
 function tx_id {
-  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".txid
+  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
 
 ################################################################################
@@ -126,10 +128,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
   fi
 
   # did the bot join the ride?
-  ENJOYING_RIDE="$(grep -c "Bullish" "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal)"
+  ENJOYING_RIDE="$(grep -c "Bullish" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)"
   if [[ "$ENJOYING_RIDE" -lt "2" ]] &>/dev/null; then
     if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -c "Joining")" -gt "0" ]] &>/dev/null; then
-      echo "Buying :: $EMA_REAL_SIGNAL $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
+      echo "Buying :: $EMA_REAL_SIGNAL $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
       echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: Joining the $EMA_REAL_SIGNAL ride!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     fi
   fi
@@ -143,8 +145,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
   fi
 
   # is this a bullish cross?
-  if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-    if [[ "$(tail -1 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
+  if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+    if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | grep -c "Bullish")" -eq "1" ]] &>/dev/null; then
 
       # buy order ##############################################################
 
@@ -189,10 +191,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
   fi
 
   # did the bot leave the ride?
-  ENJOYING_RIDE="$(grep -c "Bearish" "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal)"
+  ENJOYING_RIDE="$(grep -c "Bearish" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)"
   if [[ "$ENJOYING_RIDE" -lt "2" ]] &>/dev/null; then
     if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -c "Leaving")" -gt "0" ]] &>/dev/null; then
-      echo "Selling :: $EMA_REAL_SIGNAL $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal
+      echo "Selling :: $EMA_REAL_SIGNAL $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
       echo "$DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: Leaving the $EMA_REAL_SIGNAL ride!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     fi
   fi
@@ -206,8 +208,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
   fi
 
   # is this a bearish cross?
-  if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-    if [[ "$(tail -1 "${SYS_DIR:?}"/robot/ema."$BASENAME_STRATEGY".signal | grep -c "Bearish")" -eq "1" ]] &>/dev/null; then
+  if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+    if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | grep -c "Bearish")" -eq "1" ]] &>/dev/null; then
 
       # sell order #############################################################
 

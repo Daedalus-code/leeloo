@@ -16,21 +16,23 @@ BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $2 }')"
 # buy-sell strategy configuration (static)
 ################################################################################
 
+STRATEGY_NAME="$(egrep "STRATEGY_NAME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+
 # type
-TYPE="$(egrep "TYPE=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"                         # sell or buy order
-COOLDOWN="$(egrep "COOLDOWN=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"                 # execute cooldown (days)
-MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"         # market or limit order
-REFERENCE_STATUS="$(egrep "REFERENCE_STATUS=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # reference status
+TYPE="$(egrep "TYPE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"                         # sell or buy order
+COOLDOWN="$(egrep "COOLDOWN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"                 # execute cooldown (days)
+MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"         # market or limit order
+REFERENCE_STATUS="$(egrep "REFERENCE_STATUS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # reference status
 
 # listing
-LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # listing currency
-LISTING_TRIGGER="$(egrep "LISTING_TRIGGER=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"     # listing trigger  (execute when amount is reached)
-LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (100%)
+LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # listing currency
+LISTING_TRIGGER="$(egrep "LISTING_TRIGGER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"     # listing trigger  (execute when amount is reached)
+LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (100%)
 
 # reference
-REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # reference currency
-REFERENCE_TRIGGER="$(egrep "REFERENCE_TRIGGER=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"     # listing trigger (execute when amount is reached)
-REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (100%)
+REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # reference currency
+REFERENCE_TRIGGER="$(egrep "REFERENCE_TRIGGER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"     # listing trigger (execute when amount is reached)
+REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (100%)
 
 ################################################################################
 # listing and reference data
@@ -87,12 +89,12 @@ fi
 # calculate days into seconds
 COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
-if [[ ! -f "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".txid ]] &>/dev/null; then
-  touch "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".txid &>/dev/null
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
+  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid &>/dev/null
   COOLDOWN_SECONDS="0"
 fi
 
-TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".txid 2>/dev/null)))" 2>/dev/null)"
+TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)))" 2>/dev/null)"
 
 if [[ -z "$COOLDOWN_SECONDS" ]] &>/dev/null; then
   COOLDOWN_SECONDS="0"
@@ -100,7 +102,7 @@ fi
 if [[ -z "$TX_TIME" ]] &>/dev/null; then
   TX_TIME="0"
 fi
-if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".txid | wc -l)" -eq "0" ]] &>/dev/null; then
+if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -l)" -eq "0" ]] &>/dev/null; then
   if [[ ! "$(grep " :: (0) No tx!" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | wc -l)" -gt "0" ]] &>/dev/null; then
     echo "$DATE :: Strategy $TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: (0) No tx!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
@@ -110,7 +112,7 @@ fi
 if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
 
   function tx_id {
-    echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/bst."$BASENAME_STRATEGY".txid
+    echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   }
 
   # trigger greater than zero, continue
