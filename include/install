@@ -30,9 +30,15 @@ else
   mv "$HOME_DIR"/leeloo-main "$HOME_DIR"/leeloo &>/dev/null
   cp "$HOME_DIR"/leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf &>/dev/null
   if [[ ! -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
+    display_result() {
+      dialog --title "ERROR" \
+        --no-collapse \
+        --msgbox "$RESULT" 5 37
+    }
+    RESULT="$(echo "HOME_DIR=$HOME_DIR
+No install found!")"
+    display_result 2>/dev/null
     clear
-    echo "No install found!"
-    sleep 1
     exit
   else
     clear
