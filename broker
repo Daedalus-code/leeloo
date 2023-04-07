@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export LC_ALL=de_US.utf8
+
 # I'll not rest till I have me gold
 
 # shellcheck disable=SC2034  # Unused variables left for readability
@@ -17,7 +19,7 @@ source /usr/local/bin/include/leeloo/indicators/rsi
 
 export NCURSES_NO_UTF8_ACS=1
 
-DATE="$(LC_ALL=de_US.utf8 date +"%d/%m.%y-%H:%M:%S")"
+DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 # menu
 HEIGHT=18
@@ -25,7 +27,7 @@ WIDTH=44
 CHOICE_HEIGHT=10
 BACKTITLE="Leeloo (Multipass)"
 TITLE="Main Menu"
-MENU="Multipass $(LC_ALL=de_US.utf8 date | xargs)
+MENU="Multipass $(date | xargs)
 Load: $LOAD :: $REPO_HEAD $REPO_DATE"
 
 OPTIONS=(1 "Balance          Account Balance"
@@ -91,7 +93,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 "2")
 
   function result_market {
-    prices | LC_ALL=de_US.utf8 awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
+    prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
   }
 
   # update data every n seconds
@@ -134,7 +136,7 @@ $MARKET_RESULT"
   if [[ ! -z "$MARKET_INPUT" ]] &>/dev/null; then
 
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-    MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | LC_ALL=de_US.utf8 awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t)"
+    MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t)"
     MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
     LENGTH="$(echo "$MARKET_COUNT+7" | bc 2>/dev/null)"
     WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+16" | bc 2>/dev/null)"
@@ -436,7 +438,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
   CHOICE_HEIGHT=10
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Robot Strategy Menu"
-  MENU="Multipass $(LC_ALL=de_US.utf8 date | xargs)
+  MENU="Multipass $(date | xargs)
 Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
   OPTIONS=(1 "Dashbord         Strategy status"
@@ -488,7 +490,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
     CHOICE_HEIGHT=10
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Indicator Menu"
-    MENU="Multipass $(LC_ALL=de_US.utf8 date | xargs)"
+    MENU="Multipass $(date | xargs)"
 
     OPTIONS=(1 "RSI & EMA        RSI & EMA check"
       2 "RSI              Relative Strength Index"
@@ -770,7 +772,7 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
     CHOICE_HEIGHT=4
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Create strategies"
-    MENU="Multipass $(LC_ALL=de_US.utf8 date | xargs)"
+    MENU="Multipass $(date | xargs)"
 
     OPTIONS=(1 "BST              Buy/Sell trigger"
       2 "EMA              EMA trading"
