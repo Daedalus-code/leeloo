@@ -12,14 +12,12 @@ source /usr/local/bin/include/leeloo/indicators/ema
 
 # get strategy id.config, run strategy
 BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
-
+STRATEGY_NAME="$(egrep "STRATEGY_NAME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 ################################################################################
 # ema strategy configuration (static)
 ################################################################################
-
-STRATEGY_NAME="$(egrep "STRATEGY_NAME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
 STRATEGY_TYPE="EMA"
 MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # market or limit order
