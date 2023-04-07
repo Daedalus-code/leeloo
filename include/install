@@ -91,17 +91,20 @@ if ! [ -x "$(command -v dialog)" ] &>/dev/null; then
   sudo apt-get install dialog
 fi
 
-if ! [ -x "$(command -v tor)" ] &>/dev/null; then
-  if [[ ! -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
-    if dialog --stdout --title "Install proxy?" \
-      --backtitle "Proxy (tor) install?" \
-      --yesno "Yes: Install!, No: Continue!" 5 30; then
-      proxy_public_true
-      proxy_indicator_true
-      sudo apt-get install tor
-    else
-      proxy_public_false
-      proxy_indicator_false
+if [[ ! -f /usr/local/bin/include/leeloo/no_tor ]] &>/dev/null; then
+  if ! [ -x "$(command -v tor)" ] &>/dev/null; then
+    if [[ ! -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
+      if dialog --stdout --title "Install proxy?" \
+        --backtitle "Proxy (tor) install?" \
+        --yesno "Yes: Install!, No: Continue!" 5 30; then
+        proxy_public_true
+        proxy_indicator_true
+        sudo apt-get install tor
+      else
+        proxy_public_false
+        proxy_indicator_false
+        echo "No proxy" >/usr/local/bin/include/leeloo/no_tor
+      fi
     fi
   fi
 fi
