@@ -114,15 +114,14 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
   fi
 
   display_result() {
-    dialog --title "100 Market: +$(prices | wc -l) $DATE :: ${MARKET_MOON:?}%
-
-Market:       Bid           Ask          Last       (%)      Volume24Hr" \
+    dialog --title "100 Market: +$(prices | wc -l) $DATE :: ${MARKET_MOON:?}%" \
       --no-collapse \
       --scrollbar \
       --msgbox "$RESULT" 25 "$WIDTH"
   }
 
-  RESULT="
+  RESULT="Market:       Bid           Ask          Last       (%)      Volume24Hr
+
 $MARKET_RESULT"
   display_result 2>/dev/null
 
@@ -137,6 +136,7 @@ $MARKET_RESULT"
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
     MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t)"
     MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
+    MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
     LENGTH="$(echo "$MARKET_COUNT+7" | bc 2>/dev/null)"
     WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+16" | bc 2>/dev/null)"
 
@@ -154,7 +154,7 @@ $MARKET_RESULT"
     fi
 
     display_result() {
-      dialog --title "Search result: +$MARKET_COUNT $DATE" \
+      dialog --title "Search result: +$MARKET_COUNT $DATE :: ${MARKET_MOON:?}%" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
