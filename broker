@@ -106,6 +106,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
   # 450 max before dialog breaks
   MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k2 -n -r | head -100)"
+  MARKET_MOON="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
   WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+5" | bc 2>/dev/null)"
 
   if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -113,7 +114,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
   fi
 
   display_result() {
-    dialog --title "100 Market: +$(prices | wc -l) $DATE" \
+    dialog --title "100 Market: +$(prices | wc -l) $DATE :: ${MARKET_MOON:?}%" \
       --no-collapse \
       --scrollbar \
       --msgbox "$RESULT" 25 "$WIDTH"
