@@ -14,9 +14,9 @@ get_rsi() {
   TMP_FILE=$(mktemp)
   torify curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
   PRICES=$(jq -r '.Data.Data[].'"$SOURCE" "$TMP_FILE")
-  CHANGE=$(echo "$PRICES" | awk '{if (NR>1) {print $1-prev} ; prev=$1 }' | tail -n+2)
-  UP=$(echo "$CHANGE" | awk '{if ($1>=0) sum+= $1} END {printf "%.8f", sum}')
-  DOWN=$(echo "$CHANGE" | awk '{if ($1<0) sum+= -$1} END {printf "%.8f", sum}')
+  CHANGE=$(echo "$PRICES" | LC_ALL=de_US.utf8 awk '{if (NR>1) {print $1-prev} ; prev=$1 }' | tail -n+2)
+  UP=$(echo "$CHANGE" | LC_ALL=de_US.utf8 awk '{if ($1>=0) sum+= $1} END {printf "%.8f", sum}')
+  DOWN=$(echo "$CHANGE" | LC_ALL=de_US.utf8 awk '{if ($1<0) sum+= -$1} END {printf "%.8f", sum}')
   RS=$(echo "$UP/$DOWN" | bc -l 2>/dev/null)
   RSI=$(echo "100 - (100/(1+$RS))" | bc -l 2>/dev/null)
   if (($(echo "$RSI > 70" | bc -l 2>/dev/null))); then
