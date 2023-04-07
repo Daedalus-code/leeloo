@@ -108,7 +108,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
   MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k2 -n -r | head -100)"
   MARKET_MOON="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
   MARKET_MOON_COUNT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $5 }' | grep -v "null" | wc -l)"
-  MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l | awk '{ printf "%.4f\n", $1 }')"
+  MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')"
   WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+5" | bc 2>/dev/null)"
 
   if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -140,7 +140,7 @@ $MARKET_RESULT"
     MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
     MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
     MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | grep -v "null" | wc -l)"
-    MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l | awk '{ printf "%.4f\n", $1 }')"
+    MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')"
     LENGTH="$(echo "$MARKET_COUNT+7" | bc 2>/dev/null)"
     WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+16" | bc 2>/dev/null)"
 
