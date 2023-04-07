@@ -1132,13 +1132,19 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
   "1")
 
+    display_result() {
+      dialog --title "Donation" \
+        --no-collapse \
+        --msgbox "$RESULT" 7 77
+    }
+
     if dialog --stdout --title "Save information?" \
       --backtitle "Donate information" \
       --yesno "Yes: Save!, No:  Go back!" 5 30; then
 
       echo "Bitcoin (BTC): $BTC_DNT_ADDR
 
-$BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
+  $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
 
       display_result() {
         dialog --title "Donation" \
@@ -1148,14 +1154,7 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
 
       RESULT="$(echo "info saved: /home/$(whoami)/donate")"
       display_result 2>/dev/null
-
     fi
-
-    display_result() {
-      dialog --title "Donation" \
-        --no-collapse \
-        --msgbox "$RESULT" 7 77
-    }
 
     RESULT="$(
       echo "Bitcoin (BTC): $BTC_DNT_ADDR
