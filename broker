@@ -690,39 +690,44 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
   "3")
 
-    echo "$(cat "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | egrep "[0-9]+" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/last.txid
+    if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+      if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-    function get_auto_txids() {
-      truncate -s 0 "${SYS_DIR:?}"/robot/pool &>/dev/null
-      # if empty skip
-      if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-        while read TXID; do
-          getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
-          sleep 1
-        done <"${SYS_DIR:?}"/robot/last.txid
+        echo "$(cat "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | egrep "[0-9]+" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/last.txid
+
+        function get_auto_txids() {
+          truncate -s 0 "${SYS_DIR:?}"/robot/pool &>/dev/null
+          # if empty skip
+          if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+            while read TXID; do
+              getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
+              sleep 1
+            done <"${SYS_DIR:?}"/robot/last.txid
+          fi
+        }
+
+        # update data every n seconds
+        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/pool 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
+          get_auto_txids
+        fi
+
+        if [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
+          GET_AUTO_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
+        else
+          get_auto_txids
+          GET_AUTO_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
+        fi
+
+        display_result() {
+          dialog --title "Last Auto Orders" \
+            --no-collapse \
+            --msgbox "$RESULT" 0 0
+        }
+
+        RESULT="$GET_AUTO_TXIDS"
+        display_result 2>/dev/null
       fi
-    }
-
-    # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/pool 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
-      get_auto_txids
     fi
-
-    if [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
-      GET_AUTO_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
-    else
-      get_auto_txids
-      GET_AUTO_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
-    fi
-
-    display_result() {
-      dialog --title "Last Auto Orders" \
-        --no-collapse \
-        --msgbox "$RESULT" 0 0
-    }
-
-    RESULT="$GET_AUTO_TXIDS"
-    display_result 2>/dev/null
 
     ;;
 
@@ -730,37 +735,42 @@ $(cat "${LOG_DIR:?}"/leeloo/robot.hodl 2>/dev/null)" | awk '!a[$0]++' | column -
 
   "4")
 
-    while true; do
-      CONFIG_FILES=("${SYS_DIR:?}"/robot/*.config)
-      NUM_FILES="${#CONFIG_FILES[@]}"
-      # shellcheck disable=SC2128
-      WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-      WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
+    if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+      if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-      if [ $NUM_FILES -eq 0 ] &>/dev/null; then
-        echo "Error: No config files found in $SYS_DIR/robot"
-        exit 1
+        while true; do
+          CONFIG_FILES=("${SYS_DIR:?}"/robot/*.config)
+          NUM_FILES="${#CONFIG_FILES[@]}"
+          # shellcheck disable=SC2128
+          WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
+          WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
+
+          if [ $NUM_FILES -eq 0 ] &>/dev/null; then
+            echo "Error: No config files found in $SYS_DIR/robot"
+            exit 1
+          fi
+
+          OPTIONS=()
+          for ((i = 0; i < "$NUM_FILES"; i++)); do
+            OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
+          done
+
+          if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
+            NUM_FILES="4"
+          fi
+
+          CHOICE=$(dialog --clear --title "Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+          if [ -n "$CHOICE" ]; then
+            SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
+            nano "$SELECTED_FILE"
+            break
+          else
+            break
+          fi
+        done
       fi
-
-      OPTIONS=()
-      for ((i = 0; i < "$NUM_FILES"; i++)); do
-        OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
-      done
-
-      if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
-        NUM_FILES="4"
-      fi
-
-      CHOICE=$(dialog --clear --title "Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
-
-      if [ -n "$CHOICE" ]; then
-        SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
-        nano "$SELECTED_FILE"
-        break
-      else
-        break
-      fi
-    done
+    fi
 
     ;;
 
@@ -900,171 +910,190 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
   "6")
 
-    HEIGHT=11
-    WIDTH=41
-    CHOICE_HEIGHT=4
-    BACKTITLE="Leeloo (Multipass)"
-    TITLE="Robot controller"
-    MENU="Choose one option:"
+    if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+      if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-    OPTIONS=(1 "Status           Robot status"
-      2 "Start            Start robot"
-      3 "Stop             Stop robot"
-      4 "Crontab          Linux jobs")
+        HEIGHT=11
+        WIDTH=41
+        CHOICE_HEIGHT=4
+        BACKTITLE="Leeloo (Multipass)"
+        TITLE="Robot controller"
+        MENU="Choose one option:"
 
-    CHOICE=$(dialog --clear \
-      --backtitle "$BACKTITLE" \
-      --title "$TITLE" \
-      --menu "$MENU" \
-      $HEIGHT $WIDTH $CHOICE_HEIGHT \
-      "${OPTIONS[@]}" \
-      2>&1 >/dev/tty)
+        OPTIONS=(1 "Status           Robot status"
+          2 "Start            Start robot"
+          3 "Stop             Stop robot"
+          4 "Crontab          Linux jobs")
 
-    clear
-    case $CHOICE in
+        CHOICE=$(dialog --clear \
+          --backtitle "$BACKTITLE" \
+          --title "$TITLE" \
+          --menu "$MENU" \
+          $HEIGHT $WIDTH $CHOICE_HEIGHT \
+          "${OPTIONS[@]}" \
+          2>&1 >/dev/tty)
 
-    "1")
+        clear
+        case $CHOICE in
 
-      display_result() {
-        dialog --title "Robot status" \
-          --no-collapse \
-          --msgbox "$RESULT" 0 0
-      }
+        "1")
 
-      RESULT="$(screen -list 2>/dev/null)"
-      display_result 2>/dev/null
+          display_result() {
+            dialog --title "Robot status" \
+              --no-collapse \
+              --msgbox "$RESULT" 0 0
+          }
 
-      ;;
+          RESULT="$(screen -list 2>/dev/null)"
+          display_result 2>/dev/null
 
-    "2")
+          ;;
 
-      bash "${SYS_DIR:?}"/robot/looper
+        "2")
 
-      ;;
+          bash "${SYS_DIR:?}"/robot/looper
 
-    "3")
+          ;;
 
-      screen -X -S leeloo quit &>/dev/null
+        "3")
 
-      if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
-        killall screen &>/dev/null
+          screen -X -S leeloo quit &>/dev/null
+
+          if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
+            killall screen &>/dev/null
+          fi
+
+          echo "leeloo line: */1 * * * * bash /usr/local/bin/include/leeloo/robot/looper"
+          echo "Remove leeloo line for total stop"
+          read -r -p "Press Enter to continue" </dev/tty
+          echo
+          crontab -e
+
+          ;;
+
+        "4")
+
+          crontab -e
+
+          ;;
+
+        esac
       fi
-
-      echo "leeloo line: */1 * * * * bash /usr/local/bin/include/leeloo/robot/looper"
-      echo "Remove leeloo line for total stop"
-      read -r -p "Press Enter to continue" </dev/tty
-      echo
-      crontab -e
-
-      ;;
-
-    "4")
-
-      crontab -e
-
-      ;;
-
-    esac
+    fi
 
     ;;
 
   "7")
 
-    last_log_robot
+    if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+      if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
+        last_log_robot
+      fi
+    fi
 
     ;;
 
   "8")
 
-    while true; do
-      CONFIG_FILES=("${LOG_DIR:?}"/leeloo/robot.*.log)
-      NUM_FILES="${#CONFIG_FILES[@]}"
-      # shellcheck disable=SC2128
-      WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-      WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
+    if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+      if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-      if [[ "$WIDTH" -lt "25" ]] &>/dev/null; then
-        WIDTH="45"
+        while true; do
+          CONFIG_FILES=("${LOG_DIR:?}"/leeloo/robot.*.log)
+          NUM_FILES="${#CONFIG_FILES[@]}"
+          # shellcheck disable=SC2128
+          WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
+          WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
+
+          if [[ "$WIDTH" -lt "25" ]] &>/dev/null; then
+            WIDTH="45"
+          fi
+
+          if [ $NUM_FILES -eq 0 ] &>/dev/null; then
+            echo "Error: No log files found in $LOG_DIR/leeloo"
+            exit 1
+          fi
+
+          OPTIONS=()
+          for ((i = 0; i < "$NUM_FILES"; i++)); do
+            OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
+          done
+
+          if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
+            NUM_FILES="4"
+          fi
+
+          CHOICE=$(dialog --clear --title "Robot logs" --menu "Choose one of the following robot logs:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+          if [ -n "$CHOICE" ]; then
+            SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
+            WIDTH="$(echo "$(wc -L "${SELECTED_FILE:?}" | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+            if [[ "$WIDTH" -lt "7" ]] &>/dev/null; then
+              WIDTH="77"
+            fi
+            LOG_COUNT="$(wc -l "${SELECTED_FILE:?}" | awk '{ print $1 }')"
+            display_result() {
+              dialog --title "Robot Log: $LOG_COUNT :: $SELECTED_FILE:" \
+                --no-collapse \
+                --tailbox "$RESULT" 25 "$WIDTH"
+            }
+            RESULT="${SELECTED_FILE:?}"
+            display_result 2>/dev/null
+            break
+          else
+            break
+          fi
+        done
       fi
-
-      if [ $NUM_FILES -eq 0 ] &>/dev/null; then
-        echo "Error: No log files found in $LOG_DIR/leeloo"
-        exit 1
-      fi
-
-      OPTIONS=()
-      for ((i = 0; i < "$NUM_FILES"; i++)); do
-        OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
-      done
-
-      if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
-        NUM_FILES="4"
-      fi
-
-      CHOICE=$(dialog --clear --title "Robot logs" --menu "Choose one of the following robot logs:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
-
-      if [ -n "$CHOICE" ]; then
-        SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
-        WIDTH="$(echo "$(wc -L "${SELECTED_FILE:?}" | awk '{ print $1 }')+6" | bc 2>/dev/null)"
-        if [[ "$WIDTH" -lt "7" ]] &>/dev/null; then
-          WIDTH="77"
-        fi
-        LOG_COUNT="$(wc -l "${SELECTED_FILE:?}" | awk '{ print $1 }')"
-        display_result() {
-          dialog --title "Robot Log: $LOG_COUNT :: $SELECTED_FILE:" \
-            --no-collapse \
-            --tailbox "$RESULT" 25 "$WIDTH"
-        }
-        RESULT="${SELECTED_FILE:?}"
-        display_result 2>/dev/null
-        break
-      else
-        break
-      fi
-    done
+    fi
 
     ;;
 
   "0")
 
-    if dialog --stdout --title "DELETE WARNING!" \
-      --backtitle "DELETING" \
-      --yesno "Yes: Delete!, No:  Go back!" 5 30; then
+    if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+      if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-      while true; do
-        CONFIG_FILES=("${SYS_DIR:?}"/robot/*.config)
-        NUM_FILES="${#CONFIG_FILES[@]}"
-        # shellcheck disable=SC2128
-        WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-        WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
+        if dialog --stdout --title "DELETE WARNING!" \
+          --backtitle "DELETING" \
+          --yesno "Yes: Delete!, No:  Go back!" 5 30; then
 
-        if [ $NUM_FILES -eq 0 ] &>/dev/null; then
-          echo "Error: No config files found in $SYS_DIR/robot"
-          exit 1
+          while true; do
+            CONFIG_FILES=("${SYS_DIR:?}"/robot/*.config)
+            NUM_FILES="${#CONFIG_FILES[@]}"
+            # shellcheck disable=SC2128
+            WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
+            WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
+
+            if [ $NUM_FILES -eq 0 ] &>/dev/null; then
+              echo "Error: No config files found in $SYS_DIR/robot"
+              exit 1
+            fi
+
+            OPTIONS=()
+            for ((i = 0; i < "$NUM_FILES"; i++)); do
+              OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
+            done
+
+            if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
+              NUM_FILES="4"
+            fi
+
+            CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+            if [ -n "$CHOICE" ] &>/dev/null; then
+              SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
+              FILE_NAME="$(echo "$SELECTED_FILE" | awk -F. '{ print $1 }' | awk -F/ '{ print $NF }')"
+              rm "$SELECTED_FILE" &>/dev/null
+              rm "${SYS_DIR:?}"/robot/"$FILE_NAME".* &>/dev/null
+              rm "${LOG_DIR:?}"/leeloo/robot."$FILE_NAME".* &>/dev/null
+              break
+            else
+              break
+            fi
+          done
         fi
-
-        OPTIONS=()
-        for ((i = 0; i < "$NUM_FILES"; i++)); do
-          OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
-        done
-
-        if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
-          NUM_FILES="4"
-        fi
-
-        CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
-
-        if [ -n "$CHOICE" ] &>/dev/null; then
-          SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
-          FILE_NAME="$(echo "$SELECTED_FILE" | awk -F. '{ print $1 }' | awk -F/ '{ print $NF }')"
-          rm "$SELECTED_FILE" &>/dev/null
-          rm "${SYS_DIR:?}"/robot/"$FILE_NAME".* &>/dev/null
-          rm "${LOG_DIR:?}"/leeloo/robot."$FILE_NAME".* &>/dev/null
-          break
-        else
-          break
-        fi
-      done
+      fi
     fi
 
     ;;
