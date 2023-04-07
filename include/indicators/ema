@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /usr/local/bin/include/leeloo/broker.conf
+
 # get_ema ######################################################################
 # https://min-api.cryptocompare.com/data/v2/histoday
 # Example: get_ema 6 20 BTC
@@ -12,7 +14,11 @@ get_ema() {
   API_EMA_EXCHANGE="CCCAGG"
   EMA_LONG=$((LONG_EMA * 2))
   TMP_FILE=$(mktemp)
-  torify curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=${EMA_LONG}&aggregate=1&e=${API_EMA_EXCHANGE}" >"$TMP_FILE"
+  if [[ "$INDICATOR_API_PROXY" == "true" ]] &>/dev/null; then
+    torify curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=${EMA_LONG}&aggregate=1&e=${API_EMA_EXCHANGE}" >"$TMP_FILE"
+  else
+    curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=${EMA_LONG}&aggregate=1&e=${API_EMA_EXCHANGE}" >"$TMP_FILE"
+  fi
   PRICES=$(jq -r '.Data.Data[].'"$SOURCE" "$TMP_FILE")
   SHORT=$(echo "$PRICES" | awk -v ema=$SHORT_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ printf "%.8f\n", $1 }')
   LONG=$(echo "$PRICES" | awk -v ema=$LONG_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ printf "%.8f\n", $1 }')
