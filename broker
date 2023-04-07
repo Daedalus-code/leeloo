@@ -18,8 +18,6 @@ source /usr/local/bin/include/leeloo/api/southxchange/public_API
 source /usr/local/bin/include/leeloo/indicators/ema
 source /usr/local/bin/include/leeloo/indicators/rsi
 
-DATE="$(date +"%d/%m.%Y %H:%M:%S")"
-
 # menu
 HEIGHT=18
 WIDTH=44
@@ -239,8 +237,8 @@ $MARKET_RESULT"
             if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
               if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
                 PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                echo "$DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log
-                echo "$DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+                echo "$LOG_DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log
+                echo "$LOG_DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
               fi
             fi
           fi
@@ -255,8 +253,8 @@ $MARKET_RESULT"
               if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
                 if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
                   PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                  echo "$DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log
-                  echo "$DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log
+                  echo "$LOG_DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log
+                  echo "$LOG_DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log
                 fi
               fi
             fi
@@ -303,8 +301,8 @@ $MARKET_RESULT"
             if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
               if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
                 PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                echo "$DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log
-                echo "$DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
+                echo "$LOG_DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log
+                echo "$LOG_DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log
               fi
             fi
           fi
@@ -319,8 +317,8 @@ $MARKET_RESULT"
               if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
                 if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
                   PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                  echo "$DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log
-                  echo "$DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log
+                  echo "$LOG_DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log
+                  echo "$LOG_DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log
                 fi
               fi
             fi
@@ -383,14 +381,14 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   # restart looper if any updates
   if [[ "$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating | egrep "-|+" | wc -l)" -eq "1" ]] &>/dev/null; then
-    echo "$DATE :: [OK] Robot updated!" >>"${LOG_DIR:?}"/leeloo/updating
+    echo "$LOG_DATE :: [OK] Robot updated!" >>"${LOG_DIR:?}"/leeloo/updating
     screen -X -S leeloo quit &>/dev/null
-    echo "$DATE :: [!!] Robot stopping!" >>"${LOG_DIR:?}"/leeloo/updating
+    echo "$LOG_DATE :: [!!] Robot stopping!" >>"${LOG_DIR:?}"/leeloo/updating
     if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
       killall screen &>/dev/null
     fi
     bash "${SYS_DIR:?}"/robot/looper
-    echo "$DATE :: [OK] Robot restarting!" >>"${LOG_DIR:?}"/leeloo/updating
+    echo "$LOG_DATE :: [OK] Robot restarting!" >>"${LOG_DIR:?}"/leeloo/updating
   fi
 
   RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
