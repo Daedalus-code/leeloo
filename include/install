@@ -7,13 +7,15 @@ if [[ ! -d /usr/local/bin/include/leeloo ]] &>/dev/null; then
   sudo mkdir /usr/local/bin/include/leeloo &>/dev/null
   sudo mkdir /usr/local/bin/include/leeloo/robot &>/dev/null
   sudo chown -R "$(whoami)":"$(whoami)" /usr/local/bin/include
-  cp leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf
 fi
 
 if [[ -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
   source /usr/local/bin/include/leeloo/broker.conf
 else
-  echo "No configuration found!"
+  home_dir
+  cp "$HOME_DIR"/leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf
+  echo "edit /usr/local/bin/include/leeloo/broker.conf!"
+  nano /usr/local/bin/include/leeloo/broker.conf
   exit
 fi
 
