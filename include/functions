@@ -19,6 +19,11 @@ fi
 REPO_HEAD="$(cat "${LOG_DIR:?}"/leeloo/repo 2>/dev/null | head -1)"
 REPO_DATE="$(cat "${LOG_DIR:?}"/leeloo/repo 2>/dev/null | tail -1)"
 
+if [[ -z "$REPO_HEAD" ]] &>/dev/null; then
+  REPO_HEAD="edit"
+  REPO_DATE="config."
+fi
+
 # system #######################################################################
 
 LOAD="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
@@ -181,19 +186,6 @@ function cleanup_log {
     echo "$DATE :: LogReset :: Line $MAX_LOG" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   else
     echo "$(cat "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log
-  fi
-}
-
-# cleanup_log_robot ############################################################
-
-function cleanup_log_robot {
-  # sort by date
-  echo "$(sort -k 1.5M -k 1.3n -k 1.4n -k 2n -k 3.1n -k 3.2n "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
-    echo "$(tail -512 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-    echo "$DATE :: LogReset :: Line $MAX_LOG" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-  else
-    echo "$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
 }
 
