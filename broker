@@ -17,7 +17,7 @@ source /usr/local/bin/include/leeloo/indicators/rsi
 
 export NCURSES_NO_UTF8_ACS=1
 
-DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+DATE="$(LC_ALL=de_US.utf8 date +"%d/%m.%y-%H:%M:%S")"
 
 # menu
 HEIGHT=18
@@ -53,33 +53,38 @@ case $CHOICE in
 
 "1")
 
-  function result_balance() {
-    listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
-  }
+  if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+    if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-  # update data every n seconds
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$(echo "$BOT_TIMER*2" | bc 2>/dev/null)" ]] &>/dev/null; then
-    result_balance
-    # update data if missing
-  elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
-    result_balance
-    # update data if empty
-  elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
-    result_balance
-  fi
+      function result_balance() {
+        listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+      }
 
-  sleep 1
+      # update data every n seconds
+      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$(echo "$BOT_TIMER*2" | bc 2>/dev/null)" ]] &>/dev/null; then
+        result_balance
+        # update data if missing
+      elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+        result_balance
+        # update data if empty
+      elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+        result_balance
+      fi
 
-  display_result() {
-    dialog --title "Account Balance" \
-      --no-collapse \
-      --msgbox "$RESULT" 0 0
-  }
+      sleep 1
 
-  RESULT="Coins:  Deposited    Available   Unconfirmed
+      display_result() {
+        dialog --title "Account Balance" \
+          --no-collapse \
+          --msgbox "$RESULT" 0 0
+      }
+
+      RESULT="Coins:  Deposited    Available   Unconfirmed
 
 $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
-  display_result 2>/dev/null
+      display_result 2>/dev/null
+    fi
+  fi
 
   ;;
 
