@@ -3,13 +3,19 @@
 # directories ##################################################################
 
 if [[ ! -d /usr/local/bin/include/leeloo ]] &>/dev/null; then
-  mkdir /usr/local/bin/include &>/dev/null
-  mkdir /usr/local/bin/include/leeloo &>/dev/null
-  mkdir /usr/local/bin/include/leeloo/robot &>/dev/null
+  sudo mkdir /usr/local/bin/include &>/dev/null
+  sudo mkdir /usr/local/bin/include/leeloo &>/dev/null
+  sudo mkdir /usr/local/bin/include/leeloo/robot &>/dev/null
+  sudo chown -R "$(whoami)":"$(whoami)" /usr/local/bin/include
   cp leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf
 fi
 
-source /usr/local/bin/include/leeloo/broker.conf
+if [[ -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
+  source /usr/local/bin/include/leeloo/broker.conf
+else
+  echo "No configuration found!"
+  exit
+fi
 
 if [[ ! -d "${LOG_DIR:?}"/leeloo ]] &>/dev/null; then
   mkdir "${LOG_DIR:?}"/leeloo &>/dev/null
@@ -37,7 +43,7 @@ if ! [ -x "$(command -v bc)" ] &>/dev/null; then
   sudo apt-get install bc
 fi
 
-# files ########################################################################
+# install files ################################################################
 
 sudo cp "${HOME_DIR:?}"/leeloo/broker /usr/local/bin/broker
 sudo chmod +x /usr/local/bin/broker
@@ -45,6 +51,11 @@ sudo chown "$(whoami)":"$(whoami)" /usr/local/bin/broker
 
 cp -a "${HOME_DIR:?}"/leeloo/include/indicators/ "$SYS_DIR" &>/dev/null
 cp -a "${HOME_DIR:?}"/leeloo/include/strategies/ "$SYS_DIR" &>/dev/null
+cp -a "${HOME_DIR:?}"/leeloo/include/robot/ "$SYS_DIR" &>/dev/null
+cp -a "${HOME_DIR:?}"/leeloo/include/api/ "$SYS_DIR" &>/dev/null
+cp "${HOME_DIR:?}"/leeloo/include/functions "$SYS_DIR" &>/dev/null
+
+# update strategies ############################################################
 
 # if configuration exist, continue
 if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | egrep "*.config" | wc -l)" -gt "0" ]] &>/dev/null; then
@@ -61,10 +72,5 @@ if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | egrep "*.config" | wc -l)" -gt "0" 
     cat "${HOME_DIR:?}"/leeloo/include/strategies/ema_strategy >"$EMA_UPDATES"
   done
 fi
-
-cp "${HOME_DIR:?}"/leeloo/include/functions "$SYS_DIR" &>/dev/null
-cp "${HOME_DIR:?}"/leeloo/include/install "$SYS_DIR" &>/dev/null
-cp -a "${HOME_DIR:?}"/leeloo/include/robot/ "$SYS_DIR" &>/dev/null
-cp -a "${HOME_DIR:?}"/leeloo/include/api/ "$SYS_DIR" &>/dev/null
 
 # END
