@@ -14,12 +14,17 @@ if [[ -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
 else
   HOME_DIR=$(
     dialog --title "Set install (HOME_DIR/leeloo/broker.conf)" \
-      --inputbox "Enter dir:" 8 40 \
+      --inputbox "Enter dir:" 8 45 \
       3>&1 1>&2 2>&3 3>&-
   )
-  cp "$HOME_DIR"/leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf
-  echo "edit /usr/local/bin/include/leeloo/broker.conf!"
-  nano /usr/local/bin/include/leeloo/broker.conf
+  cp "$HOME_DIR"/leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf &>/dev/null
+  if [[ -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
+    echo "No install found!"
+    exit
+  else
+    echo "edit /usr/local/bin/include/leeloo/broker.conf!"
+    nano /usr/local/bin/include/leeloo/broker.conf
+  fi
   exit
 fi
 
