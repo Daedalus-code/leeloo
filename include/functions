@@ -6,16 +6,14 @@ source /usr/local/bin/include/leeloo/broker.conf
 
 ################################################################################
 
-WHOAMI="$(whoami)"
-
 DATE="$(date +"%d.%m.%Y %H:%M:%S")"
 LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 # repo version #################################################################
 
 if [[ ! -f "${LOG_DIR:?}"/leeloo/repo ]] &>/dev/null; then
-  cd /home/"${WHOAMI:?}"/leeloo || exit && git rev-parse --short HEAD 2>&1 | grep -Eo '[a0-z9]{7}' 2>&1 | head -1 >"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
-  cd /home/"${WHOAMI:?}"/leeloo || exit && git log -1 --format="%at" | xargs -I{} date -d @{} '+%Y' >>"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
+  cd "${HOME_DIR:?}"/leeloo || exit && git rev-parse --short HEAD 2>&1 | grep -Eo '[a0-z9]{7}' 2>&1 | head -1 >"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
+  cd "${HOME_DIR:?}"/leeloo || exit && git log -1 --format="%at" | xargs -I{} date -d @{} '+%Y' >>"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
 fi
 
 REPO_HEAD="$(cat "${LOG_DIR:?}"/leeloo/repo 2>/dev/null | head -1)"
