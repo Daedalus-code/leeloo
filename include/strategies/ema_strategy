@@ -66,7 +66,13 @@ fi
 
 # get data
 function result_ema() {
-  echo "$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY")
+  GET_EMA_DATA="$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY")"
+  GET_EMA_SIGNAL="$(echo "$GET_EMA_DATA" | awk '{ print $1 }')"
+  GET_EMA_CONFIG="$(echo "$GET_EMA_DATA" | awk '{ print $NF }')"
+  GET_SHORT_DATA="$(echo "$GET_EMA_DATA" | awk '{ print $3 }')"
+  GET_LONG_DATA="$(echo "$GET_EMA_DATA" | awk '{ print $5 }')"
+
+  echo "EMA_Data..............: $GET_EMA_CONFIG Short $GET_SHORT_DATA Long $GET_LONG_DATA Signal $GET_EMA_SIGNAL
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY
 Listing_Unconfirmed...: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY
 Price.................: $LISTING_PRICE $REFERENCE_CURRENCY
@@ -94,10 +100,10 @@ fi
 ################################################################################
 
 EMA_REAL_RAW="$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)"
-EMA_REAL_STRATEGY="$(echo "$EMA_REAL_RAW" | awk '{ print $NF }')"
-EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | awk '{ print $1 }')"
+EMA_REAL_STRATEGY="$(echo "$EMA_REAL_RAW" | awk '{ print $2 }')"
+EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | awk '{ print $NF }')"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $4 }')"
-EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $7 }')"
+EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $6 }')"
 
 # if zero, skip signal
 if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
