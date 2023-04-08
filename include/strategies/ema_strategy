@@ -236,7 +236,8 @@ fi
 
 ################################################################################
 
-function tx_id {
+function open_order_tx_id {
+  echo "$LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
 
@@ -283,7 +284,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
           ######################################################################
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-          tx_id
+          open_order_tx_id
 
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -292,7 +293,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
           ######################################################################
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-          tx_id
+          open_order_tx_id
         fi
 
         echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${REFERENCE_ALLOCATED:?}% :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
@@ -344,7 +345,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
           ######################################################################
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-          tx_id
+          open_order_tx_id
 
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -353,7 +354,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
           ######################################################################
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-          tx_id
+          open_order_tx_id
         fi
 
         echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${LISTING_ALLOCATED:?}% :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
