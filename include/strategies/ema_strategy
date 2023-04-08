@@ -133,6 +133,13 @@ if [[ -z "$EMA_REAL_SIGNAL" ]] &>/dev/null; then
   EMA_REAL_SIGNAL="Idling"
 fi
 
+EMA_DIFFERENCE="$(echo "$EMA_REAL_SHORT-$EMA_REAL_LONG" | bc -l 2>/dev/null)"
+EMA_PERCENTAGE="$(echo "100/$EMA_REAL_SHORT*$EMA_DIFFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+
+if [[ -z "$EMA_PERCENTAGE" ]] &>/dev/null; then
+  EMA_PERCENTAGE="0"
+fi
+
 ################################################################################
 
 function tx_id {
@@ -144,13 +151,6 @@ function tx_id {
 ################################################################################
 
 if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
-
-  EMA_DIFFERENCE="$(echo "$EMA_REAL_SHORT-$EMA_REAL_LONG" | bc -l 2>/dev/null)"
-  EMA_PERCENTAGE="$(echo "100/$EMA_REAL_SHORT*$EMA_DIFFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-
-  if [[ -z "$EMA_PERCENTAGE" ]] &>/dev/null; then
-    EMA_PERCENTAGE="0"
-  fi
 
   # did the bot join the ride?
   ENJOYING_RIDE="$(grep -c "Bullish" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)"
@@ -212,13 +212,6 @@ fi
 ################################################################################
 
 if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
-
-  EMA_DIFFERENCE="$(echo "$EMA_REAL_SHORT-$EMA_REAL_LONG" | bc -l 2>/dev/null)"
-  EMA_PERCENTAGE="$(echo "100/$EMA_REAL_SHORT*$EMA_DIFFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-
-  if [[ -z "$EMA_PERCENTAGE" ]] &>/dev/null; then
-    EMA_PERCENTAGE="0"
-  fi
 
   # did the bot leave the ride?
   ENJOYING_RIDE="$(grep -c "Bearish" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)"
