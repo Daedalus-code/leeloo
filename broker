@@ -740,17 +740,27 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
         OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/open | awk '{ print $1 }')-1" | bc 2>/dev/null)"
-        WIDTH="$(echo "$(tail -25 "${SYS_DIR:?}"/robot/open | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+        WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/open | wc -L | awk '{ print $1 }')+8" | bc 2>/dev/null)"
+        LENGTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/open | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
+
+        if [[ -z "$LENGTH" ]] &>/dev/null; then
+          LENGTH="5"
+        fi
+        if [[ "$LENGTH" -lt "5" ]] &>/dev/null; then
+          LENGTH="5"
+        fi
+
         if [[ -z "$WIDTH" ]] &>/dev/null; then
           WIDTH="60"
         fi
         if [[ "$WIDTH" -lt "60" ]] &>/dev/null; then
           WIDTH="60"
         fi
+
         display_result() {
           dialog --title "Open Positions $OPEN_COUNT" \
             --no-collapse \
-            --tailbox "$RESULT" 10 "$WIDTH"
+            --tailbox "$RESULT" "$LENGTH" "$WIDTH"
         }
         RESULT="${SYS_DIR:?}/robot/open"
         display_result 2>/dev/null
