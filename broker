@@ -55,7 +55,7 @@ case $CHOICE in
   if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
     if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-      BALANCE_TIMER="$(echo "$BOT_TIMER*2" | bc 2>/dev/null)"
+      BALANCE_TIMER="$(echo "$BOT_TIMER*3" | bc 2>/dev/null)"
 
       function result_balance() {
         listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
@@ -95,7 +95,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
 "2")
 
-  MARKET_TIMER="$(echo "$BOT_TIMER*2" | bc 2>/dev/null)"
+  MARKET_TIMER="$(echo "$BOT_TIMER*3" | bc 2>/dev/null)"
 
   function result_market {
     prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
