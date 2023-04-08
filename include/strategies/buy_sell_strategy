@@ -107,6 +107,8 @@ elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
 fi
 
 ################################################################################
+# T R I G G E R
+################################################################################
 
 # calculate days into seconds
 COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
@@ -130,10 +132,6 @@ if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -l)"
   fi
   COOLDOWN_SECONDS="0"
 fi
-
-################################################################################
-# T R I G G E R
-################################################################################
 
 if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
 

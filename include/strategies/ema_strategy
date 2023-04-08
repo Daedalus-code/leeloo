@@ -89,15 +89,15 @@ elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
   result_ema
 fi
 
+################################################################################
+# S I G N A L
+################################################################################
+
 EMA_REAL_RAW="$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)"
 EMA_REAL_STRATEGY="$(echo "$EMA_REAL_RAW" | awk '{ print $NF }')"
 EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | awk '{ print $1 }')"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $4 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $7 }')"
-
-################################################################################
-# S I G N A L
-################################################################################
 
 # if zero, skip signal
 if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
