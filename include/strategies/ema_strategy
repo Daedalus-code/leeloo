@@ -158,28 +158,32 @@ LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
 
 # cost
 if [[ ! -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost ]] &>/dev/null; then
-  echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+  echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
 fi
-LISTING_OPEN_AMOUNT_VALUED="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost 2>/dev/null)"
+if [[ ! -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price ]] &>/dev/null; then
+  echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
+fi
+LISTING_OPEN_BALANCE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost 2>/dev/null)"
+LISTING_OPEN_PRICE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price 2>/dev/null)"
 
 # result
-LISTING_OPEN_RESULT="$(echo "100/$LISTING_OPEN_AMOUNT_VALUED*$LISTING_AVAILABLE_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+LISTING_OPEN_RESULT="$(echo "100/$LISTING_OPEN_PRICE*$LISTING_AVAILABLE_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 LISTING_OPEN_RESULT="$(echo "$LISTING_OPEN_RESULT-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 if [[ -z "$LISTING_OPEN_RESULT" ]] &>/dev/null; then
   LISTING_OPEN_RESULT="0.00"
 fi
 
 # age (seconds)
-LISTING_OPEN_AMOUNT_SECONDS="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost 2>/dev/null)))" 2>/dev/null)"
+LISTING_OPEN_AMOUNT_SECONDS="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price 2>/dev/null)))" 2>/dev/null)"
 LISTING_OPEN_AMOUNT_AGE=$(printf '%dh:%dm:%ds\n' $(("$LISTING_OPEN_AMOUNT_SECONDS/3600")) $(("$LISTING_OPEN_AMOUNT_SECONDS%3600/60")) $(("$LISTING_OPEN_AMOUNT_SECONDS%60")))
 
 # is this an open position?
 if [[ "$(echo "$LISTING_OPEN_AMOUNT" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
   # currency amount cost result age
-  echo "$LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_AMOUNT_VALUED ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/open
+  echo "$LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/open
   echo "$(cat "${SYS_DIR:?}"/robot/open 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/open
 else
-  rm "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost &>/dev/null
+  rm "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price &>/dev/null
 fi
 
 ################################################################################
