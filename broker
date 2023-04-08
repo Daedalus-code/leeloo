@@ -479,43 +479,52 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
   "1")
 
-    while true; do
-      CONFIG_FILES=("${SYS_DIR:?}"/robot/*.data)
-      NUM_FILES="${#CONFIG_FILES[@]}"
-      # shellcheck disable=SC2128
-      WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-      WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
+    if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+      if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-      if [ $NUM_FILES -eq 0 ] &>/dev/null; then
-        echo "Error: No data files found in $SYS_DIR/robot"
-        exit 1
-      fi
+        while true; do
+          CONFIG_FILES=("${SYS_DIR:?}"/robot/*.data)
+          NUM_FILES="${#CONFIG_FILES[@]}"
+          # shellcheck disable=SC2128
+          WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
+          WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
 
-      OPTIONS=()
-      for ((i = 0; i < "$NUM_FILES"; i++)); do
-        OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
-      done
+          if [ $NUM_FILES -eq 0 ] &>/dev/null; then
+            echo "Error: No data files found in $SYS_DIR/robot"
+            exit 1
+          fi
 
-      if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
-        NUM_FILES="4"
-      fi
+          OPTIONS=()
+          for ((i = 0; i < "$NUM_FILES"; i++)); do
+            OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
+          done
 
-      CHOICE=$(dialog --clear --title "Strategy Data" --menu "Choose one of the following data configurations:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+          if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
+            NUM_FILES="4"
+          fi
 
-      if [ -n "$CHOICE" ]; then
-        SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
-        display_result() {
-          dialog --title "Data $SELECTED_FILE" \
-            --no-collapse \
-            --msgbox "$RESULT" 0 0
-        }
-        RESULT="$(cat "$SELECTED_FILE" 2>/dev/null)"
-        display_result 2>/dev/null
-        break
+          CHOICE=$(dialog --clear --title "Strategy Data" --menu "Choose one of the following data configurations:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+          if [ -n "$CHOICE" ]; then
+            SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
+            display_result() {
+              dialog --title "Data $SELECTED_FILE" \
+                --no-collapse \
+                --msgbox "$RESULT" 0 0
+            }
+            RESULT="$(cat "$SELECTED_FILE" 2>/dev/null)"
+            display_result 2>/dev/null
+            break
+          else
+            break
+          fi
+        done
       else
-        break
+        no_key_no_secret
       fi
-    done
+    else
+      no_key_no_secret
+    fi
 
     ;;
 
