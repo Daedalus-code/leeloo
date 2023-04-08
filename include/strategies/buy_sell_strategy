@@ -208,6 +208,13 @@ else
   rm "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".* &>/dev/null
 fi
 
+##############################################################################
+
+function open_order_tx_id {
+  echo "$LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+}
+
 ################################################################################
 # T R I G G E R
 ################################################################################
@@ -240,15 +247,6 @@ if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -l)"
 fi
 
 if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
-
-  ################################################################################
-
-  function open_order_tx_id {
-    echo "$LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-    echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-  }
-
-  ################################################################################
 
   # trigger greater than zero, continue
   if [[ "$TOTAL_TRIGGER" -gt "0" ]] &>/dev/null; then
