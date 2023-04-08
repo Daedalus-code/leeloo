@@ -739,8 +739,8 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-        OPEN_COUNT="$(wc -l "${SYS_DIR:?}"/robot/open)"
-        WIDTH="$(echo "$(tail -25 "${SYS_DIR:?}"/robot/open | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+        OPEN_COUNT="$(wc -l "${SYS_DIR:?}"/robot/open | awk '{ print $1 }')"
+        WIDTH="$(echo "$(tail -25 "${SYS_DIR:?}"/robot/open | wc -L | awk '{ print $1 }')+10" | bc 2>/dev/null)"
         if [[ -z "$WIDTH" ]] &>/dev/null; then
           WIDTH="100"
         elif [[ "$WIDTH" -lt "50" ]] &>/dev/null; then
@@ -749,7 +749,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
         display_result() {
           dialog --title "Open Positions $OPEN_COUNT" \
             --no-collapse \
-            --tailbox "$RESULT" 25 "$WIDTH"
+            --tailbox "$RESULT" 20 "$WIDTH"
         }
         RESULT="${SYS_DIR:?}/robot/open"
         display_result 2>/dev/null
