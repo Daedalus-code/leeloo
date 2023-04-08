@@ -187,13 +187,16 @@ LISTING_OPEN_AMOUNT_VALUED="$(cat "${LOG_DIR:?}"/leeloo/open.cost 2>/dev/null)"
 
 # result
 LISTING_OPEN_RESULT="$(echo "100/$LISTING_AMOUNT_VALUED*$LISTING_OPEN_AMOUNT_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+if [[ -z "$LISTING_OPEN_RESULT" ]] &>/dev/null; then
+  LISTING_OPEN_RESULT="0.00"
+fi
 
 # age (seconds)
 LISTING_OPEN_AMOUNT_SECONDS="$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/open.cost 2>/dev/null)))" 2>/dev/null)"
 LISTING_OPEN_AMOUNT_AGE=$(printf '%dh:%dm:%ds\n' $(("$LISTING_OPEN_AMOUNT_SECONDS/3600")) $(("$LISTING_OPEN_AMOUNT_SECONDS%3600/60")) $(("$LISTING_OPEN_AMOUNT_SECONDS%60")))
 
 # currency amount cost result age
-echo "$LISTING_OPEN_CURRENCY   $LISTING_OPEN_AMOUNT   $LISTING_OPEN_AMOUNT_VALUED   $LISTING_OPEN_RESULT   $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/open
+echo "$LISTING_OPEN_CURRENCY   $LISTING_OPEN_AMOUNT   $LISTING_OPEN_AMOUNT_VALUED   ${LISTING_OPEN_RESULT:?}%   $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/open
 
 ################################################################################
 # T R I G G E R
