@@ -63,6 +63,11 @@ for (( ; ; )); do
 
   ##############################################################################
 
+  # reset open positions
+  truncate -s 0 "${SYS_DIR:?}"/robot/open &>/dev/null
+
+  ##############################################################################
+
   # run all strategies installed
   for f in "${SYS_DIR:?}"/robot/*.strategy; do
     bash "$f"
@@ -72,11 +77,6 @@ for (( ; ; )); do
 
   # combine all logs, sort by date
   echo "$(sort -t '.' -k 1.3n -k 1.1,1.2n -k 2 "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot.log
-
-  ##############################################################################
-
-  # reset open positions
-  truncate -s 0 "${SYS_DIR:?}"/robot/open &>/dev/null
 
   ##############################################################################
 
