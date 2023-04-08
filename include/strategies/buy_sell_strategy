@@ -84,6 +84,24 @@ if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
   TOTAL_TRIGGER="0"
 fi
 
+# calculate days into seconds
+COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+CONFIG_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$COOLDOWN_SECONDS/3600")) $(("$COOLDOWN_SECONDS%3600/60")) $(("$COOLDOWN_SECONDS%60")))
+
+# calculate seconds minus tx_time
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
+  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid &>/dev/null
+  COOLDOWN_SECONDS="0"
+fi
+
+TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)))" 2>/dev/null)"
+
+CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>/dev/null)"
+if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] &>/dev/null; then
+  CALCULATE_SECONDS="0"
+fi
+ORDER_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$CALCULATE_SECONDS/3600")) $(("$CALCULATE_SECONDS%3600/60")) $(("$CALCULATE_SECONDS%60")))
+
 ################################################################################
 
 # get data
@@ -92,6 +110,7 @@ function result_bst() {
 Listing_Trigger.......: $LISTING_TRIGGER
 Reference_Trigger.....: $REFERENCE_TRIGGER
 Total_Trigger.........: $TOTAL_TRIGGER/2
+Cooldown..............: $CONFIG_COOLDOWN/$ORDER_COOLDOWN
 Price.................: $LISTING_PRICE $REFERENCE_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED:?}%
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY $LISTING_AVAILABLE_VALUED $REFERENCE_CURRENCY
@@ -119,16 +138,6 @@ fi
 ################################################################################
 # T R I G G E R
 ################################################################################
-
-# calculate days into seconds
-COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-
-if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
-  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid &>/dev/null
-  COOLDOWN_SECONDS="0"
-fi
-
-TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)))" 2>/dev/null)"
 
 if [[ -z "$COOLDOWN_SECONDS" ]] &>/dev/null; then
   COOLDOWN_SECONDS="0"
@@ -180,12 +189,6 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
     fi
   fi
 else
-  # calculate seconds
-  CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>/dev/null)"
-  if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] &>/dev/null; then
-    CALCULATE_SECONDS="0"
-  fi
-  ORDER_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$CALCULATE_SECONDS/3600")) $(("$CALCULATE_SECONDS%3600/60")) $(("$CALCULATE_SECONDS%60")))
   if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot.log | grep "Cooldown" | wc -l)" -gt "0" ]] &>/dev/null; then
     echo "$LOG_DATE :: Strategy $TYPE $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cooldown $ORDER_COOLDOWN" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
