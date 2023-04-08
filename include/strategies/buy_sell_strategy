@@ -33,7 +33,7 @@ REFERENCE_TRIGGER="$(egrep "REFERENCE_TRIGGER=" "${SYS_DIR:?}"/robot/"$BASENAME_
 REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (100%)
 
 ################################################################################
-# listing and reference data
+# strategy
 ################################################################################
 
 # get available listing data
@@ -50,8 +50,6 @@ if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | 
     TRIGGER_L="0"
   fi
 fi
-
-################################################################################
 
 # get available reference data
 REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
@@ -75,8 +73,6 @@ if [[ -z "$TRIGGER_R" ]] &>/dev/null; then
   TRIGGER_R="0"
 fi
 
-################################################################################
-
 # get total trigger
 TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
 
@@ -85,10 +81,8 @@ if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
 fi
 
 ################################################################################
-# strategy
-################################################################################
 
-# keep data
+# get data
 function result_bst() {
   echo "Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY
 Listing_Unconfirmed...: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY

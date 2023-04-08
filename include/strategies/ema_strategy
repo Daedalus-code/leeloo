@@ -63,10 +63,8 @@ if [[ -z "$REFERENCE_AMOUNT" ]] &>/dev/null; then
 fi
 
 ################################################################################
-# S I G N A L
-################################################################################
 
-# keep data
+# get data
 function result_ema() {
   echo "$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY" | tr -d ':')
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY
@@ -94,6 +92,10 @@ EMA_REAL_STRATEGY="$(echo "$EMA_REAL_RAW" | awk '{ print $NF }')"
 EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | awk '{ print $1 }')"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | awk '{ print $4 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | awk '{ print $7 }')"
+
+################################################################################
+# S I G N A L
+################################################################################
 
 # if zero, skip signal
 if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
