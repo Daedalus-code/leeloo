@@ -107,6 +107,13 @@ ORDER_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$CALCULATE_SECONDS/3600")) $(("$CALC
 LISTING_ALLOCATED_REAL="$(echo "100/$LISTING_AVAILABLE_VALUED*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 REFERENCE_ALLOCATED_REAL="$(echo "100/$REFERENCE_AVAILABLE_BALANCE*$LISTING_AVAILABLE_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+if [[ -z "$LISTING_ALLOCATED_REAL" ]] &>/dev/null; then
+  LISTING_ALLOCATED_REAL="0"
+fi
+if [[ -z "$REFERENCE_ALLOCATED_REAL" ]] &>/dev/null; then
+  REFERENCE_ALLOCATED_REAL="0"
+fi
+
 ################################################################################
 
 # get data
