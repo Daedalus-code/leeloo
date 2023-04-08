@@ -135,6 +135,20 @@ fi
 # S I G N A L
 ################################################################################
 
+# incoming listing
+if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $1 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+  if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
+    echo "$LOG_DATE :: Strategy EMA info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  fi
+fi
+
+# incoming reference
+if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $1 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+  if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
+    echo "$LOG_DATE :: Strategy EMA info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  fi
+fi
+
 EMA_REAL_RAW="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)"
 EMA_REAL_STRATEGY="$(echo "$EMA_REAL_RAW" | grep "EMA_Data" | awk '{ print $2 }')"
 EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | grep "EMA_Signal" | awk '{ print $2 }')"
