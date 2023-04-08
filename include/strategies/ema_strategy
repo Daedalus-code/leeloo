@@ -173,7 +173,8 @@ LISTING_OPEN_AMOUNT_SECONDS="$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?
 LISTING_OPEN_AMOUNT_AGE=$(printf '%dh:%dm:%ds\n' $(("$LISTING_OPEN_AMOUNT_SECONDS/3600")) $(("$LISTING_OPEN_AMOUNT_SECONDS%3600/60")) $(("$LISTING_OPEN_AMOUNT_SECONDS%60")))
 
 # currency amount cost result age
-echo "EMA $LISTING_OPEN_CURRENCY   $LISTING_OPEN_AMOUNT   $LISTING_OPEN_AMOUNT_VALUED   ${LISTING_OPEN_RESULT:?}%   $LISTING_OPEN_AMOUNT_AGE" | column -t >>"${SYS_DIR:?}"/robot/open
+echo "EMA $LISTING_OPEN_CURRENCY   $LISTING_OPEN_AMOUNT   $LISTING_OPEN_AMOUNT_VALUED   ${LISTING_OPEN_RESULT:?}%   $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/open
+echo "$(cat "${SYS_DIR:?}"/robot/open 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/open
 
 ################################################################################
 # S I G N A L
