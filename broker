@@ -456,7 +456,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
   OPTIONS=(1 "Dashbord         Strategy status"
     2 "Check            Indicator info"
-    3 "Orders           Last Orders"
+    3 "Positions        Open positions"
     4 "Config           Configurations"
     5 "Create           Create strategy"
     6 "Control          Robot controller"
@@ -732,46 +732,29 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
     ;;
 
-    # last auto orders
+    # open positions
 
   "3")
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-        echo "$(cat "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | egrep "[0-9]+" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/last.txid
-
-        function get_auto_txids() {
-          truncate -s 0 "${SYS_DIR:?}"/robot/pool &>/dev/null
-          # if empty skip
-          if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/*.txid 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-            while read TXID; do
-              getOrder "$TXID" | jq -s >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
-              sleep 1
-            done <"${SYS_DIR:?}"/robot/last.txid
-          fi
-        }
-
-        # update data every n seconds
-        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/pool 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
-          get_auto_txids
+        OPEN_COUNT="$(wc -l "${SYS_DIR:?}"/robot/open)"
+        WIDTH="$(echo "$(tail -25 "${SYS_DIR:?}"/robot/open | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+        if [[ -z "$WIDTH" ]] &>/dev/null; then
+          WIDTH="100"
+        elif [[ "$WIDTH" -lt "50" ]] &>/dev/null; then
+          WIDTH="100"
         fi
-
-        if [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
-          GET_AUTO_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
-        else
-          get_auto_txids
-          GET_AUTO_TXIDS="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
-        fi
-
         display_result() {
-          dialog --title "Last Auto Orders" \
+          dialog --title "Open Positions $OPEN_COUNT" \
             --no-collapse \
-            --msgbox "$RESULT" 0 0
+            --tailbox "Currency   Amount   Cost   Result   Age
+$RESULT" 25 "$WIDTH"
         }
-
-        RESULT="$GET_AUTO_TXIDS"
+        RESULT="${SYS_DIR:?}/robot/open"
         display_result 2>/dev/null
+
       else
         no_key_no_secret
       fi
