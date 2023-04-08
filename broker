@@ -739,7 +739,6 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-        echo "$(cat "${SYS_DIR:?}"/robot/open 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/open
         OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/open | awk '{ print $1 }')-1" | bc 2>/dev/null)"
         WIDTH="$(echo "$(tail -25 "${SYS_DIR:?}"/robot/open | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
         if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -755,7 +754,6 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
         }
         RESULT="${SYS_DIR:?}/robot/open"
         display_result 2>/dev/null
-
       else
         no_key_no_secret
       fi
