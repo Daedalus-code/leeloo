@@ -159,10 +159,9 @@ fi
 ################################################################################
 
 if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $1 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-  echo "$LOG_DATE :: Strategy info $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $LISTING_UNCONFIRMED_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-fi
-if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
-  echo "$LOG_DATE :: Strategy info $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $LISTING_UNCONFIRMED_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
+    echo "$LOG_DATE :: Strategy info $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  fi
 fi
 
 if [[ -z "$COOLDOWN_SECONDS" ]] &>/dev/null; then
