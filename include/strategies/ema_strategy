@@ -55,7 +55,7 @@ REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/
 REFERENCE_UNCONFIRMED_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }' | awk '{ printf "%.8f\n", $1 }')"
 REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
-REFERENCE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+REFERENCE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 
 if [[ -z "$REFERENCE_AVAILABLE_BALANCE" ]] &>/dev/null; then
   REFERENCE_AVAILABLE_BALANCE="0"
@@ -78,7 +78,7 @@ function result_ema() {
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY $LISTING_VALUED $REFERENCE_CURRENCY
 Listing_Unconfirmed...: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY
 Price.................: $LISTING_PRICE $REFERENCE_CURRENCY
-Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY $REFERENCE_VALUED $REFERENCE_CURRENCY
+Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY $REFERENCE_VALUED $LISTING_CURRENCY
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
 }
 
