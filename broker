@@ -384,6 +384,8 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   ;;
 
+  # update repo
+
 "5")
 
   display_result() {
@@ -392,14 +394,14 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
       --msgbox "$RESULT" 0 0
   }
 
-  cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating
+  cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
 
   # restart looper if any updates
-  if [[ "$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating | egrep "-|+" | wc -l)" -eq "1" ]] &>/dev/null; then
+  if [[ "$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | egrep "-|+" | wc -l)" -eq "1" ]] &>/dev/null; then
     echo "$LOG_DATE :: [OK] Robot updated!" >>"${LOG_DIR:?}"/leeloo/updating
     screen -X -S leeloo quit &>/dev/null
     echo "$LOG_DATE :: [!!] Robot stopping!" >>"${LOG_DIR:?}"/leeloo/updating
-    if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
       killall screen &>/dev/null
     fi
     bash "${SYS_DIR:?}"/robot/looper
