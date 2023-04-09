@@ -8,7 +8,7 @@ source /usr/local/bin/include/leeloo/broker.conf
 
 if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
   function markets {
-    torify curl -s https://www.southxchange.com/api/markets | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," /
+    curl -s --proxy socks5h://localhost:9050 https://www.southxchange.com/api/markets | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," /
   }
 else
   function markets {
@@ -22,7 +22,7 @@ fi
 
 if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
   function prices {
-    torify curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"'
+    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"'
   }
 else
   function prices {
@@ -36,7 +36,7 @@ fi
 
 if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
   function fees {
-    torify curl -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" | jq -s
+    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" | jq -s
   }
 else
   function fees {

@@ -15,7 +15,7 @@ get_rsi() {
   API_RSI_EXCHANGE="CCCAGG"
   TMP_FILE=$(mktemp)
   if [[ "$PROXY_INDICATOR_API" == "true" ]] &>/dev/null; then
-    torify curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
+    curl -s --proxy socks5h://localhost:9050 "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
   else
     curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
   fi
