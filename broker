@@ -739,27 +739,31 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
+        OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/open | awk '{ print $1 }')-1" | bc 2>/dev/null)"
+        WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/open | wc -L | awk '{ print $1 }')+8" | bc 2>/dev/null)"
+        LENGTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/open | wc -l | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+
+        if [[ -z "$LENGTH" ]] &>/dev/null; then
+          LENGTH="8"
+        fi
+        if [[ "$LENGTH" -lt "8" ]] &>/dev/null; then
+          LENGTH="8"
+        fi
+
+        if [[ -z "$WIDTH" ]] &>/dev/null; then
+          WIDTH="60"
+        fi
+        if [[ "$WIDTH" -lt "60" ]] &>/dev/null; then
+          WIDTH="60"
+        fi
+
         display_result() {
           dialog --title "Open Positions $OPEN_COUNT" \
             --no-collapse \
-            --no-kill \
             --tailbox "$RESULT" "$LENGTH" "$WIDTH"
         }
-
-        OPEN_COUNT="0"
-        WIDTH="70"
-        LENGTH="8"
-
-        RESULT="${SYS_DIR:?}/robot/pool"
-
-        while true; do
-          OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null)"
-          WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool | wc -L | awk '{ print $1 }')+8" | bc 2>/dev/null)"
-          LENGTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool | wc -l | awk '{ print $1 }')+6" | bc 2>/dev/null)"
-          display_result 2>/dev/null
-          clear
-          sleep 30
-        done
+        RESULT="${SYS_DIR:?}/robot/open"
+        display_result 2>/dev/null
       else
         no_key_no_secret
       fi
