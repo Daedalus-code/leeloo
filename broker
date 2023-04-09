@@ -742,12 +742,14 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
         display_result() {
           dialog --title "Open Positions $OPEN_COUNT" \
             --no-collapse \
+            --no-kill \
             --tailbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
         OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null)"
-
+        WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool | wc -L | awk '{ print $1 }')+8" | bc 2>/dev/null)"
         LENGTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool | wc -l | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+
         if [[ -z "$LENGTH" ]] &>/dev/null; then
           LENGTH="8"
         fi
@@ -755,7 +757,6 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
           LENGTH="8"
         fi
 
-        WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool | wc -L | awk '{ print $1 }')+8" | bc 2>/dev/null)"
         if [[ -z "$WIDTH" ]] &>/dev/null; then
           WIDTH="70"
         fi
@@ -764,15 +765,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
         fi
 
         RESULT="${SYS_DIR:?}/robot/pool"
-        while true; do
-          display_result 2>/dev/null
-          inotifywait -q -e modify "${SYS_DIR:?}/robot/pool" >/dev/null 2>&1
-        done &
-
-        read -r -s -n 1 key
-        if [[ "$key" = "" ]] &>/dev/null; then
-          pkill -P $$ inotifywait
-        fi
+        display_result 2>/dev/null
         clear
       else
         no_key_no_secret
