@@ -398,8 +398,8 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   # restart looper if any updates
   if [[ "$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | grep '[+-]' | wc -l)" -eq "1" ]] &>/dev/null; then
-    ROBOT_UPDATES="$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
-    echo " -+ Robot updated! ($ROBOT_UPDATES)" >>"${LOG_DIR:?}"/leeloo/updating
+    ROBOT_UPDATES="$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | awk '{ print $3,$4 }')"
+    echo " -+ Robot updated! $ROBOT_UPDATES" >>"${LOG_DIR:?}"/leeloo/updating
 
     if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
       screen -X -S leeloo quit &>/dev/null
