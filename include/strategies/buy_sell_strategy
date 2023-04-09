@@ -230,18 +230,6 @@ LISTING_OPEN_AMOUNT_AGE=$(printf '%dh:%dm:%ds\n' $(("$LISTING_OPEN_AMOUNT_SECOND
 
 # is this an open position?
 if [[ "$(echo "$LISTING_OPEN_AMOUNT" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-
-  ##############################################################################
-
-  if [[ ! -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
-    touch "${SYS_DIR:?}"/robot/pool &>/dev/null
-  fi
-
-  # reset open positions pool
-  truncate -s 0 "${SYS_DIR:?}"/robot/pool &>/dev/null
-  # update pool
-  echo "Strategy Currency Amount Cost Result Age" >>"${SYS_DIR:?}"/robot/pool
-
   # currency amount cost result age
   echo "$OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >"${SYS_DIR:?}"/robot/pool.tmp
   echo "$(cat "${SYS_DIR:?}"/robot/pool.tmp 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/pool.tmp
