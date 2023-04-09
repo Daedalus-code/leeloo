@@ -150,27 +150,45 @@ fi
 # O P E N - P O S I T I O N S
 ################################################################################
 
+# strategy
+OPEN_STRATEGY="$STRATEGY_NAME"
+
+################################################################################
+
 # currency
 LISTING_OPEN_CURRENCY="$LISTING_CURRENCY"
+
+################################################################################
 
 # amount
 LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
 
+################################################################################
+
 # cost
 if [[ ! -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost ]] &>/dev/null; then
-  echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+  if [[ ! -z "$LISTING_AVAILABLE_VALUED" ]] &>/dev/null; then
+    echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+  fi
 fi
 if [[ ! -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price ]] &>/dev/null; then
-  echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
+  if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
+    echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
+  fi
 fi
+
 LISTING_OPEN_BALANCE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost 2>/dev/null)"
 LISTING_OPEN_PRICE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price 2>/dev/null)"
+
+################################################################################
 
 # result
 LISTING_OPEN_RESULT="$(echo "$(echo "100/$LISTING_OPEN_PRICE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')-100" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 if [[ -z "$LISTING_OPEN_RESULT" ]] &>/dev/null; then
   LISTING_OPEN_RESULT="0.00"
 fi
+
+################################################################################
 
 # age (seconds)
 LISTING_OPEN_AMOUNT_SECONDS="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price 2>/dev/null)))" 2>/dev/null)"
@@ -179,11 +197,13 @@ if [[ -z "$LISTING_OPEN_AMOUNT_SECONDS" ]] &>/dev/null; then
 fi
 LISTING_OPEN_AMOUNT_AGE=$(printf '%dh:%dm:%ds\n' $(("$LISTING_OPEN_AMOUNT_SECONDS/3600")) $(("$LISTING_OPEN_AMOUNT_SECONDS%3600/60")) $(("$LISTING_OPEN_AMOUNT_SECONDS%60")))
 
+################################################################################
+
 # is this an open position?
 if [[ "$(echo "$LISTING_OPEN_AMOUNT" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-  # currency amount cost result age
-  echo "$LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/open
-  echo "$(cat "${SYS_DIR:?}"/robot/open 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/open
+  # strategy currency amount cost result age
+  echo "$OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/pool
+  echo "$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/pool
 else
   rm "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".* &>/dev/null
 fi
@@ -239,8 +259,7 @@ fi
 
 ################################################################################
 
-function open_order_tx_id {
-  echo "$LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+function tx_id {
   echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
 
@@ -287,7 +306,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
           ######################################################################
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-          open_order_tx_id
+          tx_id
 
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -296,7 +315,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
           ######################################################################
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-          open_order_tx_id
+          tx_id
         fi
 
         echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${REFERENCE_ALLOCATED:?}% :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
@@ -348,7 +367,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
           ######################################################################
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-          open_order_tx_id
+          tx_id
 
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -357,7 +376,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
           ######################################################################
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-          open_order_tx_id
+          tx_id
         fi
 
         echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${LISTING_ALLOCATED:?}% :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
