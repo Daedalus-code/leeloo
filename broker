@@ -412,8 +412,11 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
     fi
   fi
 
-  echo "
+  # if any updates, skip
+  if [[ ! "$(grep "Updating" "${LOG_DIR:?}"/leeloo/updating | wc -l)" -gt "0" ]] &>/dev/null; then
+    echo "
 $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating) $REPO_HEAD")" >"${LOG_DIR:?}"/leeloo/updating
+  fi
 
   RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
   display_result 2>/dev/null
