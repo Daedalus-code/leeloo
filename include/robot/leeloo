@@ -63,10 +63,16 @@ for (( ; ; )); do
 
   ##############################################################################
 
+  if [[ ! -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/pool &>/dev/null
+  fi
+
   # reset open positions pool
   truncate -s 0 "${SYS_DIR:?}"/robot/pool &>/dev/null
+
   # update pool
   echo "Strategy Currency Amount Cost Result Age" >>"${SYS_DIR:?}"/robot/pool
+  cat "${SYS_DIR:?}"/robot/pool.tmp >>"${SYS_DIR:?}"/robot/pool
 
   ##############################################################################
 
