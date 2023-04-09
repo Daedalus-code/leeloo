@@ -400,13 +400,16 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
   if [[ "$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | grep '[+-]' | wc -l)" -eq "1" ]] &>/dev/null; then
     ROBOT_UPDATES="$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
     echo " -+ Robot updated! ($ROBOT_UPDATES)" >>"${LOG_DIR:?}"/leeloo/updating
-    screen -X -S leeloo quit &>/dev/null
-    echo " -- Robot stopping!" >>"${LOG_DIR:?}"/leeloo/updating
+
     if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-      killall screen &>/dev/null
+      screen -X -S leeloo quit &>/dev/null
+      echo " -- Robot stopping!" >>"${LOG_DIR:?}"/leeloo/updating
+      if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
+        killall screen &>/dev/null
+      fi
+      bash "${SYS_DIR:?}"/robot/looper
+      echo " ++ Robot restarting!" >>"${LOG_DIR:?}"/leeloo/updating
     fi
-    bash "${SYS_DIR:?}"/robot/looper
-    echo " ++ Robot restarting!" >>"${LOG_DIR:?}"/leeloo/updating
   fi
 
   RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
