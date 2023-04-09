@@ -109,8 +109,8 @@ function result_ema() {
     GET_PERCENTAGE="0"
   fi
 
-  echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY ($STRATEGY_TYPE)
-EMA_Data..............: $GET_EMA_CONFIG
+  echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
+EMA_Data..............: $STRATEGY_TYPE.$GET_EMA_CONFIG
 EMA_Short.............: $GET_SHORT_DATA
 EMA_Long..............: $GET_LONG_DATA
 EMA_Signal............: $GET_EMA_SIGNAL
@@ -152,7 +152,7 @@ fi
 
 # strategy
 OPEN_EMA_DATA="$(grep "EMA_Data" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null | awk '{ print $2 }')"
-OPEN_STRATEGY="$STRATEGY_NAME.$OPEN_EMA_DATA"
+OPEN_STRATEGY="$OPEN_EMA_DATA"
 
 ################################################################################
 
@@ -308,6 +308,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
           tx_id
+          echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+          echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
 
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -317,8 +319,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
           tx_id
-        fi
+          echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+          echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
 
+        fi
         echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${REFERENCE_ALLOCATED:?}% :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       fi
     fi
@@ -369,6 +373,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
           tx_id
+          echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+          echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
 
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -378,8 +384,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
 
           echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE $LISTING_CURRENCY Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
           tx_id
-        fi
+          echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+          echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
 
+        fi
         echo "$LOG_DATE :: Strategy $STRATEGY_TYPE $EMA_REAL_STRATEGY :: $TYPE ${LISTING_ALLOCATED:?}% :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       fi
     fi
