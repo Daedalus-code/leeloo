@@ -572,6 +572,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
         function get_rsi_ema() {
           echo "-" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+
           GET_RSI_14="$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)"
           GET_RSI_21="$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)"
           GET_RSI_14_NR="$(echo "$GET_RSI_14" | awk '{ print $NF }')"
@@ -581,11 +582,13 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
           GET_EMA_10_38="$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)"
           GET_EMA_12_26="$(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)"
           GET_EMA_50_200="$(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)"
+
           echo "$GET_RSI_14" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_RSI_21" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           GET_RSI_CALC="$(echo "$GET_RSI_14_NR+$GET_RSI_21_NR" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
           GET_RSI_SIGNAL="$(echo "$GET_RSI_CALC/2" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+
           if (($(echo "$GET_RSI_SIGNAL > 70" | bc -l 2>/dev/null))); then
             echo "RSI_Signal Overbought ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           elif (($(echo "$GET_RSI_SIGNAL < 30" | bc -l 2>/dev/null))); then
@@ -593,6 +596,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
           else
             echo "RSI_Signal Neutral ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           fi
+
           echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_EMA_6_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_EMA_8_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
@@ -600,16 +604,19 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
           echo "$GET_EMA_12_26" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_EMA_50_200" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+
           BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
           BULLISH_SIGNAL="$(grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
           TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc 2>/dev/null)"
           BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc 2>/dev/null)"
           BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc 2>/dev/null)"
+
           if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
             echo "EMA_Signal Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
             echo "EMA_Signal Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           fi
+
           echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
         }
 
@@ -683,12 +690,21 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
         GET_RSI_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)"
       fi
 
+      WIDTH="$(echo "$(echo "$GET_RSI_CUSTOM" | wc -L)+4" | bc 2>/dev/null)"
+
+      if [[ -z "$WIDTH" ]] &>/dev/null; then
+        WIDTH="30"
+      fi
+      if [[ "$WIDTH" -lt "30" ]] &>/dev/null; then
+        WIDTH="30"
+      fi
+
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
         if [[ ! -z "$GET_RSI_CUSTOM" ]] &>/dev/null; then
           display_result() {
             dialog --title "RSI $COIN_TOKEN" \
               --no-collapse \
-              --msgbox "$RESULT" 5 37
+              --msgbox "$RESULT" 5 "$WIDTH"
           }
 
           RESULT="$(echo "$GET_RSI_CUSTOM")"
@@ -719,12 +735,21 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
         GET_EMA_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)"
       fi
 
+      WIDTH="$(echo "$(echo "$GET_EMA_CUSTOM" | wc -L)+4" | bc 2>/dev/null)"
+
+      if [[ -z "$WIDTH" ]] &>/dev/null; then
+        WIDTH="60"
+      fi
+      if [[ "$WIDTH" -lt "60" ]] &>/dev/null; then
+        WIDTH="60"
+      fi
+
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
         if [[ ! -z "$GET_EMA_CUSTOM" ]] &>/dev/null; then
           display_result() {
             dialog --title "EMA $COIN_TOKEN" \
               --no-collapse \
-              --msgbox "$RESULT" 5 75
+              --msgbox "$RESULT" 5 "$WIDTH"
           }
 
           RESULT="$(echo "$GET_EMA_CUSTOM")"
@@ -1230,10 +1255,10 @@ $BTC_MEMPOOL"
 
       echo "Bitcoin (BTC): $BTC_DNT_ADDR
 
-  $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
+$BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
 
       display_result() {
-        dialog --title "Donation" \
+        dialog --title "BTC Donation" \
           --no-collapse \
           --msgbox "$RESULT" 5 37
       }
