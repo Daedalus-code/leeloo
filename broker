@@ -1339,14 +1339,20 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
     PROXY_CHAT_STATUS="Disabled"
   fi
 
-  IRSSI_VERSION="$(irssi -v)"
+  IRSSI_RAW="$(irssi -v)"
+  IRSSI_NAME="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $1 }')"
+  IRSSI_VERSION="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $2 }')"
+  IRSSI_VERSION_DATE="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $3 }')"
+  IRSSI_VERSION="$IRSSI_NAME $IRSSI_VERSION"
 
-  if [[ -z "$IRSSI_VERSION" ]] &>/dev/null; then
+  if [[ -z "$IRSSI_RAW" ]] &>/dev/null; then
     IRSSI_VERSION="Not installed"
+    IRSSI_VERSION_DATE="(no data)"
   fi
 
   RESULT="$(echo "
 Client.: $IRSSI_VERSION
+Date...: $IRSSI_VERSION_DATE
 Proxy..: $PROXY_CHAT_STATUS
 
 COMMANDS:
