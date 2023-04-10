@@ -1451,19 +1451,13 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
         --msgbox "$RESULT" 18 42
     }
 
-    # if all empty, connect something
-    if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
-      TRIGGER_NICK="1"
-    fi
-    if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
-      TRIGGER_PORT="1"
-    fi
+    # if empty, trigger something
     if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
       TRIGGER_SERVER="1"
     fi
 
-    # all triggers accounted for, continue
-    if [[ "$(echo "$TRIGGER_NICK+$TRIGGER_PORT+$TRIGGER_SERVER" | bc 2>/dev/null)" -eq "3" ]] &>/dev/null; then
+    # triggered, continue
+    if [[ "$TRIGGER_SERVER" -gt "0" ]] &>/dev/null; then
 
       # random irc ports
       IRSSI_PORTS=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 8000)
