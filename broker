@@ -1330,8 +1330,14 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
   display_result() {
     dialog --title "IRC Chat (irssi)" \
       --no-collapse \
-      --msgbox "$RESULT" 15 42
+      --msgbox "$RESULT" 17 42
   }
+
+  if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
+    PROXY_CHAT_STATUS="Enabled"
+  else
+    PROXY_CHAT_STATUS="Disabled"
+  fi
 
   IRSSI_VERSION="$(irssi -v)"
 
@@ -1340,6 +1346,8 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
   fi
 
   RESULT="$(echo "$IRSSI_VERSION
+
+Proxy: $PROXY_CHAT_STATUS
 
 COMMANDS:
 
@@ -1353,13 +1361,15 @@ COMMANDS:
 
   if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
     START_INSTALL="Install"
+    WIDTH="28"
   else
     START_INSTALL="Start"
+    WIDTH="26"
   fi
 
-  if dialog --stdout --title "Start IRC Client?" \
+  if dialog --stdout --title "${START_INSTALL:?} IRC Client?" \
     --backtitle "Starting client" \
-    --yesno "Yes: ${START_INSTALL:?}!, No: Quit" 5 30; then
+    --yesno "Yes: ${START_INSTALL:?}!, No: Quit" 5 "$WIDTH"; then
 
     if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
       sudo apt-get install irssi
