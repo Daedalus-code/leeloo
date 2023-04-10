@@ -1391,9 +1391,25 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
   IRSSI_NAME="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $1 }')"
   IRSSI_VERSION="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $2 }' | xargs)"
 
+  # zero, continue
+  if [[ -z "$IRSSI_NAME" ]] &>/dev/null; then
+    IRSSI_NAME="?"
+  fi
+  if [[ -z "$IRSSI_VERSION" ]] &>/dev/null; then
+    IRSSI_VERSION="?"
+  fi
+
   # proxy data
   PROXY_NAME="$(echo "$PROXY_RAW" 2>/dev/null | awk '{ print $1 }')"
   PROXY_VERSION="$(echo "$PROXY_RAW" 2>/dev/null | awk '{ print $3 }' | xargs)"
+
+  # zero, continue
+  if [[ -z "$PROXY_NAME" ]] &>/dev/null; then
+    PROXY_NAME="?"
+  fi
+  if [[ -z "$PROXY_VERSION" ]] &>/dev/null; then
+    PROXY_VERSION="?"
+  fi
 
   # proxy config
   if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
@@ -1515,7 +1531,7 @@ IRC Client...: $IRSSI_NAME $IRSSI_VERSION
 IRC Status...: $IRSSI_COM_STATUS
 IRC Servers..: $(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')
 Proxy Client.: $PROXY_NAME $PROXY_VERSION
-Proxy Status.: $PROXY_COM_STATUS"
+Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
     display_result 2>/dev/null
 
     ;;
@@ -1532,11 +1548,13 @@ Proxy Status.: $PROXY_COM_STATUS"
           --msgbox "$RESULT" 5 30
       }
 
-      RESULT="$(if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
-        sudo apt-get install irssi
+      if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
+        sudo apt-get install irssi | tee "${LOG_DIR:?}"/tmp.install
       else
-        echo "Client already installed!"
-      fi)"
+        echo "Client already installed!" >"${LOG_DIR:?}"/tmp.install
+      fi
+
+      RESULT="$(cat "${LOG_DIR:?}"/tmp.install 2>/dev/null)"
       display_result 2>/dev/null
     fi
 
@@ -1554,11 +1572,13 @@ Proxy Status.: $PROXY_COM_STATUS"
           --msgbox "$RESULT" 5 30
       }
 
-      RESULT="$(if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
-        sudo apt-get purge --auto-remove irssi
+      if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
+        sudo apt-get purge --auto-remove irssi | tee "${LOG_DIR:?}"/tmp.install
       else
-        echo "Client already removed!"
-      fi)"
+        echo "Client already removed!" >"${LOG_DIR:?}"/tmp.install
+      fi
+
+      RESULT="$(cat >"${LOG_DIR:?}"/tmp.install 2>/dev/null)"
       display_result 2>/dev/null
     fi
 
