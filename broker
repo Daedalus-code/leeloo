@@ -115,6 +115,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
   # 450 max before dialog breaks
   MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k2 -n -r | head -100)"
+  MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
   MARKET_MOON="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
   MARKET_MOON_COUNT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $5 }' | wc -l)"
   MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')"
@@ -125,7 +126,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
   fi
 
   display_result() {
-    dialog --title "100 Market: +$(prices | wc -l) :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
+    dialog --title "100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
       --no-collapse \
       --scrollbar \
       --msgbox "$(echo "$RESULT" | column -t)" 25 "$WIDTH"
@@ -144,14 +145,31 @@ $MARKET_RESULT"
 
   if [[ ! -z "$MARKET_INPUT" ]] &>/dev/null; then
 
+    MARKET_TIMER="$(echo "$BOT_TIMER*3" | bc 2>/dev/null)"
+
+    function result_prices {
+      echo "$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices
+    }
+
+    # update data every n seconds
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
+      result_prices
+      # update data if missing
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
+      result_prices
+      # update data if empty
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
+      result_prices
+    fi
+
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-    MARKET_RESULT="$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t)"
+    MARKET_RESULT="$(grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
     MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
     MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
     MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | wc -l)"
     MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')"
     LENGTH="$(echo "$MARKET_COUNT+5" | bc 2>/dev/null)"
-    WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+6" | bc 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$MARKET_RESULT" | column -t | wc -L)+6" | bc 2>/dev/null)"
 
     if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
       LENGTH="25"
