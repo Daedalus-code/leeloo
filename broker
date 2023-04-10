@@ -1503,10 +1503,15 @@ Config.......: $PROXY_CONFIG_STATUS
 COMMANDS.....: /help")"
     display_result 2>/dev/null
 
-    if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-      torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
-    else
-      irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
+    if dialog --stdout --title "Connect to $IRSSI_SERVER?" \
+      --backtitle "Connecting $IRSSI_SERVER $IRSSI_PORT" \
+      --yesno "Yes: Connect!, No: Quit" 5 30; then
+
+      if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
+        torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
+      else
+        irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
+      fi
     fi
 
     ;;
