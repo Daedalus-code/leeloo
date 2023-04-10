@@ -1356,10 +1356,6 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
   IRSSI_RAW="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null)"
   PROXY_TOR="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null)"
 
-  if [[ -z "$IRSSI_RAW" ]] &>/dev/null; then
-    IRSSI_VERSION="Not installed"
-    IRSSI_VERSION_DATE="?"
-  fi
   if [[ -z "$PROXY_TOR" ]] &>/dev/null; then
     PROXY_TOR="?"
   fi
@@ -1405,6 +1401,11 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
     IRSSI_VERSION="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $2 }')"
     IRSSI_VERSION_DATE="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $3,$NF }')"
     IRSSI_VERSION="$IRSSI_NAME $IRSSI_VERSION"
+
+    if [[ -z "$IRSSI_RAW" ]] &>/dev/null; then
+      IRSSI_VERSION="Not installed"
+      IRSSI_VERSION_DATE="?"
+    fi
 
     # if all empty, connect something
     if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
