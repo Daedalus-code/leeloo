@@ -1370,17 +1370,43 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
     IRSSI_VERSION_DATE="(no data)"
   fi
 
+  # if all empty, connect something
+  if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
+    TRIGGER_NICK="1"
+  fi
+  if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
+    TRIGGER_PORT="1"
+  fi
+  if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
+    TRIGGER_SERVER="1"
+  fi
+
+  # all triggers accounted for, continue
+  if [[ "$(echo "$TRIGGER_NICK+$TRIGGER_PORT+$TRIGGER_SERVER" | bc)" -eq "3" ]] &>/dev/null; then
+    IRSSI_PORT="8484"
+    IRSSI_SERVER="$(tr -dc '0a-z9' </dev/urandom 2>/dev/null | head -c 56 | rev).onion"
+    IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
+  fi
+
+  # default port
+  if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
+    IRSSI_PORT="6667"
+  fi
+  # default random nickname
+  if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
+    IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
+  fi
+
   RESULT="$(echo "
 Client...: $IRSSI_VERSION
 Date.....: $IRSSI_VERSION_DATE
 Proxy....: $PROXY_CHAT_STATUS
 
-COMMANDS.:
+Server...: $IRSSI_SERVER
+Nick.....: $IRSSI_NICKNAME
+Port.....: $IRSSI_PORT
 
-/help
-/quit
-/connect
-/disconnect")"
+COMMANDS.: /help")"
   display_result 2>/dev/null
 
   if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
@@ -1397,33 +1423,6 @@ COMMANDS.:
 
     if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
       sudo apt-get install irssi
-    fi
-
-    # if all empty, connect something
-    if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
-      TRIGGER_NICK="1"
-    fi
-    if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
-      TRIGGER_PORT="1"
-    fi
-    if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
-      TRIGGER_SERVER="1"
-    fi
-
-    # all triggers accounted for, continue
-    if [[ "$(echo "$TRIGGER_NICK+$TRIGGER_PORT+$TRIGGER_SERVER" | bc)" -eq "3" ]] &>/dev/null; then
-      IRSSI_PORT="8484"
-      IRSSI_SERVER="$(tr -dc '0a-z9' </dev/urandom 2>/dev/null | head -c 56 | rev).onion"
-      IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
-    fi
-
-    # default port
-    if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
-      IRSSI_PORT="6667"
-    fi
-    # default random nickname
-    if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
-      IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
     fi
 
     if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
