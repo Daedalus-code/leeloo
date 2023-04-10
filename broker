@@ -1346,6 +1346,28 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
 
 "C")
 
+  # get irc server list
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.servers ]] &>/dev/null; then
+    if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
+      torify curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers
+    else
+      curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers
+    fi
+  fi
+
+  # connection status
+  if [[ "$(pidof irssi | wc -l)" -gt "0" ]] &>/dev/null; then
+    IRSSI_COM_STATUS="Online"
+  else
+    IRSSI_COM_STATUS="Offline"
+  fi
+  if [[ "$(pidof tor | wc -l)" -gt "0" ]] &>/dev/null; then
+    PROXY_COM_STATUS="Online"
+  else
+    PROXY_COM_STATUS="Offline"
+  fi
+
+  # get version
   if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
     echo "$(irssi -v 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/irc.client
   fi
@@ -1353,32 +1375,45 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
     echo "$(tor --version 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/tor.client
   fi
 
+  # get raw data
   IRSSI_RAW="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null)"
-  PROXY_TOR="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null)"
+  PROXY_RAW="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null)"
 
+  # zero, continue
   if [[ -z "$IRSSI_RAW" ]] &>/dev/null; then
     IRSSI_RAW="?"
   fi
-  if [[ -z "$PROXY_TOR" ]] &>/dev/null; then
-    PROXY_TOR="?"
+  if [[ -z "$PROXY_RAW" ]] &>/dev/null; then
+    PROXY_RAW="?"
   fi
 
+  # irssi data
+  IRSSI_NAME="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $1 }')"
+  IRSSI_VERSION="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $2,$3,$4 }' | xargs)"
+
+  # proxy data
+  PROXY_NAME="$(echo "$PROXY_RAW" 2>/dev/null | awk '{ print $1 }')"
+  PROXY_VERSION="$(echo "$PROXY_RAW" 2>/dev/null | awk '{ print $3 }' | xargs)"
+
+  # proxy config
   if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-    PROXY_CHAT_STATUS="Enabled"
+    PROXY_CONFIG_STATUS="Enabled"
   else
-    PROXY_CHAT_STATUS="Disabled"
+    PROXY_CONFIG_STATUS="Disabled"
   fi
 
-  HEIGHT=10
+  HEIGHT=12
   WIDTH=42
-  CHOICE_HEIGHT=3
+  CHOICE_HEIGHT=5
   BACKTITLE="Leeloo (Multipass)"
   TITLE="IRC Chat"
   MENU="Choose one option:"
 
   OPTIONS=(1 "Chat             Internet Relay"
     2 "Servers          IRC Servers"
-    3 "Information      IRC Status")
+    3 "Information      IRC Status"
+    4 "Install          Install client"
+    5 "Remove           Remove client")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -1397,18 +1432,8 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
     display_result() {
       dialog --title "IRC Chat (irssi)" \
         --no-collapse \
-        --msgbox "$RESULT" 14 42
+        --msgbox "$RESULT" 17 42
     }
-
-    IRSSI_NAME="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $1 }')"
-    IRSSI_VERSION="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $2 }')"
-    IRSSI_VERSION_DATE="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $3,$NF }' | xargs)"
-    IRSSI_VERSION="$IRSSI_NAME $IRSSI_VERSION"
-
-    if [[ -z "$IRSSI_RAW" ]] &>/dev/null; then
-      IRSSI_VERSION="Not installed"
-      IRSSI_VERSION_DATE="?"
-    fi
 
     # if all empty, connect something
     if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
@@ -1423,21 +1448,16 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
 
     # all triggers accounted for, continue
     if [[ "$(echo "$TRIGGER_NICK+$TRIGGER_PORT+$TRIGGER_SERVER" | bc 2>/dev/null)" -eq "3" ]] &>/dev/null; then
+
+      # random irc ports
       IRSSI_PORTS=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 8000)
       IRSSI_INDEX="$((RANDOM % ${#IRSSI_PORTS[@]}))"
+      # random port
       IRSSI_PORT="${IRSSI_PORTS[$IRSSI_INDEX]}"
-
-      # get irc server list
-      if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.servers ]] &>/dev/null; then
-        if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-          torify curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers
-        else
-          curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers
-        fi
-      fi
 
       # random irc server
       IRSSI_SERVER="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | sort -R | head -1)"
+      # random nickname
       IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
     fi
 
@@ -1451,38 +1471,26 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
     fi
 
     RESULT="$(echo "
-IRC Client.: $IRSSI_VERSION
-Version....: $IRSSI_VERSION_DATE
-Server.....: $IRSSI_SERVER
-Port.......: $IRSSI_PORT
-Nick.......: $IRSSI_NICKNAME
-Proxy......: $PROXY_CHAT_STATUS
-Version....: $PROXY_TOR
+IRC Client...: $IRSSI_NAME
+Version......: $IRSSI_VERSION
+Status.......: $IRSSI_COM_STATUS
 
-COMMANDS.: /help")"
+Server.......: $IRSSI_SERVER
+Port.........: $IRSSI_PORT
+Nick.........: $IRSSI_NICKNAME
+
+Proxy Client.: $PROXY_NAME
+Version......: $PROXY_VERSION
+Status.......: $PROXY_COM_STATUS
+Config.......: $PROXY_CONFIG_STATUS
+
+COMMANDS.....: /help")"
     display_result 2>/dev/null
 
-    if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
-      START_INSTALL="Install"
-      WIDTH="28"
+    if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
+      torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
     else
-      START_INSTALL="Start"
-      WIDTH="26"
-    fi
-
-    if dialog --stdout --title "${START_INSTALL:?} IRC Client?" \
-      --backtitle "Starting client" \
-      --yesno "Yes: ${START_INSTALL:?}!, No: Quit" 5 "$WIDTH"; then
-
-      if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
-        sudo apt-get install irssi
-      fi
-
-      if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-        torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
-      else
-        irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
-      fi
+      irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
     fi
 
     ;;
@@ -1498,15 +1506,61 @@ COMMANDS.: /help")"
     display_result() {
       dialog --title "IRC Chat" \
         --no-collapse \
-        --msgbox "$RESULT" 10 50
+        --msgbox "$RESULT" 12 50
     }
 
     RESULT="Chat information
 
-IRC Client..: $(echo "$IRSSI_RAW" | awk '{ print $1,$2 }')
-IRC Servers.: $(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')
-Proxy.......: $PROXY_CHAT_STATUS $PROXY_TOR"
+IRC Client...: $IRSSI_NAME $IRSSI_VERSION
+IRC Status...: $IRSSI_COM_STATUS
+IRC Servers..: $(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')
+Proxy Client.: $PROXY_NAME $PROXY_VERSION
+Proxy Status.: $PROXY_COM_STATUS"
     display_result 2>/dev/null
+
+    ;;
+
+  "4")
+
+    if dialog --stdout --title "Install IRC Client?" \
+      --backtitle "Install client" \
+      --yesno "Yes: Install!, No: Quit" 5 30; then
+
+      display_result() {
+        dialog --title "Install IRC Client" \
+          --no-collapse \
+          --msgbox "$RESULT" 5 30
+      }
+
+      RESULT="$(if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
+        sudo apt-get install irssi
+      else
+        echo "Client already installed!"
+      fi)"
+      display_result 2>/dev/null
+    fi
+
+    ;;
+
+  "5")
+
+    if dialog --stdout --title "Remove IRC Client?" \
+      --backtitle "Remove client" \
+      --yesno "Yes: Remove!, No: Quit" 5 30; then
+
+      display_result() {
+        dialog --title "Remove IRC Client" \
+          --no-collapse \
+          --msgbox "$RESULT" 5 30
+      }
+
+      RESULT="$(if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
+        sudo apt-get purge --auto-remove irssi
+      else
+        echo "Client already removed!"
+      fi)"
+      display_result 2>/dev/null
+    fi
 
     ;;
 
