@@ -1351,9 +1351,15 @@ COMMANDS:
 /disconnect")"
   display_result 2>/dev/null
 
+  if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
+    START_INSTALL="Install"
+  else
+    START_INSTALL="Start"
+  fi
+
   if dialog --stdout --title "Start IRC Client?" \
     --backtitle "Starting client" \
-    --yesno "Yes: Start!, No:  Go back!" 5 30; then
+    --yesno "Yes: ${START_INSTALL:?}!, No:  Go back!" 5 30; then
 
     if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
       sudo apt-get install irssi
