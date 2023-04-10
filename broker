@@ -147,23 +147,23 @@ $MARKET_RESULT"
 
     MARKET_TIMER="$(echo "$BOT_TIMER*3" | bc 2>/dev/null)"
 
-    function result_prices {
-      echo "$(prices | grep "$MARKET_SEARCH" | sort -k2 -n -r | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices
+    function result_market {
+      prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
     }
 
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
-      result_prices
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
+      result_market
       # update data if missing
-    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
-      result_prices
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+      result_market
       # update data if empty
-    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
-      result_prices
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+      result_market
     fi
 
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-    MARKET_RESULT="$(grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
+    MARKET_RESULT="$(grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)"
     MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
     MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
     MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | wc -l)"
