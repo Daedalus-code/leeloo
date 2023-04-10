@@ -19,9 +19,9 @@ source /usr/local/bin/include/leeloo/indicators/ema
 source /usr/local/bin/include/leeloo/indicators/rsi
 
 # menu
-HEIGHT=18
+HEIGHT=19
 WIDTH=44
-CHOICE_HEIGHT=10
+CHOICE_HEIGHT=11
 BACKTITLE="Leeloo (Multipass)"
 TITLE="Main Menu"
 MENU="Multipass $DATE
@@ -35,6 +35,7 @@ OPTIONS=(1 "Balance          Account Balance"
   6 "Debug            Debug logs"
   7 "Config           API Config"
   A "Robot            Auto strategy"
+  C "Chat             IRC Chat"
   D "Donate           Donation"
   0 "Quit             Exit Menu")
 
@@ -402,7 +403,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
     echo " Robot updated! $ROBOT_UPDATES" >>"${LOG_DIR:?}"/leeloo/updating
 
     if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-      screen -X -S leeloo quit &>/dev/null
+      screen -S "$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
       echo " -- Robot stopping!" >>"${LOG_DIR:?}"/leeloo/updating
       if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
         killall screen &>/dev/null
@@ -1059,7 +1060,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
         "3")
 
-          screen -X -S leeloo quit &>/dev/null
+          screen -S "$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
 
           if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
             killall screen &>/dev/null
@@ -1320,6 +1321,44 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
     ;;
 
   esac
+
+  ;;
+
+"C")
+
+  # irc chat
+  display_result() {
+    dialog --title "IRC Chat (irssi)" \
+      --no-collapse \
+      --msgbox "$RESULT" 15 "$(echo "$(echo "$(irssi -v)" | wc -L)+6" | bc 2>/dev/null)"
+  }
+
+  RESULT="$(echo "$(irssi -v)
+
+COMMANDS:
+
+/help
+/join
+/quit
+/version
+/connect
+/disconnect")"
+  display_result 2>/dev/null
+
+  if dialog --stdout --title "Start IRC Client?" \
+    --backtitle "Starting client" \
+    --yesno "Yes: Start!, No:  Go back!" 5 30; then
+
+    if ! [ -x "$(command -v irssi)" ] &>/dev/null; then
+      sudo apt-get install irssi
+    fi
+
+    if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
+      torify irssi
+    else
+      irssi
+    fi
+  fi
 
   ;;
 

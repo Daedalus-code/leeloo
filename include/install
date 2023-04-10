@@ -70,11 +70,21 @@ fi
 # system files #################################################################
 
 # true
+function proxy_chat_true() {
+  echo "PROXY_CHAT_API=true" >>/usr/local/bin/include/leeloo/broker.conf
+}
+
+# true
 function proxy_public_true() {
   echo "PROXY_PUBLIC_API=true" >>/usr/local/bin/include/leeloo/broker.conf
 }
 function proxy_indicator_true() {
   echo "PROXY_INDICATOR_API=true" >>/usr/local/bin/include/leeloo/broker.conf
+}
+
+# false
+function proxy_chat_false() {
+  echo "PROXY_CHAT_API=false" >>/usr/local/bin/include/leeloo/broker.conf
 }
 
 # false
@@ -99,10 +109,12 @@ if [[ ! -f /usr/local/bin/include/leeloo/no_tor ]] &>/dev/null; then
       if dialog --stdout --title "Install proxy?" \
         --backtitle "Proxy (tor) install?" \
         --yesno "Yes: Install!, No: Continue!" 5 30; then
+        proxy_chat_true
         proxy_public_true
         proxy_indicator_true
         sudo apt-get install tor
       else
+        proxy_chat_false
         proxy_public_false
         proxy_indicator_false
         echo "No proxy" >/usr/local/bin/include/leeloo/no_tor
@@ -111,12 +123,19 @@ if [[ ! -f /usr/local/bin/include/leeloo/no_tor ]] &>/dev/null; then
   fi
 fi
 
+################################################################################
+
+if [[ "$(grep -c "PROXY_CHAT_API" /usr/local/bin/include/leeloo/broker.conf)" -eq "0" ]] &>/dev/null; then
+  proxy_chat_false
+fi
 if [[ "$(grep -c "PROXY_PUBLIC_API" /usr/local/bin/include/leeloo/broker.conf)" -eq "0" ]] &>/dev/null; then
   proxy_public_false
 fi
 if [[ "$(grep -c "PROXY_INDICATOR_API" /usr/local/bin/include/leeloo/broker.conf)" -eq "0" ]] &>/dev/null; then
   proxy_indicator_false
 fi
+
+################################################################################
 
 if ! [ -x "$(command -v bc)" ] &>/dev/null; then
   sudo apt-get install bc
