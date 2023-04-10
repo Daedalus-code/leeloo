@@ -55,41 +55,43 @@ case $CHOICE in
 
   if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
     if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
+      if [[ "$(cat "${LOG_DIR:?}"/leeloo/southxchange/balances | egrep "[0-9]+.[0-9]+" | wc -l)" -gt "0" ]] &>/dev/null; then
 
-      BALANCE_TIMER="$(echo "$BOT_TIMER*3" | bc 2>/dev/null)"
+        BALANCE_TIMER="$(echo "$BOT_TIMER*3" | bc 2>/dev/null)"
 
-      function result_balance() {
-        listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
-      }
+        function result_balance() {
+          listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+        }
 
-      # update data every n seconds
-      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BALANCE_TIMER" ]] &>/dev/null; then
-        result_balance
-        # update data if missing
-      elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
-        result_balance
-        # update data if empty
-      elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
-        result_balance
-      fi
+        # update data every n seconds
+        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BALANCE_TIMER" ]] &>/dev/null; then
+          result_balance
+          # update data if missing
+        elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+          result_balance
+          # update data if empty
+        elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+          result_balance
+        fi
 
-      sleep 1
+        sleep 1
 
-      display_result() {
-        dialog --title "Account Balance" \
-          --no-collapse \
-          --msgbox "$RESULT" 0 0
-      }
+        display_result() {
+          dialog --title "Account Balance" \
+            --no-collapse \
+            --msgbox "$RESULT" 0 0
+        }
 
-      RESULT="Coins:  Deposited    Available   Unconfirmed
+        RESULT="Coins:  Deposited    Available   Unconfirmed
 
 $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
-      display_result 2>/dev/null
+        display_result 2>/dev/null
+      else
+        no_key_no_secret
+      fi
     else
       no_key_no_secret
     fi
-  else
-    no_key_no_secret
   fi
 
   ;;
@@ -1348,7 +1350,7 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
   display_result() {
     dialog --title "IRC Chat (irssi)" \
       --no-collapse \
-      --msgbox "$RESULT" 16 42
+      --msgbox "$RESULT" 16 38
   }
 
   if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
@@ -1397,10 +1399,28 @@ COMMANDS.:
       sudo apt-get install irssi
     fi
 
+    # if all empty, connect something
+    if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
+      TRIGGER_NICK="1"
+    fi
+    if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
+      TRIGGER_PORT="1"
+    fi
+    if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
+      TRIGGER_SERVER="1"
+    fi
+
+    # all triggers accounted for, continue
+    if [[ "$(echo "$TRIGGER_NICK+$TRIGGER_PORT+$TRIGGER_SERVER" | bc)" -eq "3" ]] &>/dev/null; then
+      IRSSI_PORT="8484"
+      IRSSI_SERVER="$(tr -dc '0a-z9' </dev/urandom 2>/dev/null | head -c 64 | rev).onion"
+      IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
+    fi
+
     if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-      torify irssi
+      torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
     else
-      irssi
+      irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
     fi
   fi
 
