@@ -1382,8 +1382,10 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
   fi
 
   # all triggers accounted for, continue
-  if [[ "$(echo "$TRIGGER_NICK+$TRIGGER_PORT+$TRIGGER_SERVER" | bc)" -eq "3" ]] &>/dev/null; then
-    IRSSI_PORT="6667"
+  if [[ "$(echo "$TRIGGER_NICK+$TRIGGER_PORT+$TRIGGER_SERVER" | bc 2>/dev/null)" -eq "3" ]] &>/dev/null; then
+    IRSSI_PORTS=(113 194 6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 8000)
+    IRSSI_INDEX="$((RANDOM % ${#IRSSI_PORTS[@]}))"
+    IRSSI_PORT="${IRSSI_PORTS[$IRSSI_INDEX]}"
     if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.servers ]] &>/dev/null; then
       if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
         torify curl -s https://www.mirc.com/servers.ini >"${LOG_DIR:?}"/leeloo/irc.servers
