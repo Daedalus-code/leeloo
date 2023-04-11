@@ -17,7 +17,7 @@ for (( ; ; )); do
     listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances.tmp 2>/dev/null
   }
   if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp ]] &>/dev/null; then
-    touch "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp &>/dev/null
+    result_balance
   fi
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     mv "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
@@ -40,7 +40,7 @@ for (( ; ; )); do
     listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/southxchange/orders.tmp 2>/dev/null
   }
   if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/orders.tmp ]] &>/dev/null; then
-    touch "${LOG_DIR:?}"/leeloo/southxchange/orders.tmp &>/dev/null
+    result_orders
   fi
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     mv "${LOG_DIR:?}"/leeloo/southxchange/orders.tmp "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
@@ -63,7 +63,7 @@ for (( ; ; )); do
     prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market.tmp
   }
   if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market.tmp ]] &>/dev/null; then
-    touch "${LOG_DIR:?}"/leeloo/southxchange/market.tmp &>/dev/null
+    result_market
   fi
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     mv "${LOG_DIR:?}"/leeloo/southxchange/market.tmp "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null
