@@ -195,15 +195,21 @@ LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
 # cost
 if [[ ! -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost ]] &>/dev/null; then
   if [[ ! -z "$LISTING_AVAILABLE_VALUED" ]] &>/dev/null; then
-    if [[ ! "$(grep "$LISTING_AVAILABLE_VALUED" "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-      echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+    if [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
+      if [[ ! "$(grep "$LISTING_AVAILABLE_VALUED" "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+        echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+      fi
     fi
   fi
 fi
+
+# price
 if [[ ! -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price ]] &>/dev/null; then
   if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
-    if [[ ! "$(grep "$LISTING_PRICE" "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-      echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
+    if [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
+      if [[ ! "$(grep "$LISTING_PRICE" "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+        echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
+      fi
     fi
   fi
 fi
