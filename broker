@@ -58,35 +58,39 @@ case $CHOICE in
 
   if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
     if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
-      if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
 
-        BALANCE_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+      until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances &>/dev/null; do
+        clear
+        echo "Please wait.."
+        sleep 1
+      done
 
-        # get balance
-        function result_balance() {
-          listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
-        }
-        # update data every n seconds
-        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BALANCE_TIMER" ]] &>/dev/null; then
-          result_balance
-          # update data if missing
-        elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
-          result_balance
-          # update data if empty
-        elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
-          result_balance
-        fi
+      BALANCE_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
-        display_result() {
-          dialog --title "Account Balance" \
-            --no-collapse \
-            --msgbox "$(echo "$RESULT" | column -t)" 0 0
-        }
-
-        RESULT="Coins: Deposited Available Unconfirmed
-$(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
-        display_result 2>/dev/null
+      # get balance
+      function result_balance() {
+        listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+      }
+      # update data every n seconds
+      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BALANCE_TIMER" ]] &>/dev/null; then
+        result_balance
+        # update data if missing
+      elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+        result_balance
+        # update data if empty
+      elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+        result_balance
       fi
+
+      display_result() {
+        dialog --title "Account Balance" \
+          --no-collapse \
+          --msgbox "$(echo "$RESULT" | column -t)" 0 0
+      }
+
+      RESULT="Coins: Deposited Available Unconfirmed
+$(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
+      display_result 2>/dev/null
     else
       no_key_no_secret
     fi
@@ -807,7 +811,13 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
-        if [[ "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+        if [[ "$(ls -l "${SYS_DIR:?}"/robot/open.*.cost | wc -l)" -gt "0" ]] &>/dev/null; then
+
+          until egrep "[0-9]+h" "${SYS_DIR:?}"/robot/pool &>/dev/null; do
+            clear
+            echo "Please wait.."
+            sleep 1
+          done
 
           OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
           if [[ "$(echo "$OPEN_COUNT" | grep '[-]' 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
