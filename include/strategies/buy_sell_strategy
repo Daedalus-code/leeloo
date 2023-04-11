@@ -152,7 +152,11 @@ Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFE
   echo "-" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
   echo "$(tail -1 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
   echo "-" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
-  echo "$(egrep "buy|sell" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | tail -1)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
+  echo "$(egrep "buy|sell" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | tail -1)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
+
+  # get executed orders
+  echo "$(egrep "buy|sell" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
 }
 
 ################################################################################
