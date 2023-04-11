@@ -61,6 +61,10 @@ case $CHOICE in
 
       BALANCE_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
+      # get balance
+      function result_balance() {
+        listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+      }
       # update data every n seconds
       if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BALANCE_TIMER" ]] &>/dev/null; then
         result_balance
@@ -96,6 +100,10 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
   MARKET_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
+  # get market
+  function result_market {
+    prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
+  }
   # update data every n seconds
   if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
     result_market
@@ -140,6 +148,10 @@ $MARKET_RESULT"
 
     MARKET_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
+    # get market
+    function result_market {
+      prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
+    }
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
       result_market
@@ -352,12 +364,14 @@ $MARKET_RESULT"
 
       "3")
 
+        MARKET_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+
         function result_orders {
           listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t | sort -r >"${LOG_DIR:?}"/leeloo/southxchange/orders
         }
 
         # update data every n seconds
-        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "15" ]] &>/dev/null; then
+        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
           result_orders
           # update data if missing
         elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
