@@ -62,36 +62,28 @@ case $CHOICE in
       BALANCE_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
       function result_balance() {
-        listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances.tmp 2>/dev/null
+        listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
       }
-      if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp ]] &>/dev/null; then
+      # update data every n seconds
+      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BALANCE_TIMER" ]] &>/dev/null; then
         result_balance
+        # update data if missing
       elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
         result_balance
+        # update data if empty
+      elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+        result_balance
       fi
-      if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-        mv "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
-        # update data every n seconds
-        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BALANCE_TIMER" ]] &>/dev/null; then
-          result_balance
-          # update data if missing
-        elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
-          result_balance
-          # update data if empty
-        elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
-          result_balance
-        fi
 
-        display_result() {
-          dialog --title "Account Balance" \
-            --no-collapse \
-            --msgbox "$(echo "$RESULT" | column -t)" 0 0
-        }
+      display_result() {
+        dialog --title "Account Balance" \
+          --no-collapse \
+          --msgbox "$(echo "$RESULT" | column -t)" 0 0
+      }
 
-        RESULT="Coins: Deposited Available Unconfirmed
+      RESULT="Coins: Deposited Available Unconfirmed
 $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
-        display_result 2>/dev/null
-      fi
+      display_result 2>/dev/null
     else
       no_key_no_secret
     fi
@@ -108,25 +100,17 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
   MARKET_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
   function result_market {
-    prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market.tmp
+    prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
   }
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market.tmp ]] &>/dev/null; then
+  # update data every n seconds
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
     result_market
+    # update data if missing
   elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
     result_market
-  fi
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-    mv "${LOG_DIR:?}"/leeloo/southxchange/market.tmp "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null
-    # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
-      result_market
-      # update data if missing
-    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
-      result_market
-      # update data if empty
-    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
-      result_market
-    fi
+    # update data if empty
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+    result_market
   fi
 
   # 450 max before dialog breaks
@@ -163,25 +147,17 @@ $MARKET_RESULT"
     MARKET_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
     function result_market {
-      prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market.tmp
+      prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
     }
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market.tmp ]] &>/dev/null; then
+    # update data every n seconds
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
       result_market
+      # update data if missing
     elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
       result_market
-    fi
-    if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-      mv "${LOG_DIR:?}"/leeloo/southxchange/market.tmp "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null
-      # update data every n seconds
-      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$MARKET_TIMER" ]] &>/dev/null; then
-        result_market
-        # update data if missing
-      elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
-        result_market
-        # update data if empty
-      elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
-        result_market
-      fi
+      # update data if empty
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+      result_market
     fi
 
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
