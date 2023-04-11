@@ -58,7 +58,7 @@ case $CHOICE in
 
   if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
     if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
-      if [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+      if [[ -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
 
         BALANCE_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
@@ -86,12 +86,12 @@ case $CHOICE in
         RESULT="Coins: Deposited Available Unconfirmed
 $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
         display_result 2>/dev/null
-      else
-        no_key_no_secret
       fi
     else
       no_key_no_secret
     fi
+  else
+    no_key_no_secret
   fi
 
   ;;
