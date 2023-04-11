@@ -808,8 +808,8 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-        OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null)"
-        if [[ "$(echo "$OPEN_COUNT" | grep '[-]' | wc -l)" -gt "0" ]] &>/dev/null; then
+        OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
+        if [[ "$(echo "$OPEN_COUNT" | grep '[-]' 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
           OPEN_COUNT="0"
         fi
         OPEN_PERCENTAGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $5 }' | grep -v "Result" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
