@@ -1595,7 +1595,11 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
   "7")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      rm .irssi/config &>/dev/null
+      if dialog --stdout --title "Remove IRC config?" \
+        --backtitle "Remove config" \
+        --yesno "Yes: Remove!, No: Quit" 5 30; then
+        rm .irssi/config &>/dev/null
+      fi
     else
       no_irssi_no_access
     fi
