@@ -1094,12 +1094,13 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         "1")
 
           display_result() {
-            dialog --title "Robot status" \
+            dialog --title "Robot (screen)" \
               --no-collapse \
-              --msgbox "$RESULT" 0 0
+              --msgbox "$RESULT" "$LENGTH" "$WIDTH"
           }
-
-          RESULT="$(screen -list 2>/dev/null)"
+          RESULT="$(screen -list 2>/dev/null | grep "leeloo" | xargs)"
+          LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc)"
+          WIDTH="$(echo "$(echo "$RESULT" | wc -L)+4" | bc)"
           display_result 2>/dev/null
 
           ;;
@@ -1118,16 +1119,24 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
             killall screen &>/dev/null
           fi
 
-          echo "leeloo line: */1 * * * * bash /usr/local/bin/include/leeloo/robot/looper"
-          echo "Remove leeloo line for total stop"
-          read -r -p "Press Enter to continue" </dev/tty
-          echo
+          display_result() {
+            dialog --title "Robot (crontab)" \
+              --no-collapse \
+              --msgbox "$RESULT" 5 77
+          }
+
+          RESULT="$(echo "leeloo line: */1 * * * * bash /usr/local/bin/include/leeloo/robot/looper")"
+          display_result 2>/dev/null
           crontab -e
 
           ;;
 
         "4")
 
+          echo "leeloo line: */1 * * * * bash /usr/local/bin/include/leeloo/robot/looper"
+          echo "Remove leeloo line for total stop"
+          read -r -p "Press Enter to continue" </dev/tty
+          echo
           crontab -e
 
           ;;
