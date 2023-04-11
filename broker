@@ -66,6 +66,8 @@ case $CHOICE in
       }
       if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp ]] &>/dev/null; then
         result_balance
+      elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+        result_balance
       fi
       if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
         mv "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
@@ -109,6 +111,8 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
     prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market.tmp
   }
   if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market.tmp ]] &>/dev/null; then
+    result_market
+  elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
     result_market
   fi
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
@@ -162,6 +166,8 @@ $MARKET_RESULT"
       prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market.tmp
     }
     if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market.tmp ]] &>/dev/null; then
+      result_market
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
       result_market
     fi
     if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
