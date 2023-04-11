@@ -31,6 +31,7 @@ LOAD="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
 # result balance ###############################################################
 
 function result_balance() {
+  source /usr/local/bin/include/leeloo/api/southxchange/private_API
   listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
 }
 # update data every n seconds
@@ -47,6 +48,7 @@ fi
 # result orders ################################################################
 
 function result_orders() {
+  source /usr/local/bin/include/leeloo/api/southxchange/private_API
   listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
 }
 # update data every n seconds
@@ -63,6 +65,7 @@ fi
 # result market ################################################################
 
 function result_market {
+  source /usr/local/bin/include/leeloo/api/southxchange/private_API
   prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
 }
 # update data every n seconds
