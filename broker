@@ -857,7 +857,10 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
             --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
         RESULT="$(cat "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | sed '/^$/d')"
-        LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/*.orders | wc -l)+4" | bc)"
+        LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/*.orders | wc -l)+4" | bc 2>/dev/null)"
+        if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
+          LENGTH="25"
+        fi
         WIDTH="$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
         display_result 2>/dev/null
       else
