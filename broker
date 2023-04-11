@@ -52,6 +52,8 @@ CHOICE=$(dialog --clear \
 clear
 case $CHOICE in
 
+# balance
+
 "1")
 
   if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
@@ -62,6 +64,9 @@ case $CHOICE in
       function result_balance() {
         listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances.tmp 2>/dev/null
       }
+      if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp ]] &>/dev/null; then
+        touch "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp &>/dev/null
+      fi
       if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
         mv "${LOG_DIR:?}"/leeloo/southxchange/balances.tmp "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
         # update data every n seconds
@@ -94,6 +99,8 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
   ;;
 
+  # balances
+
 "2")
 
   MARKET_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
@@ -101,6 +108,9 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
   function result_market {
     prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market.tmp
   }
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market.tmp ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/southxchange/market.tmp &>/dev/null
+  fi
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     mv "${LOG_DIR:?}"/leeloo/southxchange/market.tmp "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null
     # update data every n seconds
@@ -151,6 +161,9 @@ $MARKET_RESULT"
     function result_market {
       prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market.tmp
     }
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market.tmp ]] &>/dev/null; then
+      touch "${LOG_DIR:?}"/leeloo/southxchange/market.tmp &>/dev/null
+    fi
     if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market.tmp 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
       mv "${LOG_DIR:?}"/leeloo/southxchange/market.tmp "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null
       # update data every n seconds
