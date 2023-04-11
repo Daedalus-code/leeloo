@@ -115,7 +115,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
   # 450 max before dialog breaks
   MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | sort -k2 -n -r | head -100)"
-  MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
+  MARKET_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $1 }')"
   MARKET_MOON="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
   MARKET_MOON_COUNT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $5 }' | wc -l)"
   MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')"
