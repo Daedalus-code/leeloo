@@ -28,6 +28,54 @@ fi
 
 LOAD="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
 
+# result balance ###############################################################
+
+function result_balance() {
+  listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+}
+# update data every n seconds
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+  result_balance
+  # update data if missing
+elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+  result_balance
+  # update data if empty
+elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+  result_balance
+fi
+
+# result orders ################################################################
+
+function result_orders() {
+  listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
+}
+# update data every n seconds
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+  result_orders
+  # update data if missing
+elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
+  result_orders
+  # update data if empty
+elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
+  result_orders
+fi
+
+# result market ################################################################
+
+function result_market {
+  prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
+}
+# update data every n seconds
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+  result_market
+  # update data if missing
+elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+  result_market
+  # update data if empty
+elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+  result_market
+fi
+
 # no key no secret #############################################################
 
 function no_key_no_secret() {
