@@ -74,16 +74,13 @@ case $CHOICE in
           result_balance
         fi
 
-        sleep 1
-
         display_result() {
           dialog --title "Account Balance" \
             --no-collapse \
             --msgbox "$(echo "$RESULT" | column -t)" 0 0
         }
 
-        RESULT="Coins:  Deposited    Available   Unconfirmed
-
+        RESULT="Coins: Deposited Available Unconfirmed
 $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
         display_result 2>/dev/null
       fi
@@ -134,8 +131,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
       --msgbox "$(echo "$RESULT" | column -t)" 25 "$WIDTH"
   }
 
-  RESULT="Market:       Bid             Ask             Last           (%)      Volume24Hr
-
+  RESULT="Market: Bid Ask Last (%) Volume24Hr
 $MARKET_RESULT"
   display_result 2>/dev/null
 
@@ -189,8 +185,7 @@ $MARKET_RESULT"
         --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
     }
 
-    RESULT="Market:       Bid           Ask          Last       (%)      Volume24Hr
-
+    RESULT="Market: Bid Ask Last (%) Volume24Hr
 $MARKET_RESULT"
     display_result 2>/dev/null
   else
@@ -386,10 +381,10 @@ $MARKET_RESULT"
         display_result() {
           dialog --title "Open Orders: +$ORDER_TOTAL" \
             --no-collapse \
-            --msgbox "$RESULT" 0 0
+            --msgbox "$(echo "$RESULT" | column -t)" 0 0
         }
 
-        RESULT="OrderID:    Type  Amount      Original    LimitPrice     List   Ref  DateAdded
+        RESULT="OrderID: Type Amount Original LimitPrice List Ref DateAdded
 $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
         display_result 2>/dev/null
 
