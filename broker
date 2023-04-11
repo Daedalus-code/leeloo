@@ -809,40 +809,42 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
         if [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
           if [[ -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+            if [[ -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
 
-            OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null)"
-            if [[ "$(echo "$OPEN_COUNT" | grep '[-]' | wc -l)" -gt "0" ]] &>/dev/null; then
-              OPEN_COUNT="0"
+              OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null)"
+              if [[ "$(echo "$OPEN_COUNT" | grep '[-]' | wc -l)" -gt "0" ]] &>/dev/null; then
+                OPEN_COUNT="0"
+              fi
+              OPEN_PERCENTAGE="$(cat "${SYS_DIR:?}"/robot/pool | awk '{ print $5 }' | grep -v "Result" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+              OPEN_PERCENTAGE_AVERAGE="$(echo "$OPEN_PERCENTAGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+              WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
+              LENGTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool | wc -l | awk '{ print $1 }')+3" | bc 2>/dev/null)"
+
+              if [[ -z "$LENGTH" ]] &>/dev/null; then
+                LENGTH="7"
+              fi
+              if [[ "$LENGTH" -lt "7" ]] &>/dev/null; then
+                LENGTH="7"
+              fi
+
+              if [[ -z "$WIDTH" ]] &>/dev/null; then
+                WIDTH="68"
+              fi
+              if [[ "$WIDTH" -lt "68" ]] &>/dev/null; then
+                WIDTH="68"
+              fi
+
+              display_result() {
+                dialog --title "Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}%" \
+                  --no-collapse \
+                  --keep-window \
+                  --tailbox "$RESULT" "$LENGTH" "$WIDTH"
+              }
+
+              RESULT="${SYS_DIR:?}/robot/pool"
+              display_result 2>/dev/null
             fi
-            OPEN_PERCENTAGE="$(cat "${SYS_DIR:?}"/robot/pool | awk '{ print $5 }' | grep -v "Result" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
-            OPEN_PERCENTAGE_AVERAGE="$(echo "$OPEN_PERCENTAGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-            WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
-            LENGTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool | wc -l | awk '{ print $1 }')+3" | bc 2>/dev/null)"
-
-            if [[ -z "$LENGTH" ]] &>/dev/null; then
-              LENGTH="7"
-            fi
-            if [[ "$LENGTH" -lt "7" ]] &>/dev/null; then
-              LENGTH="7"
-            fi
-
-            if [[ -z "$WIDTH" ]] &>/dev/null; then
-              WIDTH="68"
-            fi
-            if [[ "$WIDTH" -lt "68" ]] &>/dev/null; then
-              WIDTH="68"
-            fi
-
-            display_result() {
-              dialog --title "Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}%" \
-                --no-collapse \
-                --keep-window \
-                --tailbox "$RESULT" "$LENGTH" "$WIDTH"
-            }
-
-            RESULT="${SYS_DIR:?}/robot/pool"
-            display_result 2>/dev/null
           fi
         fi
       else
