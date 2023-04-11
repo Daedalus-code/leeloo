@@ -482,9 +482,9 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating) $REPO_HEAD")" >"${LOG_DIR:?}"/leel
     ROBOT_UPTIME="0h:0m:0s"
   fi
 
-  HEIGHT=17
+  HEIGHT=18
   WIDTH=45
-  CHOICE_HEIGHT=10
+  CHOICE_HEIGHT=11
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Robot Strategy Menu"
   MENU="Multipass $DATE
@@ -493,6 +493,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
   OPTIONS=(1 "Data             Strategy data"
     2 "Check            Indicator info"
     3 "Positions        Open positions"
+    H "History          Trade history"
     4 "Config           Configurations"
     5 "Create           Create strategy"
     6 "Control          Robot controller"
@@ -835,6 +836,30 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
           RESULT="${SYS_DIR:?}/robot/pool"
           display_result 2>/dev/null
         fi
+      else
+        no_key_no_secret
+      fi
+    else
+      no_key_no_secret
+    fi
+
+    ;;
+
+    # trade history
+
+  "H")
+
+    if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+      if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
+        display_result() {
+          dialog --title "Trade History" \
+            --no-collapse \
+            --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+        }
+        RESULT="$(cat "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | sed '/^$/d')"
+        LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/*.orders | wc -l)+4" | bc)"
+        WIDTH="$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
+        display_result 2>/dev/null
       else
         no_key_no_secret
       fi
