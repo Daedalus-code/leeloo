@@ -458,7 +458,11 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating) $REPO_HEAD")" >"${LOG_DIR:?}"/leel
   if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
     if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
       last_log
+    else
+      no_key_no_secret
     fi
+  else
+    no_key_no_secret
   fi
 
   ;;
@@ -1525,6 +1529,8 @@ COMMANDS.....: /help")"
           irssi
         fi
       fi
+    else
+      no_irssi_no_access
     fi
 
     ;;
@@ -1580,6 +1586,8 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
       nano .irssi/config
+    else
+      no_irssi_no_access
     fi
 
     ;;

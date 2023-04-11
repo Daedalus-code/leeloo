@@ -28,7 +28,7 @@ fi
 
 LOAD="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
 
-# search market ################################################################
+# no key no secret #############################################################
 
 function no_key_no_secret() {
   display_result() {
@@ -37,6 +37,18 @@ function no_key_no_secret() {
       --msgbox "$RESULT" 5 24
   }
   RESULT="$(echo "Need key & secret!")"
+  display_result 2>/dev/null
+}
+
+# no irssi no access ###########################################################
+
+function no_irssi_no_access() {
+  display_result() {
+    dialog --title "  No Access" \
+      --no-collapse \
+      --msgbox "$RESULT" 5 25
+  }
+  RESULT="$(echo "Client not installed!")"
   display_result 2>/dev/null
 }
 
@@ -85,7 +97,7 @@ function ema_value_output {
   )
 }
 
-# setup_market_order ###########################################################
+# setup market order ###########################################################
 
 function setup_market_order {
   LISTING_CURRENCY=$(
@@ -113,7 +125,7 @@ $LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
   )
 }
 
-# setup_limit_order ############################################################
+# setup limit order ############################################################
 
 function setup_limit_order {
   LISTING_CURRENCY=$(
@@ -149,7 +161,7 @@ $LISTING_CURRENCY_PRICE $REFERENCE_CURRENCY_PRICE" 8 40 \
   )
 }
 
-# last_log #####################################################################
+# last log #####################################################################
 
 function last_log {
   echo "$(cat "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log
@@ -169,7 +181,7 @@ function last_log {
   display_result 2>/dev/null
 }
 
-# last_log_robot ###############################################################
+# last log robot ###############################################################
 
 function last_log_robot {
   # sort by date
@@ -190,7 +202,7 @@ function last_log_robot {
   display_result 2>/dev/null
 }
 
-# cleanup_log ##################################################################
+# cleanup log ##################################################################
 
 function cleanup_log {
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
