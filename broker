@@ -55,7 +55,7 @@ case $CHOICE in
 
   if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
     if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
-      if [[ "$(cat "${LOG_DIR:?}"/leeloo/southxchange/balances | egrep "[0-9]+.[0-9]+" | wc -l)" -gt "0" ]] &>/dev/null; then
+      if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances | wc -l)" -gt "0" ]] &>/dev/null; then
 
         BALANCE_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
@@ -79,7 +79,7 @@ case $CHOICE in
         display_result() {
           dialog --title "Account Balance" \
             --no-collapse \
-            --msgbox "$RESULT" 0 0
+            --msgbox "$(echo "$RESULT" | column -t)" 0 0
         }
 
         RESULT="Coins:  Deposited    Available   Unconfirmed
