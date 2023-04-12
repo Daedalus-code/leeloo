@@ -55,6 +55,40 @@ function irc_chat() {
 
   ##############################################################################
 
+  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers
+    IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
+  fi
+
+  ##############################################################################
+
+  # create working list
+  IRSSI_WORKING_SERVER="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
+  grep "$IRSSI_WORKING_SERVER" /home/"$WHOAMI"/.irssi/*.connections >>/home/"$WHOAMI"/.irssi/working
+  truncate -s 0 /home/"$WHOAMI"/.irssi/*.connections &>/dev/null
+  IRSSI_IRC_WORKING="$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null)"
+
+  # create non working list
+  IRSSI_NO_WORK_SERVER="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
+  grep "$IRSSI_NO_WORK_SERVER" /home/"$WHOAMI"/.irssi/*.connections >>/home/"$WHOAMI"/.irssi/no_work
+  truncate -s 0 /home/"$WHOAMI"/.irssi/*.connections &>/dev/null
+
+  # disregard with no working connections
+  echo "$(grep -vf /home/"$WHOAMI"/.irssi/no_work "${LOG_DIR:?}"/leeloo/irc.servers)" >/home/"$WHOAMI"/.irssi/irc.servers
+  # disregard with working connections
+  echo "$(grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers)" >/home/"$WHOAMI"/.irssi/irc.servers
+
+  ##############################################################################
+
+  # proxy config
+  if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
+    PROXY_CONFIG_STATUS="Enabled"
+  else
+    PROXY_CONFIG_STATUS="Disabled"
+  fi
+
+  ##############################################################################
+
   # connection status
   if [[ "$(pidof irssi | wc -l)" -gt "0" ]] &>/dev/null; then
     IRSSI_COM_STATUS="Online"
@@ -77,6 +111,8 @@ function irc_chat() {
     echo "$(tor --version 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/tor.client
   fi
 
+  ##############################################################################
+
   # get raw data
   IRSSI_RAW="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null)"
   PROXY_RAW="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null)"
@@ -89,6 +125,8 @@ function irc_chat() {
     PROXY_RAW="?"
   fi
 
+  ##############################################################################
+
   # irssi data
   IRSSI_NAME="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $1 }')"
   IRSSI_VERSION="$(echo "$IRSSI_RAW" 2>/dev/null | awk '{ print $2 }' | xargs)"
@@ -100,6 +138,8 @@ function irc_chat() {
   if [[ -z "$IRSSI_VERSION" ]] &>/dev/null; then
     IRSSI_VERSION="?"
   fi
+
+  ##############################################################################
 
   # proxy data
   PROXY_NAME="$(echo "$PROXY_RAW" 2>/dev/null | awk '{ print $1 }')"
@@ -114,13 +154,6 @@ function irc_chat() {
   fi
 
   ##############################################################################
-
-  # proxy config
-  if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-    PROXY_CONFIG_STATUS="Enabled"
-  else
-    PROXY_CONFIG_STATUS="Disabled"
-  fi
 
   HEIGHT=15
   WIDTH=45
@@ -153,27 +186,17 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
   "1")
 
-    # irc chat
-    display_result() {
-      dialog --title "IRC Chat (irssi)" \
-        --no-collapse \
-        --msgbox "$RESULT" 15 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
-    }
-
-    # if empty, trigger something
+    # zero, n
     if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
       TRIGGER_SERVER="1"
     fi
 
-    # triggered, continue
+    # got n, continue
     if [[ "$TRIGGER_SERVER" -gt "0" ]] &>/dev/null; then
 
       ##########################################################################
 
       RANDOM_COM=$((((RANDOM % 2) + 1)))
-
-      IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
-      IRSSI_IRC_WORKING="$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null)"
 
       if [[ "$(echo "$IRSSI_IRC_WORKING" | wc -l)" -gt "0" ]] &>/dev/null; then
         RANDOM_COM=$((((RANDOM % 2) + 1)))
@@ -210,30 +233,38 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     ############################################################################
 
-    # random server
+    # zero, random server
     if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
       IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
     fi
 
-    # random port
+    # zero, random port
     if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
       IRSSI_PORT="$IRSSI_RANDOM_PORT"
     fi
 
-    # default random nickname
+    # zero, default random nickname
     if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
       IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
     fi
 
-    # default random server
+    # zero, default random server
     if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
       IRSSI_SERVER="$(cat "${LOG_DIR:?}"/leeloo/irc.servers | sort -R | head -1)"
     fi
 
-    # default port
+    # zero, default port
     if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
       IRSSI_PORT="6667"
     fi
+
+    ############################################################################
+
+    display_result() {
+      dialog --title "IRC Chat (irssi)" \
+        --no-collapse \
+        --msgbox "$RESULT" 15 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
+    }
 
     RESULT="$(echo "IRC Client...: $IRSSI_NAME
 Version......: $IRSSI_VERSION
@@ -247,6 +278,8 @@ Status.......: $PROXY_COM_STATUS
 Config.......: $PROXY_CONFIG_STATUS
 COMMANDS.....: /help")"
     display_result 2>/dev/null
+
+    ############################################################################
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
       WIDTH="$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"
@@ -262,13 +295,13 @@ COMMANDS.....: /help")"
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
 
           # get connection info
-          echo "torify $IRSSI_SERVER $IRSSI_PORT" >/home/"$WHOAMI"/.irssi/connections 2>/dev/null
+          echo "$IRSSI_SERVER $IRSSI_PORT" >/home/"$WHOAMI"/.irssi/proxy.connections 2>/dev/null
           # start irssi
           torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         else
 
           # get connection info
-          echo "public $IRSSI_SERVER $IRSSI_PORT" >/home/"$WHOAMI"/.irssi/connections 2>/dev/null
+          echo "$IRSSI_SERVER $IRSSI_PORT" >/home/"$WHOAMI"/.irssi/public.connections 2>/dev/null
           # start irssi
           irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         fi
@@ -405,6 +438,8 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
     fi
 
     ;;
+
+    ############################################################################
 
   esac
   # kill irssi process
