@@ -157,7 +157,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     display_result() {
       dialog --title "IRC Chat (irssi)" \
         --no-collapse \
-        --msgbox "$RESULT" 15 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc)"
+        --msgbox "$RESULT" 15 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
     }
 
     # if empty, trigger something
@@ -301,10 +301,10 @@ COMMANDS.....: /help")"
     # server list
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
     IRSSI_SERVER_LIST_FILTERED="$(wc -l /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '{ print $1 }')"
-    IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_LIST_FILTERED" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+    IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_LIST_FILTERED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # working
     IRSSI_SERVER_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/working 2>/dev/null | awk '{ print $1 }')"
-    IRSSI_SERVER_WORKING_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_WORKING" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+    IRSSI_SERVER_WORKING_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_WORKING" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
       IRSSI_SERVER_LIST="0"
@@ -325,7 +325,7 @@ COMMANDS.....: /help")"
     display_result() {
       dialog --title "IRC Chat information" \
         --no-collapse \
-        --msgbox "$RESULT" 12 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc)"
+        --msgbox "$RESULT" 12 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
     }
 
     RESULT="IRC Client...: $IRSSI_NAME $IRSSI_VERSION
