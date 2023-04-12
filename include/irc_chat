@@ -214,13 +214,14 @@ COMMANDS.....: /help")"
         --yesno "Yes: Connect!, No: irssi" 5 "$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"; then
 
         irssi_first_run
+        COM_CONFIG="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')/2" | bc 2>/dev/null)"
 
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
 
           # get connection info
           echo "torify $IRSSI_SERVER $IRSSI_PORT" >>/home/"$WHOAMI"/.irssi/connections 2>/dev/null
           # remove duplicates
-          echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/connections
+          echo "$(tail -"$COM_CONFIG" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/connections
           # start irssi
           torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         else
@@ -228,7 +229,7 @@ COMMANDS.....: /help")"
           # get connection info
           echo "public $IRSSI_SERVER $IRSSI_PORT" >>/home/"$WHOAMI"/.irssi/connections 2>/dev/null
           # remove duplicates
-          echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/connections
+          echo "$(tail -"$COM_CONFIG" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/connections
           # start irssi
           irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         fi
