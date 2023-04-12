@@ -59,8 +59,9 @@ function cleanup_working_non_working() {
   IRSSI_P2P_WORKING="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" 2>/dev/null | awk '{ print $NF }')"
   echo "$IRSSI_P2P_WORKING" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/working
   # non conectable
-  IRSSI_NON_WORKING="$(grep -vf /home/"$WHOAMI"/.irssi/working /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
-  echo "$(echo "$IRSSI_NON_WORKING" | awk '{ print $2 }')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/non_working
+  if [[ "$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+    echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/non_working
+  fi
 }
 
 ################################################################################
@@ -219,7 +220,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       ##########################################################################
 
       # disregard banned ports combined with server
-      BANNED="none" # code this!
+      BANNED="none" # code this! or something..
 
       # random irc ports
       IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 8000)
@@ -242,17 +243,9 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       if [[ "$SERVER_PORT_READY" == "$SERVER_PORT_NON_READY" ]] &>/dev/null; then
         # try a new random server
         IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
-        echo "Connect...: $SERVER_PORT_READY
-Calculate.: $SERVER_PORT_READY = $SERVER_PORT_NON_READY
-trying new random server.." # debug
-        sleep 10            # debug
       else
         IRSSI_SERVER="$IRSSI_SERVER"
         IRSSI_RANDOM_PORT="$IRSSI_RANDOM_PORT"
-        echo "Connect...: $SERVER_PORT_NON_READY
-Calculate.: $SERVER_PORT_READY = $SERVER_PORT_NON_READY
-using random server.." # debug
-        sleep 10       # debug
       fi
 
       ##########################################################################
@@ -300,22 +293,17 @@ COMMANDS.....: /help")"
         --yesno "Yes: Connect!, No: irssi" 5 "$WIDTH"; then
 
         irssi_first_run
-        COM_CONFIG="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')/2" | bc 2>/dev/null)"
 
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
 
           # get connection info
-          echo "torify $IRSSI_SERVER $IRSSI_PORT" >>/home/"$WHOAMI"/.irssi/connections 2>/dev/null
-          # remove duplicates
-          echo "$(tail -"$COM_CONFIG" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/connections
+          echo "torify $IRSSI_SERVER $IRSSI_PORT" >/home/"$WHOAMI"/.irssi/connections 2>/dev/null
           # start irssi
           torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         else
 
           # get connection info
-          echo "public $IRSSI_SERVER $IRSSI_PORT" >>/home/"$WHOAMI"/.irssi/connections 2>/dev/null
-          # remove duplicates
-          echo "$(tail -"$COM_CONFIG" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/connections
+          echo "public $IRSSI_SERVER $IRSSI_PORT" >/home/"$WHOAMI"/.irssi/connections 2>/dev/null
           # start irssi
           irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         fi
