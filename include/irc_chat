@@ -105,8 +105,31 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     function irssi_first_run() {
       # first time startup
       echo "First run!"
-      timeout 0.5 irssi &
+      timeout 1 irssi &
       pidof irssi &>/dev/null
+      # update default irssi settings, log connections successfully made
+      if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+        # get config size by lines
+        CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
+        # disregard n last lines from config
+        echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
+
+        # add new lines to config
+        cat >>.irssi/config 2>/dev/null <<'EOF'
+settings = {
+core = {
+real_name = "Bearish";
+user_name = "Bullish";
+};
+"fe-text" = { actlist_sort = "refnum"; };
+"fe-common/core" = {
+autolog = "yes";
+autolog_path = ".irssi/irclogs/$tag/$0.log";
+autolog_level = "ALL -CRAP -CLIENTCRAP -CTCPS";
+};
+};
+EOF
+      fi
     }
 
     # irc chat
@@ -172,38 +195,9 @@ COMMANDS.....: /help")"
         --backtitle "Connecting $IRSSI_SERVER $IRSSI_PORT" \
         --yesno "Yes: Connect!, No: irssi" 5 "$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"; then
 
-        function irssi_autolog() {
-
-          # update default irssi settings, log connections successfully made
-          if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
-            # get config size by lines
-            CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
-            # disregard n last lines from config
-            echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
-
-            # add new lines to config
-            cat >>.irssi/config 2>/dev/null <<'EOF'
-settings = {
-core = {
-real_name = "Bearish";
-user_name = "Bullish";
-};
-"fe-text" = { actlist_sort = "refnum"; };
-"fe-common/core" = {
-  autolog = "yes";
-  autolog_path = ".irssi/irclogs/$tag/$0.log";
-  autolog_level = "ALL -CRAP -CLIENTCRAP -CTCPS";
-  };
-};
-EOF
-          fi
-        }
-
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-          irssi_autolog
           torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         else
-          irssi_autolog
           irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         fi
       else
