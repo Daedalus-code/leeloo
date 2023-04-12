@@ -45,10 +45,10 @@ EOF
 
 function cleanup_irc_servers() {
   # disregard irc.servers with working
-  IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers)"
+  IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)"
   echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers
   # disregard irc.servers with non_working
-  IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/non_working /home/"$WHOAMI"/.irssi/irc.servers)"
+  IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/non_working /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
   echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers
 }
 
@@ -56,10 +56,10 @@ function cleanup_irc_servers() {
 
 function cleanup_working_non_working() {
   # conectable
-  IRSSI_P2P_WORKING="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
+  IRSSI_P2P_WORKING="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" 2>/dev/null | awk '{ print $NF }')"
   echo "$IRSSI_P2P_WORKING" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/working
   # non conectable
-  IRSSI_NON_WORKING="$(grep -vf /home/"$WHOAMI"/.irssi/working /home/"$WHOAMI"/.irssi/connections)"
+  IRSSI_NON_WORKING="$(grep -vf /home/"$WHOAMI"/.irssi/working /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
   echo "$(echo "$IRSSI_NON_WORKING" | awk '{ print $2 }')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/non_working
 }
 
