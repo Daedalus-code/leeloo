@@ -1,24 +1,22 @@
 #!/bin/bash
 
-if [[ ! -f .irssi/config ]] &>/dev/null; then
-  # first time startup
-  echo "First run, please wait!"
-  sleep 1
-  timeout 1 irssi &
-  pidof irssi &>/dev/null
-fi
-
 function irssi_first_run() {
+  if [[ ! -f .irssi/config ]] &>/dev/null; then
+    # first time startup
+    echo "First run, please wait!"
+    sleep 1
+    timeout 1 irssi &
+    pidof irssi &>/dev/null
+  fi
   # update default irssi settings, log connections successfully made
-  if [[ -f .irssi/config ]] &>/dev/null; then
-    if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
-      # get config size by lines
-      CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
-      # disregard n last lines from config
-      echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
+  if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+    # get config size by lines
+    CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
+    # disregard n last lines from config
+    echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
 
-      # add new lines to config
-      cat >>.irssi/config 2>/dev/null <<'EOF'
+    # add new lines to config
+    cat >>.irssi/config 2>/dev/null <<'EOF'
 settings = {
 core = {
 real_name = "Bearish";
@@ -32,7 +30,6 @@ user_name = "Bullish";
   };
 };
 EOF
-    fi
   fi
 }
 
