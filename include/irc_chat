@@ -168,17 +168,33 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     # triggered, continue
     if [[ "$TRIGGER_SERVER" -gt "0" ]] &>/dev/null; then
 
+      # create random connection ###############################################
+
+      # random irc server
+      IRSSI_SERVER="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | sort -R | head -1)"
+
+      # conectable
+      echo "$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')" >/home/"$WHOAMI"/.irssi/working
+
+      # disregard banned ports combined with server
+      BANNED="none"
+
       # random irc ports
       IRSSI_PORTS=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 8000)
-      IRSSI_INDEX="$((RANDOM % ${#IRSSI_PORTS[@]}))"
+      VALID_PORTS=()
+      for PORT in "${IRSSI_PORTS[@]}"; do
+        if ! [[ "$PORT" =~ $BANNED ]] &>/dev/null; then
+          VALID_PORTS+=("$PORT")
+        fi
+      done
+      IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
+
+      ##########################################################################
 
       # random port
       if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
         IRSSI_PORT="${IRSSI_PORTS[$IRSSI_INDEX]}"
       fi
-
-      # random irc server
-      IRSSI_SERVER="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | sort -R | head -1)"
 
       # random nickname
       if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
