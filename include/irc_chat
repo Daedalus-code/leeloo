@@ -63,25 +63,27 @@ function irc_chat() {
   ##############################################################################
 
   # create working list
-  IRSSI_WORKING_SERVER="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
-  grep "$IRSSI_WORKING_SERVER" /home/"$WHOAMI"/.irssi/public.connections >>/home/"$WHOAMI"/.irssi/working 2>/dev/null
-  grep "$IRSSI_WORKING_SERVER" /home/"$WHOAMI"/.irssi/proxy.connections >>/home/"$WHOAMI"/.irssi/working 2>/dev/null
-  truncate -s 0 /home/"$WHOAMI"/.irssi/public.connections &>/dev/null
-  truncate -s 0 /home/"$WHOAMI"/.irssi/proxy.connections &>/dev/null
-  IRSSI_IRC_WORKING="$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null)"
+  if [[ -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
+    IRSSI_WORKING_SERVER="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
+    grep "$IRSSI_WORKING_SERVER" /home/"$WHOAMI"/.irssi/public.connections >>/home/"$WHOAMI"/.irssi/working 2>/dev/null
+    grep "$IRSSI_WORKING_SERVER" /home/"$WHOAMI"/.irssi/proxy.connections >>/home/"$WHOAMI"/.irssi/working 2>/dev/null
+    truncate -s 0 /home/"$WHOAMI"/.irssi/public.connections &>/dev/null
+    truncate -s 0 /home/"$WHOAMI"/.irssi/proxy.connections &>/dev/null
+    IRSSI_IRC_WORKING="$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null)"
 
-  # create non working list
-  IRSSI_NO_WORK_SERVER="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
-  grep "$IRSSI_NO_WORK_SERVER" /home/"$WHOAMI"/.irssi/public.connections >>/home/"$WHOAMI"/.irssi/no_work 2>/dev/null
-  grep "$IRSSI_NO_WORK_SERVER" /home/"$WHOAMI"/.irssi/proxy.connections >>/home/"$WHOAMI"/.irssi/no_work 2>/dev/null
-  truncate -s 0 /home/"$WHOAMI"/.irssi/public.connections &>/dev/null
-  truncate -s 0 /home/"$WHOAMI"/.irssi/proxy.connections &>/dev/null
+    # create non working list
+    IRSSI_NO_WORK_SERVER="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
+    grep "$IRSSI_NO_WORK_SERVER" /home/"$WHOAMI"/.irssi/public.connections >>/home/"$WHOAMI"/.irssi/no_work 2>/dev/null
+    grep "$IRSSI_NO_WORK_SERVER" /home/"$WHOAMI"/.irssi/proxy.connections >>/home/"$WHOAMI"/.irssi/no_work 2>/dev/null
+    truncate -s 0 /home/"$WHOAMI"/.irssi/public.connections &>/dev/null
+    truncate -s 0 /home/"$WHOAMI"/.irssi/proxy.connections &>/dev/null
+  fi
 
   # disregard with working connections
-  echo "$(grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers)" >/home/"$WHOAMI"/.irssi/irc.servers
+  grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers
 
   # disregard with no working connections
-  echo "$(grep -vf /home/"$WHOAMI"/.irssi/no_work "${LOG_DIR:?}"/leeloo/irc.servers)" >/home/"$WHOAMI"/.irssi/irc.servers
+  grep -vf /home/"$WHOAMI"/.irssi/no_work "${LOG_DIR:?}"/leeloo/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers
 
   ##############################################################################
 
