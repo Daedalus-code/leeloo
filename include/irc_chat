@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034  # Unused variables left for readability
+
 WHOAMI="$(whoami)"
 
 ################################################################################
@@ -68,22 +70,18 @@ function irc_chat() {
   # create working list
   IRSSI_WORKING_SERVER="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
 
-  grep "$IRSSI_WORKING_SERVER" /home/"$WHOAMI"/.irssi/public.connections >>/home/"$WHOAMI"/.irssi/working 2>/dev/null
+  grep "$IRSSI_WORKING_SERVER" /home/"$WHOAMI"/.irssi/public.connections >/home/"$WHOAMI"/.irssi/working 2>/dev/null
   grep "$IRSSI_WORKING_SERVER" /home/"$WHOAMI"/.irssi/proxy.connections >>/home/"$WHOAMI"/.irssi/working 2>/dev/null
-
   truncate -s 0 /home/"$WHOAMI"/.irssi/public.connections &>/dev/null
   truncate -s 0 /home/"$WHOAMI"/.irssi/proxy.connections &>/dev/null
-
-  IRSSI_IRC_WORKING="$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null)"
 
   ##############################################################################
 
   # create non working list
   IRSSI_NO_WORK_SERVER="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
 
-  grep "$IRSSI_NO_WORK_SERVER" /home/"$WHOAMI"/.irssi/public.connections >>/home/"$WHOAMI"/.irssi/no_work 2>/dev/null
+  grep "$IRSSI_NO_WORK_SERVER" /home/"$WHOAMI"/.irssi/public.connections >/home/"$WHOAMI"/.irssi/no_work 2>/dev/null
   grep "$IRSSI_NO_WORK_SERVER" /home/"$WHOAMI"/.irssi/proxy.connections >>/home/"$WHOAMI"/.irssi/no_work 2>/dev/null
-
   truncate -s 0 /home/"$WHOAMI"/.irssi/public.connections &>/dev/null
   truncate -s 0 /home/"$WHOAMI"/.irssi/proxy.connections &>/dev/null
 
@@ -111,6 +109,8 @@ function irc_chat() {
   ##############################################################################
 
   IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
+  IRSSI_IRC_WORKING="$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null)"
+  IRSSI_IRC_NO_WORK="$(cat /home/"$WHOAMI"/.irssi/no_work 2>/dev/null)"
 
   ##############################################################################
 
