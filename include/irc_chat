@@ -270,6 +270,11 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
     fi
 
+    # default random server
+    if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
+      IRSSI_SERVER="$(cat "${LOG_DIR:?}"/leeloo/irc.servers | sort -R | head -1)"
+    fi
+
     # default port
     if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
       IRSSI_PORT="6667"
@@ -341,46 +346,48 @@ COMMANDS.....: /help")"
     cleanup_irc_servers
     cleanup_working_non_working
 
-    # server list
-    IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')"
-    IRSSI_SERVER_LIST_FILTERED="$(wc -l /home/"$WHOAMI"/.irssi/irc.servers | awk '{ print $1 }')"
-    IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_LIST_FILTERED" | bc -l | awk '{ printf "%.2f\n", $1 }')"
-    # working
-    IRSSI_SERVER_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/working | awk '{ print $1 }')"
-    IRSSI_SERVER_WORKING_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_WORKING" | bc -l | awk '{ printf "%.2f\n", $1 }')"
-    # non working
-    IRSSI_SERVER_NON_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/non_working | awk '{ print $1 }')"
-    IRSSI_SERVER_NON_WORKING_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_NON_WORKING" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+    if [[ -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
 
-    if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
-      IRSSI_SERVER_LIST="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_LIST_FILTERED" ]] &>/dev/null; then
-      IRSSI_SERVER_LIST_FILTERED="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_LIST_FILTERED_PERCENTAGE" ]] &>/dev/null; then
-      IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_WORKING" ]] &>/dev/null; then
-      IRSSI_SERVER_WORKING="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_WORKING_PERCENTAGE" ]] &>/dev/null; then
-      IRSSI_SERVER_WORKING_PERCENTAGE="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_NON_WORKING" ]] &>/dev/null; then
-      IRSSI_SERVER_NON_WORKING="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_NON_WORKING_PERCENTAGE" ]] &>/dev/null; then
-      IRSSI_SERVER_NON_WORKING_PERCENTAGE="0"
-    fi
+      # server list
+      IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')"
+      IRSSI_SERVER_LIST_FILTERED="$(wc -l /home/"$WHOAMI"/.irssi/irc.servers | awk '{ print $1 }')"
+      IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_LIST_FILTERED" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+      # working
+      IRSSI_SERVER_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/working | awk '{ print $1 }')"
+      IRSSI_SERVER_WORKING_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_WORKING" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+      # non working
+      IRSSI_SERVER_NON_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/non_working | awk '{ print $1 }')"
+      IRSSI_SERVER_NON_WORKING_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_NON_WORKING" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 
-    display_result() {
-      dialog --title "IRC Chat information" \
-        --no-collapse \
-        --msgbox "$RESULT" 12 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc)"
-    }
+      if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
+        IRSSI_SERVER_LIST="0"
+      fi
+      if [[ -z "$IRSSI_SERVER_LIST_FILTERED" ]] &>/dev/null; then
+        IRSSI_SERVER_LIST_FILTERED="0"
+      fi
+      if [[ -z "$IRSSI_SERVER_LIST_FILTERED_PERCENTAGE" ]] &>/dev/null; then
+        IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="0"
+      fi
+      if [[ -z "$IRSSI_SERVER_WORKING" ]] &>/dev/null; then
+        IRSSI_SERVER_WORKING="0"
+      fi
+      if [[ -z "$IRSSI_SERVER_WORKING_PERCENTAGE" ]] &>/dev/null; then
+        IRSSI_SERVER_WORKING_PERCENTAGE="0"
+      fi
+      if [[ -z "$IRSSI_SERVER_NON_WORKING" ]] &>/dev/null; then
+        IRSSI_SERVER_NON_WORKING="0"
+      fi
+      if [[ -z "$IRSSI_SERVER_NON_WORKING_PERCENTAGE" ]] &>/dev/null; then
+        IRSSI_SERVER_NON_WORKING_PERCENTAGE="0"
+      fi
 
-    RESULT="IRC Client...: $IRSSI_NAME $IRSSI_VERSION
+      display_result() {
+        dialog --title "IRC Chat information" \
+          --no-collapse \
+          --msgbox "$RESULT" 12 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc)"
+      }
+
+      RESULT="IRC Client...: $IRSSI_NAME $IRSSI_VERSION
 IRC Status...: $IRSSI_COM_STATUS
 IRC Servers..: $IRSSI_SERVER_LIST
 IRC Working..: $IRSSI_SERVER_WORKING ${IRSSI_SERVER_WORKING_PERCENTAGE:?}%
@@ -388,7 +395,8 @@ IRC Error....: $IRSSI_SERVER_NON_WORKING ${IRSSI_SERVER_NON_WORKING_PERCENTAGE:?
 IRC Servers..: $IRSSI_SERVER_LIST_FILTERED ${IRSSI_SERVER_LIST_FILTERED_PERCENTAGE:?}% *
 Proxy Client.: $PROXY_NAME $PROXY_VERSION
 Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
-    display_result 2>/dev/null
+      display_result 2>/dev/null
+    fi
 
     ;;
 
