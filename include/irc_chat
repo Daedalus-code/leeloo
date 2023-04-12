@@ -251,32 +251,28 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         IRSSI_SERVER="$IRSSI_SERVER"
         IRSSI_RANDOM_PORT="$IRSSI_RANDOM_PORT"
       fi
+    fi
 
-      ##########################################################################
+    ############################################################################
 
-      # random server
-      if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
-        IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
-      fi
+    # random server
+    if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
+      IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
+    fi
 
-      # random port
-      if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
-        IRSSI_PORT="$IRSSI_RANDOM_PORT"
-      fi
+    # random port
+    if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
+      IRSSI_PORT="$IRSSI_RANDOM_PORT"
+    fi
 
-      # random nickname
-      if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
-        IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
-      fi
+    # default random nickname
+    if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
+      IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
     fi
 
     # default port
     if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
       IRSSI_PORT="6667"
-    fi
-    # default random nickname
-    if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
-      IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
     fi
 
     RESULT="$(echo "IRC Client...: $IRSSI_NAME
