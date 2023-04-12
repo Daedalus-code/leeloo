@@ -254,9 +254,13 @@ COMMANDS.....: /help")"
     display_result 2>/dev/null
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
+      WIDTH="$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"
+      if [[ "$WIDTH" -lt "30" ]] &>/dev/null; then
+        WIDTH="30"
+      fi
       if dialog --stdout --title "Connect to $IRSSI_SERVER?" \
         --backtitle "Connecting $IRSSI_SERVER $IRSSI_PORT" \
-        --yesno "Yes: Connect!, No: irssi" 5 "$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"; then
+        --yesno "Yes: Connect!, No: irssi" 5 "$WIDTH"; then
 
         irssi_first_run
         COM_CONFIG="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')/2" | bc 2>/dev/null)"
