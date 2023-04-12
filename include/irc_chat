@@ -308,6 +308,8 @@ COMMANDS.....: /help")"
 
   "3")
 
+    IRSSI_SERVER_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/working | awk '{ print $1 }')"
+    IRSSI_SERVER_NON_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/non_working | awk '{ print $1 }')"
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')"
     IRSSI_SERVER_LIST_FILTERED="$(wc -l /home/"$WHOAMI"/.irssi/irc.servers | awk '{ print $1 }')"
     IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_LIST_FILTERED" | bc -l | awk '{ printf "%.2f\n", $1 }')"
@@ -328,6 +330,8 @@ COMMANDS.....: /help")"
     RESULT="IRC Client...: $IRSSI_NAME $IRSSI_VERSION
 IRC Status...: $IRSSI_COM_STATUS
 IRC Servers..: $IRSSI_SERVER_LIST
+IRC Working..: $IRSSI_SERVER_WORKING
+IRC Error....: $IRSSI_SERVER_NON_WORKING
 IRC Servers..: $IRSSI_SERVER_LIST_FILTERED ${IRSSI_SERVER_LIST_FILTERED_PERCENTAGE:?}% *
 Proxy Client.: $PROXY_NAME $PROXY_VERSION
 Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
