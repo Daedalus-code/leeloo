@@ -165,13 +165,10 @@ COMMANDS.....: /help")"
         --backtitle "Connecting $IRSSI_SERVER $IRSSI_PORT" \
         --yesno "Yes: Connect!, No: irssi" 5 "$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"; then
 
-        echo "Irssi::command(\"set autolog on\");" >.irssi/al.pl
-        echo "Irssi::command(\"save\");" >>.irssi/al.pl
-
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-          torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME" -S <.irssi/al.pl
+          torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         else
-          irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME" -S <.irssi/al.pl
+          irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
         fi
       else
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
