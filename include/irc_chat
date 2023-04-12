@@ -1,5 +1,35 @@
 #!/bin/bash
 
+function irssi_first_run() {
+  # first time startup
+  echo "First run!"
+  timeout 1 irssi &
+  pidof irssi &>/dev/null
+  # update default irssi settings, log connections successfully made
+  if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+    # get config size by lines
+    CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
+    # disregard n last lines from config
+    echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
+
+    # add new lines to config
+    cat >>.irssi/config 2>/dev/null <<'EOF'
+settings = {
+core = {
+real_name = "Bearish";
+user_name = "Bullish";
+};
+"fe-text" = { actlist_sort = "refnum"; };
+"fe-common/core" = {
+autolog = "yes";
+autolog_path = ".irssi/irclogs/$tag/$0.log";
+autolog_level = "ALL -CRAP -CLIENTCRAP -CTCPS";
+};
+};
+EOF
+  fi
+}
+
 function irc_chat() {
   # get irc server list
   if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.servers ]] &>/dev/null; then
@@ -101,36 +131,6 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   case $CHOICE in
 
   "1")
-
-    function irssi_first_run() {
-      # first time startup
-      echo "First run!"
-      timeout 1 irssi &
-      pidof irssi &>/dev/null
-      # update default irssi settings, log connections successfully made
-      if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
-        # get config size by lines
-        CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
-        # disregard n last lines from config
-        echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
-
-        # add new lines to config
-        cat >>.irssi/config 2>/dev/null <<'EOF'
-settings = {
-core = {
-real_name = "Bearish";
-user_name = "Bullish";
-};
-"fe-text" = { actlist_sort = "refnum"; };
-"fe-common/core" = {
-autolog = "yes";
-autolog_path = ".irssi/irclogs/$tag/$0.log";
-autolog_level = "ALL -CRAP -CLIENTCRAP -CTCPS";
-};
-};
-EOF
-      fi
-    }
 
     # irc chat
     display_result() {
