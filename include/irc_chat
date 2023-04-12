@@ -165,21 +165,24 @@ COMMANDS.....: /help")"
         --backtitle "Connecting $IRSSI_SERVER $IRSSI_PORT" \
         --yesno "Yes: Connect!, No: irssi" 5 "$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"; then
 
-        function irssi_autolog() {
-          if [[ -f .irssi/config ]] &>/dev/null; then
-            # update default irssi settings, log connections successfully made
-            if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
-              # first time startup
-              echo "First time running.."
-              timeout 1 irssi &
-              pidof irssi &>/dev/null
-              # get config size by lines
-              CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
-              # disregard n last lines from config
-              echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
+        if [[ ! -f .irssi/config ]] &>/dev/null; then
+          # first time startup
+          echo "First run!"
+          timeout 1 irssi &
+          pidof irssi &>/dev/null
+        fi
 
-              # add new lines to config
-              cat >>.irssi/config 2>/dev/null <<'EOF'
+        function irssi_autolog() {
+
+          # update default irssi settings, log connections successfully made
+          if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+            # get config size by lines
+            CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
+            # disregard n last lines from config
+            echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
+
+            # add new lines to config
+            cat >>.irssi/config 2>/dev/null <<'EOF'
 settings = {
 core = {
 real_name = "Bearish";
@@ -193,7 +196,6 @@ user_name = "Bullish";
   };
 };
 EOF
-            fi
           fi
         }
 
