@@ -169,6 +169,10 @@ COMMANDS.....: /help")"
           if [[ -f .irssi/config ]] &>/dev/null; then
             # update default irssi settings, log connections successfully made
             if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+              # first time startup
+              echo "First time running.."
+              timeout 1 irssi &
+              pidof irssi &>/dev/null
               # get config size by lines
               CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
               # disregard n last lines from config
