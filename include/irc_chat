@@ -3,17 +3,18 @@
 function irssi_first_run() {
   # first time startup
   echo "First run!"
-  timeout 1 irssi &
+  timeout 1 irssi &>/dev/null
   pidof irssi &>/dev/null
   # update default irssi settings, log connections successfully made
-  if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
-    # get config size by lines
-    CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
-    # disregard n last lines from config
-    echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
+  if [[ -f .irssi/config ]]; then
+    if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+      # get config size by lines
+      CONFIG_SIZE="$(wc -l .irssi/config 2>/dev/null | awk '{ print $1 }')"
+      # disregard n last lines from config
+      echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" .irssi/config)" >.irssi/config 2>/dev/null
 
-    # add new lines to config
-    cat >>.irssi/config 2>/dev/null <<'EOF'
+      # add new lines to config
+      cat >>.irssi/config 2>/dev/null <<'EOF'
 settings = {
 core = {
 real_name = "Bearish";
@@ -27,6 +28,7 @@ autolog_level = "ALL -CRAP -CLIENTCRAP -CTCPS";
 };
 };
 EOF
+    fi
   fi
 }
 
