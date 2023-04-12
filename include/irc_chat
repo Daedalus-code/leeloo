@@ -55,15 +55,12 @@ function irc_chat() {
 
   ##############################################################################
 
-  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
-    cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers
-  fi
-  IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
-
-  ##############################################################################
-
   if [[ ! -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
     mkdir /home/"$WHOAMI"/.irssi/irclogs/ &>/dev/null
+  fi
+
+  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers
   fi
 
   # create working list
@@ -97,6 +94,8 @@ function irc_chat() {
   if [[ -f /home/"$WHOAMI"/.irssi/no_work ]] &>/dev/null; then
     grep -vf /home/"$WHOAMI"/.irssi/no_work "${LOG_DIR:?}"/leeloo/irc.servers | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
   fi
+
+  IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
 
   ##############################################################################
 
