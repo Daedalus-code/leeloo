@@ -1,10 +1,12 @@
 #!/bin/bash
 
 function irssi_first_run() {
-  # first time startup
-  echo "First run!"
-  timeout 1 irssi &
-  pidof irssi &>/dev/null
+  if [[ ! -f .irssi/config ]] &>/dev/null; then
+    # first time startup
+    echo "First run!"
+    timeout 1 irssi &
+    pidof irssi &>/dev/null
+  fi
   # update default irssi settings, log connections successfully made
   if [[ -f .irssi/config ]] &>/dev/null; then
     if [[ "$(grep "Bearish" .irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
@@ -197,7 +199,7 @@ COMMANDS.....: /help")"
         --backtitle "Connecting $IRSSI_SERVER $IRSSI_PORT" \
         --yesno "Yes: Connect!, No: irssi" 5 "$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"; then
 
-        irssi_first_run &>/dev/null
+        irssi_first_run
 
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
           torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
@@ -248,7 +250,7 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
       clear
       sudo apt-get install irssi -y
       rm "${LOG_DIR:?}"/leeloo/irc.client &>/dev/null
-      irssi_first_run &>/dev/null
+      irssi_first_run
       read -r -p "Press Enter to continue" </dev/tty
       echo
     fi
@@ -289,7 +291,7 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
         --yesno "Yes: Remove!, No: Quit" 5 30; then
         # remove config, default.theme
         rm -R .irssi/* &>/dev/null
-        irssi_first_run &>/dev/null
+        irssi_first_run
         clear
         exit
       fi
