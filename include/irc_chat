@@ -191,6 +191,12 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
       IRSSI_IRC_WORKING="$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null)"
 
+      if [[ "$(echo "$IRSSI_IRC_WORKING" | wc -l)" -gt "0" ]] &>/dev/null; then
+        RANDOM_COM=$((((RANDOM % 2) + 1)))
+      else
+        RANDOM_COM="1"
+      fi
+
       if [[ "$RANDOM_COM" -eq "1" ]] &>/dev/null; then
         # random irc server
         IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
