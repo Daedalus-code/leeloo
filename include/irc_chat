@@ -83,19 +83,19 @@ function irc_chat() {
 
   # remove duplicates
   if [[ -f /home/"$WHOAMI"/.irssi/working ]] &>/dev/null; then
-    echo "$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/working 2>/dev/null
+    echo "$(cat /home/"$WHOAMI"/.irssi/working 2>/dev/null | awk '!a[$0]++')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/working 2>/dev/null
   fi
   if [[ -f /home/"$WHOAMI"/.irssi/no_work ]] &>/dev/null; then
-    echo "$(cat /home/"$WHOAMI"/.irssi/no_work 2>/dev/null | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/no_work 2>/dev/null
+    echo "$(cat /home/"$WHOAMI"/.irssi/no_work 2>/dev/null | awk '!a[$0]++')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/no_work 2>/dev/null
   fi
 
   # disregard with working connections
   if [[ -f /home/"$WHOAMI"/.irssi/working ]] &>/dev/null; then
-    grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+    grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
   fi
   # disregard with no working connections
   if [[ -f /home/"$WHOAMI"/.irssi/no_work ]] &>/dev/null; then
-    grep -vf /home/"$WHOAMI"/.irssi/no_work "${LOG_DIR:?}"/leeloo/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+    grep -vf /home/"$WHOAMI"/.irssi/no_work "${LOG_DIR:?}"/leeloo/irc.servers | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
   fi
 
   ##############################################################################
