@@ -43,6 +43,28 @@ EOF
 
 ################################################################################
 
+function cleanup_irc_servers() {
+  # disregard irc.servers with working
+  IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers)"
+  echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers
+  # disregard irc.servers with non_working
+  IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/non_working /home/"$WHOAMI"/.irssi/irc.servers)"
+  echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers
+}
+
+################################################################################
+
+function cleanup_working_non_working() {
+  # conectable
+  IRSSI_P2P_WORKING="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
+  echo "$IRSSI_P2P_WORKING" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/working
+  # non conectable
+  IRSSI_NON_WORKING="$(grep -vf /home/"$WHOAMI"/.irssi/working /home/"$WHOAMI"/.irssi/connections)"
+  echo "$(echo "$IRSSI_NON_WORKING" | awk '{ print $2 }')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/non_working
+}
+
+################################################################################
+
 function irc_chat() {
   # get irc server list
   if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.servers ]] &>/dev/null; then
@@ -168,23 +190,10 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     # triggered, continue
     if [[ "$TRIGGER_SERVER" -gt "0" ]] &>/dev/null; then
 
-      # create random connection ###############################################
-
-      # disregard irc.servers with working
-      IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers)"
-      echo "$IRSSI_IRC_SERVERS" >/home/"$WHOAMI"/.irssi/irc.servers
-      # disregard irc.servers with non_working
-      IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/non_working /home/"$WHOAMI"/.irssi/irc.servers)"
-      echo "$IRSSI_IRC_SERVERS" >/home/"$WHOAMI"/.irssi/irc.servers
-
       ##########################################################################
 
-      # conectable
-      IRSSI_P2P_WORKING="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
-      echo "$IRSSI_P2P_WORKING" >/home/"$WHOAMI"/.irssi/working
-      # non conectable
-      IRSSI_NON_WORKING="$(grep -vf /home/"$WHOAMI"/.irssi/working /home/"$WHOAMI"/.irssi/connections)"
-      echo "$(echo "$IRSSI_NON_WORKING" | awk '{ print $2 }')" >/home/"$WHOAMI"/.irssi/non_working
+      cleanup_irc_servers
+      cleanup_working_non_working
 
       ##########################################################################
 
@@ -213,20 +222,36 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       BANNED="none" # code this!
 
       # random irc ports
-      IRSSI_PORTS=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 8000)
+      IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 8000)
       VALID_PORTS=()
-      for PORT in "${IRSSI_PORTS[@]}"; do
+
+      for PORT in "${IRSSI_PORT_LIST[@]}"; do
         if ! [[ "$PORT" =~ $BANNED ]] &>/dev/null; then
           VALID_PORTS+=("$PORT")
         fi
       done
+
       IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
+      IRSSI_RANDOM_PORT="${IRSSI_PORT_LIST[$IRSSI_INDEX]}"
+
+      # random server port ready
+      SERVER_PORT_READY="$(echo "$IRSSI_SERVER $IRSSI_RANDOM_PORT")"
+      # random server port non working
+      SERVER_PORT_READY="$(echo "$(grep "$IRSSI_SERVER" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | awk '{ print $2,$3 }')")"
+
+      if [[ "$SERVER_PORT_READY" == "$SERVER_PORT_READY" ]] &>/dev/null; then
+        # try a new random server
+        IRSSI_SERVER="$(echo "$IRSSI_IRC_WORKING" | sort -R | head -1)"
+      else
+        IRSSI_SERVER="$IRSSI_SERVER"
+        IRSSI_RANDOM_PORT="$IRSSI_RANDOM_PORT"
+      fi
 
       ##########################################################################
 
       # random port
       if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
-        IRSSI_PORT="${IRSSI_PORTS[$IRSSI_INDEX]}"
+        IRSSI_PORT="$IRSSI_RANDOM_PORT"
       fi
 
       # random nickname
@@ -312,12 +337,8 @@ COMMANDS.....: /help")"
 
   "3")
 
-    # conectable
-    IRSSI_P2P_WORKING="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
-    echo "$IRSSI_P2P_WORKING" >/home/"$WHOAMI"/.irssi/working
-    # non conectable
-    IRSSI_NON_WORKING="$(grep -vf /home/"$WHOAMI"/.irssi/working /home/"$WHOAMI"/.irssi/connections)"
-    echo "$(echo "$IRSSI_NON_WORKING" | awk '{ print $2 }')" >/home/"$WHOAMI"/.irssi/non_working
+    cleanup_irc_servers
+    cleanup_working_non_working
 
     # server list
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')"
