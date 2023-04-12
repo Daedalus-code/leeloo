@@ -308,8 +308,6 @@ COMMANDS.....: /help")"
 
   "3")
 
-    IRSSI_SERVER_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/working | awk '{ print $1 }')"
-    IRSSI_SERVER_NON_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/non_working | awk '{ print $1 }')"
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')"
     IRSSI_SERVER_LIST_FILTERED="$(wc -l /home/"$WHOAMI"/.irssi/irc.servers | awk '{ print $1 }')"
     IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_LIST_FILTERED" | bc -l | awk '{ printf "%.2f\n", $1 }')"
@@ -319,6 +317,27 @@ COMMANDS.....: /help")"
     fi
     if [[ -z "$IRSSI_SERVER_LIST_FILTERED" ]] &>/dev/null; then
       IRSSI_SERVER_LIST_FILTERED="0"
+    fi
+    if [[ -z "$IRSSI_SERVER_LIST_FILTERED_PERCENTAGE" ]] &>/dev/null; then
+      IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="0"
+    fi
+
+    IRSSI_SERVER_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/working | awk '{ print $1 }')"
+    IRSSI_SERVER_WORKING_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_WORKING" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+    IRSSI_SERVER_NON_WORKING="$(wc -l /home/"$WHOAMI"/.irssi/non_working | awk '{ print $1 }')"
+    IRSSI_SERVER_NON_WORKING_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_NON_WORKING" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+
+    if [[ -z "$IRSSI_SERVER_WORKING" ]] &>/dev/null; then
+      IRSSI_SERVER_WORKING="0"
+    fi
+    if [[ -z "$IRSSI_SERVER_WORKING_PERCENTAGE" ]] &>/dev/null; then
+      IRSSI_SERVER_WORKING_PERCENTAGE="0"
+    fi
+    if [[ -z "$IRSSI_SERVER_NON_WORKING" ]] &>/dev/null; then
+      IRSSI_SERVER_NON_WORKING="0"
+    fi
+    if [[ -z "$IRSSI_SERVER_NON_WORKING_PERCENTAGE" ]] &>/dev/null; then
+      IRSSI_SERVER_NON_WORKING_PERCENTAGE="0"
     fi
 
     display_result() {
@@ -330,8 +349,8 @@ COMMANDS.....: /help")"
     RESULT="IRC Client...: $IRSSI_NAME $IRSSI_VERSION
 IRC Status...: $IRSSI_COM_STATUS
 IRC Servers..: $IRSSI_SERVER_LIST
-IRC Working..: $IRSSI_SERVER_WORKING
-IRC Error....: $IRSSI_SERVER_NON_WORKING
+IRC Working..: $IRSSI_SERVER_WORKING ${IRSSI_SERVER_WORKING_PERCENTAGE:?}%
+IRC Error....: $IRSSI_SERVER_NON_WORKING ${IRSSI_SERVER_NON_WORKING_PERCENTAGE:?}%
 IRC Servers..: $IRSSI_SERVER_LIST_FILTERED ${IRSSI_SERVER_LIST_FILTERED_PERCENTAGE:?}% *
 Proxy Client.: $PROXY_NAME $PROXY_VERSION
 Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
