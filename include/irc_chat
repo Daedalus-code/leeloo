@@ -165,10 +165,13 @@ COMMANDS.....: /help")"
         --backtitle "Connecting $IRSSI_SERVER $IRSSI_PORT" \
         --yesno "Yes: Connect!, No: irssi" 5 "$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"; then
 
+        STARTUP="set autolog on
+save"
+
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-          torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME" --command "set autolog on"
+          torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME" --startup="$STARTUP"
         else
-          irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME" --command "set autolog on"
+          irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME" --startup="$STARTUP"
         fi
       else
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
