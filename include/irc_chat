@@ -170,15 +170,17 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       # create random connection ###############################################
 
-      cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers
+      # irc servers
+      IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers)"
+      echo "$IRSSI_IRC_SERVERS" >/home/"$WHOAMI"/.irssi/irc.servers
 
       # conectable
-      echo "$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')" >/home/"$WHOAMI"/.irssi/working
-      # disregard conectable against irc.servers, connections
-      IRSSI_IRC_SERVERS="$(grep -vf /home/"$WHOAMI"/.irssi/working "${LOG_DIR:?}"/leeloo/irc.servers)"
-      IRSSI_CONNECTIONS="$(grep -vf /home/"$WHOAMI"/.irssi/working /home/"$WHOAMI"/.irssi/connections)"
+      IRSSI_P2P_WORKING="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
+      echo "$IRSSI_P2P_WORKING" >/home/"$WHOAMI"/.irssi/working
+
       # difficult connections
-      echo "$IRSSI_CONNECTIONS" >/home/"$WHOAMI"/.irssi/non_working
+      IRSSI_NON_WORKING="$(grep -vf /home/"$WHOAMI"/.irssi/working /home/"$WHOAMI"/.irssi/connections)"
+      echo "$IRSSI_NON_WORKING" >/home/"$WHOAMI"/.irssi/non_working
 
       # random irc server
       IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
