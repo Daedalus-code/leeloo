@@ -102,6 +102,13 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
   "1")
 
+    function irssi_first_run() {
+      # first time startup
+      echo "First run!"
+      timeout 0.5 irssi &
+      pidof irssi &>/dev/null
+    }
+
     # irc chat
     display_result() {
       dialog --title "IRC Chat (irssi)" \
@@ -164,13 +171,6 @@ COMMANDS.....: /help")"
       if dialog --stdout --title "Connect to $IRSSI_SERVER?" \
         --backtitle "Connecting $IRSSI_SERVER $IRSSI_PORT" \
         --yesno "Yes: Connect!, No: irssi" 5 "$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"; then
-
-        if [[ ! -f .irssi/config ]] &>/dev/null; then
-          # first time startup
-          echo "First run!"
-          timeout 1 irssi &
-          pidof irssi &>/dev/null
-        fi
 
         function irssi_autolog() {
 
@@ -250,6 +250,7 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
       clear
       sudo apt-get install irssi -y
       rm "${LOG_DIR:?}"/leeloo/irc.client &>/dev/null
+      irssi_first_run
       read -r -p "Press Enter to continue" </dev/tty
       echo
     fi
@@ -263,7 +264,10 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
       --yesno "Yes: Remove!, No: Quit" 5 30; then
       clear
       sudo apt-get purge --auto-remove irssi -y
+      # remove irc.client, config, default.theme
       rm "${LOG_DIR:?}"/leeloo/irc.client &>/dev/null
+      rm .irssi/config &>/dev/null
+      rm .irssi/default.theme &>/dev/null
       read -r -p "Press Enter to continue" </dev/tty
       echo
     fi
@@ -286,8 +290,10 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
       if dialog --stdout --title "Remove IRC config?" \
         --backtitle "Remove config" \
         --yesno "Yes: Remove!, No: Quit" 5 30; then
+        # remove config, default.theme
         rm .irssi/config &>/dev/null
         rm .irssi/default.theme &>/dev/null
+        irssi_first_run
         clear
         exit
       fi
