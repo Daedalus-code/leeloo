@@ -1,7 +1,11 @@
 #!/bin/bash
 
-export LC_ALL=en_US.utf8 &>/dev/null
-export NCURSES_NO_UTF8_ACS=1 &>/dev/null
+if [[ ! -f /tmp/utf8 ]] &>/dev/null; then
+  echo "$(locale -a | grep "utf8")" >/tmp/utf8 2>/dev/null
+fi
+UTF8="$(cat /tmp/utf8 2>/dev/null)"
+export LC_ALL="$UTF8" 2>/dev/null
+export NCURSES_NO_UTF8_ACS=1 2>/dev/null
 
 # I'll not rest till I have me gold
 
