@@ -130,40 +130,35 @@ function irc_chat() {
 
   ##############################################################################
 
-  # missing file, continue
-  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
-    touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
+  # check if irc.connect file exists, create it if not
+  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]]; then
+    touch /home/"$WHOAMI"/.irssi/irc.connect
   fi
 
-  ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+  # list files in irclogs directory and append their names to irc.connect file
+  ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >>/home/"$WHOAMI"/.irssi/irc.connect
 
-  # connected timer
+  # count the number of lines in irc.servers file and use it to extract the last n lines from irc.connect file
   CONNECTED_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
-  # keep n lines, remove duplicates, remove empty lines
-  echo "$(tail -"$CONNECTED_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+  tail -"$CONNECTED_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.connect.tmp
 
-  ##############################################################################
+  # move the temporary file to irc.connect file
+  mv /home/"$WHOAMI"/.irssi/irc.connect.tmp /home/"$WHOAMI"/.irssi/irc.connect
 
-  # last connection
-  IRSSI_CONNECTED="$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
+  # get the last connected server from connections file
+  IRSSI_CONNECTED="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
 
-  ls -l /home/"$WHOAMI"/.irssi/irclogs 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' >"${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null
+  # list files in irclog directory and extract the names of those that contain the last connected server
+  ls -l /home/"$WHOAMI"/.irssi/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/irc.tmp
 
-  # disconnected server
-  IRSSI_DISCONNECT="$(grep "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null | wc -l)"
-
-  # missing file, continue
-  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.disconnect ]] &>/dev/null; then
-    touch /home/"$WHOAMI"/.irssi/irc.disconnect &>/dev/null
-  fi
-
-  # keep disconnect if not found
-  if [[ "$IRSSI_DISCONNECT" -eq "0" ]] &>/dev/null; then
-    cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null | sed '/^$/d' >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
-    # disconnect timer
-    DISCONNECT_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
-    # keep n lines, remove duplicates, remove empty lines
-    echo "$(tail -"$DISCONNECT_TIMER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
+  # count the number of lines in irc.servers file and use it to extract the last n lines from irc.disconnect file
+  DISCONNECT_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
+  if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null)" -eq "0" ]]; then
+    # ff the server is not found in the list, append the last connected server to the irc.disconnect file
+    echo "$IRSSI_CONNECTED" >>/home/"$WHOAMI"/.irssi/irc.disconnect
+    # remove duplicate and empty lines from irc.disconnect file
+    tail -"$DISCONNECT_TIMER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp
+    mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect
   fi
 
   # chat menu ##################################################################
