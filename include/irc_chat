@@ -139,6 +139,10 @@ function irc_chat() {
     echo "$(tail -"$CONNECTED_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
   fi
 
+  # banned on connect ##########################################################
+
+  cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban" | awk -F! '{ print $2 }' | awk '{ print $1 }' >/home/"$WHOAMI"/.irssi/irc.banned
+
   ##############################################################################
 
   # disconnect timer
