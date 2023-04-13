@@ -165,6 +165,20 @@ function irc_chat() {
     mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect
   fi
 
+  function cleanup_com() {
+    # disregard connected servers
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/c.tmp 2>/dev/null
+    echo "$(grep -vf "${LOG_DIR:?}"/c.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+    rm "${LOG_DIR:?}"/c.tmp &>/dev/null
+
+    ##########################################################################
+
+    # disregard disconnected servers
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/dc.tmp 2>/dev/null
+    echo "$(grep -vf "${LOG_DIR:?}"/dc.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+    rm "${LOG_DIR:?}"/dc.tmp &>/dev/null
+  }
+
   # chat menu ##################################################################
 
   HEIGHT=15
@@ -203,17 +217,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       ##########################################################################
 
-      # disregard connected servers
-      echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/c.tmp 2>/dev/null
-      echo "$(grep -vf "${LOG_DIR:?}"/c.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
-      rm "${LOG_DIR:?}"/c.tmp &>/dev/null
-
-      ##########################################################################
-
-      # disregard disconnected servers
-      echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/dc.tmp 2>/dev/null
-      echo "$(grep -vf "${LOG_DIR:?}"/dc.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
-      rm "${LOG_DIR:?}"/dc.tmp &>/dev/null
+      cleanup_com
 
       ##########################################################################
       # random server, port list ###############################################
@@ -380,6 +384,8 @@ COMMANDS.....: /help")"
     # chat information #########################################################
 
   "3")
+
+    cleanup_com
 
     # server list
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
