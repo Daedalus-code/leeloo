@@ -72,7 +72,7 @@ function irc_chat() {
 
   # missing file, continue
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
-    cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers &>/dev/null
+    cat "${LOG_DIR:?}"/leeloo/irc.servers | egrep '[.]' | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
   fi
 
   ##############################################################################
@@ -220,7 +220,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       ##########################################################################
 
       # irc servers, remove duplicates, empty lines
-      IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | sort | awk '!a[$0]++' | sed '/^$/d')"
+      IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | egrep '[.]' | sort | awk '!a[$0]++' | sed '/^$/d')"
 
       # pick random server list
       RANDOM_SERVER_LIST=$((((RANDOM % 2) + 1)))
