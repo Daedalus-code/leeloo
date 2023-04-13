@@ -475,10 +475,15 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
         --backtitle "Configuration reset" \
         --yesno "Yes: Reset!, No: Quit" 5 30; then
         clear
-        # remove config, default.theme
-        rm -R /home/"$WHOAMI"/.irssi/* &>/dev/null
-        irssi_first_run
-        exit
+        # remove config, default.theme, version, servers
+        if dialog --stdout --title "Confirm Reset!" \
+          --backtitle "Are you sure?" \
+          --yesno "Yes: Reset!, No: Quit" 5 30; then
+          rm -R /home/"$WHOAMI"/.irssi/* &>/dev/null
+          rm -R "${LOG_DIR:?}"/leeloo/irc.* &>/dev/null
+          irssi_first_run
+          exit
+        fi
       fi
     else
       no_irssi_no_access
