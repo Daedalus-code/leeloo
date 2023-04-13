@@ -234,16 +234,18 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       # disregard banned ports combined with server ############################
 
-      # default
-      BANNED="non"
-
       if [[ "$(grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $1 }' | wc -l)" -gt "0" ]] &>/dev/null; then
         # port is banned
-        grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' | xargs >/home/"$WHOAMI"/.irssi/irc.ports
+        grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' | xargs >/home/"$WHOAMI"/.irssi/irc.ports 2>/dev/null
         BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.ports)"
         echo "$BANNED" >>/tmp/test
       fi
       echo "$BANNED" >>/tmp/test
+
+      if [[ -z "$BANNED" ]] &>/dev/null; then
+        # default
+        BANNED="non"
+      fi
 
       # random irc ports
       IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
