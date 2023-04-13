@@ -131,12 +131,22 @@ function irc_chat() {
   ##############################################################################
 
   # check if irc.connect file exists, create it if not
-  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]]; then
+  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
     touch /home/"$WHOAMI"/.irssi/irc.connect
   fi
 
-  # list files in irclogs directory and append their names to irc.connect file
-  ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >>/home/"$WHOAMI"/.irssi/irc.connect
+  # list files in irclogs directory and extract their names
+  ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >/home/"$WHOAMI"/.irssi/irclogs.tmp
+
+  # iterate over the log file names and check if they exist in the connections file
+  while read -r LOG_FILE; do
+    PORT=$(grep "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections | awk '{ print $2 }')
+    if [[ -n "$PORT" ]] &>/dev/null; then
+      echo "$LOG_FILE $PORT" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+    fi
+  done </home/"$WHOAMI"/.irssi/irclogs.tmp
+  # remove temporary file
+  rm /home/"$WHOAMI"/.irssi/irclogs.tmp &>/dev/null
 
   # count the number of lines in irc.servers file and use it to extract the last n lines from irc.connect file
   CONNECTED_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
@@ -262,7 +272,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
             --no-collapse \
             --msgbox "$RESULT" 5 40
         }
-        RESULT="$(echo "All IRC ports are banned for server")"
+        RESULT="$(echo "All IRC ports are banned for server!")"
         display_result 2>/dev/null
       else
         IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
