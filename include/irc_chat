@@ -156,7 +156,7 @@ function irc_chat() {
   else
     # keep connection if found
     if [[ "$IRSSI_DISCONNECT" -eq "0" ]] &>/dev/null; then
-      echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
+      echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null | sed '/^$/d')" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
     fi
     # keep n lines, remove duplicates, remove empty lines
     echo "$(tail -"$DISCONNECT_TIMER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
@@ -201,16 +201,20 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       ##########################################################################
 
       # disregard connected servers
-      echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/c.tmp 2>/dev/null
-      echo "$(grep -vf "${LOG_DIR:?}"/c.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
-      rm "${LOG_DIR:?}"/c.tmp &>/dev/null
+      if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.connect | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+        echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/c.tmp 2>/dev/null
+        echo "$(grep -vf "${LOG_DIR:?}"/c.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+        rm "${LOG_DIR:?}"/c.tmp &>/dev/null
+      fi
 
       ##########################################################################
 
       # disregard disconnected servers
-      echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/dc.tmp 2>/dev/null
-      echo "$(grep -vf "${LOG_DIR:?}"/dc.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
-      rm "${LOG_DIR:?}"/dc.tmp &>/dev/null
+      if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.disconnect | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+        echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/dc.tmp 2>/dev/null
+        echo "$(grep -vf "${LOG_DIR:?}"/dc.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+        rm "${LOG_DIR:?}"/dc.tmp &>/dev/null
+      fi
 
       ##########################################################################
       # random server, port list ###############################################
