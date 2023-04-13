@@ -225,7 +225,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
       else
         # disconnect timer
-        IRSSI_RANDOM_TIMER=$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')/2" | bc 2>/dev/null)
+        IRSSI_RANDOM_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
         # random irc.connect server
         IRSSI_IRC_CONNECT_SERVER="$(tail -"$IRSSI_RANDOM_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort -R | head -1)"
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $1 }')"
@@ -236,16 +236,16 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       if [[ "$(grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $1 }' | wc -l)" -gt "0" ]] &>/dev/null; then
         # port is banned
-        grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' | xargs >/home/"$WHOAMI"/.irssi/irc.ports 2>/dev/null
+        grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' >/home/"$WHOAMI"/.irssi/irc.ports 2>/dev/null
         BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.ports)"
-        echo "$BANNED" >>/tmp/test
+        echo "Banned: $BANNED" >>/tmp/test
       fi
 
       if [[ -z "$BANNED" ]] &>/dev/null; then
         # default
         BANNED="non"
       fi
-      echo "$BANNED" >>/tmp/test
+      echo "Normal :$BANNED" >>/tmp/test
 
       # random irc ports
       IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
