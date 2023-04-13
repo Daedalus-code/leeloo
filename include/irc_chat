@@ -204,27 +204,23 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       ##########################################################################
 
       # disregard connected servers
-      if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.connect | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
-        echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/c.tmp 2>/dev/null
-        echo "$(grep -vf "${LOG_DIR:?}"/c.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
-        rm "${LOG_DIR:?}"/c.tmp &>/dev/null
-      fi
+      echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/c.tmp 2>/dev/null
+      echo "$(grep -vf "${LOG_DIR:?}"/c.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+      rm "${LOG_DIR:?}"/c.tmp &>/dev/null
 
       ##########################################################################
 
       # disregard disconnected servers
-      if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.disconnect | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
-        echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/dc.tmp 2>/dev/null
-        echo "$(grep -vf "${LOG_DIR:?}"/dc.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
-        rm "${LOG_DIR:?}"/dc.tmp &>/dev/null
-      fi
+      echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/dc.tmp 2>/dev/null
+      echo "$(grep -vf "${LOG_DIR:?}"/dc.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+      rm "${LOG_DIR:?}"/dc.tmp &>/dev/null
 
       ##########################################################################
       # random server, port list ###############################################
       ##########################################################################
 
       # irc servers, remove duplicates, empty lines
-      IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | egrep '[.]' | sort | awk '!a[$0]++' | sed '/^$/d')"
+      IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | sort | awk '!a[$0]++' | sed '/^$/d')"
 
       # pick random server list
       RANDOM_SERVER_LIST=$((((RANDOM % 2) + 1)))
