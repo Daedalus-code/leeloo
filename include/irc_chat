@@ -124,6 +124,10 @@ function irc_chat() {
     PROXY_CLIENT="Not installed"
   fi
 
+  # banned on connect ##########################################################
+
+  cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban" | awk -F! '{ print $2 }' | awk '{ print $1 }' >/home/"$WHOAMI"/.irssi/irc.banned
+
   ##############################################################################
 
   # connected timer
@@ -131,22 +135,21 @@ function irc_chat() {
   # connected servers
   IRSSI_CONNECTED="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
 
+  # connected servers value
+  IRSSI_CONNECTED_NR="$(echo "$IRSSI_CONNECTED" | wc -l)"
+
   # missing file, continue
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
     touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
   fi
 
-  if [[ "$IRSSI_CONNECTED" -gt "0" ]] &>/dev/null; then
+  if [[ "$IRSSI_CONNECTED_NR" -gt "0" ]] &>/dev/null; then
     # keep connection if found
     grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
   fi
 
   # keep n lines, remove duplicates, remove empty lines
   echo "$(tail -"$CONNECTED_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-
-  # banned on connect ##########################################################
-
-  cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban" | awk -F! '{ print $2 }' | awk '{ print $1 }' >/home/"$WHOAMI"/.irssi/irc.banned
 
   ##############################################################################
 
@@ -161,7 +164,7 @@ function irc_chat() {
   fi
 
   # keep connection if found
-  if [[ "$IRSSI_DISCONNECT" -eq "0" ]] &>/dev/null; then
+  if [[ "$IRSSI_CONNECTED_NR" -eq "0" ]] &>/dev/null; then
     echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" | sed '/^$/d' >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
   fi
 
