@@ -129,13 +129,15 @@ function irc_chat() {
 
   # connected servers
   IRSSI_CONNECTED="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
+  # missing file, continue
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
     touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
+  else
+    # keep connection if found
+    grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+    # remove duplicates, empty lines
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
   fi
-  # keep connection if found
-  grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-  # remove duplicates, empty lines
-  echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
 
   ##############################################################################
 
@@ -144,13 +146,14 @@ function irc_chat() {
   # missing file, continue
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.disconnect ]] &>/dev/null; then
     touch /home/"$WHOAMI"/.irssi/irc.disconnect &>/dev/null
+  else
+    # keep connection if found
+    if [[ "$IRSSI_DISCONNECT" -eq "0" ]] &>/dev/null; then
+      echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
+    fi
+    # remove duplicates, empty lines
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
   fi
-  # keep connection if found
-  if [[ "$IRSSI_DISCONNECT" -eq "0" ]] &>/dev/null; then
-    echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
-  fi
-  # remove duplicates, empty lines
-  echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
 
   # chat menu ##################################################################
 
