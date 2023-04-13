@@ -103,7 +103,7 @@ function irc_chat() {
     echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
   fi
   IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | awk '{ print $1,$2 }' | sed '/^$/d')"
-  if [[ ! -s "$IRSSI_CLIENT" ]] &>/dev/null; then
+  if [[ ! -s "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
     IRSSI_CLIENT="Not installed"
   fi
   # get tor version
@@ -111,7 +111,7 @@ function irc_chat() {
     echo "$(tor --version 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null
   fi
   PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d')"
-  if [[ ! -s "$PROXY_CLIENT" ]] &>/dev/null; then
+  if [[ ! -s "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
     PROXY_CLIENT="Not installed"
   fi
 
