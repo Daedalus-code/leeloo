@@ -230,13 +230,15 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         IRSSI_PORT="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $2 }')"
       fi
 
-      ##########################################################################
+      # disregard banned ports combined with server ############################
 
-      # disregard banned ports combined with server
-      BANNED="non" # code this! or something..
+      if [[ "$(grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $1 }' | wc -l)" -gt "0" ]]; then
+        # port is banned
+        BANNED="$(grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' | xargs)"
+      fi
 
       # random irc ports
-      IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 8000)
+      IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
       VALID_PORTS=()
 
       for PORT in "${IRSSI_PORT_LIST[@]}"; do
