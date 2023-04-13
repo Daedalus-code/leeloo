@@ -58,9 +58,9 @@ function irc_chat() {
     # proxy configuration = true
     if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
       # with proxy
-      curl -s --proxy socks5h://localhost:9050 https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers
+      curl -s --proxy socks5h://localhost:9050 https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null
     else
-      curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers
+      curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null
     fi
   fi
 
@@ -73,6 +73,11 @@ function irc_chat() {
 
   # missing file, continue
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers &>/dev/null
+  fi
+
+  # empty file, continue
+  if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '{ print $1 }')" -lt "2" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers &>/dev/null
   fi
 
