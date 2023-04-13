@@ -125,6 +125,8 @@ function irc_chat() {
 
   ##############################################################################
 
+  # connected timer
+  CONNECTED_TIMER=$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')/2" | bc 2>/dev/null)
   # connected servers
   IRSSI_CONNECTED="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
   # missing file, continue
@@ -133,12 +135,14 @@ function irc_chat() {
   else
     # keep connection if found
     grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-    # remove duplicates, empty lines
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+    # keep n lines, remove duplicates, remove empty lines
+    echo "$(tail -"$CONNECTED_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
   fi
 
   ##############################################################################
 
+  # disconnect timer
+  DISCONNECT_TIMER=$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')/2" | bc 2>/dev/null)
   # disconnected server
   IRSSI_DISCONNECT="$(grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | wc -l)"
   # missing file, continue
@@ -149,8 +153,8 @@ function irc_chat() {
     if [[ "$IRSSI_DISCONNECT" -eq "0" ]] &>/dev/null; then
       echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
     fi
-    # remove duplicates, empty lines
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
+    # keep n lines, remove duplicates, remove empty lines
+    echo "$(tail -"$DISCONNECT_TIMER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
   fi
 
   # chat menu ##################################################################
@@ -191,8 +195,10 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       ##########################################################################
 
+      # irc servers
       IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
 
+      # pick random server list
       RANDOM_SERVER_LIST=$((((RANDOM % 2) + 1)))
 
       if [[ "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
@@ -235,6 +241,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     # no irc configuration is set ##############################################
 
+    # irc servers
     IRSSI_IRC_SERVERS_RAW="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)"
 
     # zero, default random nickname
