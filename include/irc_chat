@@ -50,10 +50,13 @@ EOF
 
 ################################################################################
 
+# start irc chat
 function irc_chat() {
   # get irc server list
   if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.servers ]] &>/dev/null; then
+    # proxy configuration = true
     if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
+      # with proxy
       curl -s --proxy socks5h://localhost:9050 https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers
     else
       curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers
@@ -63,10 +66,12 @@ function irc_chat() {
 
   ##############################################################################
 
+  # missing directory, continue
   if [[ ! -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
     mkdir /home/"$WHOAMI"/.irssi/irclogs/ &>/dev/null
   fi
 
+  # missing file, continue
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers &>/dev/null
   fi
@@ -74,7 +79,7 @@ function irc_chat() {
 
   ##############################################################################
 
-  # proxy config enabled/disabled
+  # proxy configuration = true
   if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
     PROXY_CONFIG_STATUS="Enabled"
   else
@@ -103,13 +108,18 @@ function irc_chat() {
     echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
   fi
   IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | awk '{ print $1,$2 }' | sed '/^$/d')"
+
+  # zero, continue
   if [[ ! -s "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
     IRSSI_CLIENT="Not installed"
   fi
+
   # get tor version
   if [[ ! -f "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
     echo "$(tor --version 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null
   fi
+
+  # zero, continue
   PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d')"
   if [[ ! -s "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
     PROXY_CLIENT="Not installed"
@@ -117,26 +127,32 @@ function irc_chat() {
 
   ##############################################################################
 
+  # connected servers
   IRSSI_CONNECTED="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
   if [[ ! -f /home/"$WHOAMI"/.irssi/connect ]] &>/dev/null; then
     touch /home/"$WHOAMI"/.irssi/connect &>/dev/null
   fi
+  # keep connection if found
   grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections >>/home/"$WHOAMI"/.irssi/connect 2>/dev/null
-  # remove duplicates
+  # remove duplicates, empty lines
   echo "$(cat /home/"$WHOAMI"/.irssi/connect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/connect 2>/dev/null
 
   ##############################################################################
 
+  # disconnected server
+  IRSSI_DISCONNECT="$(grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | wc -l)"
+  # missing file, continue
   if [[ ! -f /home/"$WHOAMI"/.irssi/disconnect ]] &>/dev/null; then
     touch /home/"$WHOAMI"/.irssi/disconnect &>/dev/null
   fi
-  if [[ "$(grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+  # keep connection if found
+  if [[ "$IRSSI_DISCONNECT" -eq "0" ]] &>/dev/null; then
     echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" >>/home/"$WHOAMI"/.irssi/disconnect 2>/dev/null
   fi
-  # remove duplicates
+  # remove duplicates, empty lines
   echo "$(cat /home/"$WHOAMI"/.irssi/disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/disconnect 2>/dev/null
 
-  ##############################################################################
+  # chat menu ##################################################################
 
   HEIGHT=15
   WIDTH=43
@@ -165,7 +181,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   clear
   case $CHOICE in
 
-  ##############################################################################
+  # irc chat ###################################################################
 
   "1")
 
@@ -180,7 +196,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       ##########################################################################
 
       # disregard banned ports combined with server
-      BANNED="none" # code this! or something..
+      BANNED="non" # code this! or something..
 
       # random irc ports
       IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 8000)
@@ -191,14 +207,11 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
           VALID_PORTS+=("$PORT")
         fi
       done
-
       IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
       IRSSI_RANDOM_PORT="${IRSSI_PORT_LIST[$IRSSI_INDEX]}"
     fi
 
-    ############################################################################
-
-    # random server and port after calculations
+    # random server, port after calculations ###################################
 
     # random server
     IRSSI_SERVER="$IRSSI_RANDOM_SERVER"
@@ -208,9 +221,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       IRSSI_PORT="$IRSSI_RANDOM_PORT"
     fi
 
-    ############################################################################
-
-    # zero, configurations is not set
+    # no irc configuration is set ##############################################
 
     # zero, default random nickname
     if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
@@ -225,7 +236,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       IRSSI_PORT="6667"
     fi
 
-    ############################################################################
+    # result before connection #################################################
 
     display_result() {
       dialog --title "IRC Chat (irssi)" \
@@ -244,7 +255,7 @@ Config.......: $PROXY_CONFIG_STATUS
 COMMANDS.....: /help")"
     display_result 2>/dev/null
 
-    ############################################################################
+    # confirm start ############################################################
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
       WIDTH="$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"
@@ -257,6 +268,7 @@ COMMANDS.....: /help")"
 
         irssi_first_run
 
+        # proxy configuration = true
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
 
           # get connection info
@@ -273,7 +285,10 @@ COMMANDS.....: /help")"
           clear
         fi
 
+        # normal start #########################################################
+
       else
+        # proxy configuration = true
         if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
           torify irssi
           clear
@@ -289,7 +304,7 @@ COMMANDS.....: /help")"
 
     ;;
 
-    ############################################################################
+    # irc servers ##############################################################
 
   "2")
 
@@ -297,7 +312,7 @@ COMMANDS.....: /help")"
 
     ;;
 
-    ############################################################################
+    # chat information #########################################################
 
   "3")
 
@@ -335,7 +350,7 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
     ;;
 
-    ############################################################################
+    # install client ###########################################################
 
   "4")
 
@@ -352,7 +367,7 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
     ;;
 
-    ############################################################################
+    # remove client ############################################################
 
   "5")
 
@@ -370,7 +385,7 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
     ;;
 
-    ############################################################################
+    # irssi configuration ######################################################
 
   "6")
 
@@ -387,9 +402,9 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
   "7")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if dialog --stdout --title "Remove IRC config?" \
-        --backtitle "Remove config" \
-        --yesno "Yes: Remove!, No: Quit" 5 30; then
+      if dialog --stdout --title "Reset IRC configuration?" \
+        --backtitle "Configuration reset" \
+        --yesno "Yes: Reset!, No: Quit" 5 30; then
         clear
         # remove config, default.theme
         rm -R /home/"$WHOAMI"/.irssi/* &>/dev/null
@@ -405,7 +420,7 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
     ############################################################################
 
   esac
-  # kill irssi process running after exit
+  # kill irssi process after exit
   if [[ "$(pidof irssi 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     kill -9 "$(pidof irssi 2>/dev/null)" &>/dev/null
   fi
