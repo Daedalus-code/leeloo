@@ -103,11 +103,17 @@ function irc_chat() {
     echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
   fi
   IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | awk '{ print $1,$2 }' | sed '/^$/d')"
+  if [[ ! -s "$IRSSI_CLIENT" ]] &>/dev/null; then
+    IRSSI_CLIENT="Not installed"
+  fi
   # get tor version
   if [[ ! -f "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
     echo "$(tor --version 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null
   fi
   PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d')"
+  if [[ ! -s "$PROXY_CLIENT" ]] &>/dev/null; then
+    PROXY_CLIENT="Not installed"
+  fi
 
   ##############################################################################
 
@@ -221,13 +227,6 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     ############################################################################
 
-    if [[ "$(echo "$IRSSI_CLIENT" | wc -l)" -eq "0" ]] &>/dev/null; then
-      IRSSI_CLIENT="Not installed"
-    fi
-    if [[ "$(echo "$PROXY_CLIENT" | wc -l)" -eq "0" ]] &>/dev/null; then
-      PROXY_CLIENT="Not installed"
-    fi
-
     display_result() {
       dialog --title "IRC Chat (irssi)" \
         --no-collapse \
@@ -318,13 +317,6 @@ COMMANDS.....: /help")"
     fi
     if [[ "$(echo "$IRSSI_SERVER_LIST_FILTERED_PERCENTAGE" | awk -F. '{ print $1 }')" -eq "100" ]] &>/dev/null; then
       IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="100"
-    fi
-
-    if [[ "$(echo "$IRSSI_CLIENT" | wc -l)" -eq "0" ]] &>/dev/null; then
-      IRSSI_CLIENT="Not installed"
-    fi
-    if [[ "$(echo "$PROXY_CLIENT" | wc -l)" -eq "0" ]] &>/dev/null; then
-      PROXY_CLIENT="Not installed"
     fi
 
     display_result() {
