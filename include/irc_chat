@@ -75,11 +75,6 @@ function irc_chat() {
     cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers &>/dev/null
   fi
 
-  # empty file, continue
-  if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '{ print $1 }')" -lt "2" ]] &>/dev/null; then
-    cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers &>/dev/null
-  fi
-
   ##############################################################################
 
   # proxy configuration = true
@@ -159,7 +154,7 @@ function irc_chat() {
       echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
     fi
     # banned from connect
-    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "ban|Ban|banned|Banned" | awk -F! '{ print $2 }' | awk '{ print $1 }' | sed '/^$/d')" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
+    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "ban|Ban|banned|Banned" | awk -F. '{ print $2"."$3 }' | awk '{ print $1 }' | sed '/^$/d')" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
     # keep n lines, remove duplicates, remove empty lines
     echo "$(tail -"$DISCONNECT_TIMER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
   fi
@@ -242,14 +237,12 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         # port is banned
         grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' >/home/"$WHOAMI"/.irssi/irc.ports 2>/dev/null
         BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.ports)"
-        echo "Banned: $BANNED" >>/tmp/test
       fi
 
       if [[ -z "$BANNED" ]] &>/dev/null; then
         # default
         BANNED="non"
       fi
-      echo "Normal :$BANNED" >>/tmp/test
 
       # random irc ports
       IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
