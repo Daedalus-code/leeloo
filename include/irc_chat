@@ -62,7 +62,7 @@ function irc_chat() {
   fi
 
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
-    cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers
+    cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers &>/dev/null
   fi
 
   ##############################################################################
@@ -77,12 +77,12 @@ function irc_chat() {
   ##############################################################################
 
   # connection status
-  if [[ "$(pidof irssi | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(pidof irssi 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     IRSSI_COM_STATUS="Online"
   else
     IRSSI_COM_STATUS="Offline"
   fi
-  if [[ "$(pidof tor | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(pidof tor 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     PROXY_COM_STATUS="Online"
   else
     PROXY_COM_STATUS="Offline"
