@@ -379,6 +379,12 @@ COMMANDS.....: /help")"
     IRSSI_SERVER_LIST_FILTERED="$(wc -l /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '{ print $1 }')"
     IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_LIST_FILTERED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+    IRSSI_CONNECTED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.connect | awk '{ print $1 }')"
+    IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    IRSSI_DISCONNECT_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.disconnect | awk '{ print $1 }')"
+    IRSSI_DISCONNECT_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_DISCONNECT_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
     if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
       IRSSI_SERVER_LIST="0"
     fi
@@ -395,13 +401,15 @@ COMMANDS.....: /help")"
     display_result() {
       dialog --title "IRC Chat information" \
         --no-collapse \
-        --msgbox "$RESULT" 10 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
+        --msgbox "$RESULT" 12 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
     }
 
     RESULT="IRC Client...: $IRSSI_CLIENT $IRSSI_VERSION
 IRC Status...: $IRSSI_COM_STATUS
 IRC Servers..: $IRSSI_SERVER_LIST
 IRC Servers..: $IRSSI_SERVER_LIST_FILTERED ${IRSSI_SERVER_LIST_FILTERED_PERCENTAGE:?}% *
+Connected....: $IRSSI_CONNECTED_TOTAL ${IRSSI_CONNECTED_FILTERED_PERCENTAGE:?}%
+Disconnect...: $IRSSI_DISCONNECT_TOTAL ${IRSSI_DISCONNECT_FILTERED_PERCENTAGE:?}%
 Proxy Client.: $PROXY_CLIENT $PROXY_VERSION
 Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
     display_result 2>/dev/null
