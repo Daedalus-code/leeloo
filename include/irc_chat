@@ -117,13 +117,13 @@ function irc_chat() {
 
   ##############################################################################
 
-  IRSSI_CONNECTED="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ | egrep -v "total [0-9]+" | awk '{ print $NF }')"
+  IRSSI_CONNECTED="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
   if [[ ! -f /home/"$WHOAMI"/.irssi/connect ]] &>/dev/null; then
     touch /home/"$WHOAMI"/.irssi/connect &>/dev/null
   fi
   grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections >>/home/"$WHOAMI"/.irssi/connect 2>/dev/null
   # remove duplicates
-  echo "$(cat /home/"$WHOAMI"/.irssi/connect 2>/dev/null | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/connect
+  echo "$(cat /home/"$WHOAMI"/.irssi/connect 2>/dev/null | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/connect 2>/dev/null
 
   ##############################################################################
 
@@ -134,7 +134,7 @@ function irc_chat() {
     echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" >>/home/"$WHOAMI"/.irssi/disconnect 2>/dev/null
   fi
   # remove duplicates
-  echo "$(cat /home/"$WHOAMI"/.irssi/disconnect 2>/dev/null | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/disconnect
+  echo "$(cat /home/"$WHOAMI"/.irssi/disconnect 2>/dev/null | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/disconnect 2>/dev/null
 
   ##############################################################################
 
