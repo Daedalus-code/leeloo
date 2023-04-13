@@ -869,12 +869,13 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
         display_result() {
-          dialog --title "Trade History" \
+          dialog --title "Trade History +$COUNT" \
             --no-collapse \
             --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
         RESULT="$(cat "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | sed '/^$/d')"
-        LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/*.orders | wc -l)+4" | bc 2>/dev/null)"
+        LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)"
+        COUNT="$(echo "$RESULT" | wc -l)"
         if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
           LENGTH="25"
         fi
