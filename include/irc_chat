@@ -153,8 +153,6 @@ function irc_chat() {
     if [[ "$IRSSI_DISCONNECT" -eq "0" ]] &>/dev/null; then
       echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
     fi
-    # banned from connect
-    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "ban|Ban|banned|Banned" | awk -F. '{ print $2"."$3 }' | awk '{ print $1 }' | sed '/^$/d')" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
     # keep n lines, remove duplicates, remove empty lines
     echo "$(tail -"$DISCONNECT_TIMER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
   fi
