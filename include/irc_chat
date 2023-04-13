@@ -243,19 +243,21 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       # disregard banned ports combined with server ############################
 
-      BANNED=""
+      BANNED=()
+
+      # check if any ports are banned for the current server
       if grep -q "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null; then
-        # port is banned
-        BANNED=$(grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' | sed '/^$/d' | xargs)
-        echo "$BANNED" >/home/"$WHOAMI"/.irssi/irc.ports
+        # server is banned
+        readarray -t BANNED < <(grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' | sed '/^$/d' | xargs -n 1 printf "%s:$IRSSI_RANDOM_PORT\n")
+        echo "${BANNED[@]}" >/home/"$WHOAMI"/.irssi/irc.ports 2>/dev/null
       fi
 
-      # random irc ports
+      # generate list of valid ports
       IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
       VALID_PORTS=()
 
       for PORT in "${IRSSI_PORT_LIST[@]}"; do
-        if ! echo "$BANNED" | grep -qw "$PORT" &>/dev/null; then
+        if ! printf "%s:${PORT}\n" "${BANNED[@]}" | grep -qw "${IRSSI_RANDOM_SERVER}:${PORT}" &>/dev/null; then
           VALID_PORTS+=("$PORT")
         fi
       done
@@ -265,11 +267,13 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         display_result() {
           dialog --title "IRC ports are banned: $IRSSI_RANDOM_SERVER" \
             --no-collapse \
-            --msgbox "$RESULT" 5 40
+            --msgbox "$RESULT" 5 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc)"
         }
         RESULT="$(echo "All IRC ports are banned for server!")"
         display_result 2>/dev/null
       fi
+
+      # select random valid port
       IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
       IRSSI_RANDOM_PORT="${VALID_PORTS[$IRSSI_INDEX]}"
     fi
