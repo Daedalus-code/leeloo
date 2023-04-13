@@ -171,7 +171,7 @@ LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
 # cost
 if [[ ! -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost ]] &>/dev/null; then
   if [[ ! -z "$LISTING_AVAILABLE_VALUED" ]] &>/dev/null; then
-    if [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
       echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
     fi
   fi
@@ -180,7 +180,7 @@ fi
 # price
 if [[ ! -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price ]] &>/dev/null; then
   if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
-    if [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/market ]] &>/dev/null; then
+    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
       echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
     fi
   fi
