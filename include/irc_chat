@@ -132,18 +132,16 @@ function irc_chat() {
 
   # connected timer
   CONNECTED_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
+
   # connected servers
   IRSSI_CONNECTED="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }')"
-
-  # connected servers value
-  IRSSI_CONNECTED_NR="$(echo "$IRSSI_CONNECTED" | wc -l)"
 
   # missing file, continue
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
     touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
   fi
 
-  if [[ "$IRSSI_CONNECTED_NR" -gt "0" ]] &>/dev/null; then
+  if [[ "$(grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections | wc -l 2>/dev/null)" -gt "0" ]] &>/dev/null; then
     # keep connection if found
     grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
   fi
@@ -155,6 +153,7 @@ function irc_chat() {
 
   # disconnect timer
   DISCONNECT_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
+
   # disconnected server
   IRSSI_DISCONNECT="$(grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | wc -l)"
 
@@ -163,8 +162,8 @@ function irc_chat() {
     touch /home/"$WHOAMI"/.irssi/irc.disconnect &>/dev/null
   fi
 
-  # keep connection if found
-  if [[ "$IRSSI_CONNECTED_NR" -eq "0" ]] &>/dev/null; then
+  # keep disconnect if not found
+  if [[ "$(grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | wc -l 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" | sed '/^$/d' >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
   fi
 
