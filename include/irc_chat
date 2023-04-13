@@ -62,7 +62,6 @@ function irc_chat() {
       curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers
     fi
   fi
-  IRSSI_IRC_SERVERS_RAW="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)"
 
   ##############################################################################
 
@@ -75,7 +74,6 @@ function irc_chat() {
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/irc.servers /home/"$WHOAMI"/.irssi/irc.servers &>/dev/null
   fi
-  IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
 
   ##############################################################################
 
@@ -193,6 +191,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       ##########################################################################
 
+      IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
+
       RANDOM_SERVER_LIST=$((((RANDOM % 2) + 1)))
 
       if [[ "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
@@ -234,6 +234,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     fi
 
     # no irc configuration is set ##############################################
+
+    IRSSI_IRC_SERVERS_RAW="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)"
 
     # zero, default random nickname
     if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
