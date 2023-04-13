@@ -134,21 +134,17 @@ function irc_chat() {
   CONNECTED_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
   # connected servers
   IRSSI_CONNECTED="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | awk '{ print $1 }')"
-  # connections
-  IRSSI_CONNECTIONS="$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
-
-  # missing file, continue
-  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
-    touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
-  fi
 
   # keep connection if found
-  if [[ "$(grep "${IRSSI_CONNECTED:?}" "$IRSSI_CONNECTIONS" | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+    # missing file, continue
+    if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
+      touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
+    fi
     grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+    # keep n lines, remove duplicates, remove empty lines
+    echo "$(tail -"$CONNECTED_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
   fi
-
-  # keep n lines, remove duplicates, remove empty lines
-  echo "$(tail -"$CONNECTED_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '!a[$0]++')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
 
   ##############################################################################
 
@@ -157,18 +153,16 @@ function irc_chat() {
   # disconnected server
   IRSSI_DISCONNECT="$(grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | wc -l)"
 
-  # missing file, continue
-  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.disconnect ]] &>/dev/null; then
-    touch /home/"$WHOAMI"/.irssi/irc.disconnect &>/dev/null
-  fi
-
   # keep disconnect if not found
-  if [[ ! -z "$IRSSI_CONNECTED" ]] &>/dev/null; then
+  if [[ "$(grep "$IRSSI_CONNECTED" /home/"$WHOAMI"/.irssi/connections 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+    # missing file, continue
+    if [[ ! -f /home/"$WHOAMI"/.irssi/irc.disconnect ]] &>/dev/null; then
+      touch /home/"$WHOAMI"/.irssi/irc.disconnect &>/dev/null
+    fi
     echo "$(cat /home/"$WHOAMI"/.irssi/connections 2>/dev/null)" | sed '/^$/d' >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
+    # keep n lines, remove duplicates, remove empty lines
+    echo "$(tail -"$DISCONNECT_TIMER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
   fi
-
-  # keep n lines, remove duplicates, remove empty lines
-  echo "$(tail -"$DISCONNECT_TIMER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++')" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
 
   # chat menu ##################################################################
 
