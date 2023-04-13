@@ -15,16 +15,21 @@ function irssi_first_run() {
     timeout 1 irssi &
     pidof irssi &>/dev/null
   fi
+  # sleep so loc above works.
   sleep 1
+
   # update default irssi settings, log connections successfully made
   if [[ -f /home/"$WHOAMI"/.irssi/config ]] &>/dev/null; then
     if [[ "$(grep "Bearish" /home/"$WHOAMI"/.irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+
       # get config size by lines
       CONFIG_SIZE="$(wc -l /home/"$WHOAMI"/.irssi/config 2>/dev/null | awk '{ print $1 }')"
+
       # disregard n last lines from config
       echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" /home/"$WHOAMI"/.irssi/config)" >/home/"$WHOAMI"/.irssi/config 2>/dev/null
 
       # add new lines to config
+      # log all minus public and private
       cat >>/home/"$WHOAMI"/.irssi/config 2>/dev/null <<'EOF'
 settings = {
 core = {
@@ -67,7 +72,7 @@ function irc_chat() {
 
   ##############################################################################
 
-  # proxy config
+  # proxy config enabled/disabled
   if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
     PROXY_CONFIG_STATUS="Enabled"
   else
@@ -76,12 +81,13 @@ function irc_chat() {
 
   ##############################################################################
 
-  # connection status
+  # irssi status
   if [[ "$(pidof irssi 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     IRSSI_COM_STATUS="Online"
   else
     IRSSI_COM_STATUS="Offline"
   fi
+  # tor status
   if [[ "$(pidof tor 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     PROXY_COM_STATUS="Online"
   else
@@ -90,7 +96,7 @@ function irc_chat() {
 
   ##############################################################################
 
-  # get irssi, tor version
+  # get irssi version
   if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
     echo "$(irssi -v 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/irc.client
   fi
@@ -98,6 +104,7 @@ function irc_chat() {
   if [[ -z "$IRSSI_CLIENT" ]] &>/dev/null; then
     IRSSI_CLIENT="Not installed"
   fi
+  # tor version
   if [[ ! -f "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
     echo "$(tor --version 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/tor.client
   fi
@@ -139,7 +146,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
   "1")
 
-    # zero, continue
+    # zero server configuration set, continue
     if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
 
       ##########################################################################
@@ -168,6 +175,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     ############################################################################
 
+    # random server and port after calculations
+
     # random server
     IRSSI_SERVER="$IRSSI_RANDOM_SERVER"
 
@@ -177,6 +186,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     fi
 
     ############################################################################
+
+    # zero, configurations is not set
 
     # zero, default random nickname
     if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
@@ -248,6 +259,7 @@ COMMANDS.....: /help")"
           clear
         fi
       fi
+      clear
     else
       no_irssi_no_access
     fi
@@ -355,10 +367,10 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
       if dialog --stdout --title "Remove IRC config?" \
         --backtitle "Remove config" \
         --yesno "Yes: Remove!, No: Quit" 5 30; then
+        clear
         # remove config, default.theme
         rm -R /home/"$WHOAMI"/.irssi/* &>/dev/null
         irssi_first_run
-        clear
         exit
       fi
     else
@@ -370,7 +382,7 @@ Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
     ############################################################################
 
   esac
-  # kill irssi process
+  # kill irssi process running after exit
   if [[ "$(pidof irssi 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     kill -9 "$(pidof irssi 2>/dev/null)" &>/dev/null
   fi
