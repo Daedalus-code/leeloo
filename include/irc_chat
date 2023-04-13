@@ -228,9 +228,10 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | sort | awk '!a[$0]++' | sed '/^$/d')"
 
       # pick random server list
-      RANDOM_SERVER_LIST=$((((RANDOM % 2) + 1)))
+      RANDOM_SERVER_LIST=$((((RANDOM % 3) + 1)))
 
-      if [[ "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
+      # reversed
+      if [[ ! "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
         # random irc server
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
       else
