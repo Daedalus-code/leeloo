@@ -100,7 +100,7 @@ function irc_chat() {
 
   # get irssi version
   if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
-    echo "$(irssi -v 2>/dev/null | sed '/^$/d')" >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
+    echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
   fi
   IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | awk '{ print $1,$2 }')"
   if [[ -z "$IRSSI_CLIENT" ]] &>/dev/null; then
@@ -108,7 +108,7 @@ function irc_chat() {
   fi
   # get tor version
   if [[ ! -f "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
-    echo "$(tor --version 2>/dev/null | sed '/^$/d')" >"${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null
+    echo "$(tor --version 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null
   fi
   PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs)"
   if [[ -z "$PROXY_CLIENT" ]] &>/dev/null; then
