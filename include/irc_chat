@@ -233,8 +233,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       if [[ "$(grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $1 }' | wc -l)" -gt "0" ]] &>/dev/null; then
         # port is banned
-        grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' >/home/"$WHOAMI"/.irssi/irc.ports 2>/dev/null
-        BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.ports)"
+        grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.ports 2>/dev/null
+        BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.ports 2>/dev/null | sed '/^$/d')"
       fi
 
       if [[ -z "$BANNED" ]] &>/dev/null; then
