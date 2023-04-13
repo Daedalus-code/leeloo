@@ -208,6 +208,9 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       rm "${LOG_DIR:?}"/dc.tmp &>/dev/null
 
       ##########################################################################
+      # random server, port list
+      ##########################################################################
+
       # irc servers
       IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)"
 
@@ -218,8 +221,10 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         # random irc server
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
       else
+        # disconnect timer
+        IRSSI_RANDOM_TIMER=$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')/3" | bc 2>/dev/null)
         # random irc.connect server
-        IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort -R | head -1)"
+        IRSSI_IRC_CONNECT_SERVER="$(tail -"$IRSSI_RANDOM_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort -R | head -1)"
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $1 }')"
         IRSSI_PORT="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $2 }')"
       fi
