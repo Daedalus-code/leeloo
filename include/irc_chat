@@ -166,11 +166,12 @@ function irc_chat() {
 
   function cleanup_com() {
     # disregard connected servers
-    awk '{print $1}' /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers.new
+    echo "$(awk '{print $1}' /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers.new
     mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
     # disregard disconnected servers
-    awk '{print $1}' /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers.new
+    echo "$(awk '{print $1}' /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers.new
     mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers
   }
 
   # chat menu ##################################################################
