@@ -126,7 +126,8 @@ function irc_chat() {
 
   # banned on connect ##########################################################
 
-  cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' >/home/"$WHOAMI"/.irssi/irc.banned
+  echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned
+  echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned
 
   ##############################################################################
 
@@ -170,6 +171,10 @@ function irc_chat() {
     mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
     # disregard disconnected servers
     echo "$(awk '{print $1}' /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers.new
+    mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers
+    # disregard banned servers
+    echo "$(awk '{print $1}' /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers.new
     mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
     echo "$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers
   }
