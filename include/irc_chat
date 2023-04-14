@@ -255,7 +255,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         fi
       done
 
-      if [[ ${#VALID_PORTS[@]} -eq 0 ]]; then
+      if [[ ${#VALID_PORTS[@]} -eq 0 ]] &>/dev/null; then
         display_result() {
           dialog --title "IRC ports are banned for $IRSSI_RANDOM_SERVER!" \
             --no-collapse \
@@ -267,7 +267,11 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         # null server
         IRSSI_RANDOM_SERVER=""
         # most used port that connected
-        IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -1)"
+        if [[ -f home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
+          IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -1)"
+        else
+          IRSSI_PORT=""
+        fi
       else
         # choose a random port from the valid ports
         IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
