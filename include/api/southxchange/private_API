@@ -108,11 +108,11 @@ function getOrder {
 # Example: getOrders "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" 10
 
 function getOrders {
-  LISTING_CURRENCY="$1"
-  REFERENCE_CURRENCY="$2"
-  COUNT="$3"
-  API_SOUTHX_NONCE=$(($(date +%s) * 10))
-  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"count\":$COUNT,\"key\":\"$API_SOUTHX_KEY\"}"
+  CODES="$1"
+  PAGE_INDEX="$2"
+  PAGE_SIZE="$3"
+  API_SOUTHX_NONCE=$(date +%s)
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"codes\":[\"$CODES\"],\"pageIndex\":\"$PAGE_INDEX\",\"pageSize\":$PAGE_SIZE,\"key\":\"$API_SOUTHX_KEY\",\"pageCount\":true}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" -X POST https://www.southxchange.com/api/getOrders
 }
