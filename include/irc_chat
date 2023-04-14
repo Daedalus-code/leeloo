@@ -122,15 +122,16 @@ function irc_chat() {
     PROXY_CLIENT="Not installed"
   fi
 
-  # banned on connect ##########################################################
+  ##############################################################################
 
-  echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.banned
-  echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned
-
-  # welcome on connect #########################################################
-
-  echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Welcome|welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome
-  echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome
+  function welcome_banned() {
+    # banned on connect
+    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.banned
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned
+    # welcome on connect
+    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Welcome|welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome
+  }
 
   ##############################################################################
 
@@ -208,6 +209,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   "1")
 
     irc_connect
+    welcome_banned
 
     IRSSI_SERVER_STATUS="$(egrep "IRSSI_SERVER=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | wc -l)"
 
@@ -385,6 +387,7 @@ COMMANDS.....: /help")"
   "3")
 
     irc_connect
+    welcome_banned
 
     # total times ports
     IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')*13" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
