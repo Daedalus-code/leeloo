@@ -139,31 +139,37 @@ function irc_chat() {
     touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
   fi
 
-  # list files in irclogs directory and extract their names
-  ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >/home/"$WHOAMI"/.irssi/irclogs.tmp
+  ##############################################################################
 
-  # iterate over the log file names and check if they exist in the connections file
-  while read -r LOG_FILE; do
-    MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
-    if [[ -n "$MATCH" ]] &>/dev/null; then
-      echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-      echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-    fi
-  done </home/"$WHOAMI"/.irssi/irclogs.tmp
+  function irc_connect() {
+    # list files in irclogs directory and extract their names
+    ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >/home/"$WHOAMI"/.irssi/irclogs.tmp
 
-  # remove temporary file
-  rm /home/"$WHOAMI"/.irssi/irclogs.tmp
+    # iterate over the log file names and check if they exist in the connections file
+    while read -r LOG_FILE; do
+      MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
+      if [[ -n "$MATCH" ]] &>/dev/null; then
+        echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+        echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+      fi
+    done </home/"$WHOAMI"/.irssi/irclogs.tmp
 
-  # Get the last connected server from connections file
+    # remove temporary file
+    rm /home/"$WHOAMI"/.irssi/irclogs.tmp
+  }
+
+  ##############################################################################
+
+  # get the last connected server from connections file
   IRSSI_CONNECTED="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
 
-  # List files in irclog directory and extract the names of those that contain the last connected server
+  # list files in irclog directory and extract the names of those that contain the last connected server
   ls -l /home/"$WHOAMI"/.irssi/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/irc.tmp
 
   if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-    # If the server is not found in the list, append the last connected server to the irc.disconnect file
+    # if the server is not found in the list, append the last connected server to the irc.disconnect file
     echo "$IRSSI_CONNECTED" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" >>/home/"$WHOAMI"/.irssi/irc.disconnect
-    # Remove duplicate and empty lines from irc.disconnect file
+    # remove duplicate and empty lines from irc.disconnect file
     sort /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp
     mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect
   fi
@@ -200,6 +206,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   # irc chat ###################################################################
 
   "1")
+
+    irc_connect
 
     IRSSI_SERVER_STATUS="$(egrep "IRSSI_SERVER=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | wc -l)"
 
@@ -375,6 +383,8 @@ COMMANDS.....: /help")"
     # chat information #########################################################
 
   "3")
+
+    irc_connect
 
     # total times ports
     IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')*13" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
