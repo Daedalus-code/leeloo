@@ -388,11 +388,11 @@ COMMANDS.....: /help")"
     cleanup_com
 
     # total times ports
-    IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')*13" | bc 2>/dev/null)"
+    IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')*13" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 
     # server list
-    IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
-    IRSSI_SERVER_LIST_FILTERED="$(echo "$(wc -l /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '{ print $1 }')*13" | bc 2>/dev/null)"
+    IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
+    IRSSI_SERVER_LIST_FILTERED="$(echo "$(wc -l /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '{ print $1 }')*13" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
     IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_SERVER_LIST_FILTERED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # connected list
     IRSSI_CONNECTED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.connect | awk '{ print $1 }')"
