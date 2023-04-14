@@ -304,6 +304,11 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       IRSSI_PORT="6667"
     fi
 
+    SERVER_FAVOURITE="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null | awk '{ print $1 }')"
+    if [[ "$IRSSI_SERVER" == "$IRSSI_CONNECTED" ]] &>/dev/null; then
+      SERVER_FAVOURITE="A"
+    fi
+
     # result before connection #################################################
 
     display_result() {
@@ -314,7 +319,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     RESULT="$(echo "IRC Client...: $IRSSI_CLIENT
 Status.......: $IRSSI_COM_STATUS
-Server.......: $IRSSI_SERVER
+Server.......: $IRSSI_SERVER $SERVER_FAVOURITE
 Port.........: $IRSSI_PORT
 Nick.........: $IRSSI_NICKNAME
 Proxy Client.: $PROXY_CLIENT
