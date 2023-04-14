@@ -195,14 +195,16 @@ LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
 
 ################################################################################
 
-OPERN_ORDER_COST="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.cost)"
-OPERN_ORDER_PRICE="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.price)"
+OPEN_POSITION_COST="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.cost"
+OPEN_POSITION_PRICE="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.price"
 
-if [ ! -s "$OPERN_ORDER_COST" ] || [ ! -f "$OPERN_ORDER_COST" ] &>/dev/null; then
-  echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+# cost data
+if ! diff -q <(echo "$LISTING_AVAILABLE_VALUED") "$OPEN_POSITION_COST" >/dev/null 2>&1; then
+  echo "$LISTING_AVAILABLE_VALUED" >"$OPEN_POSITION_COST"
 fi
-if [ ! -s "$OPERN_ORDER_PRICE" ] || [ ! -f "$OPERN_ORDER_PRICE" ] &>/dev/null; then
-  echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
+# price data
+if ! diff -q <(echo "$LISTING_PRICE") "$OPEN_POSITION_PRICE" >/dev/null 2>&1; then
+  echo "$LISTING_PRICE" >"$OPEN_POSITION_PRICE"
 fi
 
 LISTING_OPEN_BALANCE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost 2>/dev/null)"
