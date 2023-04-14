@@ -87,11 +87,14 @@ case $CHOICE in
       fi
 
       display_result() {
-        dialog --title "Account Balance" \
+        dialog --title "$FILE_TIME Account Balance" \
           --no-collapse \
           --msgbox "$(echo "$RESULT" | column -t)" 0 0
       }
-
+      FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $8 }')"
+      if [[ -z "$FILE_TIME" ]] &>/dev/null; then
+        FILE_TIME="00:00"
+      fi
       RESULT="Coins: Deposited Available Unconfirmed
 $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
       display_result 2>/dev/null
@@ -138,12 +141,15 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
   fi
 
   display_result() {
-    dialog --title "100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
+    dialog --title "$FILE_TIME 100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
       --no-collapse \
       --scrollbar \
       --msgbox "$(echo "$RESULT" | column -t)" 25 "$WIDTH"
   }
-
+  FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $8 }')"
+  if [[ -z "$FILE_TIME" ]] &>/dev/null; then
+    FILE_TIME="00:00"
+  fi
   RESULT="Market: Bid Ask Last (%) Volume24Hr
 $MARKET_RESULT"
   display_result 2>/dev/null
