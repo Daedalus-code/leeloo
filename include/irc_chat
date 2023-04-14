@@ -126,11 +126,11 @@ function irc_chat() {
 
   function welcome_banned() {
     # banned on connect
-    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.banned
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned
+    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
     # welcome on connect
-    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Welcome|welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome
+    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Welcome|welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
   }
 
   ##############################################################################
@@ -144,14 +144,14 @@ function irc_chat() {
 
   function irc_connect() {
     # list files in irclogs directory and extract their names
-    ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >/home/"$WHOAMI"/.irssi/irclogs.tmp
+    ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >/home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
 
     # iterate over the log file names and check if they exist in the connections file
     while read -r LOG_FILE; do
       MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
       if [[ -n "$MATCH" ]] &>/dev/null; then
         echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-        echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+        echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
       fi
     done </home/"$WHOAMI"/.irssi/irclogs.tmp
 
@@ -390,22 +390,22 @@ COMMANDS.....: /help")"
     welcome_banned
 
     # total times ports
-    IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')*13" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+    IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')*13" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
     # server list
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
     # server list based on amount of ports
     IRSSI_SERVER_PORTS=$(echo "$IRSSI_SERVER_LIST*13" | bc 2>/dev/null)
     # connected list
-    IRSSI_CONNECTED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.connect | awk '{ print $1 }')"
+    IRSSI_CONNECTED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }')"
     IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # disconnect list
-    IRSSI_DISCONNECT_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.disconnect | awk '{ print $1 }')"
+    IRSSI_DISCONNECT_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $1 }')"
     IRSSI_DISCONNECT_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_DISCONNECT_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # banned list
-    IRSSI_BANNED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.banned | awk '{ print $1 }')"
+    IRSSI_BANNED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | awk '{ print $1 }')"
     IRSSI_BANNED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_BANNED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # welcome total
-    IRSSI_WELCOME_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.welcome | awk '{ print $1 }')"
+    IRSSI_WELCOME_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | awk '{ print $1 }')"
     IRSSI_WELCOME_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_WELCOME_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
