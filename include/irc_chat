@@ -73,7 +73,7 @@ function irc_chat() {
 
   # missing file, continue
   if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
-    cat "${LOG_DIR:?}"/leeloo/irc.servers | egrep '[.]' | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+    cat "${LOG_DIR:?}"/leeloo/irc.servers | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
   fi
 
   ##############################################################################
@@ -166,14 +166,14 @@ function irc_chat() {
 
   function cleanup_com() {
     # disregard connected servers
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/c.tmp 2>/dev/null
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }')" >"${LOG_DIR:?}"/c.tmp 2>/dev/null
     echo "$(grep -vf "${LOG_DIR:?}"/c.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
     rm "${LOG_DIR:?}"/c.tmp &>/dev/null
 
     ##########################################################################
 
     # disregard disconnected servers
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | egrep '[.]' | awk -F. '{ print $2 }')" >"${LOG_DIR:?}"/dc.tmp 2>/dev/null
+    echo "$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $1 }')" >"${LOG_DIR:?}"/dc.tmp 2>/dev/null
     echo "$(grep -vf "${LOG_DIR:?}"/dc.tmp "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
     rm "${LOG_DIR:?}"/dc.tmp &>/dev/null
   }
