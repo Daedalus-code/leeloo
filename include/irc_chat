@@ -64,16 +64,14 @@ function irc_chat() {
     fi
   fi
 
+  # irc servers raw
+  IRSSI_IRC_SERVERS_RAW="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+
   ##############################################################################
 
   # missing directory, continue
   if [[ ! -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
     mkdir /home/"$WHOAMI"/.irssi/irclogs/ &>/dev/null
-  fi
-
-  # missing file, continue
-  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.servers ]] &>/dev/null; then
-    cat "${LOG_DIR:?}"/leeloo/irc.servers | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
   fi
 
   ##############################################################################
@@ -170,20 +168,6 @@ function irc_chat() {
     mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect
   fi
 
-  function cleanup_com() {
-    # disregard connected servers
-    echo "$(awk '{print $1}' /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers.new
-    mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
-    # disregard disconnected servers
-    echo "$(awk '{print $1}' /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers.new
-    mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers
-    # disregard banned servers
-    echo "$(awk '{print $1}' /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers.new
-    mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.servers
-  }
-
   # chat menu ##################################################################
 
   HEIGHT=15
@@ -223,15 +207,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
 
       ##########################################################################
-
-      cleanup_com
-
-      ##########################################################################
       # random server, port list
       ##########################################################################
-
-      # irc servers, remove duplicates, empty lines
-      IRSSI_IRC_SERVERS="$(cat /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | sort | awk '!a[$0]++' | sed '/^$/d')"
 
       # pick random server list
       RANDOM_SERVER_LIST=$((((RANDOM % 4) + 1)))
@@ -239,7 +216,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       # reversed
       if [[ ! "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
         # random irc server
-        IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
+        IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
       else
         # random irc.connect server
         IRSSI_IRC_CONNECT_SERVER="$(sort -R /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | head -1)"
@@ -300,9 +277,6 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     fi
 
     # no irc configuration is set ##############################################
-
-    # irc servers
-    IRSSI_IRC_SERVERS_RAW="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)"
 
     # zero, default random nickname
     if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
@@ -402,11 +376,8 @@ COMMANDS.....: /help")"
 
   "3")
 
-    cleanup_com
-
     # total times ports
     IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')*13" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-
     # server list
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
     # server list based on amount of ports
