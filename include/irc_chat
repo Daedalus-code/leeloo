@@ -241,38 +241,38 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       # disregard banned ports combined with server ############################
 
-      if grep -q "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null; then
-        # port is banned
-        BANNED=$(grep "$IRSSI_RANDOM_SERVER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '{ print $2 }' | sed '/^$/d' | xargs)
-      fi
+      # Read the contents of irc.disconnect file
+      BANNED=$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null)
 
-      # random irc ports
+      # Random IRC ports
       IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
       VALID_PORTS=()
 
       for PORT in "${IRSSI_PORT_LIST[@]}"; do
-        if ! echo "$BANNED" | grep -qw "$PORT" &>/dev/null; then
+        # Check if the combination of server and port is not banned
+        if ! echo "$BANNED" | grep -qw "$IRSSI_RANDOM_SERVER $PORT"; then
           VALID_PORTS+=("$PORT")
         fi
       done
 
-      if [[ ${#VALID_PORTS[@]} -eq 0 ]] &>/dev/null; then
+      if [[ ${#VALID_PORTS[@]} -eq 0 ]]; then
         display_result() {
           dialog --title "IRC ports are banned for $IRSSI_RANDOM_SERVER!" \
             --no-collapse \
             --msgbox "$RESULT" 5 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
         }
-        # all ports are banned, exit with null
-        RESULT="Error: All IRC ports are banned for server!"
+        # All ports are banned, exit with null
+        RESULT="Error: All IRC ports are banned for server $IRSSI_RANDOM_SERVER"
         display_result 2>/dev/null
 
         IRSSI_RANDOM_SERVER=""
         IRSSI_RANDOM_PORT=""
+      else
+        # Choose a random port from the valid ports
+        IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
+        IRSSI_RANDOM_PORT="${VALID_PORTS[$IRSSI_INDEX]}"
       fi
-
-      IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
-      IRSSI_RANDOM_PORT="${VALID_PORTS[$IRSSI_INDEX]}"
-    fi 2>/dev/null
+    fi
 
     ############################################################################
     # random server, port after calculations
