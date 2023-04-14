@@ -106,7 +106,7 @@ function irc_chat() {
   if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
     echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
   fi
-  IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1 }')"
+  IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$NF }')"
 
   # zero, continue
   if [[ ! -s "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
@@ -119,7 +119,7 @@ function irc_chat() {
   fi
 
   # zero, continue
-  PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1 }')"
+  PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$NF }')"
   if [[ ! -s "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
     PROXY_CLIENT="Not installed"
   fi
