@@ -156,13 +156,11 @@ function irc_chat() {
   # List files in irclog directory and extract the names of those that contain the last connected server
   ls -l /home/"$WHOAMI"/.irssi/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/irc.tmp
 
-  # Count the number of lines in irc.servers file and use it to extract the last n lines from irc.disconnect file
-  DISCONNECT_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
   if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     # If the server is not found in the list, append the last connected server to the irc.disconnect file
     echo "$IRSSI_CONNECTED" >>/home/"$WHOAMI"/.irssi/irc.disconnect
     # Remove duplicate and empty lines from irc.disconnect file
-    tail -"$DISCONNECT_TIMER" /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp
+    sort /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp
     mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect
   fi
 
@@ -235,10 +233,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         # random irc server
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
       else
-        # disconnect timer
-        IRSSI_RANDOM_TIMER="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')"
         # random irc.connect server
-        IRSSI_IRC_CONNECT_SERVER="$(tail -"$IRSSI_RANDOM_TIMER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort -R | head -1)"
+        IRSSI_IRC_CONNECT_SERVER="$(sort -R /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | head -1)"
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $1 }')"
         IRSSI_PORT="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $2 }')"
       fi
