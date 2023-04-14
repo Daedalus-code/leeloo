@@ -393,37 +393,29 @@ COMMANDS.....: /help")"
 
     cleanup_com
 
+    # total times ports
+    IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers | awk '{ print $1 }')*13" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
     # server list
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
-    IRSSI_SERVER_LIST_FILTERED="$(wc -l /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
-    IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_SERVER_LIST_FILTERED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # connected list
     IRSSI_CONNECTED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.connect | awk '{ print $1 }')"
-    IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # disconnect list
     IRSSI_DISCONNECT_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.disconnect | awk '{ print $1 }')"
-    IRSSI_DISCONNECT_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_DISCONNECT_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    IRSSI_DISCONNECT_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_DISCONNECT_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # banned list
     IRSSI_BANNED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.banned | awk '{ print $1 }')"
-    IRSSI_BANNED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST*$IRSSI_BANNED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    IRSSI_BANNED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_BANNED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
       IRSSI_SERVER_LIST="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_LIST_FILTERED" ]] &>/dev/null; then
-      IRSSI_SERVER_LIST_FILTERED="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_LIST_FILTERED_PERCENTAGE" ]] &>/dev/null; then
-      IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="0"
     fi
     if [[ -z "$IRSSI_CONNECTED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
       IRSSI_CONNECTED_FILTERED_PERCENTAGE="0"
     fi
     if [[ -z "$IRSSI_DISCONNECT_FILTERED_PERCENTAGE" ]] &>/dev/null; then
       IRSSI_DISCONNECT_FILTERED_PERCENTAGE="0"
-    fi
-    if [[ "$(echo "$IRSSI_SERVER_LIST_FILTERED_PERCENTAGE" | awk -F. '{ print $1 }')" -eq "100" ]] &>/dev/null; then
-      IRSSI_SERVER_LIST_FILTERED_PERCENTAGE="100"
     fi
     if [[ -z "$IRSSI_BANNED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
       IRSSI_BANNED_FILTERED_PERCENTAGE="0"
@@ -432,7 +424,7 @@ COMMANDS.....: /help")"
     display_result() {
       dialog --title "IRC Chat information" \
         --no-collapse \
-        --msgbox "$RESULT" 13 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
+        --msgbox "$RESULT" 12 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
     }
 
     RESULT="IRC Client...: $IRSSI_CLIENT $IRSSI_VERSION
@@ -441,7 +433,6 @@ IRC Servers..: $IRSSI_SERVER_LIST
 Banned.......: $IRSSI_BANNED_TOTAL (${IRSSI_BANNED_FILTERED_PERCENTAGE:?}%)
 Connected....: $IRSSI_CONNECTED_TOTAL (${IRSSI_CONNECTED_FILTERED_PERCENTAGE:?}%)
 Disconnect...: $IRSSI_DISCONNECT_TOTAL (${IRSSI_DISCONNECT_FILTERED_PERCENTAGE:?}%)
-IRC Servers..: $IRSSI_SERVER_LIST_FILTERED (${IRSSI_SERVER_LIST_FILTERED_PERCENTAGE:?}%) *
 Proxy Client.: $PROXY_CLIENT $PROXY_VERSION
 Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
     display_result 2>/dev/null
