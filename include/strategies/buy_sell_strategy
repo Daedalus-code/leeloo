@@ -196,22 +196,22 @@ LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
 ################################################################################
 
 until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market &>/dev/null; do
-
-  OPEN_POSITION_COST="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.cost"
-  OPEN_POSITION_PRICE="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.price"
-
-  if [ ! -f "$OPEN_POSITION_COST" ] &>/dev/null; then
-    if [ ! -s "$OPEN_POSITION_COST" ] &>/dev/null; then
-      echo "$LISTING_AVAILABLE_VALUED" >"$OPEN_POSITION_COST"
-    fi
-  fi
-  if [ ! -f "$OPEN_POSITION_PRICE" ] &>/dev/null; then
-    if [ ! -s "$OPEN_POSITION_PRICE" ] &>/dev/null; then
-      echo "$LISTING_PRICE" >"$OPEN_POSITION_PRICE"
-    fi
-  fi
   sleep 1
 done
+
+OPEN_POSITION_COST="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.cost"
+OPEN_POSITION_PRICE="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.price"
+
+if [ ! -f "$OPEN_POSITION_COST" ] &>/dev/null; then
+  if [ ! -s "$OPEN_POSITION_COST" ] &>/dev/null; then
+    echo "$LISTING_AVAILABLE_VALUED" >"$OPEN_POSITION_COST"
+  fi
+fi
+if [ ! -f "$OPEN_POSITION_PRICE" ] &>/dev/null; then
+  if [ ! -s "$OPEN_POSITION_PRICE" ] &>/dev/null; then
+    echo "$LISTING_PRICE" >"$OPEN_POSITION_PRICE"
+  fi
+fi
 
 LISTING_OPEN_BALANCE="$(cat "$OPEN_POSITION_COST" 2>/dev/null)"
 LISTING_OPEN_PRICE="$(cat "$OPEN_POSITION_PRICE" 2>/dev/null)"
