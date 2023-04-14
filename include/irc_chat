@@ -409,6 +409,8 @@ COMMANDS.....: /help")"
 
     # server list
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
+    # server list based on amount of ports
+    IRSSI_SERVER_PORTS=$(echo "$IRSSI_SERVER_LIST*13" | bc 2>/dev/null)
     # connected list
     IRSSI_CONNECTED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.connect | awk '{ print $1 }')"
     IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
@@ -422,6 +424,12 @@ COMMANDS.....: /help")"
     IRSSI_WELCOME_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.welcome | awk '{ print $1 }')"
     IRSSI_WELCOME_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_WELCOME_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+    if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
+      IRSSI_SERVER_LIST="0"
+    fi
+    if [[ -z "$IRSSI_SERVER_PORTS" ]] &>/dev/null; then
+      IRSSI_SERVER_PORTS="0"
+    fi
     if [[ -z "$IRSSI_CONNECTED_TOTAL" ]] &>/dev/null; then
       IRSSI_CONNECTED_TOTAL="0"
     fi
@@ -458,7 +466,7 @@ COMMANDS.....: /help")"
 
     RESULT="IRC Client...: $IRSSI_CLIENT $IRSSI_VERSION
 IRC Status...: $IRSSI_COM_STATUS
-IRC Servers..: $IRSSI_SERVER_LIST
+IRC Servers..: $IRSSI_SERVER_LIST/$IRSSI_SERVER_PORTS
 Welcome......: $IRSSI_WELCOME_TOTAL (${IRSSI_WELCOME_FILTERED_PERCENTAGE:?})%
 Banned.......: $IRSSI_BANNED_TOTAL (${IRSSI_BANNED_FILTERED_PERCENTAGE:?}%)
 Connected....: $IRSSI_CONNECTED_TOTAL (${IRSSI_CONNECTED_FILTERED_PERCENTAGE:?}%)
