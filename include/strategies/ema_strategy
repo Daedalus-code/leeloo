@@ -174,17 +174,15 @@ LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
 OPEN_POSITION_COST="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.cost"
 OPEN_POSITION_PRICE="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.price"
 
-# cost data
-if ! diff -q <(echo "$LISTING_AVAILABLE_VALUED") "$OPEN_POSITION_COST" >/dev/null 2>&1; then
+# Check if the files exist
+if [ ! -f "$OPEN_POSITION_COST" ] || [ ! -f "$OPEN_POSITION_PRICE" ] &>/dev/null; then
+  # ff they don't exist, create files
   echo "$LISTING_AVAILABLE_VALUED" >"$OPEN_POSITION_COST"
-fi
-# price data
-if ! diff -q <(echo "$LISTING_PRICE") "$OPEN_POSITION_PRICE" >/dev/null 2>&1; then
   echo "$LISTING_PRICE" >"$OPEN_POSITION_PRICE"
 fi
 
-LISTING_OPEN_BALANCE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost 2>/dev/null)"
-LISTING_OPEN_PRICE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price 2>/dev/null)"
+LISTING_OPEN_BALANCE="$(cat "$OPEN_POSITION_COST" 2>/dev/null)"
+LISTING_OPEN_PRICE="$(cat "$OPEN_POSITION_PRICE" 2>/dev/null)"
 
 ################################################################################
 
