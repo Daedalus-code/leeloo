@@ -211,8 +211,10 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
   "1")
 
+    IRSSI_SERVER_STATUS="$(egrep "IRSSI_SERVER=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | wc -l)"
+
     # zero server configuration set, continue
-    if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
+    if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
 
       ##########################################################################
 
