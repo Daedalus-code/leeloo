@@ -50,15 +50,6 @@ LISTING_AMOUNT_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE" | bc -l 2>/dev/nu
 LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 LISTING_UNCONFIRMED_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 
-# listing trigger
-if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
-  if [[ "$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-    TRIGGER_L="1"
-  else
-    TRIGGER_L="0"
-  fi
-fi
-
 # get available reference data
 REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
 REFERENCE_UNCONFIRMED_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }' | awk '{ printf "%.8f\n", $1 }')"
@@ -67,6 +58,15 @@ REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/l
 REFERENCE_AMOUNT_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
 REFERENCE_UNCONFIRMED_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+
+# listing trigger
+if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+    TRIGGER_L="1"
+  else
+    TRIGGER_L="0"
+  fi
+fi
 
 # reference trigger
 if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
