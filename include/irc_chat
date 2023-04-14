@@ -125,12 +125,14 @@ function irc_chat() {
   ##############################################################################
 
   function welcome_banned() {
-    # banned on connect
-    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
-    # welcome on connect
-    echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Welcome|welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
-    echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+    if [[ ! -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
+      # banned on connect
+      echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
+      echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
+      # welcome on connect
+      echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Welcome|welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+      echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+    fi
   }
 
   ##############################################################################
@@ -144,19 +146,21 @@ function irc_chat() {
 
   function irc_connect() {
     # list files in irclogs directory and extract their names
-    ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >/home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
+    if [[ ! -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
+      ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >/home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
 
-    # iterate over the log file names and check if they exist in the connections file
-    while read -r LOG_FILE; do
-      MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
-      if [[ -n "$MATCH" ]] &>/dev/null; then
-        echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-        echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-      fi
-    done </home/"$WHOAMI"/.irssi/irclogs.tmp
+      # iterate over the log file names and check if they exist in the connections file
+      while read -r LOG_FILE; do
+        MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
+        if [[ -n "$MATCH" ]] &>/dev/null; then
+          echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+          echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+        fi
+      done </home/"$WHOAMI"/.irssi/irclogs.tmp
 
-    # remove temporary file
-    rm /home/"$WHOAMI"/.irssi/irclogs.tmp
+      # remove temporary file
+      rm /home/"$WHOAMI"/.irssi/irclogs.tmp
+    fi
   }
 
   ##############################################################################
