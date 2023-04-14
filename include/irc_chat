@@ -166,13 +166,13 @@ function irc_chat() {
 
   function cleanup_com() {
     # disregard connected servers
-    grep -vFf /home/"$WHOAMI"/.irssi/irc.connect /home/"$WHOAMI"/.irssi/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers.new
+    awk '{print $1}' /path/to/irc.connect 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers.new
     mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
     # disregard disconnected servers
-    grep -vFf /home/"$WHOAMI"/.irssi/irc.disconnect /home/"$WHOAMI"/.irssi/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers.new
+    awk '{print $1}' /path/to/irc.disconnect 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers.new
     mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
     # disregard banned servers
-    grep -vFf /home/"$WHOAMI"/.irssi/irc.banned /home/"$WHOAMI"/.irssi/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers.new
+    awk '{print $1}' /path/to/irc.banned 2>/dev/null | grep -vFf /home/"$WHOAMI"/.irssi/irc.servers >/home/"$WHOAMI"/.irssi/irc.servers.new
     mv /home/"$WHOAMI"/.irssi/irc.servers.new /home/"$WHOAMI"/.irssi/irc.servers
   }
 
