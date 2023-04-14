@@ -305,8 +305,9 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     fi
 
     # if match, continue
-    SERVER_FAVOURITE="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null | awk '{ print $1 }')"
-    if [[ "$SERVER_FAVOURITE" == "$IRSSI_SERVER" ]] &>/dev/null; then
+    FAVOURITE_SERVER="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null | awk '{ print $1 }')"
+    FAVOURITE_CONNECTING="$(grep "$FAVOURITE_SERVER" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | wc -l)"
+    if [[ "$FAVOURITE_CONNECTING" -gt "0" ]] &>/dev/null; then
       FAVOURITE="A"
     fi
 
@@ -321,7 +322,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     RESULT="$(echo "IRC Client...: $IRSSI_CLIENT
 Status.......: $IRSSI_COM_STATUS
 Server.......: $IRSSI_SERVER
-Port.........: $IRSSI_PORT $FAVOURITE
+Port.........: $IRSSI_PORT $FAVOURITE_SERVER
 Nick.........: $IRSSI_NICKNAME
 Proxy Client.: $PROXY_CLIENT
 Status.......: $PROXY_COM_STATUS
