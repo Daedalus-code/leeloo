@@ -262,12 +262,12 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       if [[ ${#VALID_PORTS[@]} -eq 0 ]] &>/dev/null; then
         display_result() {
-          dialog --title "IRC ports are banned!" \
+          dialog --title "IRC ports are banned for $IRSSI_RANDOM_SERVER!" \
             --no-collapse \
-            --msgbox "$RESULT" 13 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
+            --msgbox "$RESULT" 5 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
         }
-        # all ports are banned, exit with error
-        RESULT="Error: All IRC ports are banned for server $IRSSI_RANDOM_SERVER"
+        # all ports are banned, exit with null
+        RESULT="Error: All IRC ports are banned for server!"
         display_result 2>/dev/null
 
         IRSSI_RANDOM_SERVER=""
@@ -276,7 +276,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
       IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
       IRSSI_RANDOM_PORT="${VALID_PORTS[$IRSSI_INDEX]}"
-    fi
+    fi 2>/dev/null
 
     ############################################################################
     # random server, port after calculations
