@@ -161,6 +161,19 @@ OPEN_EMA_DATA="$(grep "EMA_Data" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 
 open_positions
 
 ################################################################################
+
+function cost_price() {
+  echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+  echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
+}
+
+################################################################################
+
+function tx_id {
+  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+}
+
+################################################################################
 # S I G N A L
 ################################################################################
 
@@ -208,19 +221,6 @@ EMA_PERCENTAGE="$(echo "100/$EMA_REAL_SHORT*$EMA_DIFFERENCE" | bc -l 2>/dev/null
 if [[ -z "$EMA_PERCENTAGE" ]] &>/dev/null; then
   EMA_PERCENTAGE="0"
 fi
-
-################################################################################
-
-function cost_price() {
-  echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
-  echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
-}
-
-################################################################################
-
-function tx_id {
-  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-}
 
 ################################################################################
 # B U L L I S H - S I G N A L
