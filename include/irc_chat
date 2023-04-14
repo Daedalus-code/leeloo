@@ -166,11 +166,11 @@ function irc_chat() {
 
   function cleanup_com() {
     # disregard connected servers
-    echo "$(grep -vf /home/"$WHOAMI"/.irssi/irc.connect "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+    echo "$(grep -vf "$(awk '{ print $1 }' /home/"$WHOAMI"/.irssi/irc.connect)" "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
     # disregard disconnected servers
-    echo "$(grep -vf /home/"$WHOAMI"/.irssi/irc.disconnect "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+    echo "$(grep -vf "$(awk '{ print $1 }' /home/"$WHOAMI"/.irssi/irc.disconnect)" "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
     # disregard banned servers
-    echo "$(grep -vf /home/"$WHOAMI"/.irssi/irc.banned "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
+    echo "$(grep -vf "$(awk '{ print $1 }' /home/"$WHOAMI"/.irssi/irc.banned)" "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null)" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null
   }
 
   # chat menu ##################################################################
