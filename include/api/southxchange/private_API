@@ -104,17 +104,17 @@ function getOrder {
 
 # getOrders ####################################################################
 # https://www.southxchange.com/api/getOrders
-# Gets given orders. Permission required: List Orders
-# Example: getOrders CODE1,CODE2 0 10, to retrieve the first page of 10 orders
+# Gets a list of your executed orders. Permission required: List Orders
+# Example: getOrders "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" 10
 
 function getOrders {
+  LISTING_CURRENCY="$1"
+  REFERENCE_CURRENCY="$2"
+  COUNT="$3"
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
-  CODES="$1"
-  PAGE_INDEX="$2"
-  PAGE_SIZE="$3"
-  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"code\":$CODES,\"pageIndex\":$PAGE_INDEX,\"pageSize\":$PAGE_SIZE,\"key\":\"$API_SOUTHX_KEY\"}"
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"count\":$COUNT,\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getOrders
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" -X POST https://www.southxchange.com/api/getOrders
 }
 
 # generateNewAddress ###########################################################
