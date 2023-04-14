@@ -221,7 +221,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       cleanup_com
 
       ##########################################################################
-      # random server, port list ###############################################
+      # random server, port list
       ##########################################################################
 
       # irc servers, remove duplicates, empty lines
@@ -260,9 +260,18 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         fi
       done
 
-      if [[ ${#VALID_PORTS[@]} -eq 0 ]] 2>/dev/null; then
-        # all ports are banned, skip with null
-        IRSSI_PORT=""
+      if [[ ${#VALID_PORTS[@]} -eq 0 ]] &>/dev/null; then
+        display_result() {
+          dialog --title "IRC ports are banned!" \
+            --no-collapse \
+            --msgbox "$RESULT" 13 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
+        }
+        # all ports are banned, exit with error
+        RESULT="Error: All IRC ports are banned for server $IRSSI_RANDOM_SERVER"
+        display_result 2>/dev/null
+
+        IRSSI_RANDOM_SERVER=""
+        IRSSI_RANDOM_PORT=""
       fi
 
       IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
@@ -270,7 +279,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     fi
 
     ############################################################################
-    # random server, port after calculations ###################################
+    # random server, port after calculations
     ############################################################################
 
     # random server
