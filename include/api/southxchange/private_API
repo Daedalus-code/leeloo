@@ -75,16 +75,16 @@ function cancelMarketOrders() {
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/cancelMarketOrders
 }
 
-# listOrders ###################################################################
+# listOrders ####################################################################
 # https://www.southxchange.com/api/listOrders
-# Lists all pending orders. Permission required: List Orders
+# Lists your open orders. Permission required: List Orders
 # Example: listOrders "$LISTING_CURRENCY" "$REFERENCE_CURRENCY"
 
 function listOrders {
   LISTING_CURRENCY="$1"
   REFERENCE_CURRENCY="$2"
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
-  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"key\":\"$API_SOUTHX_KEY\",\"Code\":\"\",\"Type\":\"\",\"Amount\":0,\"OriginalAmount\":0,\"LimitPrice\":0,\"ListingCurrency\":\"\",\"ReferenceCurrency\":\"\",\"DateAdded\":\"\"}"
+  JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"key\":\"$API_SOUTHX_KEY\",\"Code\":\"\",\"Type\":\"\",\"Amount\":0,\"OriginalAmount\":0,\"LimitPrice\":0,\"ListingCurrency\":\"$LISTING_CURRENCY\",\"ReferenceCurrency\":\"$REFERENCE_CURRENCY\",\"DateAdded\":\"\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" -X POST https://www.southxchange.com/api/listOrders
 }
