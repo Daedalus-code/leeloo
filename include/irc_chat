@@ -119,7 +119,7 @@ function irc_chat() {
   fi
 
   # zero, continue
-  PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d')"
+  PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$NF }')"
   if [[ ! -s "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
     PROXY_CLIENT="Not installed"
   fi
@@ -128,6 +128,11 @@ function irc_chat() {
 
   echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned
   echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned
+
+  # welcome on connect #########################################################
+
+  echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Welcome|welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome
+  echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome
 
   ##############################################################################
 
@@ -413,7 +418,22 @@ COMMANDS.....: /help")"
     # banned list
     IRSSI_BANNED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.banned | awk '{ print $1 }')"
     IRSSI_BANNED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_BANNED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    # welcome total
+    IRSSI_WELCOME_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.welcome | awk '{ print $1 }')"
+    IRSSI_WELCOME_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_WELCOME_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+    if [[ -z "$IRSSI_CONNECTED_TOTAL" ]] &>/dev/null; then
+      IRSSI_CONNECTED_TOTAL="0"
+    fi
+    if [[ -z "$IRSSI_DISCONNECT_TOTAL" ]] &>/dev/null; then
+      IRSSI_DISCONNECT_TOTAL="0"
+    fi
+    if [[ -z "$IRSSI_BANNED_TOTAL" ]] &>/dev/null; then
+      IRSSI_BANNED_TOTAL="0"
+    fi
+    if [[ -z "$IRSSI_WELCOME_TOTAL" ]] &>/dev/null; then
+      IRSSI_WELCOME_TOTAL="0"
+    fi
     if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
       IRSSI_SERVER_LIST="0"
     fi
@@ -426,20 +446,24 @@ COMMANDS.....: /help")"
     if [[ -z "$IRSSI_BANNED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
       IRSSI_BANNED_FILTERED_PERCENTAGE="0"
     fi
+    if [[ -z "$IRSSI_WELCOME_FILTERED_PERCENTAGE" ]] &>/dev/null; then
+      IRSSI_WELCOME_FILTERED_PERCENTAGE="0"
+    fi
 
     display_result() {
       dialog --title "IRC Chat information" \
         --no-collapse \
-        --msgbox "$RESULT" 12 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
+        --msgbox "$(echo "$RESULT" | column -t)" 12 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
     }
 
     RESULT="IRC Client...: $IRSSI_CLIENT $IRSSI_VERSION
 IRC Status...: $IRSSI_COM_STATUS
 IRC Servers..: $IRSSI_SERVER_LIST
+Welcome......: $IRSSI_WELCOME_TOTAL (${IRSSI_WELCOME_FILTERED_PERCENTAGE:?})%
 Banned.......: $IRSSI_BANNED_TOTAL (${IRSSI_BANNED_FILTERED_PERCENTAGE:?}%)
 Connected....: $IRSSI_CONNECTED_TOTAL (${IRSSI_CONNECTED_FILTERED_PERCENTAGE:?}%)
 Disconnect...: $IRSSI_DISCONNECT_TOTAL (${IRSSI_DISCONNECT_FILTERED_PERCENTAGE:?}%)
-Proxy Client.: $PROXY_CLIENT $PROXY_VERSION
+Proxy Client.: $PROXY_CLIENT
 Proxy Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
     display_result 2>/dev/null
 
