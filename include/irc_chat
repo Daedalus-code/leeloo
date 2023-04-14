@@ -106,7 +106,7 @@ function irc_chat() {
   if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
     echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
   fi
-  IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$NF }')"
+  IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$2 }')"
 
   # zero, continue
   if [[ ! -s "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
@@ -326,7 +326,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     display_result() {
       dialog --title "IRC Chat (irssi)" \
         --no-collapse \
-        --msgbox "$RESULT" 13 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
+        --msgbox "$RESULT" 13 "$(echo "$(echo "$RESULT" | wc -L)+8" | bc 2>/dev/null)"
     }
 
     RESULT="$(echo "IRC Client...: $IRSSI_CLIENT
