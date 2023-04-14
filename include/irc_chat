@@ -132,7 +132,7 @@ function irc_chat() {
   # welcome on connect #########################################################
 
   echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Welcome|welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome
-  echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome
+  echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,} [0-9]+\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome
 
   ##############################################################################
 
@@ -164,7 +164,7 @@ function irc_chat() {
 
   if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     # If the server is not found in the list, append the last connected server to the irc.disconnect file
-    echo "$IRSSI_CONNECTED" >>/home/"$WHOAMI"/.irssi/irc.disconnect
+    echo "$IRSSI_CONNECTED" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,} [0-9]+\\b" >>/home/"$WHOAMI"/.irssi/irc.disconnect
     # Remove duplicate and empty lines from irc.disconnect file
     sort /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp
     mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect
@@ -461,7 +461,7 @@ COMMANDS.....: /help")"
     display_result() {
       dialog --title "IRC Chat information" \
         --no-collapse \
-        --msgbox "$(echo "$RESULT" | column -t)" 13 "$(echo "$(echo "$RESULT" | wc -L)+12" | bc 2>/dev/null)"
+        --msgbox "$(echo "$RESULT" | column -t)" 13 "$(echo "$(echo "$RESULT" | wc -L)+10" | bc 2>/dev/null)"
     }
 
     RESULT="IRC.Client...: $IRSSI_CLIENT
