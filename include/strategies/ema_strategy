@@ -6,9 +6,10 @@ source /usr/local/bin/include/leeloo/broker.conf
 # southxchange api
 source /usr/local/bin/include/leeloo/api/southxchange/private_API
 source /usr/local/bin/include/leeloo/api/southxchange/public_API
-
 # indicators
 source /usr/local/bin/include/leeloo/indicators/ema
+# pool
+source /usr/local/bin/include/leeloo/strategies/pool
 
 # get strategy id.config, run strategy
 BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
@@ -157,66 +158,7 @@ fi
 
 # strategy
 OPEN_EMA_DATA="$(grep "EMA_Data" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null | awk '{ print $2 }')"
-OPEN_STRATEGY="$OPEN_EMA_DATA"
-
-################################################################################
-
-# currency
-LISTING_OPEN_CURRENCY="$LISTING_CURRENCY"
-
-################################################################################
-
-# amount
-LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
-
-################################################################################
-
-until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market &>/dev/null; do
-  sleep 1
-done
-
-OPEN_POSITION_COST="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.cost"
-OPEN_POSITION_PRICE="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.price"
-
-if [ ! -s "$OPEN_POSITION_COST" ] &>/dev/null; then
-  echo "$LISTING_AVAILABLE_VALUED" >"$OPEN_POSITION_COST"
-fi
-if [ ! -s "$OPEN_POSITION_PRICE" ] &>/dev/null; then
-  echo "$LISTING_PRICE" >"$OPEN_POSITION_PRICE"
-fi
-
-LISTING_OPEN_BALANCE="$(cat "$OPEN_POSITION_COST" 2>/dev/null)"
-LISTING_OPEN_PRICE="$(cat "$OPEN_POSITION_PRICE" 2>/dev/null)"
-
-################################################################################
-
-# result
-LISTING_OPEN_RESULT="$(echo "$(echo "100/$LISTING_OPEN_PRICE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')-100" | bc -l | awk '{ printf "%.2f\n", $1 }')"
-if [[ -z "$LISTING_OPEN_RESULT" ]] &>/dev/null; then
-  LISTING_OPEN_RESULT="0.00"
-fi
-
-################################################################################
-
-# age (seconds)
-if [[ -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price ]] &>/dev/null; then
-  LISTING_OPEN_AMOUNT_SECONDS="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price 2>/dev/null)))" 2>/dev/null)"
-  if [[ -z "$LISTING_OPEN_AMOUNT_SECONDS" ]] &>/dev/null; then
-    LISTING_OPEN_AMOUNT_SECONDS="0"
-  fi
-  LISTING_OPEN_AMOUNT_AGE=$(printf '%dh:%dm:%ds\n' $(("$LISTING_OPEN_AMOUNT_SECONDS/3600")) $(("$LISTING_OPEN_AMOUNT_SECONDS%3600/60")) $(("$LISTING_OPEN_AMOUNT_SECONDS%60")))
-fi
-
-################################################################################
-
-# is this an open position?
-if [[ "$(echo "$LISTING_OPEN_AMOUNT" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-  # currency amount cost result age
-  echo "$OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/pool
-  echo "$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/pool
-else
-  rm "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".* &>/dev/null
-fi
+open_positions
 
 ################################################################################
 # S I G N A L
