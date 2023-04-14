@@ -299,6 +299,10 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
       IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
     fi
+
+    # most used port that connected
+    IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -1)"
+
     # zero, default port
     if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
       IRSSI_PORT="6667"
