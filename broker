@@ -823,9 +823,8 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
         if [[ "$(ls -l "${SYS_DIR:?}"/robot/open.*.cost | wc -l)" -gt "0" ]] &>/dev/null; then
 
-          until egrep "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/pool &>/dev/null; do
-            clear
-            echo "Please wait.."
+          # make sure file has data
+          until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances &>/dev/null; do
             sleep 1
           done
 
