@@ -206,6 +206,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   "1")
 
     irc_connect
+    welcome_banned
 
     IRSSI_SERVER_STATUS="$(egrep "IRSSI_SERVER=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | wc -l | sed '/^$/d')"
 
@@ -224,8 +225,10 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         # random irc.server
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
       else
-        # random irc.connect server
-        IRSSI_IRC_CONNECT_SERVER="$(sort -R /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | head -1)"
+        # include irc.welcome
+        cat /home/"$WHOAMI"/.irssi/irc.welcome >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+        # random irc.connect server, disregard with irc.banned
+        IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vf /home/"$WHOAMI"/.irssi/irc.banned | sort -R | head -1)"
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $1 }')"
         IRSSI_PORT="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $2 }')"
       fi
@@ -383,7 +386,6 @@ COMMANDS.....:  /help")"
   "3")
 
     irc_connect
-    welcome_banned
 
     # total ports
     IRSSI_TOTAL_PORTS="13"
