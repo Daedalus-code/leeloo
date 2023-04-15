@@ -342,20 +342,20 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     # random server, port after calculations
     ############################################################################
 
-    if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
-      # zero, continue
-      if [[ -z "$IRSSI_RANDOM_SERVER" ]] &>/dev/null; then
-        IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
-      fi
-      # zero, random port
-      if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
-        IRSSI_PORT="$IRSSI_RANDOM_PORT"
-      fi
-      # random server
-      IRSSI_SERVER="$IRSSI_RANDOM_SERVER"
-      # random port
+    # zero, continue
+    if [[ -z "$IRSSI_RANDOM_SERVER" ]] &>/dev/null; then
+      IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
+    fi
+
+    # zero, random port
+    if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
       IRSSI_PORT="$IRSSI_RANDOM_PORT"
     fi
+
+    # random server
+    IRSSI_SERVER="$IRSSI_RANDOM_SERVER"
+    # random port
+    IRSSI_PORT="$IRSSI_RANDOM_PORT"
 
     # no irc configuration is set ##############################################
 
@@ -364,14 +364,15 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
         IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
       fi
-      # zero, default port
-      if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
-        # most used port that connected
-        if [[ -f home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
-          IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -5 | sort -R | tail -1)"
-        fi
-        IRSSI_PORT="6667"
+    fi
+
+    # zero, default port
+    if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
+      # most used port that connected
+      if [[ -f home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
+        IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -5 | sort -R | tail -1)"
       fi
+      IRSSI_PORT="6667"
     fi
 
     # zero, default random nickname
