@@ -230,10 +230,6 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         cat /home/"$WHOAMI"/.irssi/irc.welcome >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
         # random irc.connect server, disregard with irc.banned
         IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vf /home/"$WHOAMI"/.irssi/irc.banned | sort -R | head -1)"
-        # zero, continue
-        if [[ -z "$IRSSI_IRC_CONNECT_SERVER" ]] &>/dev/null; then
-          IRSSI_IRC_CONNECT_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
-        fi
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $1 }')"
         IRSSI_PORT="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $2 }')"
       fi
@@ -280,6 +276,11 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     ############################################################################
     # random server, port after calculations
     ############################################################################
+
+    # zero, continue
+    if [[ -z "$IRSSI_RANDOM_SERVER" ]] &>/dev/null; then
+      IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
+    fi
 
     # random server
     IRSSI_SERVER="$IRSSI_RANDOM_SERVER"
