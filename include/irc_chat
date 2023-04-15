@@ -260,15 +260,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     done
 
     if [[ ${#VALID_PORTS[@]} -eq 0 ]]; then
-      display_result() {
-        dialog --title "IRC ports are banned for $IRSSI_RANDOM_SERVER!" \
-          --no-collapse \
-          --msgbox "$RESULT" 5 "$(echo "$(echo "$RESULT" | wc -L)+6" | bc 2>/dev/null)"
-      }
-      # all ports are banned, exit with null
-      RESULT="Error: All IRC ports are banned for server $IRSSI_RANDOM_SERVER"
-      display_result 2>/dev/null
-
+      IRSSI_PORTS_ALL_BANNED="!"
       # most used port that connected
       if [[ -f home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
         IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -5 | sort -R | tail -1)"
@@ -328,7 +320,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     RESULT="$(echo "IRC.Client...:  $IRSSI_CLIENT
 Status.......:  $IRSSI_COM_STATUS
 Server.......:  $IRSSI_SERVER $IRSSI_NEW
-Port.........:  $IRSSI_PORT
+Port.........:  ${IRSSI_PORT:?}$IRSSI_PORTS_ALL_BANNED
 Nickname.....:  $IRSSI_NICKNAME
 Proxy.Client.:  $PROXY_CLIENT
 Status.......:  $PROXY_COM_STATUS
