@@ -43,6 +43,8 @@ LOG_TIMER="18"
 # get available listing data
 listing_data
 
+################################################################################
+
 # get available reference data
 reference_data
 
@@ -63,18 +65,16 @@ if [[ -z "$REFERENCE_AMOUNT" ]] &>/dev/null; then
 fi
 
 ################################################################################
-# strategy
+
+listing_total_value
+reference_total_value
+
 ################################################################################
 
-# calculate total values
-LISTING_TOTAL="$(echo "$LISTING_AVAILABLE_BALANCE+$LISTING_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-LISTING_TOTAL_VALUED="$(echo "$LISTING_AVAILABLE_VALUED+$LISTING_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-REFERENCE_TOTAL="$(echo "$REFERENCE_AVAILABLE_BALANCE+$REFERENCE_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-REFERENCE_TOTAL_VALUED="$(echo "$REFERENCE_AVAILABLE_VALUED+$REFERENCE_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+listing_allocated
+reference_allocated
 
-# total allocated now
-REFERENCE_ALLOCATED_REAL="$(echo "100/$LISTING_TOTAL*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-LISTING_ALLOCATED_REAL="$(echo "100/$REFERENCE_TOTAL*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+################################################################################
 
 if [[ "$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
   LISTING_ALLOCATED_REAL="100"
@@ -82,12 +82,17 @@ fi
 if [[ "$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
   REFERENCE_ALLOCATED_REAL="100"
 fi
+
+################################################################################
+
 if [[ -z "$LISTING_ALLOCATED_REAL" ]] &>/dev/null; then
   LISTING_ALLOCATED_REAL="0.00"
 fi
 if [[ -z "$REFERENCE_ALLOCATED_REAL" ]] &>/dev/null; then
   REFERENCE_ALLOCATED_REAL="0.00"
 fi
+
+################################################################################
 
 TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 
@@ -168,7 +173,7 @@ function tx_id {
 }
 
 ################################################################################
-# S I G N A L
+# S T R A T E G Y - S I G N A L
 ################################################################################
 
 # incoming listing

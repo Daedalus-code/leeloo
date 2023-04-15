@@ -30,6 +30,36 @@ function reference_data() {
 
 ################################################################################
 
+function listing_total_value() {
+  # calculate total values
+  LISTING_TOTAL="$(echo "$LISTING_AVAILABLE_BALANCE+$LISTING_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+  LISTING_TOTAL_VALUED="$(echo "$LISTING_AVAILABLE_VALUED+$LISTING_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+}
+
+################################################################################
+
+function reference_total_value() {
+  # calculate total values
+  REFERENCE_TOTAL="$(echo "$REFERENCE_AVAILABLE_BALANCE+$REFERENCE_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+  REFERENCE_TOTAL_VALUED="$(echo "$REFERENCE_AVAILABLE_VALUED+$REFERENCE_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+}
+
+################################################################################
+
+function listing_allocated() {
+  # total listing allocated
+  LISTING_ALLOCATED_REAL="$(echo "100/$REFERENCE_TOTAL*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+}
+
+################################################################################
+
+function reference_allocated() {
+  # total reference allocated
+  REFERENCE_ALLOCATED_REAL="$(echo "100/$LISTING_TOTAL*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+}
+
+################################################################################
+
 function open_positions() {
 
   ##############################################################################

@@ -117,15 +117,17 @@ if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] &>/dev/null; 
 fi
 ORDER_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$CALCULATE_SECONDS/3600")) $(("$CALCULATE_SECONDS%3600/60")) $(("$CALCULATE_SECONDS%60")))
 
-# calculate total values
-LISTING_TOTAL="$(echo "$LISTING_AVAILABLE_BALANCE+$LISTING_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-LISTING_TOTAL_VALUED="$(echo "$LISTING_AVAILABLE_VALUED+$LISTING_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-REFERENCE_TOTAL="$(echo "$REFERENCE_AVAILABLE_BALANCE+$REFERENCE_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-REFERENCE_TOTAL_VALUED="$(echo "$REFERENCE_AVAILABLE_VALUED+$REFERENCE_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+################################################################################
 
-# total allocated now
-REFERENCE_ALLOCATED_REAL="$(echo "100/$LISTING_TOTAL*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-LISTING_ALLOCATED_REAL="$(echo "100/$REFERENCE_TOTAL*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+listing_total_value
+reference_total_value
+
+################################################################################
+
+listing_allocated
+reference_allocated
+
+################################################################################
 
 if [[ "$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
   LISTING_ALLOCATED_REAL="100"
@@ -133,12 +135,17 @@ fi
 if [[ "$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
   REFERENCE_ALLOCATED_REAL="100"
 fi
+
+################################################################################
+
 if [[ -z "$LISTING_ALLOCATED_REAL" ]] &>/dev/null; then
   LISTING_ALLOCATED_REAL="0.00"
 fi
 if [[ -z "$REFERENCE_ALLOCATED_REAL" ]] &>/dev/null; then
   REFERENCE_ALLOCATED_REAL="0.00"
 fi
+
+################################################################################
 
 TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 
