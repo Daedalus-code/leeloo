@@ -44,6 +44,8 @@ LOG_TIMER="18"
 # get available listing data
 listing_data
 
+################################################################################
+
 # get available reference data
 reference_data
 
@@ -62,60 +64,6 @@ fi
 if [[ -z "$REFERENCE_AMOUNT" ]] &>/dev/null; then
   REFERENCE_AMOUNT="0"
 fi
-
-################################################################################
-# strategy
-################################################################################
-
-# listing trigger
-if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
-  if [[ "$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-    TRIGGER_L="1"
-  else
-    TRIGGER_L="0"
-  fi
-fi
-
-# reference trigger
-if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
-  if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-    TRIGGER_R="1"
-  else
-    TRIGGER_R="0"
-  fi
-fi
-
-if [[ -z "$TRIGGER_L" ]] &>/dev/null; then
-  TRIGGER_L="0"
-fi
-if [[ -z "$TRIGGER_R" ]] &>/dev/null; then
-  TRIGGER_R="0"
-fi
-
-# get total trigger
-TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
-
-if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
-  TOTAL_TRIGGER="0"
-fi
-
-# calculate days into seconds
-COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-CONFIG_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$COOLDOWN_SECONDS/3600")) $(("$COOLDOWN_SECONDS%3600/60")) $(("$COOLDOWN_SECONDS%60")))
-
-# calculate seconds minus tx_time
-if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
-  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid &>/dev/null
-  COOLDOWN_SECONDS="0"
-fi
-
-TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)))" 2>/dev/null)"
-
-CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>/dev/null)"
-if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] &>/dev/null; then
-  CALCULATE_SECONDS="0"
-fi
-ORDER_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$CALCULATE_SECONDS/3600")) $(("$CALCULATE_SECONDS%3600/60")) $(("$CALCULATE_SECONDS%60")))
 
 ################################################################################
 
@@ -148,6 +96,38 @@ fi
 ################################################################################
 
 TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+
+################################################################################
+
+listing_trigger
+reference_trigger
+
+# get total trigger
+TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
+
+if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
+  TOTAL_TRIGGER="0"
+fi
+
+################################################################################
+
+# calculate days into seconds
+COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+CONFIG_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$COOLDOWN_SECONDS/3600")) $(("$COOLDOWN_SECONDS%3600/60")) $(("$COOLDOWN_SECONDS%60")))
+
+# calculate seconds minus tx_time
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
+  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid &>/dev/null
+  COOLDOWN_SECONDS="0"
+fi
+
+TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)))" 2>/dev/null)"
+
+CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>/dev/null)"
+if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] &>/dev/null; then
+  CALCULATE_SECONDS="0"
+fi
+ORDER_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$CALCULATE_SECONDS/3600")) $(("$CALCULATE_SECONDS%3600/60")) $(("$CALCULATE_SECONDS%60")))
 
 ################################################################################
 
