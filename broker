@@ -541,9 +541,6 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
         while true; do
           CONFIG_FILES=("${SYS_DIR:?}"/robot/*.data)
           NUM_FILES="${#CONFIG_FILES[@]}"
-          # shellcheck disable=SC2128
-          WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-          WIDTH="$(echo "$WIDTH+1" | bc 2>/dev/null)"
 
           if [ $NUM_FILES -eq 0 ] &>/dev/null; then
             echo "Error: No data files found in $SYS_DIR/robot"
@@ -555,6 +552,9 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
             FILENAME=$(basename "${CONFIG_FILES[$i]}")
             OPTIONS+=("$((i + 1))" "$FILENAME")
           done
+
+          # shellcheck disable=SC2128
+          WIDTH="$(echo "$FILENAME" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
 
           if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
             NUM_FILES="4"
