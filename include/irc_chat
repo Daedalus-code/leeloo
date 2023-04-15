@@ -320,7 +320,6 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     if [[ "$IRSSI_PORT_STATUS" -eq "0" ]] &>/dev/null; then
       # read the contents of irc.disconnect file
       BANNED=$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null)
-
       # random IRC ports
       IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
       VALID_PORTS=()
@@ -351,6 +350,12 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     # port configuration set, continue
     if [[ "$IRSSI_PORT_STATUS" -eq "1" ]] &>/dev/null; then
+      # read the contents of irc.disconnect file
+      BANNED=$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null)
+      # random IRC ports
+      IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
+      VALID_PORTS=()
+
       for PORT in "${IRSSI_PORT_LIST[@]}"; do
         # check if the combination of server and port is not banned
         if ! echo "$BANNED" | grep -qw "$IRSSI_RANDOM_SERVER $PORT"; then
