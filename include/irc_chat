@@ -230,10 +230,14 @@ function irc_chat() {
       # pick random server list
       RANDOM_SERVER_LIST=$((((RANDOM % 2) + 1)))
       if [[ "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
-        IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
+        IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
+        IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
+        IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
         IRSSI_NEW="+"
       else
-        IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_CONNECT" | sort -R | head -1)"
+        IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_CONNECT" | sort -R | head -1)"
+        IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
+        IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
       fi
     fi
   }
@@ -249,7 +253,7 @@ function irc_chat() {
     VALID_PORTS=()
     for PORT in "${IRSSI_PORT_LIST[@]}"; do
       # check if the combination of server and port is not banned
-      if ! echo "$BANNED_PORTS" | grep -qw "$IRSSI_RANDOM_SERVER $PORT"; then
+      if ! echo "$BANNED_PORTS" | grep -qw "$IRSSI_RANDOM_HOST $PORT"; then
         VALID_PORTS+=("$PORT")
       fi
     done
