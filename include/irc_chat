@@ -223,6 +223,8 @@ function irc_chat() {
   ##############################################################################
 
   function random_server() {
+    IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+    IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     # zero server configuration set, continue
     if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
       # pick random server list
