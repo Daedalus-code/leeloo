@@ -342,13 +342,14 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     # random server, port after calculations
     ############################################################################
 
-    # zero, continue
-    if [[ -z "$IRSSI_RANDOM_SERVER" ]] &>/dev/null; then
-      IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
+    if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
+      # zero, continue
+      if [[ -z "$IRSSI_RANDOM_SERVER" ]] &>/dev/null; then
+        IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
+      fi
+      # random server
+      IRSSI_SERVER="$IRSSI_RANDOM_SERVER"
     fi
-
-    # random server
-    IRSSI_SERVER="$IRSSI_RANDOM_SERVER"
 
     # zero, random port
     if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
@@ -361,10 +362,17 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
       IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
     fi
-    # zero, default random server
-    if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
-      IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
+
+    if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
+      # zero, default random server
+      if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
+        IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
+      fi
+    else
+      # config random server
+      IRSSI_SERVER="$IRSSI_SERVER"
     fi
+
     # zero, default port
     if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
       # most used port that connected
