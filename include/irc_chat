@@ -346,6 +346,22 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     fi
 
     ############################################################################
+
+    # port configuration set, continue
+    if [[ "$IRSSI_PORT_STATUS" -eq "1" ]] &>/dev/null; then
+      for PORT in "${IRSSI_PORT_LIST[@]}"; do
+        # check if the combination of server and port is not banned
+        if ! echo "$BANNED" | grep -qw "$IRSSI_RANDOM_SERVER $PORT"; then
+          VALID_PORTS+=("$PORT")
+        fi
+      done
+
+      if [[ ${#VALID_PORTS[@]} -eq 0 ]]; then
+        IRSSI_PORTS_ALL_BANNED="!"
+      fi
+    fi
+
+    ############################################################################
     # random server, port after calculations
     ############################################################################
 
