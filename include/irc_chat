@@ -69,51 +69,60 @@ function irc_chat() {
 
   ##############################################################################
 
-  # proxy configuration = true
-  if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-    PROXY_CONFIG_STATUS="Enabled"
-  else
-    PROXY_CONFIG_STATUS="Disabled"
-  fi
+  function proxy_configuration() {
+    # proxy configuration = true
+    if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
+      PROXY_CONFIG_STATUS="Enabled"
+    else
+      PROXY_CONFIG_STATUS="Disabled"
+    fi
+  }
 
   ##############################################################################
 
-  # irssi status
-  if [[ "$(pidof irssi 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-    IRSSI_COM_STATUS="Online"
-  else
-    IRSSI_COM_STATUS="Offline"
-  fi
-  # tor status
-  if [[ "$(pidof tor 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-    PROXY_COM_STATUS="Online"
-  else
-    PROXY_COM_STATUS="Offline"
-  fi
+  function irssi_status() {
+    # irssi status
+    if [[ "$(pidof irssi 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+      IRSSI_COM_STATUS="Online"
+    else
+      IRSSI_COM_STATUS="Offline"
+    fi
+  }
+
+  function tor_status() {
+    # tor status
+    if [[ "$(pidof tor 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+      PROXY_COM_STATUS="Online"
+    else
+      PROXY_COM_STATUS="Offline"
+    fi
+  }
 
   ##############################################################################
 
-  # get irssi version
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
-    echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
-  fi
-  IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$2 }')"
+  function irssi_version() {
+    # get irssi version
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
+      echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
+    fi
+    IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$2 }')"
+    # zero, continue
+    if [[ ! -s "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
+      IRSSI_CLIENT="Not installed"
+    fi
+  }
 
-  # zero, continue
-  if [[ ! -s "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
-    IRSSI_CLIENT="Not installed"
-  fi
-
-  # get tor version
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
-    echo "$(tor --version 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null
-  fi
-
-  # zero, continue
-  PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$NF }')"
-  if [[ ! -s "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
-    PROXY_CLIENT="Not installed"
-  fi
+  function tor_version() {
+    # get tor version
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
+      echo "$(tor --version 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null
+    fi
+    # zero, continue
+    PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$NF }')"
+    if [[ ! -s "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
+      PROXY_CLIENT="Not installed"
+    fi
+  }
 
   ##############################################################################
 
@@ -136,14 +145,12 @@ function irc_chat() {
 
   ##############################################################################
 
-  # check if irc.connect file exists, create it if not
-  if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
-    touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
-  fi
-
-  ##############################################################################
-
   function irc_connect() {
+    # check if irc.connect file exists, create it if not
+    if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
+      touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
+    fi
+
     # list files in irclogs directory and extract their names
     if [[ -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
       ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >/home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
@@ -165,6 +172,11 @@ function irc_chat() {
   ##############################################################################
 
   function irc_disconnect() {
+    # check if irc.disconnect file exists, create it if not
+    if [[ ! -f /home/"$WHOAMI"/.irssi/irc.disconnect ]] &>/dev/null; then
+      touch /home/"$WHOAMI"/.irssi/irc.disconnect &>/dev/null
+    fi
+
     # get the last connected server from connections file
     IRSSI_CONNECTED="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
 
@@ -174,6 +186,7 @@ function irc_chat() {
     if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
       # if the server is not found in the list, append the last connected server to the irc.disconnect file
       echo "$IRSSI_CONNECTED" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" >>/home/"$WHOAMI"/.irssi/irc.disconnect
+
       # remove duplicate and empty lines from irc.disconnect file
       sort /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp
       mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect
@@ -213,8 +226,17 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
   "1")
 
+    proxy_configuration
+
+    irssi_status
+    tor_status
+
+    irssi_version
+    tor_version
+
     irc_connect
     irc_disconnect
+
     welcome_banned
 
     IRSSI_SERVER_STATUS="$(egrep "IRSSI_SERVER=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | sed '/^$/d' | wc -l)"
@@ -393,8 +415,17 @@ COMMANDS.....:  /help")"
 
   "3")
 
+    proxy_configuration
+
+    irssi_status
+    tor_status
+
+    irssi_version
+    tor_version
+
     irc_connect
     irc_disconnect
+
     welcome_banned
 
     # total ports
