@@ -267,12 +267,12 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
     IRSSI_SERVER_STATUS="$(egrep "IRSSI_SERVER=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | sed '/^$/d' | wc -l)"
     IRSSI_PORT_STATUS="$(egrep "IRSSI_PORT=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | sed '/^$/d' | wc -l)"
 
+    ############################################################################
+    # random server, port
+    ############################################################################
+
     # zero server configuration set, continue
     if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
-
-      ##########################################################################
-      # random server, port list
-      ##########################################################################
 
       # pick random server list
       RANDOM_SERVER_LIST=$((((RANDOM % 2) + 1)))
@@ -309,34 +309,39 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       fi
     fi
 
-    # disregard banned ports combined with server ##############################
+    ############################################################################
+    # disregard banned ports combined with server
+    ############################################################################
 
-    # read the contents of irc.disconnect file
-    BANNED=$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null)
+    # zero port configuration set, continue
+    if [[ "$IRSSI_PORT_STATUS" -eq "0" ]] &>/dev/null; then
+      # read the contents of irc.disconnect file
+      BANNED=$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null)
 
-    # random IRC ports
-    IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
-    VALID_PORTS=()
+      # random IRC ports
+      IRSSI_PORT_LIST=(6661 6662 6663 6664 6665 6666 6667 6668 6669 6697 7000 7001 8000)
+      VALID_PORTS=()
 
-    for PORT in "${IRSSI_PORT_LIST[@]}"; do
-      # check if the combination of server and port is not banned
-      if ! echo "$BANNED" | grep -qw "$IRSSI_RANDOM_SERVER $PORT"; then
-        VALID_PORTS+=("$PORT")
-      fi
-    done
+      for PORT in "${IRSSI_PORT_LIST[@]}"; do
+        # check if the combination of server and port is not banned
+        if ! echo "$BANNED" | grep -qw "$IRSSI_RANDOM_SERVER $PORT"; then
+          VALID_PORTS+=("$PORT")
+        fi
+      done
 
-    if [[ ${#VALID_PORTS[@]} -eq 0 ]]; then
-      IRSSI_PORTS_ALL_BANNED="!"
-      # use most used port that connected
-      if [[ -f home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
-        IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -5 | sort -R | tail -1)"
+      if [[ ${#VALID_PORTS[@]} -eq 0 ]]; then
+        IRSSI_PORTS_ALL_BANNED="!"
+        # use most used port that connected
+        if [[ -f home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
+          IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -5 | sort -R | tail -1)"
+        else
+          IRSSI_PORT=""
+        fi
       else
-        IRSSI_PORT=""
+        # choose a random port from the valid ports
+        IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
+        IRSSI_RANDOM_PORT="${VALID_PORTS[$IRSSI_INDEX]}"
       fi
-    else
-      # choose a random port from the valid ports
-      IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
-      IRSSI_RANDOM_PORT="${VALID_PORTS[$IRSSI_INDEX]}"
     fi
 
     ############################################################################
@@ -358,27 +363,18 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     # no irc configuration is set ##############################################
 
-    if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
-      # zero, default random server
-      if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
-        IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
-      fi
-    else
-      IRSSI_SERVER="$IRSSI_SERVER"
+    # zero, default random server
+    if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
+      IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
     fi
 
-    # zero port configuration set, continue
-    if [[ "$IRSSI_PORT_STATUS" -eq "0" ]] &>/dev/null; then
-      # zero, default port
-      if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
-        # most used port that connected
-        if [[ -f home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
-          IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -5 | sort -R | tail -1)"
-        fi
-        IRSSI_PORT="6667"
+    # zero, default port
+    if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
+      # most used port that connected
+      if [[ -f home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
+        IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -5 | sort -R | tail -1)"
       fi
-    else
-      IRSSI_PORT="$IRSSI_PORT"
+      IRSSI_PORT="6667"
     fi
 
     # zero, default random nickname
