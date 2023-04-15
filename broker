@@ -932,7 +932,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
           CHOICE=$(dialog --clear --title "Strategy Menu" --menu "Choose one option:" "$LENGTH" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
-          if [ -n "$CHOICE" ]; then
+          if [ -n "$CHOICE" ] &>/dev/null; then
             SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
             nano "$SELECTED_FILE"
             break
@@ -1203,13 +1203,6 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         while true; do
           CONFIG_FILES=("${LOG_DIR:?}"/leeloo/robot.*.log)
           NUM_FILES="${#CONFIG_FILES[@]}"
-          # shellcheck disable=SC2128
-          WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-          WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
-
-          if [[ "$WIDTH" -lt "25" ]] &>/dev/null; then
-            WIDTH="45"
-          fi
 
           if [ $NUM_FILES -eq 0 ] &>/dev/null; then
             echo "Error: No log files found in $LOG_DIR/leeloo"
@@ -1218,16 +1211,21 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
           OPTIONS=()
           for ((i = 0; i < "$NUM_FILES"; i++)); do
-            OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
+            FILENAME=$(basename "${CONFIG_FILES[$i]}")
+            OPTIONS+=("$((i + 1))" "$FILENAME")
           done
 
           if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
             NUM_FILES="4"
           fi
 
-          CHOICE=$(dialog --clear --title "Robot logs" --menu "Choose one of the following robot logs:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+          WIDTH="$(echo "$FILENAME" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
+          WIDTH="$(echo "$WIDTH+17" | bc 2>/dev/null)"
+          LENGTH="$(echo "$NUM_FILES+3" | bc 2>/dev/null)"
 
-          if [ -n "$CHOICE" ]; then
+          CHOICE=$(dialog --clear --title "Robot logs" --menu "Choose one option:" "$LENGTH" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+          if [ -n "$CHOICE" ] &>/dev/null; then
             SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
             WIDTH="$(echo "$(tail -19 "${SELECTED_FILE:?}" | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
             if [[ "$WIDTH" -lt "7" ]] &>/dev/null; then
@@ -1267,9 +1265,6 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
           while true; do
             CONFIG_FILES=("${SYS_DIR:?}"/robot/*.config)
             NUM_FILES="${#CONFIG_FILES[@]}"
-            # shellcheck disable=SC2128
-            WIDTH="$(echo "$CONFIG_FILES" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-            WIDTH="$(echo "$WIDTH+11" | bc 2>/dev/null)"
 
             if [ $NUM_FILES -eq 0 ] &>/dev/null; then
               echo "Error: No config files found in $SYS_DIR/robot"
@@ -1278,14 +1273,19 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
             OPTIONS=()
             for ((i = 0; i < "$NUM_FILES"; i++)); do
-              OPTIONS+=("$((i + 1))" "${CONFIG_FILES[$i]}")
+              FILENAME=$(basename "${CONFIG_FILES[$i]}")
+              OPTIONS+=("$((i + 1))" "$FILENAME")
             done
 
             if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
               NUM_FILES="4"
             fi
 
-            CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one of the following strategy configurations:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+            WIDTH="$(echo "$FILENAME" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
+            WIDTH="$(echo "$WIDTH+17" | bc 2>/dev/null)"
+            LENGTH="$(echo "$NUM_FILES+3" | bc 2>/dev/null)"
+
+            CHOICE=$(dialog --clear --title "Delete Strategy Menu" --menu "Choose one option:" "$LENGTH" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
             if [ -n "$CHOICE" ] &>/dev/null; then
               SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
