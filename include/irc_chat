@@ -232,10 +232,12 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         IRSSI_NEW="+"
       else
         # include irc.welcome
-        cat /home/"$WHOAMI"/.irssi/irc.welcome >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+        if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.welcome | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+          cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed -r '/^\s*$/d' >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+        fi
         # random irc.connect server, disregard with irc.banned
-        IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort -R | head -1)"
-
+        IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed -r '/^\s*$/d' | sort -R | head -1)"
+        # random server port
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $1 }')"
         IRSSI_PORT="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $2 }')"
       fi
