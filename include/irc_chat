@@ -152,8 +152,8 @@ function irc_chat() {
       while read -r LOG_FILE; do
         MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
         if [[ -n "$MATCH" ]] &>/dev/null; then
-          echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-          echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+          echo "$MATCH" | sed -r '/^\s*$/d' >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+          echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++' | sed -r '/^\s*$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
         fi
       done </home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
 
