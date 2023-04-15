@@ -164,19 +164,21 @@ function irc_chat() {
 
   ##############################################################################
 
-  # get the last connected server from connections file
-  IRSSI_CONNECTED="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
+  function irc_disconnect() {
+    # get the last connected server from connections file
+    IRSSI_CONNECTED="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
 
-  # list files in irclog directory and extract the names of those that contain the last connected server
-  ls -l /home/"$WHOAMI"/.irssi/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/irc.tmp
+    # list files in irclog directory and extract the names of those that contain the last connected server
+    ls -l /home/"$WHOAMI"/.irssi/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/irc.tmp
 
-  if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-    # if the server is not found in the list, append the last connected server to the irc.disconnect file
-    echo "$IRSSI_CONNECTED" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" >>/home/"$WHOAMI"/.irssi/irc.disconnect
-    # remove duplicate and empty lines from irc.disconnect file
-    sort /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp
-    mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect
-  fi
+    if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      # if the server is not found in the list, append the last connected server to the irc.disconnect file
+      echo "$IRSSI_CONNECTED" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" >>/home/"$WHOAMI"/.irssi/irc.disconnect
+      # remove duplicate and empty lines from irc.disconnect file
+      sort /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp
+      mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect
+    fi
+  }
 
   # chat menu ##################################################################
 
@@ -212,6 +214,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   "1")
 
     irc_connect
+    irc_disconnect
     welcome_banned
 
     IRSSI_SERVER_STATUS="$(egrep "IRSSI_SERVER=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | sed '/^$/d' | wc -l)"
@@ -232,7 +235,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         IRSSI_NEW="+"
       else
         # include irc.welcome
-        if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.welcome | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+        if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.welcome | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
           cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed -r '/^\s*$/d' >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
         fi
         # random irc.connect server, disregard with irc.banned
@@ -391,6 +394,7 @@ COMMANDS.....:  /help")"
   "3")
 
     irc_connect
+    irc_disconnect
     welcome_banned
 
     # total ports
