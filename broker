@@ -553,15 +553,16 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
             OPTIONS+=("$((i + 1))" "$FILENAME")
           done
 
-          # shellcheck disable=SC2128
-          WIDTH="$(echo "$FILENAME" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
-          WIDTH="$(echo "$WIDTH+17" | bc 2>/dev/null)"
-
           if [[ "$NUM_FILES" -lt "6" ]] &>/dev/null; then
             NUM_FILES="4"
           fi
 
-          CHOICE=$(dialog --clear --title "Strategy Data" --menu "Choose one strategy data:" "$(echo "$NUM_FILES+3" | bc 2>/dev/null)" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+          # shellcheck disable=SC2128
+          WIDTH="$(echo "$FILENAME" | awk '{print length, $0}' | sort -nr | head -1 | awk '{ print $1 }')"
+          WIDTH="$(echo "$WIDTH+17" | bc 2>/dev/null)"
+          LENGTH="$(echo "$NUM_FILES+3" | bc 2>/dev/null)"
+
+          CHOICE=$(dialog --clear --title "Strategy Data" --menu "Choose one option:" "$LENGTH" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
 
           if [ -n "$CHOICE" ] &>/dev/null; then
             SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
