@@ -120,11 +120,17 @@ function irc_chat() {
   function welcome_banned() {
     if [[ -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
       # banned on connect
-      echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Banned|banned|Ban|ban|You are not welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
-      echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
+      BANNED_STRING="Banned|banned|Ban|ban|You are not welcome"
+      if [[ "$(egrep "$BANNED_STRING" /home/"$WHOAMI"/.irssi/irclogs/*/* | wc -l)" -gt "0" ]] &>/dev/null; then
+        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$BANNED_STRING" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
+        echo "$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
+      fi
       # welcome on connect
-      echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "Welcome|welcome" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
-      echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+      WELCOME_STRING="Welcome|welcome"
+      if [[ "$(egrep "$WELCOME_STRING" /home/"$WHOAMI"/.irssi/irclogs/*/* | wc -l)" -gt "0" ]] &>/dev/null; then
+        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$WELCOME_STRING" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+        echo "$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+      fi
     fi
   }
 
@@ -226,9 +232,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         IRSSI_NEW="+"
       else
         # include irc.welcome
-        if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.welcome | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
-          cat /home/"$WHOAMI"/.irssi/irc.welcome >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-        fi
+        cat /home/"$WHOAMI"/.irssi/irc.welcome >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
         # random irc.connect server, disregard with irc.banned
         IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort -R | head -1)"
 
