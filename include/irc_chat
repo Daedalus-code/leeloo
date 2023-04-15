@@ -206,7 +206,6 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   "1")
 
     irc_connect
-    welcome_banned
 
     IRSSI_SERVER_STATUS="$(egrep "IRSSI_SERVER=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | wc -l)"
 
@@ -218,11 +217,11 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
       ##########################################################################
 
       # pick random server list
-      RANDOM_SERVER_LIST=$((((RANDOM % 4) + 1)))
+      RANDOM_SERVER_LIST=$((((RANDOM % 2) + 1)))
 
       # reversed
       if [[ ! "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
-        # random irc server
+        # random irc.server
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_SERVERS_RAW" | sort -R | head -1)"
       else
         # random irc.connect server
@@ -310,15 +309,15 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         --msgbox "$RESULT" 13 "$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
     }
 
-    RESULT="$(echo "IRC.Client...: $IRSSI_CLIENT
-Status.......: $IRSSI_COM_STATUS
-Server.......: $IRSSI_SERVER
-Port.........: $IRSSI_PORT
-Nickname.....: $IRSSI_NICKNAME
-Proxy.Client.: $PROXY_CLIENT
-Status.......: $PROXY_COM_STATUS
-Config.......: $PROXY_CONFIG_STATUS
-COMMANDS.....: /help")"
+    RESULT="$(echo "IRC.Client...:  $IRSSI_CLIENT
+Status.......:  $IRSSI_COM_STATUS
+Server.......:  $IRSSI_SERVER
+Port.........:  $IRSSI_PORT
+Nickname.....:  $IRSSI_NICKNAME
+Proxy.Client.:  $PROXY_CLIENT
+Status.......:  $PROXY_COM_STATUS
+Config.......:  $PROXY_CONFIG_STATUS
+COMMANDS.....:  /help")"
     display_result 2>/dev/null
 
     # confirm start ############################################################
@@ -386,12 +385,14 @@ COMMANDS.....: /help")"
     irc_connect
     welcome_banned
 
+    # total ports
+    IRSSI_TOTAL_PORTS="13"
     # total times ports
-    IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')*13" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+    IRSSI_SERVER_LIST_TOTAL="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }')*$IRSSI_TOTAL_PORTS" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
     # server list
     IRSSI_SERVER_LIST="$(wc -l "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
     # server list based on amount of ports
-    IRSSI_SERVER_PORTS=$(echo "$IRSSI_SERVER_LIST*13" | bc 2>/dev/null)
+    IRSSI_SERVER_PORTS=$(echo "$IRSSI_SERVER_LIST*$IRSSI_TOTAL_PORTS" | bc 2>/dev/null)
     # connected list
     IRSSI_CONNECTED_TOTAL="$(wc -l /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }')"
     IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
@@ -442,12 +443,13 @@ COMMANDS.....: /help")"
     display_result() {
       dialog --title "IRC Chat information" \
         --no-collapse \
-        --msgbox "$(echo "$RESULT" | column -t)" 13 "$(echo "$(echo "$RESULT" | wc -L)+10" | bc 2>/dev/null)"
+        --msgbox "$(echo "$RESULT" | column -t)" 14 "$(echo "$(echo "$RESULT" | wc -L)+10" | bc 2>/dev/null)"
     }
 
     RESULT="IRC.Client...: $IRSSI_CLIENT
 IRC.Status...: $IRSSI_COM_STATUS
 IRC.Servers..: $IRSSI_SERVER_LIST:$IRSSI_SERVER_PORTS
+IRC.Ports....: $IRSSI_TOTAL_PORTS
 Welcome......: $IRSSI_WELCOME_TOTAL ${IRSSI_WELCOME_FILTERED_PERCENTAGE:?}%
 Banned.......: $IRSSI_BANNED_TOTAL ${IRSSI_BANNED_FILTERED_PERCENTAGE:?}%
 Connected....: $IRSSI_CONNECTED_TOTAL ${IRSSI_CONNECTED_FILTERED_PERCENTAGE:?}%
