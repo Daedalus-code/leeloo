@@ -285,8 +285,22 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.welcome | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
           cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed -r '/^\s*$/d' >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
         fi
-        # random irc.connect server, disregard with irc.banned
-        IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed -r '/^\s*$/d' | sort -R | head -1)"
+
+        if [[ "$(wc -l /home/"$WHOAMI"/.irssi/irc.connect | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
+          # random irc.connect server, disregard with irc.banned
+          IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vf .irssi/irc.banned | sed -r '/^\s*$/d' | sort -R | head -1)"
+          if [[ "$(echo "$IRSSI_IRC_CONNECT_SERVER" | wc -l)" -gt "0" ]] &>/dev/null; then
+            # got enough data, continue
+            IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vf .irssi/irc.banned | sed -r '/^\s*$/d' | sort -R | head -1)"
+          else
+            # run as intended
+            IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed -r '/^\s*$/d' | sort -R | head -1)"
+          fi
+        else
+          # random irc.connect server
+          IRSSI_IRC_CONNECT_SERVER="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed -r '/^\s*$/d' | sort -R | head -1)"
+        fi
+
         # random server port
         IRSSI_RANDOM_SERVER="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $1 }')"
         IRSSI_PORT="$(echo "$IRSSI_IRC_CONNECT_SERVER" | awk '{ print $2 }')"
@@ -311,7 +325,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     if [[ ${#VALID_PORTS[@]} -eq 0 ]]; then
       IRSSI_PORTS_ALL_BANNED="!"
-      # most used port that connected
+      # use most used port that connected
       if [[ -f home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
         IRSSI_PORT="$(sed -e 's/\s/\n/g' </home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | awk '{ print $1 }' | egrep -v "[a-z]+" | sort | uniq -c | sort -nr | head -10 | awk '{ print $2 }' | head -5 | sort -R | tail -1)"
       else
