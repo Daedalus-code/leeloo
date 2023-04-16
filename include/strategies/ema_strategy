@@ -96,11 +96,10 @@ Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFE
 
 ################################################################################
 
-EMA_TIMER="$(echo "${BOT_TIMER:?}*3" | bc 2>/dev/null)" # EMA data timer
-DATA_AGE="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)"
+EMA_TIMER="$(echo "${BOT_TIMER:?}*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" # EMA data timer
 
 # update data every n seconds
-if [[ "$DATA_AGE" -gt "$EMA_TIMER" ]] &>/dev/null; then
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)" -gt "$EMA_TIMER" ]] &>/dev/null; then
   result_ema
   # update data if missing
 elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then

@@ -111,11 +111,10 @@ Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFE
 
 ################################################################################
 
-BST_TIMER="$(echo "${BOT_TIMER:?}*2" | bc 2>/dev/null)" # BST data timer
-DATA_AGE="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)"
+BST_TIMER="$(echo "${BOT_TIMER:?}*2" | bc 2>/dev/null | awk -F. '{ print $1 }')" # BST data timer
 
 # update data every n seconds
-if [[ "$DATA_AGE" -gt "$BST_TIMER" ]] &>/dev/null; then
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)" -gt "$BST_TIMER" ]] &>/dev/null; then
   result_bst
   # update data if missing
 elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then

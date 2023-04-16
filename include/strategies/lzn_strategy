@@ -90,11 +90,10 @@ Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFE
 
 ################################################################################
 
-LZN_TIMER="$(echo "${BOT_TIMER:?}*2.5" | bc 2>/dev/null)"
-DATA_AGE="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)"
+LZN_TIMER="$(echo "${BOT_TIMER:?}*2.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
 # update data every n seconds
-if [[ "$DATA_AGE" -gt "$LZN_TIMER" ]] &>/dev/null; then
+if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)" -gt "$LZN_TIMER" ]] &>/dev/null; then
   result_lzn
   # update data if missing
 elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
