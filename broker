@@ -955,9 +955,9 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-        HEIGHT=11
+        HEIGHT=12
         WIDTH=47
-        CHOICE_HEIGHT=5
+        CHOICE_HEIGHT=6
         BACKTITLE="Leeloo (Multipass)"
         TITLE="Create strategies"
         MENU="Multipass $DATE"
@@ -965,7 +965,8 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
         OPTIONS=(1 "BST              Buy/Sell trigger"
           2 "EMA              EMA strategy"
           3 "RSI              RSI strategy"
-          4 "LZN              Lorentzian strategy")
+          4 "LZN              Lorentzian strategy"
+          0 "CST              Custom strategy")
 
         CHOICE=$(dialog --clear \
           --backtitle "$BACKTITLE" \
@@ -1110,9 +1111,45 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
           ;;
 
-        "5")
+        "0")
 
-          # code
+          cp "${HOME_DIR:?}"/leeloo/include/strategies/custom_config "${LOG_DIR:?}"/stgc.tmp &>/dev/null
+          cp "${HOME_DIR:?}"/leeloo/include/strategies/custom_strategy "${LOG_DIR:?}"/stgt.tmp &>/dev/null
+          nano "${LOG_DIR:?}"/stgc.tmp
+
+          DIALOG_OPTIONS=(
+            --backtitle "Leeloo (Multipass)"
+            --title "Creating CST strategy"
+            --yesno "Install new strategy?"
+            0 0
+          )
+
+          dialog "${DIALOG_OPTIONS[@]}"
+          DIALOG_RESULT=$?
+
+          if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
+            # installing strategy
+
+            display_result() {
+              dialog --title "Creating CST strategy" \
+                --no-collapse \
+                --msgbox "$RESULT" 0 0
+            }
+
+            # create strategy.robot_id
+            ROBOT_CONFIG="$(egrep "STRATEGY_NAME|TYPE|COOLDOWN|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY" "${LOG_DIR:?}"/stgc.tmp | head -6 | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
+            # install new strategy.robot_id
+            mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
+            mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
+
+            RESULT="$ROBOT_CONFIG strategy installed!
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
+            display_result 2>/dev/null
+          else
+            # not installing strategy
+            rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
+            rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
+          fi
 
           ;;
 
