@@ -206,11 +206,12 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   # calculate lorentzian classification indicator
   LC=$(lorentzian_classification "${NEW_PRICE}" "${LAMBDA}")
 
-  echo "$(echo "${LC} > ${BUY_THRESHOLD} && ${POSITION} == NONE" | bc -l 2>/dev/null)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+  # keep a signal
+  echo "$LC" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
   echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
 
-  LZN_SIGNAL_LAST="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)"
-  LZN_SIGNAL_SECOND_LAST="$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1)"
+  LZN_SIGNAL_LAST="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tr -d '.' | sed 's/^0*//')"
+  LZN_SIGNAL_SECOND_LAST="$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | tr -d '.' | sed 's/^0*//')"
 
   # if the signal is the same, skip
   if [[ ! "$LZN_SIGNAL_LAST" -eq "$LZN_SIGNAL_SECOND_LAST" ]] &>/dev/null; then
@@ -293,7 +294,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       TIMESTAMP=${NEW_TIMESTAMP}
     fi
   else
-    echo "$LOG_DATE :: Strategy LZN :: $CLASSIFICATION for ${PAIR}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    echo "$LOG_DATE :: Strategy LZN :: $LC for ${PAIR}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
 fi
 
