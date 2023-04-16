@@ -10,7 +10,10 @@ source /usr/local/bin/include/leeloo/api/southxchange/public_API
 # pool
 source /usr/local/bin/include/leeloo/strategies/pool
 
-STRATEGY_NAME="LZN" # strategy name
+# get strategy id.config, run strategy
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
+STRATEGY_NAME="$(egrep "STRATEGY_NAME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 ################################################################################
 # lorentzian strategy configuration
