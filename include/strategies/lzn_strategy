@@ -19,6 +19,8 @@ LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 # lorentzian strategy configuration
 ################################################################################
 
+STRATEGY_TYPE="LZN"
+
 MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # market or limit order
 
 # listing
@@ -104,6 +106,7 @@ TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 # get data
 function result_lzn() {
   echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
+LZN_Data..............: $STRATEGY_TYPE
 Price.................: $LISTING_PRICE $REFERENCE_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL:?}%/${LISTING_ALLOCATED:?}%
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY
