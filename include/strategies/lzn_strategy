@@ -166,14 +166,14 @@ function tx_id {
 # incoming listing
 if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
   if [[ ! "$(tail -"$LZN_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
-    echo "$LOG_DATE :: Strategy LZN info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    echo "$LOG_DATE :: Strategy $STRATEGY_NAME info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
 fi
 
 # incoming reference
 if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
   if [[ ! "$(tail -"$LZN_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
-    echo "$LOG_DATE :: Strategy LZN info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    echo "$LOG_DATE :: Strategy $STRATEGY_NAME info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
 fi
 
@@ -221,22 +221,22 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       ########################################################################
 
       # place buy order
-      echo "$LOG_DATE :: Strategy LZN :: Placing buy order for ${PAIR} at ${NEW_PRICE}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$LOG_DATE :: Strategy LZN :: $TYPE $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing buy order for ${PAIR} at ${NEW_PRICE}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: $TYPE $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
-      echo "$LOG_DATE :: Strategy LZN :: $OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: $OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
       # placeOrder limit #####################################################
       PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
       ########################################################################
 
-      echo "$LOG_DATE :: Strategy LZN :: Placing buy order for ${PAIR} at ${NEW_PRICE}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$LOG_DATE :: Strategy LZN :: $TYPE $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing buy order for ${PAIR} at ${NEW_PRICE}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: $TYPE $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
-      echo "$LOG_DATE :: Strategy LZN :: $OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: $OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     fi
 
     ##########################################################################
@@ -259,11 +259,11 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
       ########################################################################
 
-      echo "$LOG_DATE :: Strategy LZN :: Placing sell order for ${PAIR} at ${NEW_PRICE}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$LOG_DATE :: Strategy LZN :: $TYPE $LISTING_CURRENCY :: Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing sell order for ${PAIR} at ${NEW_PRICE}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: $TYPE $LISTING_CURRENCY :: Market $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
-      echo "$LOG_DATE :: Strategy LZN :: $OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: $OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
 
     elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -271,11 +271,11 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
       ########################################################################
 
-      echo "$LOG_DATE :: Strategy LZN :: Placing sell order for ${PAIR} at ${NEW_PRICE}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$LOG_DATE :: Strategy LZN :: $TYPE $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing sell order for ${PAIR} at ${NEW_PRICE}" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: $TYPE $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
-      echo "$LOG_DATE :: Strategy LZN :: $OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$LOG_DATE :: Strategy $STRATEGY_NAME :: $OPEN_STRATEGY $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     fi
 
     # update position and price
