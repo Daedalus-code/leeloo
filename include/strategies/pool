@@ -92,6 +92,19 @@ function reference_trigger() {
 
 ################################################################################
 
+function cost_price() {
+  echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".cost
+  echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".price
+}
+
+################################################################################
+
+function tx_id {
+  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+}
+
+################################################################################
+
 function incoming_listing() {
   # incoming listing
   if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
