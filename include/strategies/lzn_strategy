@@ -206,6 +206,9 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   # calculate lorentzian classification indicator
   LC=$(lorentzian_classification "${NEW_PRICE}" "${LAMBDA}")
 
+  echo "$(echo "${LC} > ${BUY_THRESHOLD} && ${POSITION} == NONE" | bc -l 2>/dev/null)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+  echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+
   # determine trading action
   if (($(echo "${LC} > ${BUY_THRESHOLD} && ${POSITION} == NONE" | bc -l 2>/dev/null))); then
 
