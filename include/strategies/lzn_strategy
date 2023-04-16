@@ -207,7 +207,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   LC=$(lorentzian_classification "${NEW_PRICE}" "${LAMBDA}" | awk '{ printf "%.8f\n", $1 }')
 
   # keep a signal
-  echo "$LC" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+  echo "$LC $TRADE $NEW_PRICE $NEW_TIMESTAMP" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
   echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
 
   LZN_SIGNAL_LAST="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tr -d '.' | sed 's/^0*//')"
