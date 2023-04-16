@@ -216,6 +216,8 @@ function irc_chat() {
     fi
   }
 
+  ##############################################################################
+
   # configuration
   IRSSI_SERVER_STATUS="$(egrep "IRSSI_SERVER=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_SERVER=[aA0-zZ9]+" | awk -F= '{ print $2 }' | sed '/^$/d' | wc -l)"
   IRSSI_PORT_STATUS="$(egrep "IRSSI_PORT=" "${SYS_DIR:?}"/broker.conf 2>/dev/null | tr -d '"' | egrep "IRSSI_PORT=[0-9]+" | awk -F= '{ print $2 }' | sed '/^$/d' | wc -l)"
@@ -225,6 +227,7 @@ function irc_chat() {
   function random_server() {
     IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+    IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
 
     # irc.servers
     function irssi_servers_list() {
@@ -245,6 +248,11 @@ function irc_chat() {
     IRSSI_IRC_CONNECT_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vf /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null)"
     if [[ "$(echo "$IRSSI_IRC_CONNECT_BANNED" | wc -l)" -gt "0" ]] &>/dev/null; then
       IRSSI_IRC_CONNECT="$IRSSI_IRC_CONNECT_BANNED"
+    fi
+
+    # add from irc.welcome if any data
+    if [[ "$(echo "$IRSSI_IRC_WELCOME" | wc -l)" -gt "0" ]] &>/dev/null; then
+      echo "$IRSSI_IRC_WELCOME" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
     fi
 
     # zero server configuration set, continue
