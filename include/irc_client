@@ -243,11 +243,11 @@ function irc_client() {
     }
     # disregard with banned if irc.connect survives
     IRSSI_IRC_CONNECT_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vf /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null)"
-    if [[ "$(echo "$IRSSI_IRC_CONNECT_BANNED" | wc -l)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(echo "$IRSSI_IRC_CONNECT_BANNED" | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
       IRSSI_IRC_CONNECT="$IRSSI_IRC_CONNECT_BANNED"
     fi
     # add from irc.welcome if any data
-    if [[ "$(echo "$IRSSI_IRC_WELCOME" | wc -l)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(echo "$IRSSI_IRC_WELCOME" | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
       echo "$IRSSI_IRC_WELCOME" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
       # sort, remove duplicates
       echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
@@ -268,7 +268,7 @@ function irc_client() {
       IRSSI_RANDOM_HOST="$IRSSI_SERVER"
     fi
     # irc.connect has data
-    if [[ "$(echo "$IRSSI_IRC_CONNECT" | wc -l)" -eq "0" ]] &>/dev/null; then
+    if [[ "$(echo "$IRSSI_IRC_CONNECT" | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
       irssi_servers_list
     fi
   }
