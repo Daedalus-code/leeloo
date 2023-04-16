@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+source /usr/local/bin/include/leeloo/broker.conf
+
+STRATEGY_NAME="LZN" # strategy name
+
+################################################################################
+# lorentzian strategy configuration
+################################################################################
+
+MARKET_LIMIT="market"     # market or limit order
+LISTING_CURRENCY=""       # listing currency
+LISTING_ALLOCATED="100"   # account allocated (100%)
+REFERENCE_CURRENCY=""     # reference currency
+REFERENCE_ALLOCATED="100" # account allocated (100%)
+LAMBDA="2.0"              # width of the lorentzian distribution
+BUY_THRESHOLD="0.8"       # buy threshold
+SELL_THRESHOLD="0.6"      # sell threshold
+
+################################################################################
+# strategy
+################################################################################
+
+# get strategy id.config, run strategy
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
+bash "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".strategy
+
+# END

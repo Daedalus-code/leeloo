@@ -28,6 +28,20 @@ else
   }
 fi
 
+# trades #######################################################################
+# https://market.southxchange.com/api/v4/trades
+# Example: trades BTC USDT
+
+function trades() {
+  LISTING_CURRENCY="$1"
+  REFERENCE_CURRENCY="$2"
+  if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
+    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/trades/$LISTING_CURRENCY/$REFERENCE_CURRENCY" -H "accept: application/json" | jq -s
+  else
+    curl -X GET "https://market.southxchange.com/api/v4/trades/$LISTING_CURRENCY/$REFERENCE_CURRENCY" -H "accept: application/json" | jq -s
+  fi
+}
+
 # fees #########################################################################
 # https://market.southxchange.com/api/v4/fees
 # Example: fees
