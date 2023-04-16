@@ -36,7 +36,8 @@ LAMBDA="$(egrep "LAMBDA=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk
 BUY_THRESHOLD="$(egrep "BUY_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # buy threshold
 SELL_THRESHOLD="$(egrep "SELL_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # sell threshold
 
-LZN_TIMER="18"
+# log_timer
+LOG_TIMER="18"
 PAIR="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
 
 ################################################################################
@@ -129,8 +130,11 @@ Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFE
 
 ################################################################################
 
+LZN_TIMER="$(echo "${BOT_TIMER:?}*2.5" | bc 2>/dev/null)"
+DATA_AGE="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)"
+
 # update data every n seconds
-if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)" -gt "$LZN_TIMER" ]] &>/dev/null; then
+if [[ "$DATA_AGE" -gt "$LZN_TIMER" ]] &>/dev/null; then
   result_lzn
   # update data if missing
 elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
@@ -165,15 +169,15 @@ function tx_id {
 
 # incoming listing
 if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-  if [[ ! "$(tail -"$LZN_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
-    echo "$LOG_DATE :: Strategy $STRATEGY_NAME info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
+    echo "$LOG_DATE :: Strategy $STRATEGY_TYPE info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
 fi
 
 # incoming reference
 if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-  if [[ ! "$(tail -"$LZN_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
-    echo "$LOG_DATE :: Strategy $STRATEGY_NAME info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
+    echo "$LOG_DATE :: Strategy $STRATEGY_TYPE info :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Incoming $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
 fi
 
