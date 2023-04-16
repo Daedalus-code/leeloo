@@ -59,8 +59,17 @@ last_tx               # last tx
 
 # get data
 function result_lzn() {
+
+  if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position ]] &>/dev/null; then
+    LZN_POSITION="LONG"
+    echo "$LZN_POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position
+  else
+    LZN_POSITION="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>/dev/null)"
+  fi
+
   echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
 LZN_Data..............: $STRATEGY_TYPE
+LZN_Position..........: $LZN_POSITION
 Price.................: $LISTING_PRICE $REFERENCE_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL:?}%/${LISTING_ALLOCATED:?}%
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY
@@ -114,6 +123,8 @@ incoming_reference
 # L O R E N T Z I A N - I N D I C A T O R
 ################################################################################
 
+POSITION="$(grep "LZN_Position" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data | awk '{ print $2 }')"
+
 # define initial price and timestamp
 PRICE=0
 TIMESTAMP=0
@@ -139,15 +150,16 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   # determine trading action
   if [[ "$(echo "${LC} > ${BUY_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "NONE" ]]; then
 
+    # hodl position
+    POSITION="LONG"
+    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position
+
     # buy order ################################################################
 
     TYPE="buy"
     AMOUNT_IN_REFERENCE_CURRENCY="true"
 
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-
-      # hodl position
-      POSITION="LONG"
 
       # placeOrder market ######################################################
       PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
@@ -183,6 +195,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
     # hodl position
     POSITION="NONE"
+    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position
 
     # sell order ###############################################################
 
