@@ -241,14 +241,10 @@ function irc_chat() {
       IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
     }
 
-    # disregard banned
+    # disregard with banned
     IRSSI_IRC_CONNECT_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vf /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null)"
     if [[ "$(echo "$IRSSI_IRC_CONNECT_BANNED" | wc -l)" -gt "0" ]] &>/dev/null; then
       IRSSI_IRC_CONNECT="$IRSSI_IRC_CONNECT_BANNED"
-    fi
-
-    if [[ "$(echo "$IRSSI_IRC_CONNECT" | wc -l)" -eq "0" ]] &>/dev/null; then
-      irssi_servers_list
     fi
 
     # zero server configuration set, continue
@@ -264,6 +260,11 @@ function irc_chat() {
       fi
     else
       IRSSI_RANDOM_HOST="$IRSSI_SERVER"
+    fi
+
+    # irc.connect has data
+    if [[ "$(echo "$IRSSI_IRC_CONNECT" | wc -l)" -eq "0" ]] &>/dev/null; then
+      irssi_servers_list
     fi
   }
 
