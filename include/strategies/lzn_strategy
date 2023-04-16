@@ -62,6 +62,7 @@ if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position ]] &>/dev/null; th
   echo "$LZN_POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position
 else
   LZN_POSITION="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>/dev/null)"
+  LZN_POSITION_VALUE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>/dev/null)
 fi
 
 # get data
@@ -72,7 +73,7 @@ function result_lzn() {
 
   echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
 LZN_Data..............: $STRATEGY_TYPE
-LZN_Position..........: $LZN_POSITION
+LZN_Position..........: $LZN_POSITION $LZN_POSITION_VALUE
 Price.................: $LISTING_PRICE $REFERENCE_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL:?}%/${LISTING_ALLOCATED:?}%
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY
@@ -147,6 +148,7 @@ NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   # calculate lorentzian classification indicator
   LC=$(lorentzian_classification "${NEW_PRICE}" "${LAMBDA}" | awk '{ printf "%.8f\n", $1 }')
+  echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc
 
   # determine trading action
   if [[ "$(echo "${LC} > ${BUY_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "NONE" ]]; then
