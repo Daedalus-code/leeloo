@@ -217,7 +217,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   if [[ ! "$LZN_SIGNAL_LAST" -eq "$LZN_SIGNAL_SECOND_LAST" ]] &>/dev/null; then
 
     # determine trading action
-    if (($(echo "${LC} > ${BUY_THRESHOLD} && ${POSITION} == NONE" | bc -l 2>/dev/null))); then
+    if [[ $(echo "${LC} > ${BUY_THRESHOLD}" | bc) -eq 1 && "${POSITION}" == "NONE" ]]; then
 
       # buy order ##############################################################
 
@@ -256,7 +256,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       PRICE=${NEW_PRICE}
       TIMESTAMP=${NEW_TIMESTAMP}
       # determine trading action
-    elif (($(echo "${LC} < ${SELL_THRESHOLD} && ${POSITION} == LONG" | bc -l 2>/dev/null))); then
+    elif [[ $(echo "${LC} < ${SELL_THRESHOLD}" | bc) -eq 1 && "${POSITION}" == "LONG" ]]; then
 
       # sell order #############################################################
 
