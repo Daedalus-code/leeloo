@@ -207,11 +207,11 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   LC=$(lorentzian_classification "${NEW_PRICE}" "${LAMBDA}" | awk '{ printf "%.8f\n", $1 }')
 
   # keep a signal
-  echo "$LC $NEW_PRICE $NEW_TIMESTAMP" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+  echo "$LC $NEW_PRICE $(date -d @"$NEW_TIMESTAMP")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
   echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
 
-  LZN_SIGNAL_LAST="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tr -d '.' | sed 's/^0*//')"
-  LZN_SIGNAL_SECOND_LAST="$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | tr -d '.' | sed 's/^0*//')"
+  LZN_SIGNAL_LAST="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | awk '{ print $1 }' | tr -d '.' | sed 's/^0*//')"
+  LZN_SIGNAL_SECOND_LAST="$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | awk '{ print $1 }' | head -1 | tr -d '.' | sed 's/^0*//')"
 
   # if the signal is the same, skip
   if [[ ! "$LZN_SIGNAL_LAST" -eq "$LZN_SIGNAL_SECOND_LAST" ]] &>/dev/null; then
