@@ -57,14 +57,18 @@ last_tx               # last tx
 # S T R A T E G Y - I N D I C A T O R
 ################################################################################
 
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position ]] &>/dev/null; then
+  LZN_POSITION="LONG"
+  echo "$LZN_POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position
+else
+  LZN_POSITION="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>/dev/null)"
+fi
+
 # get data
 function result_lzn() {
-  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position ]] &>/dev/null; then
-    LZN_POSITION="LONG"
-    echo "$LZN_POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position
-  else
-    LZN_POSITION="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>/dev/null)"
-  fi
+  LZN_TRADES=$(trades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY")
+  echo "$LZN_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades
+
   echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
 LZN_Data..............: $STRATEGY_TYPE
 LZN_Position..........: $LZN_POSITION
@@ -108,7 +112,6 @@ fi
 ################################################################################
 
 OPEN_STRATEGY="$(grep "LZN_Data" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null | awk '{ print $2 }')"
-
 open_positions
 
 ################################################################################
@@ -135,7 +138,7 @@ function lorentzian_classification {
 }
 
 # retrieve last trade
-TRADE=$(trades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY")
+TRADE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>/dev/null)
 NEW_PRICE=$(echo "${TRADE}" | jq '.Price')
 NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 
