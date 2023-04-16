@@ -13,6 +13,13 @@ function listing_data() {
   LISTING_AMOUNT_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   LISTING_UNCONFIRMED_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+
+  if [[ -z "$LISTING_AVAILABLE_BALANCE" ]] &>/dev/null; then
+    LISTING_AVAILABLE_BALANCE="0"
+  fi
+  if [[ -z "$LISTING_AMOUNT" ]] &>/dev/null; then
+    LISTING_AMOUNT="0"
+  fi
 }
 
 ################################################################################
@@ -26,6 +33,13 @@ function reference_data() {
   REFERENCE_AMOUNT_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   REFERENCE_UNCONFIRMED_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
+
+  if [[ -z "$REFERENCE_AVAILABLE_BALANCE" ]] &>/dev/null; then
+    REFERENCE_AVAILABLE_BALANCE="0"
+  fi
+  if [[ -z "$REFERENCE_AMOUNT" ]] &>/dev/null; then
+    REFERENCE_AMOUNT="0"
+  fi
 }
 
 ################################################################################
@@ -49,6 +63,13 @@ function reference_total_value() {
 function listing_allocated() {
   # total listing allocated
   LISTING_ALLOCATED_REAL="$(echo "100/$REFERENCE_TOTAL*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  if [[ "$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+    LISTING_ALLOCATED_REAL="100"
+  fi
+  if [[ -z "$LISTING_ALLOCATED_REAL" ]] &>/dev/null; then
+    LISTING_ALLOCATED_REAL="0.00"
+  fi
 }
 
 ################################################################################
@@ -56,6 +77,20 @@ function listing_allocated() {
 function reference_allocated() {
   # total reference allocated
   REFERENCE_ALLOCATED_REAL="$(echo "100/$LISTING_TOTAL*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  if [[ "$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+    REFERENCE_ALLOCATED_REAL="100"
+  fi
+  if [[ -z "$REFERENCE_ALLOCATED_REAL" ]] &>/dev/null; then
+    REFERENCE_ALLOCATED_REAL="0.00"
+  fi
+}
+
+################################################################################
+
+function last_tx() {
+  # last tx
+  TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 }
 
 ################################################################################
@@ -87,6 +122,16 @@ function reference_trigger() {
   fi
   if [[ -z "$TRIGGER_R" ]] &>/dev/null; then
     TRIGGER_R="0"
+  fi
+}
+
+################################################################################
+
+function total_trigger() {
+  # get total trigger
+  TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
+  if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
+    TOTAL_TRIGGER="0"
   fi
 }
 
