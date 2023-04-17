@@ -727,21 +727,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       rsi_value_output
 
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
-
-      # update data every n seconds
-      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
-        GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-        echo "$GET_RSI_CUSTOM" >"${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT"
-      fi
-
-      if [[ -f "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" ]] &>/dev/null; then
-        GET_RSI_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)"
-      else
-        GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-        echo "$GET_RSI_CUSTOM" >"${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT"
-        GET_RSI_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_rsi_"$RSI_VALUE_OUTPUT" 2>/dev/null)"
-      fi
-
+      GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
       WIDTH="$(echo "$(echo "$GET_RSI_CUSTOM" | wc -L)+4" | bc 2>/dev/null)"
 
       if [[ -z "$WIDTH" ]] &>/dev/null; then
