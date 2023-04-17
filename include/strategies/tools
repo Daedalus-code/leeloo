@@ -303,17 +303,17 @@ function rogue_profit() {
       fi
       ##########################################################################
 
-      ROGUE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $1 }')"
+      ROGUE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $1 }')"
 
-      ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | tail -1)"
-      ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | sort | head -1)"
-      ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | sort | tail -1)"
+      ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1)"
+      ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | head -1)"
+      ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | tail -1)"
 
-      ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | tail -1)"
-      ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | sort | head -1)"
-      ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | sort | tail -1)"
+      ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1)"
+      ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | head -1)"
+      ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | tail -1)"
 
-      echo "U: ${ROGUE_TIMER:?}s L: $ROGUE_COUNT
+      echo "U: ${ROGUE_TIMER:?}s L: $(echo "$ROGUE_COUNT/2" | bc 2>/dev/null)
 L_NOW  $ROGUE_LISTING_NOW
 L_High $ROGUE_LISTING_HIGH
 L_LOW  $ROGUE_LISTING_LOW
@@ -321,7 +321,11 @@ R_NOW  $ROGUE_REFERENCE_NOW
 R_HIGH $ROGUE_REFERENCE_HIGH
 R_LOW  $ROGUE_REFERENCE_LOW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
 
-      # code
+      # overbought
+      # rogue_selling
+
+      # oversold
+      # rogue_buying
 
       ##########################################################################
     fi
