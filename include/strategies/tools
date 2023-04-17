@@ -211,11 +211,14 @@ function rogue_profit() {
 
   ROGUE_TIMER="3600" # 1 hour
 
+  ##############################################################################
   function rogue_data() {
     echo "L $LISTING_CURRENCY $(get_rsi 14 "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
     sleep 1
     echo "R $REFERENCE_CURRENCY $(get_rsi 14 "$REFERENCE_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
   }
+
+  ##############################################################################
 
   function rogue_stealth() {
     LRSI=$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
@@ -229,12 +232,16 @@ function rogue_profit() {
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LRSI.$RRSI :: Rogue going into Stealth.." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   }
 
+  ##############################################################################
+
   function rogue_vanish() {
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Rogue used Vanishing Powder!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     sleep 1
     # vanish the vanishing line
     echo "$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -v "Vanishing")" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   }
+
+  ##############################################################################
 
   function rogue_buying() {
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $REFERENCE_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
@@ -247,6 +254,8 @@ function rogue_profit() {
     fi
   }
 
+  ##############################################################################
+
   function rogue_selling() {
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $LISTING_AMOUNT @ $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
@@ -258,10 +267,14 @@ function rogue_profit() {
     fi
   }
 
+  ##############################################################################
+
   function rogue_lines() {
     # keep n lines (1d+)
     echo "$(tail -169 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
   }
+
+  ##############################################################################
 
   if [[ "$(grep -c "ROGUE_PROFIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config)" ]] &>/dev/null; then
     if [[ "$(grep "ROGUE_PROFIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | tr -d '"' | awk -F= '{ print $2 }' | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
@@ -287,9 +300,11 @@ function rogue_profit() {
         rogue_stealth
         rogue_lines
       fi
+      ##########################################################################
 
       # code
 
+      ##########################################################################
     fi
   fi
 }
