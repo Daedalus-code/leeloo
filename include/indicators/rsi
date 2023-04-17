@@ -39,8 +39,9 @@ get_rsi() {
     fi
     echo "$BEAR_BULL RSI_$PERIOD $(echo "$RSI" | awk '{ printf "%.8f\n", $1 }')" >"${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1"
     rm "$TMP_FILE"
-  else
-    cat "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1"
+  fi
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" ]] &>/dev/null; then
+    cat "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null
   fi
 }
 
