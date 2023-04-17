@@ -202,6 +202,78 @@ function incoming_reference() {
 
 ################################################################################
 
+function rogue_profit() {
+  # rogue profit using rsi
+
+  function rogue_lurking() {
+    LRSI=$(grep "L" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $2 }' | awk -F. '{ print $1 }')
+    RRSI=$(grep "R" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $2 }' | awk -F. '{ print $1 }')
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LRSI.$RRSI :: Lockpicking.." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  }
+
+  function rogue_buying() {
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot! $REFERENCE_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
+    else
+      PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
+    fi
+  }
+
+  function rogue_selling() {
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket! $LISTING_AMOUNT @ $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "false")"
+    else
+      PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
+    fi
+  }
+
+  function rogue_rsi() {
+    # get listing, reference rsi
+    echo "L $(get_rsi 14 "$LISTING_CURRENCY")"
+    sleep 1
+    echo "R $(get_rsi 14 "$REFERENCE_CURRENCY")"
+  }
+
+  function rogue_lines() {
+    # keep n lines (1d+)
+    echo "$(tail -169 "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".rogue 2>/dev/null)" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".rogue
+  }
+
+  if [[ "$ROGUE_PROFIT" -gt "0" ]] &>/dev/null; then
+
+    ROGUE_TIMER="3600" # 1 hour
+
+    if [[ ! -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+      rogue_rsi >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".rogue
+      rogue_lurking
+      rogue_lines
+    fi
+
+    # code
+
+    # update data every n seconds
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)))" 2>/dev/null)" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
+      rogue_rsi >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".rogue
+      rogue_lurking
+      rogue_lines
+      # update data if missing
+    elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+      rogue_rsi >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".rogue
+      rogue_lurking
+      rogue_lines
+      # update data if empty
+    elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+      rogue_rsi >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".rogue
+      rogue_lurking
+      rogue_lines
+    fi
+  fi
+}
+
+################################################################################
+
 function open_positions() {
 
   ##############################################################################
