@@ -5,7 +5,13 @@
 # Example: get_ema 6 20 BTC
 
 get_ema() {
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" &>/dev/null
+    EMA_TIMER="0"
+    sleep 1
+  fi
+  EMA_TIMER="60"
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" 2>/dev/null)))" 2>/dev/null)" -gt "$EMA_TIMER" ]] &>/dev/null; then
     SHORT_EMA=$1
     LONG_EMA=$2
     SYMBOL=$3
