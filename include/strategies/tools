@@ -205,18 +205,31 @@ function incoming_reference() {
 function rogue_profit() {
   # rogue profit using rsi
 
-  function rogue_lurking() {
+  function rogue_stealth() {
     LRSI=$(grep "L" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $2 }' | awk -F. '{ print $1 }')
     RRSI=$(grep "R" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $2 }' | awk -F. '{ print $1 }')
-    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LRSI.$RRSI :: Lockpicking.." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    if [[ -z "$LRSI" ]] &>/dev/null; then
+      LRSI="Z"
+    fi
+    if [[ -z "$RRSI" ]] &>/dev/null; then
+      RRSI="Z"
+    fi
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LRSI.$RRSI :: Stealth!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  }
+
+  function rogue_vanish() {
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Used 1 Vanishing Powder :: Vanish!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    sleep 1
   }
 
   function rogue_buying() {
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot! $REFERENCE_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
       PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
+      rogue_vanish
     else
       PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
+      rogue_vanish
     fi
   }
 
@@ -224,8 +237,10 @@ function rogue_profit() {
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket! $LISTING_AMOUNT @ $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
       PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "false")"
+      rogue_vanish
     else
       PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
+      rogue_vanish
     fi
   }
 
@@ -248,7 +263,7 @@ function rogue_profit() {
 
       if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
         rogue_rsi >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
-        rogue_lurking
+        rogue_stealth
         rogue_lines
       fi
 
@@ -257,17 +272,17 @@ function rogue_profit() {
       # update data every n seconds
       if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)))" 2>/dev/null)" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
         rogue_rsi >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
-        rogue_lurking
+        rogue_stealth
         rogue_lines
         # update data if missing
       elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
         rogue_rsi >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
-        rogue_lurking
+        rogue_stealth
         rogue_lines
         # update data if empty
       elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
         rogue_rsi >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
-        rogue_lurking
+        rogue_stealth
         rogue_lines
       fi
     fi
