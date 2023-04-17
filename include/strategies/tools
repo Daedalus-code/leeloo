@@ -210,8 +210,8 @@ function rogue_profit() {
   # rogue profit using rsi
 
   function rogue_stealth() {
-    LRSI=$(grep "L" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
-    RRSI=$(grep "R" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
+    LRSI=$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
+    RRSI=$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
     if [[ -z "$LRSI" ]] &>/dev/null; then
       LRSI="Z"
     fi
@@ -223,9 +223,9 @@ function rogue_profit() {
 
   function rogue_vanish() {
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Rogue used Vanishing Powder!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    sleep 1
     # vanish the vanishing line
     echo "$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -v "Vanishing")" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-    sleep 1
   }
 
   function rogue_buying() {
@@ -265,6 +265,7 @@ function rogue_profit() {
 
       function rogue_data() {
         echo "L $(get_rsi 14 "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
+        sleep 1
         echo "R $(get_rsi 14 "$REFERENCE_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
       }
 
