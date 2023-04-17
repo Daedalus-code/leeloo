@@ -391,13 +391,15 @@ function rogue_profit() {
     ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.2f\n", $1 }')"
-    ROGUE_LISTING_AVERAGE="$(echo "$ROGUE_LISTING_NOW+$ROGUE_LISTING_HIGH+$ROGUE_LISTING_LOW/3" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_LISTING_TOTAL="$(echo "$ROGUE_LISTING_NOW+$ROGUE_LISTING_HIGH+$ROGUE_LISTING_LOW" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_LISTING_AVERAGE="$(echo "$ROGUE_LISTING_TOTAL/3" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 
     # reference
     ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.2f\n", $1 }')"
-    ROGUE_REFERENCE_AVERAGE="$(echo "$ROGUE_REFERENCE_NOW+$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_LOW/3" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_REFERENCE_TOTAL="$(echo "$ROGUE_REFERENCE_NOW+$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_LOW" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_REFERENCE_AVERAGE="$(echo "$ROGUE_REFERENCE_TOTAL/3" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 
     echo "U: ${ROGUE_TIMER:?}s L: $(echo "$ROGUE_COUNT/2" | bc 2>/dev/null)
 L_NOW  $ROGUE_LISTING_NOW
