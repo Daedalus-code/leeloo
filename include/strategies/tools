@@ -212,6 +212,7 @@ function rogue_profit() {
   ROGUE_TIMER="3600" # 1 hour
 
   ##############################################################################
+
   function rogue_data() {
     echo "L $LISTING_CURRENCY $(get_rsi 14 "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
     sleep 1
@@ -221,15 +222,15 @@ function rogue_profit() {
   ##############################################################################
 
   function rogue_stealth() {
-    LRSI=$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
-    RRSI=$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
-    if [[ -z "$LRSI" ]] &>/dev/null; then
-      LRSI="Z"
+    ROGUE_LRSI=$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
+    ROGUE_RRSI=$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
+    if [[ -z "$ROGUE_LRSI" ]] &>/dev/null; then
+      ROGUE_LRSI="Z"
     fi
-    if [[ -z "$RRSI" ]] &>/dev/null; then
-      RRSI="Z"
+    if [[ -z "$ROGUE_RRSI" ]] &>/dev/null; then
+      ROGUE_RRSI="Z"
     fi
-    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LRSI.$RRSI :: Rogue going into Stealth.." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $ROGUE_LRSI.$ROGUE_RRSI :: Rogue going into Stealth mode.." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   }
 
   ##############################################################################
@@ -270,7 +271,7 @@ function rogue_profit() {
   ##############################################################################
 
   function rogue_lines() {
-    # keep n lines (1d+)
+    # keep n lines (default: 24h*7d+1=169)
     echo "$(tail -169 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
   }
 
@@ -301,6 +302,22 @@ function rogue_profit() {
         rogue_lines
       fi
       ##########################################################################
+
+      ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | tail -1)"
+      ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | sort | head -1)"
+      ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | sort | tail -1)"
+
+      ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | tail -1)"
+      ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | sort | head -1)"
+      ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue | awk '{ print $NF }' | sort | tail -1)"
+
+      echo "ROGUE RSI: ${ROGUE_TIMER:?}s
+L_NOW  $ROGUE_LISTING_NOW
+L_High $ROGUE_LISTING_HIGH
+L_LOW  $ROGUE_LISTING_LOW
+R_NOW  $ROGUE_REFERENCE_NOW
+R_HIGH $ROGUE_REFERENCE_HIGH
+R_LOW  $ROGUE_REFERENCE_LOW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
 
       # code
 
