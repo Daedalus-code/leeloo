@@ -289,6 +289,13 @@ function rogue_profit() {
 
   ##############################################################################
 
+  # missing, continue
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue &>/dev/null
+  fi
+
+  ##############################################################################
+
   function rogue_data() {
     echo "L $LISTING_CURRENCY $(get_rsi 14 "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
     sleep 1
@@ -362,11 +369,6 @@ function rogue_profit() {
 
   if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
 
-    # missing, continue
-    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
-      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue &>/dev/null
-    fi
-
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)))" 2>/dev/null)" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
       rogue_data
@@ -405,6 +407,8 @@ function rogue_profit() {
     ROGUE_REFERENCE_TOTAL="$(echo "$ROGUE_REFERENCE_NOW+$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_LOW" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_REFERENCE_AVERAGE="$(echo "$ROGUE_REFERENCE_TOTAL/3" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_REFERENCE_DIFF_PERCENTAGE="$(echo "100/$ROGUE_REFERENCE_AVERAGE*$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    ############################################################################
 
     echo "U: ${ROGUE_TIMER:?}s L: $(echo "$ROGUE_COUNT/2" | bc 2>/dev/null)h
 
