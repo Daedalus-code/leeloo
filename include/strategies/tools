@@ -6,6 +6,8 @@
 source /usr/local/bin/include/leeloo/indicators/rsi
 source /usr/local/bin/include/leeloo/indicators/ema
 
+LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+
 ################################################################################
 
 function listing_data() {
@@ -206,143 +208,6 @@ function incoming_reference() {
 
 ################################################################################
 
-function rogue_profit() {
-  # rogue profit using rsi
-
-  ROGUE_TIMER="3600" # 1 hour
-
-  ##############################################################################
-
-  function rogue_data() {
-    echo "L $LISTING_CURRENCY $(get_rsi 14 "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
-    sleep 1
-    echo "R $REFERENCE_CURRENCY $(get_rsi 14 "$REFERENCE_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
-  }
-
-  ##############################################################################
-
-  function rogue_stealth() {
-    ROGUE_LRSI=$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
-    ROGUE_RRSI=$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
-    if [[ -z "$ROGUE_LRSI" ]] &>/dev/null; then
-      ROGUE_LRSI="Z"
-    fi
-    if [[ -z "$ROGUE_RRSI" ]] &>/dev/null; then
-      ROGUE_RRSI="Z"
-    fi
-    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $ROGUE_LRSI.$ROGUE_RRSI :: Rogue in Stealth mode.." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-  }
-
-  ##############################################################################
-
-  function rogue_vanish() {
-    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Rogue used Vanishing Powder!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-    sleep 1
-    # vanish the vanishing line
-    echo "$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -v "Vanishing")" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-  }
-
-  ##############################################################################
-
-  function rogue_buying() {
-    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $REFERENCE_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-      PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
-      rogue_vanish
-    else
-      PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
-      rogue_vanish
-    fi
-  }
-
-  ##############################################################################
-
-  function rogue_selling() {
-    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $LISTING_AMOUNT @ $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-      PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "false")"
-      rogue_vanish
-    else
-      PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
-      rogue_vanish
-    fi
-  }
-
-  ##############################################################################
-
-  function rogue_clean_lines() {
-    # keep n lines (default: 24h*7d+1=169)
-    echo "$(tail -169 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
-  }
-
-  ##############################################################################
-
-  if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
-
-    # missing, continue
-    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
-      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue &>/dev/null
-    fi
-
-    # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)))" 2>/dev/null)" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
-      rogue_data
-      rogue_stealth
-      rogue_clean_lines
-      # update data if missing
-    elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
-      rogue_data
-      rogue_stealth
-      rogue_clean_lines
-      # update data if empty
-    elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
-      rogue_data
-      rogue_stealth
-      rogue_clean_lines
-    fi
-    ##########################################################################
-
-    # line count
-    ROGUE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $1 }')"
-    # listing
-    ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1)"
-    ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | tail -1)"
-    ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | head -1)"
-    # reference
-    ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1)"
-    ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | tail -1)"
-    ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | head -1)"
-
-    echo "U: ${ROGUE_TIMER:?}s L: $(echo "$ROGUE_COUNT/2" | bc 2>/dev/null)
-L_NOW  $ROGUE_LISTING_NOW
-L_High $ROGUE_LISTING_HIGH
-L_LOW  $ROGUE_LISTING_LOW
-R_NOW  $ROGUE_REFERENCE_NOW
-R_HIGH $ROGUE_REFERENCE_HIGH
-R_LOW  $ROGUE_REFERENCE_LOW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
-
-    ##########################################################################
-
-    # rogue_selling config n% of allocated n%
-    if [[ "$ROGUE_LISTING_NOW" -gt "70" ]] &>/dev/null; then
-      # overbought, pick pocket at top!
-      rogue_selling
-    fi
-
-    ##########################################################################
-
-    # rogue_buying config n% of allocated n%
-    if [[ "$ROGUE_LISTING_NOW" -lt "30" ]] &>/dev/null; then
-      # oversold, cheap shot at bottom!
-      rogue_buying
-    fi
-
-    ##########################################################################
-  fi
-}
-
-################################################################################
-
 function open_positions() {
 
   ##############################################################################
@@ -414,5 +279,163 @@ function open_positions() {
     rm "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".* &>/dev/null
   fi
 }
+
+################################################################################
+
+function rogue_profit() {
+  # rogue profit using rsi
+
+  ROGUE_TIMER="3600"    # 1 hour cooldown
+  ROGUE_AMOUNT="0.0369" # amount % to be used
+
+  ##############################################################################
+
+  function rogue_data() {
+    echo "L $LISTING_CURRENCY $(get_rsi 14 "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
+    sleep 1
+    echo "R $REFERENCE_CURRENCY $(get_rsi 14 "$REFERENCE_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
+  }
+
+  ##############################################################################
+
+  function rogue_stealth() {
+    ROGUE_LRSI=$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
+    ROGUE_RRSI=$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')
+    if [[ -z "$ROGUE_LRSI" ]] &>/dev/null; then
+      ROGUE_LRSI="Z"
+    fi
+    if [[ -z "$ROGUE_RRSI" ]] &>/dev/null; then
+      ROGUE_RRSI="Z"
+    fi
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $ROGUE_LRSI.$ROGUE_RRSI :: Rogue in Stealth mode.." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  }
+
+  ##############################################################################
+
+  function rogue_vanish() {
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Rogue used Vanishing Powder!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    sleep 1
+    # vanish the vanishing line
+    echo "$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -v "Vanishing")" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  }
+
+  ##############################################################################
+
+  function rogue_buying() {
+    # n% amount
+    REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $REFERENCE_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
+      rogue_vanish
+    else
+      PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
+      rogue_vanish
+    fi
+  }
+
+  ##############################################################################
+
+  function rogue_selling() {
+    # n% amount
+    REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $LISTING_AMOUNT @ $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "false")"
+      rogue_vanish
+    else
+      PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
+      rogue_vanish
+    fi
+  }
+
+  ##############################################################################
+
+  function rogue_clean_lines() {
+    # keep n lines (default: 24h*7d+1=169)
+    echo "$(tail -169 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
+  }
+
+  ##############################################################################
+
+  if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
+
+    # missing, continue
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue &>/dev/null
+    fi
+
+    # update data every n seconds
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)))" 2>/dev/null)" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
+      rogue_data
+      rogue_stealth
+      rogue_clean_lines
+      # update data if missing
+    elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+      rogue_data
+      rogue_stealth
+      rogue_clean_lines
+      # update data if empty
+    elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+      rogue_data
+      rogue_stealth
+      rogue_clean_lines
+    fi
+    ############################################################################
+
+    # line count
+    ROGUE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $1 }')"
+    # listing
+    ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1)"
+    ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | tail -1)"
+    ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | head -1)"
+    # reference
+    ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1)"
+    ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | tail -1)"
+    ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort | head -1)"
+
+    echo "U: ${ROGUE_TIMER:?}s L: $(echo "$ROGUE_COUNT/2" | bc 2>/dev/null)
+L_NOW  $ROGUE_LISTING_NOW
+L_High $ROGUE_LISTING_HIGH
+L_LOW  $ROGUE_LISTING_LOW
+R_NOW  $ROGUE_REFERENCE_NOW
+R_HIGH $ROGUE_REFERENCE_HIGH
+R_LOW  $ROGUE_REFERENCE_LOW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
+
+    ############################################################################
+
+    # rogue_selling config n% of allocated n%
+    if [[ "$ROGUE_LISTING_NOW" -gt "70" ]] &>/dev/null; then
+      # overbought, pick pocket at top!
+      rogue_selling
+    fi
+
+    ############################################################################
+
+    # rogue_buying config n% of allocated n%
+    if [[ "$ROGUE_LISTING_NOW" -lt "30" ]] &>/dev/null; then
+      # oversold, cheap shot at bottom!
+      rogue_buying
+    fi
+
+    ############################################################################
+  fi
+}
+
+################################################################################
+
+function robot_Logs_by_date() {
+  # sort by date
+  echo "$(sort -k 1.5M -k 1.3n -k 1.4n -k 2n -k 3.1n -k 3.2n "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
+    echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>/dev/null)" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    echo "$LOG_DATE :: LogReset :: Line $MAX_LOG" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  else
+    echo "$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+  fi
+}
+
+################################################################################
 
 # END
