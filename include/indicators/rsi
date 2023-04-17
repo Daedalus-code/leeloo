@@ -7,7 +7,6 @@
 # Example: get_rsi 14 BTC
 
 get_rsi() {
-  cat "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null
   if [[ ! -f "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" ]] &>/dev/null; then
     touch "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" &>/dev/null
     RSI_TIMER="0"
@@ -41,7 +40,9 @@ get_rsi() {
     else
       BEAR_BULL="Neutral"
     fi
-    echo "$BEAR_BULL RSI_$PERIOD $(echo "$RSI" | awk '{ printf "%.8f\n", $1 }')" >"${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1"
+    RSI_OUTPUT="$BEAR_BULL RSI_$PERIOD $(echo "$RSI" | awk '{ printf "%.8f\n", $1 }')"
+    echo "$RSI_OUTPUT" >"${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1"
+    echo "$RSI_OUTPUT"
     rm "$TMP_FILE"
   fi
 }

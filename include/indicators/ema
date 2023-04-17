@@ -5,7 +5,6 @@
 # Example: get_ema 6 20 BTC
 
 get_ema() {
-  cat "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" 2>/dev/null
   if [[ ! -f "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" ]] &>/dev/null; then
     touch "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" &>/dev/null
     EMA_TIMER="0"
@@ -36,7 +35,9 @@ get_ema() {
     else
       BEAR_BULL="Bearish"
     fi
-    echo "$BEAR_BULL Short_EMA $SHORT Long_EMA $LONG $SHORT_EMA/$LONG_EMA" >"${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2"
+    EMA_OUTPUT="$BEAR_BULL Short_EMA $SHORT Long_EMA $LONG $SHORT_EMA/$LONG_EMA"
+    echo "$EMA_OUTPUT" >"${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2"
+    echo "$EMA_OUTPUT"
     rm "$TMP_FILE"
   fi
 }
