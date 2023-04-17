@@ -14,6 +14,8 @@ get_rsi() {
   elif [[ ! -s "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" ]] &>/dev/null; then
     RSI_TIMER="0"
     sleep 1
+  else
+    cat "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null
   fi
   RSI_TIMER="60"
   if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null)))" 2>/dev/null)" -gt "$RSI_TIMER" ]] &>/dev/null; then

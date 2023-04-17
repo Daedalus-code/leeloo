@@ -12,6 +12,8 @@ get_ema() {
   elif [[ ! -s "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" ]] &>/dev/null; then
     EMA_TIMER="0"
     sleep 1
+  else
+    cat "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" 2>/dev/null
   fi
   EMA_TIMER="60"
   if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" 2>/dev/null)))" 2>/dev/null)" -gt "$EMA_TIMER" ]] &>/dev/null; then
