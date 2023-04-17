@@ -386,22 +386,29 @@ function rogue_profit() {
 
     # line count
     ROGUE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $1 }')"
+
     # listing
-    ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1)"
-    ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1)"
-    ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1)"
+    ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_LISTING_AVERAGE="$(echo "$ROGUE_LISTING_NOW+$ROGUE_LISTING_HIGH+$ROGUE_LISTING_LOW/3" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+
     # reference
-    ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1)"
-    ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1)"
-    ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1)"
+    ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_REFERENCE_AVERAGE="$(echo "$ROGUE_REFERENCE_NOW+$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_LOW/3" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 
     echo "U: ${ROGUE_TIMER:?}s L: $(echo "$ROGUE_COUNT/2" | bc 2>/dev/null)
 L_NOW  $ROGUE_LISTING_NOW
 L_High $ROGUE_LISTING_HIGH
 L_LOW  $ROGUE_LISTING_LOW
+L_AVG  $ROGUE_LISTING_AVERAGE
+
 R_NOW  $ROGUE_REFERENCE_NOW
 R_HIGH $ROGUE_REFERENCE_HIGH
-R_LOW  $ROGUE_REFERENCE_LOW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
+R_LOW  $ROGUE_REFERENCE_LOW
+R_AVG  $ROGUE_REFERENCE_AVERAGE" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
 
     ############################################################################
 
