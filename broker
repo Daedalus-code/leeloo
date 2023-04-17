@@ -758,21 +758,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       ema_value_output
 
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
-
-      # update data every n seconds
-      if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
-        GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-        echo "$GET_EMA_CUSTOM" >"${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT"
-      fi
-
-      if [[ -f "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" ]] &>/dev/null; then
-        GET_EMA_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)"
-      else
-        GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-        echo "$GET_EMA_CUSTOM" >"${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT"
-        GET_EMA_CUSTOM="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$COIN_TOKEN"_ema_"$EMA_SHORT_OUTPUT"_"$EMA_LONG_OUTPUT" 2>/dev/null)"
-      fi
-
+      GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
       WIDTH="$(echo "$(echo "$GET_EMA_CUSTOM" | wc -L)+4" | bc 2>/dev/null)"
 
       if [[ -z "$WIDTH" ]] &>/dev/null; then
