@@ -627,8 +627,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
           GET_RSI_14="$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)"
           GET_RSI_21="$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)"
-          GET_RSI_14_NR="$(get_rsi 14 "$COIN_TOKEN" | awk '{ print $NF }')"
-          GET_RSI_21_NR="$(get_rsi 21 "$COIN_TOKEN" | awk '{ print $NF }')"
+
           GET_EMA_6_20="$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)"
           GET_EMA_8_20="$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)"
           GET_EMA_10_38="$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)"
@@ -637,24 +636,15 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
           echo "$GET_RSI_14" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_RSI_21" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-          echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-          GET_RSI_CALC="$(echo "$GET_RSI_14_NR+$GET_RSI_21_NR" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-          GET_RSI_SIGNAL="$(echo "$GET_RSI_CALC/2" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-
-          if (($(echo "$GET_RSI_SIGNAL > 70" | bc -l 2>/dev/null))); then
-            echo "RSI_Signal Overbought ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-          elif (($(echo "$GET_RSI_SIGNAL < 30" | bc -l 2>/dev/null))); then
-            echo "RSI_Signal Oversold ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-          else
-            echo "RSI_Signal Neutral ${GET_RSI_SIGNAL:?}" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-          fi
 
           echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+
           echo "$GET_EMA_6_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_EMA_8_20" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_EMA_10_38" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_EMA_12_26" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
           echo "$GET_EMA_50_200" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+
           echo "-" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
 
           BEARISH_SIGNAL="$(grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN")"
