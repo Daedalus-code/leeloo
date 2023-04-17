@@ -627,8 +627,8 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
           GET_RSI_14="$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)"
           GET_RSI_21="$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)"
-          GET_RSI_14_NR="$(echo "$GET_RSI_14" | awk '{ print $NF }')"
-          GET_RSI_21_NR="$(echo "$GET_RSI_21" | awk '{ print $NF }')"
+          GET_RSI_14_NR="$(get_rsi 14 "$COIN_TOKEN" | awk '{ print $NF }')"
+          GET_RSI_21_NR="$(get_rsi 14 "$COIN_TOKEN" | awk '{ print $NF }')"
           GET_EMA_6_20="$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)"
           GET_EMA_8_20="$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)"
           GET_EMA_10_38="$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)"
@@ -725,9 +725,9 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
       coin_token_search
       rsi_value_output
+      get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null
 
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
-      GET_RSI_CUSTOM="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
       WIDTH="$(echo "$(echo "$GET_RSI_CUSTOM" | wc -L)+4" | bc 2>/dev/null)"
 
       if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -738,14 +738,14 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       fi
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-        if [[ ! -z "$GET_RSI_CUSTOM" ]] &>/dev/null; then
+        if [[ ! -z "$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)" ]] &>/dev/null; then
           display_result() {
             dialog --title "RSI $COIN_TOKEN" \
               --no-collapse \
               --msgbox "$RESULT" 5 "$WIDTH"
           }
 
-          RESULT="$(echo "$GET_RSI_CUSTOM")"
+          RESULT="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
           display_result 2>/dev/null
         fi
       fi
@@ -756,9 +756,9 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
       coin_token_search
       ema_value_output
+      get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null
 
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
-      GET_EMA_CUSTOM="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
       WIDTH="$(echo "$(echo "$GET_EMA_CUSTOM" | wc -L)+4" | bc 2>/dev/null)"
 
       if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -769,14 +769,14 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       fi
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-        if [[ ! -z "$GET_EMA_CUSTOM" ]] &>/dev/null; then
+        if [[ ! -z "$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)" ]] &>/dev/null; then
           display_result() {
             dialog --title "EMA $COIN_TOKEN" \
               --no-collapse \
               --msgbox "$RESULT" 5 "$WIDTH"
           }
 
-          RESULT="$(echo "$GET_EMA_CUSTOM")"
+          RESULT="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
           display_result 2>/dev/null
         fi
       fi
