@@ -5,28 +5,32 @@
 # Example: get_ema 6 20 BTC
 
 get_ema() {
-  SHORT_EMA=$1
-  LONG_EMA=$2
-  SYMBOL=$3
-  SOURCE="close"
-  API_EMA_EXCHANGE="CCCAGG"
-  EMA_LONG=$((LONG_EMA * 2))
-  TMP_FILE=$(mktemp)
-  if [[ "$PROXY_INDICATOR_API" == "true" ]] &>/dev/null; then
-    curl -s --proxy socks5h://localhost:9050 "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=${EMA_LONG}&aggregate=1&e=${API_EMA_EXCHANGE}" >"$TMP_FILE"
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
+    SHORT_EMA=$1
+    LONG_EMA=$2
+    SYMBOL=$3
+    SOURCE="close"
+    API_EMA_EXCHANGE="CCCAGG"
+    EMA_LONG=$((LONG_EMA * 2))
+    TMP_FILE=$(mktemp)
+    if [[ "$PROXY_INDICATOR_API" == "true" ]] &>/dev/null; then
+      curl -s --proxy socks5h://localhost:9050 "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=${EMA_LONG}&aggregate=1&e=${API_EMA_EXCHANGE}" >"$TMP_FILE"
+    else
+      curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=${EMA_LONG}&aggregate=1&e=${API_EMA_EXCHANGE}" >"$TMP_FILE"
+    fi
+    PRICES=$(jq -r '.Data.Data[].'"$SOURCE" "$TMP_FILE")
+    SHORT=$(echo "$PRICES" | awk -v ema=$SHORT_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ printf "%.8f\n", $1 }')
+    LONG=$(echo "$PRICES" | awk -v ema=$LONG_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ printf "%.8f\n", $1 }')
+    if [[ "$(echo "$SHORT" | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$LONG" | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+      BEAR_BULL="Bullish"
+    else
+      BEAR_BULL="Bearish"
+    fi
+    echo "$BEAR_BULL Short_EMA $SHORT Long_EMA $LONG $SHORT_EMA/$LONG_EMA" >"${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2"
+    rm "$TMP_FILE"
   else
-    curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=${EMA_LONG}&aggregate=1&e=${API_EMA_EXCHANGE}" >"$TMP_FILE"
+    cat "${LOG_DIR:?}"/leeloo/indicators/check_"$3"_ema_"$1"_"$2"
   fi
-  PRICES=$(jq -r '.Data.Data[].'"$SOURCE" "$TMP_FILE")
-  SHORT=$(echo "$PRICES" | awk -v ema=$SHORT_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ printf "%.8f\n", $1 }')
-  LONG=$(echo "$PRICES" | awk -v ema=$LONG_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ printf "%.8f\n", $1 }')
-  if [[ "$(echo "$SHORT" | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$LONG" | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-    BEAR_BULL="Bullish"
-  else
-    BEAR_BULL="Bearish"
-  fi
-  echo "$BEAR_BULL Short_EMA $SHORT Long_EMA $LONG $SHORT_EMA/$LONG_EMA"
-  rm "$TMP_FILE"
 }
 
 # END

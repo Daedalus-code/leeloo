@@ -7,31 +7,35 @@
 # Example: get_rsi 14 BTC
 
 get_rsi() {
-  PERIOD=$1
-  SYMBOL=$2
-  SOURCE="close"
-  API_RSI_EXCHANGE="CCCAGG"
-  TMP_FILE=$(mktemp)
-  if [[ "$PROXY_INDICATOR_API" == "true" ]] &>/dev/null; then
-    curl -s --proxy socks5h://localhost:9050 "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null)))" 2>/dev/null)" -gt "60" ]] &>/dev/null; then
+    PERIOD=$1
+    SYMBOL=$2
+    SOURCE="close"
+    API_RSI_EXCHANGE="CCCAGG"
+    TMP_FILE=$(mktemp)
+    if [[ "$PROXY_INDICATOR_API" == "true" ]] &>/dev/null; then
+      curl -s --proxy socks5h://localhost:9050 "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
+    else
+      curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
+    fi
+    PRICES=$(jq -r '.Data.Data[].'"$SOURCE" "$TMP_FILE")
+    CHANGE=$(echo "$PRICES" | awk '{if (NR>1) {print $1-prev} ; prev=$1 }' | tail -n+2)
+    UP=$(echo "$CHANGE" | awk '{if ($1>=0) sum+= $1} END {printf "%.8f", sum}')
+    DOWN=$(echo "$CHANGE" | awk '{if ($1<0) sum+= -$1} END {printf "%.8f", sum}')
+    RS=$(echo "$UP/$DOWN" | bc -l 2>/dev/null)
+    RSI=$(echo "100 - (100/(1+$RS))" | bc -l 2>/dev/null)
+    if (($(echo "$RSI > 70" | bc -l 2>/dev/null))); then
+      BEAR_BULL="Overbought"
+    elif (($(echo "$RSI < 30" | bc -l 2>/dev/null))); then
+      BEAR_BULL="Oversold"
+    else
+      BEAR_BULL="Neutral"
+    fi
+    echo "$BEAR_BULL RSI_$PERIOD $(echo "$RSI" | awk '{ printf "%.8f\n", $1 }')" >"${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1"
+    rm "$TMP_FILE"
   else
-    curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE"
+    cat "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1"
   fi
-  PRICES=$(jq -r '.Data.Data[].'"$SOURCE" "$TMP_FILE")
-  CHANGE=$(echo "$PRICES" | awk '{if (NR>1) {print $1-prev} ; prev=$1 }' | tail -n+2)
-  UP=$(echo "$CHANGE" | awk '{if ($1>=0) sum+= $1} END {printf "%.8f", sum}')
-  DOWN=$(echo "$CHANGE" | awk '{if ($1<0) sum+= -$1} END {printf "%.8f", sum}')
-  RS=$(echo "$UP/$DOWN" | bc -l 2>/dev/null)
-  RSI=$(echo "100 - (100/(1+$RS))" | bc -l 2>/dev/null)
-  if (($(echo "$RSI > 70" | bc -l 2>/dev/null))); then
-    BEAR_BULL="Overbought"
-  elif (($(echo "$RSI < 30" | bc -l 2>/dev/null))); then
-    BEAR_BULL="Oversold"
-  else
-    BEAR_BULL="Neutral"
-  fi
-  echo "$BEAR_BULL RSI_$PERIOD $(echo "$RSI" | awk '{ printf "%.8f\n", $1 }')"
-  rm "$TMP_FILE"
 }
 
 # END
