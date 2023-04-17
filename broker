@@ -725,9 +725,9 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
       coin_token_search
       rsi_value_output
-      get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null
 
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
+      GET_RSI="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
       WIDTH="$(echo "$(echo "$GET_RSI_CUSTOM" | wc -L)+4" | bc 2>/dev/null)"
 
       if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -738,14 +738,14 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       fi
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-        if [[ ! -z "$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)" ]] &>/dev/null; then
+        if [[ ! -z "$GET_RSI" ]] &>/dev/null; then
           display_result() {
             dialog --title "RSI $COIN_TOKEN" \
               --no-collapse \
               --msgbox "$RESULT" 5 "$WIDTH"
           }
 
-          RESULT="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+          RESULT="$GET_RSI"
           display_result 2>/dev/null
         fi
       fi
@@ -756,9 +756,9 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
       coin_token_search
       ema_value_output
-      get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null
 
       COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
+      GET_EMA="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
       WIDTH="$(echo "$(echo "$GET_EMA_CUSTOM" | wc -L)+4" | bc 2>/dev/null)"
 
       if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -769,14 +769,14 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       fi
 
       if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-        if [[ ! -z "$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)" ]] &>/dev/null; then
+        if [[ ! -z "$GET_EMA" ]] &>/dev/null; then
           display_result() {
             dialog --title "EMA $COIN_TOKEN" \
               --no-collapse \
               --msgbox "$RESULT" 5 "$WIDTH"
           }
 
-          RESULT="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+          RESULT="$GET_EMA"
           display_result 2>/dev/null
         fi
       fi
