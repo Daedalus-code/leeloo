@@ -284,7 +284,8 @@ function rogue_profit() {
   # rogue profit using rsi
 
   ROGUE_TIMER="3600"    # 1 hour cooldown
-  ROGUE_AMOUNT="0.0369" # amount % to be used
+  ROGUE_AMOUNT="0.0123" # amount % to be used
+  ROGUE_MAX_DAY="3"     # max trades a day
 
   ##############################################################################
 
@@ -424,7 +425,13 @@ R_AVG  $ROGUE_REFERENCE_AVERAGE" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
     # rogue_selling config n% of allocated n%
     if [[ "$ROGUE_LISTING_NOW" -gt "70" ]] &>/dev/null; then
       # overbought, pick pocket at top!
-      rogue_selling
+      if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
+        echo "SOLD" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
+      fi
+      if [[ "$(grep -c "SOLD" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$(echo "$ROGUE_MAX_DAY-1" | bc 2>/dev/nul)" ]] &>/dev/null; then
+        rogue_selling
+        echo "SOLD" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
+      fi
     fi
 
     ############################################################################
@@ -432,8 +439,19 @@ R_AVG  $ROGUE_REFERENCE_AVERAGE" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
     # rogue_buying config n% of allocated n%
     if [[ "$ROGUE_LISTING_NOW" -lt "30" ]] &>/dev/null; then
       # oversold, cheap shot at bottom!
-      rogue_buying
+      if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
+        echo "BOUGHT" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
+      fi
+      if [[ "$(grep -c "BOUGHT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$(echo "$ROGUE_MAX_DAY-1" | bc 2>/dev/nul)" ]] &>/dev/null; then
+        rogue_buying
+        echo "BOUGHT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
+      fi
     fi
+
+    ############################################################################
+
+    # keep n lines
+    echo "$(tail -9 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
 
     ############################################################################
   fi
