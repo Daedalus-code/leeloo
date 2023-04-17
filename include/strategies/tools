@@ -377,6 +377,7 @@ function rogue_profit() {
       rogue_stealth
       rogue_clean_lines
     fi
+
     ############################################################################
 
     # line count
@@ -424,7 +425,7 @@ R_AVG  $ROGUE_REFERENCE_AVERAGE" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
       if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
         echo "SOLD" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
-      if [[ "$(grep -c "SOLD" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$(echo "$ROGUE_MAX_DAY-1" | bc 2>/dev/nul)" ]] &>/dev/null; then
+      if [[ "$(grep -c "SOLD" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
         rogue_selling
         echo "SOLD" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
@@ -438,7 +439,7 @@ R_AVG  $ROGUE_REFERENCE_AVERAGE" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
       if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
         echo "BOUGHT" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
-      if [[ "$(grep -c "BOUGHT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$(echo "$ROGUE_MAX_DAY-1" | bc 2>/dev/nul)" ]] &>/dev/null; then
+      if [[ "$(grep -c "BOUGHT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
         rogue_buying
         echo "BOUGHT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
@@ -447,7 +448,14 @@ R_AVG  $ROGUE_REFERENCE_AVERAGE" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi
     ############################################################################
 
     # keep n lines
-    echo "$(tail -9 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
+    echo "$(tail -3 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
+
+    ############################################################################
+
+    # reset status at midnight
+    if [[ "$(date '+%H:%M' | egrep "00:00" | wc -l)" -eq "1" ]] &>/dev/null; then
+      truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status &>/dev/null
+    fi
 
     ############################################################################
   fi
