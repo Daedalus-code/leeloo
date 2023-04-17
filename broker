@@ -89,7 +89,7 @@ case $CHOICE in
           --no-collapse \
           --msgbox "$(echo "$RESULT" | column -t)" 0 0
       }
-      FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $8 }')"
+      FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $8 }')"
       if [[ -z "$FILE_TIME" ]] &>/dev/null; then
         FILE_TIME="00:00"
       fi
@@ -144,7 +144,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
       --scrollbar \
       --msgbox "$(echo "$RESULT" | column -t)" 25 "$WIDTH"
   }
-  FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $8 }')"
+  FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null | awk '{ print $8 }')"
   if [[ -z "$FILE_TIME" ]] &>/dev/null; then
     FILE_TIME="00:00"
   fi
@@ -494,7 +494,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating) $REPO_HEAD")" >"${LOG_DIR:?}"/leel
     ROBOT_PID="$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
     ROBOT_TIME=$(ps -p $ROBOT_PID -o etimes=)
     ROBOT_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${ROBOT_TIME:?}" 2>&1)/3600")) $(("$(echo "${ROBOT_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${ROBOT_TIME:?}" 2>&1)%60")))
-    ROBOT_STRAT="$(ls -l "${SYS_DIR:?}"/robot/*.config | wc -l)"
+    ROBOT_STRAT="$(ls -l "${SYS_DIR:?}"/robot/*.config 2>/dev/null | wc -l)"
   else
     ROBOT_STRAT="0"
     ROBOT_RUNNING="Offline"
@@ -566,7 +566,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
           if [ -n "$CHOICE" ] &>/dev/null; then
             SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
             display_result() {
-              dialog --title "$(echo "$(ls -l "$SELECTED_FILE" | awk '{ print $8" :: "$NF }')")" \
+              dialog --title "$(echo "$(ls -l "$SELECTED_FILE" 2>/dev/null | awk '{ print $8" :: "$NF }')")" \
                 --no-collapse \
                 --msgbox "$RESULT" 0 0
             }
@@ -821,53 +821,51 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
-        if [[ "$(ls -l "${SYS_DIR:?}"/robot/open.*.cost | wc -l)" -gt "0" ]] &>/dev/null; then
-          if [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
+        if [[ "$(ls -l "${SYS_DIR:?}"/robot/open.*.cost 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
 
-            # make sure file has data
-            until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances &>/dev/null; do
-              sleep 1
-            done
+          # make sure file has data
+          until egrep "Result" "${SYS_DIR:?}"/robot/pool &>/dev/null; do
+            sleep 1
+          done
 
-            OPEN_AGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $NF }' | egrep -o "[0-9]+h:" | tr -d 'h:' | awk '{ SUM += $1} END { print SUM }')"
-            OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
-            OPEN_AGE_AVERAGE_HOUR="$(echo "$OPEN_AGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-            OPEN_AGE_AVERAGE_DAYS="$(echo "$OPEN_AGE_AVERAGE_HOUR/24" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+          OPEN_AGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $NF }' | egrep -o "[0-9]+h:" | tr -d 'h:' | awk '{ SUM += $1} END { print SUM }')"
+          OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
+          OPEN_AGE_AVERAGE_HOUR="$(echo "$OPEN_AGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+          OPEN_AGE_AVERAGE_DAYS="$(echo "$OPEN_AGE_AVERAGE_HOUR/24" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 
-            if [[ "$(echo "$OPEN_COUNT" | grep '[-]' 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-              OPEN_COUNT="0"
-            fi
-
-            OPEN_PERCENTAGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $5 }' | grep -v "Result" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
-            OPEN_PERCENTAGE_AVERAGE="$(echo "$OPEN_PERCENTAGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-            WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
-            LENGTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -l | awk '{ print $1 }')+5" | bc 2>/dev/null)"
-
-            if [[ -z "$LENGTH" ]] &>/dev/null; then
-              LENGTH="7"
-            fi
-            if [[ "$LENGTH" -lt "7" ]] &>/dev/null; then
-              LENGTH="7"
-            fi
-
-            if [[ -z "$WIDTH" ]] &>/dev/null; then
-              WIDTH="68"
-            fi
-            if [[ "$WIDTH" -lt "68" ]] &>/dev/null; then
-              WIDTH="68"
-            fi
-
-            display_result() {
-              dialog --title "Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: ${OPEN_AGE_AVERAGE_DAYS:?}d ${OPEN_AGE_AVERAGE_HOUR:?}h" \
-                --no-collapse \
-                --keep-window \
-                --tailbox "$RESULT" "$LENGTH" "$WIDTH"
-            }
-
-            RESULT="${SYS_DIR:?}/robot/pool"
-            display_result 2>/dev/null
+          if [[ "$(echo "$OPEN_COUNT" | grep '[-]' 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+            OPEN_COUNT="0"
           fi
+
+          OPEN_PERCENTAGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $5 }' | grep -v "Result" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+          OPEN_PERCENTAGE_AVERAGE="$(echo "$OPEN_PERCENTAGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+          WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
+          LENGTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -l | awk '{ print $1 }')+5" | bc 2>/dev/null)"
+
+          if [[ -z "$LENGTH" ]] &>/dev/null; then
+            LENGTH="7"
+          fi
+          if [[ "$LENGTH" -lt "7" ]] &>/dev/null; then
+            LENGTH="7"
+          fi
+
+          if [[ -z "$WIDTH" ]] &>/dev/null; then
+            WIDTH="68"
+          fi
+          if [[ "$WIDTH" -lt "68" ]] &>/dev/null; then
+            WIDTH="68"
+          fi
+
+          display_result() {
+            dialog --title "Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: ${OPEN_AGE_AVERAGE_DAYS:?}d ${OPEN_AGE_AVERAGE_HOUR:?}h" \
+              --no-collapse \
+              --keep-window \
+              --tailbox "$RESULT" "$LENGTH" "$WIDTH"
+          }
+
+          RESULT="${SYS_DIR:?}/robot/pool"
+          display_result 2>/dev/null
         fi
       else
         no_key_no_secret
