@@ -11,18 +11,30 @@ for (( ; ; )); do
 
   ##############################################################################
 
+  # nothing is happening for n seconds, while something needs to be happening
   if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-    # nothing is happening for n seconds, while something needs to be happening
-    ROBOT_LOG_AGE="$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null)))"
-    ROBOT_LOG_AGE_MINUTES="$(echo "$ROBOT_LOG_AGE/60" | bc 2>/dev/null)"
-    if [[ "$ROBOT_LOG_AGE" -gt "300" ]] &>/dev/null; then
+    # the age of all logs measured in seconds
+    ROBOT_LOG_AGE="$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/*.log 2>/dev/null | while read file lastedit; do echo "$file was last edited $(($(date +%s) - $lastedit)) seconds ago"; done | egrep -o "[0-9]+ seconds" | awk '{ print $1 }' | awk '{ SUM += $1} END { print SUM }')"
+    # log file count
+    ROBOT_LOG_COUNT="$(ls -l "${LOG_DIR:?}"/leeloo/*.log 2>/dev/null | wc -l)"
+    # calculate average seconds
+    ROBOT_LOG_AVERAGE="$(echo "$ROBOT_LOG_AGE/$ROBOT_LOG_COUNT" | bc 2>/dev/null)"
+    # robot max age
+    ROBOT_MAX_AGE="300"
+
+    if [[ "$ROBOT_LOG_AVERAGE" -gt "$ROBOT_MAX_AGE" ]] &>/dev/null; then
       echo "$LOG_DATE :: Strategy NON WORK :: Reboot robots! $ROBOT_LOG_AGE_MINUTES Minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.log
+
       # kill old screen
       screen -S "$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
+      echo "$LOG_DATE :: Strategy NON WORK :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.log
+      sleep 1
+
       if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-        echo "$LOG_DATE :: Strategy NON WORK :: Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.log
+        echo "$LOG_DATE :: Strategy NON WORK :: Still running.. Killall screen!!" >>"${LOG_DIR:?}"/leeloo/robot.log
         killall screen &>/dev/null
       fi
+
       # start looper
       echo "$LOG_DATE :: Strategy NON WORK :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.log
       bash "${SYS_DIR:?}"/robot/looper
