@@ -8,6 +8,21 @@ source /usr/local/bin/include/leeloo/indicators/ema
 
 ################################################################################
 
+function bst_output() {
+  if [[ "$REFERENCE_STATUS" == "false" ]] &>/dev/null; then
+    MARKET_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY :: Market $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+    LIMIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+  elif [[ "$REFERENCE_STATUS" == "true" ]] &>/dev/null; then
+    MARKET_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY :: Market $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+    LIMIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+  fi
+  MARKET_BST_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE :: $TYPE"
+  LIMIT_BST_POSITION="$MARKET_BST_POSITION"
+  COOLDOWN_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: info :: Cooldown $ORDER_COOLDOWN"
+}
+
+################################################################################
+
 function ema_output() {
   BULLISH_EMA_CROSS="$LOG_DATE :: Strategy $EMA_REAL_STRATEGY :: ${REFERENCE_ALLOCATED:?}% :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $TYPE"
   BULLISH_EMA_STATUS="$LOG_DATE :: Strategy $EMA_REAL_STRATEGY :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}%"
