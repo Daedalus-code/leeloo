@@ -15,12 +15,12 @@ for (( ; ; )); do
   if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
     # the age of all logs measured in seconds
     ROBOT_LOG_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/*.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
-    # calculate minutes
-    ROBOT_LOG_AGE_MINUTES="$(echo "$ROBOT_LOG_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # log file count
     ROBOT_LOG_COUNT="$(ls -l "${LOG_DIR:?}"/leeloo/*.log 2>/dev/null | wc -l)"
     # calculate average seconds
     ROBOT_LOG_AVERAGE="$(echo "$ROBOT_LOG_AGE_SECONDS/$ROBOT_LOG_COUNT" | bc 2>/dev/null)"
+    # calculate minutes
+    ROBOT_LOG_AGE_MINUTES="$(echo "$ROBOT_LOG_AVERAGE/60" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # robot log max age
     ROBOT_LOG_MAX_AGE="300"
 
