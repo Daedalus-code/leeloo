@@ -442,6 +442,7 @@ function rogue_profit() {
     # line count
     ROGUE_LINES="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $1 }')"
     ROGUE_COUNT="$(echo "$ROGUE_LINES/2" | bc 2>/dev/null)"
+    ROGUE_DAYS="$(echo "$ROGUE_COUNT/24" | bc 2>/dev/null)"
 
     # listing
     ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
@@ -470,7 +471,7 @@ function rogue_profit() {
     ############################################################################
 
     echo "Update    $ROGUE_TIMER_NOW/${ROGUE_TIMER:?}s ${ROGUE_UPDATE_PERCENTAGE:?}%
-Lines     $ROGUE_LINES/${ROGUE_COUNT:?}h
+Lines     $ROGUE_LINES/${ROGUE_COUNT:?}h/${ROGUE_DAYS:?}d
 
 L_NOW     $ROGUE_LISTING_NOW
 L_HIGHEST $ROGUE_LISTING_HIGH
