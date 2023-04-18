@@ -14,14 +14,14 @@ for (( ; ; )); do
   # nothing is happening for n seconds, while something needs to be happening
   if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
     # the age of all logs measured in seconds
-    ROBOT_LOG_AGE="$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/*.log 2>/dev/null | while read file lastedit; do echo "$file was last edited $(($(date +%s) - $lastedit)) seconds ago"; done | egrep -o "[0-9]+ seconds" | awk '{ print $1 }' | awk '{ SUM += $1} END { print SUM }')"
+    ROBOT_LOG_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/*.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
     # calculate minutes
-    ROBOT_LOG_AGE_MINUTES="$(echo "$ROBOT_LOG_AGE/60" | bc 2>/dev/null)"
+    ROBOT_LOG_AGE_MINUTES="$(echo "$ROBOT_LOG_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # log file count
     ROBOT_LOG_COUNT="$(ls -l "${LOG_DIR:?}"/leeloo/*.log 2>/dev/null | wc -l)"
     # calculate average seconds
-    ROBOT_LOG_AVERAGE="$(echo "$ROBOT_LOG_AGE/$ROBOT_LOG_COUNT" | bc 2>/dev/null)"
-    # robot max age
+    ROBOT_LOG_AVERAGE="$(echo "$ROBOT_LOG_AGE_SECONDS/$ROBOT_LOG_COUNT" | bc 2>/dev/null)"
+    # robot log max age
     ROBOT_LOG_MAX_AGE="300"
 
     if [[ "$ROBOT_LOG_AVERAGE" -gt "$ROBOT_LOG_MAX_AGE" ]] &>/dev/null; then
