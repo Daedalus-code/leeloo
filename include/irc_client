@@ -6,6 +6,12 @@ WHOAMI="$(whoami)"
 
 ################################################################################
 
+if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
+  mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
+fi
+
+################################################################################
+
 function irssi_first_run() {
   # first time startup
   if [[ ! -f /home/"$WHOAMI"/.irssi/config ]] &>/dev/null; then
@@ -53,14 +59,14 @@ EOF
 # start irc client
 function irc_client() {
   # get irc server list
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.servers ]] &>/dev/null; then
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.servers ]] &>/dev/null; then
     echo "Downloading IRC server list.."
     # proxy configuration = true
     if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
       # with proxy
-      curl -s --proxy socks5h://localhost:9050 https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null
+      curl -s --proxy socks5h://localhost:9050 https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
     else
-      curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null
+      curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
     fi
   fi
 
@@ -79,18 +85,18 @@ function irc_client() {
 
   function irssi_status() {
     # irssi status
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/pid.irssi ]] &>/dev/null; then
-      echo "0" >"${LOG_DIR:?}"/leeloo/pid.irssi
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/pid.irssi ]] &>/dev/null; then
+      echo "0" >"${LOG_DIR:?}"/leeloo/chat/pid.irssi
     fi
     FILE_TIME_MAX="${BOT_TIMER:?}"
-    FILE_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/pid.irssi 2>/dev/null)))" 2>/dev/null)"
+    FILE_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/chat/pid.irssi 2>/dev/null)))" 2>/dev/null)"
 
     # update file
     if [[ "$FILE_TIME" -gt "$FILE_TIME_MAX" ]] &>/dev/null; then
-      echo "$(pidof irssi 2>/dev/null | wc -l)" >"${LOG_DIR:?}"/leeloo/pid.irssi
+      echo "$(pidof irssi 2>/dev/null | wc -l)" >"${LOG_DIR:?}"/leeloo/chat/pid.irssi
     fi
 
-    if [[ "$(cat "${LOG_DIR:?}"/leeloo/pid.irssi 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(cat "${LOG_DIR:?}"/leeloo/chat/pid.irssi 2>/dev/null)" -gt "0" ]] &>/dev/null; then
       IRSSI_COM_STATUS="Online"
     else
       IRSSI_COM_STATUS="Offline"
@@ -99,18 +105,18 @@ function irc_client() {
 
   function tor_status() {
     # tor status
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/pid.tor ]] &>/dev/null; then
-      echo "0" >"${LOG_DIR:?}"/leeloo/pid.tor
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/pid.tor ]] &>/dev/null; then
+      echo "0" >"${LOG_DIR:?}"/leeloo/chat/pid.tor
     fi
     FILE_TIME_MAX="${BOT_TIMER:?}"
-    FILE_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/pid.tor 2>/dev/null)))" 2>/dev/null)"
+    FILE_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/chat/pid.tor 2>/dev/null)))" 2>/dev/null)"
 
     # update file
     if [[ "$FILE_TIME" -gt "$FILE_TIME_MAX" ]] &>/dev/null; then
-      echo "$(pidof tor 2>/dev/null | wc -l)" >"${LOG_DIR:?}"/leeloo/pid.tor
+      echo "$(pidof tor 2>/dev/null | wc -l)" >"${LOG_DIR:?}"/leeloo/chat/pid.tor
     fi
 
-    if [[ "$(cat "${LOG_DIR:?}"/leeloo/pid.tor 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(cat "${LOG_DIR:?}"/leeloo/chat/pid.tor 2>/dev/null)" -gt "0" ]] &>/dev/null; then
       PROXY_COM_STATUS="Online"
     else
       PROXY_COM_STATUS="Offline"
@@ -121,24 +127,24 @@ function irc_client() {
 
   function irssi_version() {
     # get irssi version
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
-      echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.client ]] &>/dev/null; then
+      echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.client 2>/dev/null
     fi
-    IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/irc.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$2 }')"
+    IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$2 }')"
     # zero, continue
-    if [[ ! -s "${LOG_DIR:?}"/leeloo/irc.client ]] &>/dev/null; then
+    if [[ ! -s "${LOG_DIR:?}"/leeloo/chat/irc.client ]] &>/dev/null; then
       IRSSI_CLIENT="Not installed"
     fi
   }
 
   function tor_version() {
     # get tor version
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
-      echo "$(tor --version 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/tor.client ]] &>/dev/null; then
+      echo "$(tor --version 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/tor.client 2>/dev/null
     fi
     # zero, continue
-    PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/tor.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$NF }')"
-    if [[ ! -s "${LOG_DIR:?}"/leeloo/tor.client ]] &>/dev/null; then
+    PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/chat/tor.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$NF }')"
+    if [[ ! -s "${LOG_DIR:?}"/leeloo/chat/tor.client ]] &>/dev/null; then
       PROXY_CLIENT="Not installed"
     fi
   }
@@ -204,9 +210,9 @@ function irc_client() {
     IRSSI_CONNECTED="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
 
     # list files in irclog directory and extract the names of those that contain the last connected server
-    ls -l /home/"$WHOAMI"/.irssi/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/irc.tmp
+    ls -l /home/"$WHOAMI"/.irssi/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/chat/irc.tmp
 
-    if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+    if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/chat/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
       # if the server is not found in the list, append the last connected server to the irc.disconnect file
       echo "$IRSSI_CONNECTED" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" >>/home/"$WHOAMI"/.irssi/irc.disconnect
 
@@ -216,7 +222,7 @@ function irc_client() {
     fi
 
     # remove temporary file
-    rm "${LOG_DIR:?}"/leeloo/irc.tmp &>/dev/null
+    rm "${LOG_DIR:?}"/leeloo/chat/irc.tmp &>/dev/null
   }
 
   ##############################################################################
@@ -228,7 +234,7 @@ function irc_client() {
   ##############################################################################
 
   function random_server() {
-    IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+    IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     # irc.servers
@@ -468,7 +474,7 @@ COMMANDS.....:  /help")"
 
   "2")
 
-    nano "${LOG_DIR:?}"/leeloo/irc.servers
+    nano "${LOG_DIR:?}"/leeloo/chat/irc.servers
 
     ;;
 
@@ -489,7 +495,7 @@ COMMANDS.....:  /help")"
 
     welcome_banned
 
-    IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+    IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_DISCONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
@@ -578,7 +584,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
       --yesno "Yes: Install!, No: Quit" 5 30; then
       clear
       sudo apt-get install irssi -y
-      rm "${LOG_DIR:?}"/leeloo/irc.client &>/dev/null
+      rm "${LOG_DIR:?}"/leeloo/chat/irc.client &>/dev/null
       read -r -p "Press Enter to continue" </dev/tty
       echo
     fi
@@ -595,7 +601,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
       clear
       sudo apt-get purge --auto-remove irssi -y
       # remove irc.client, config, default.theme
-      rm "${LOG_DIR:?}"/leeloo/irc.client &>/dev/null
+      rm "${LOG_DIR:?}"/leeloo/chat/irc.client &>/dev/null
       rm -R /home/"$WHOAMI"/.irssi &>/dev/null
       read -r -p "Press Enter to continue" </dev/tty
       echo
@@ -628,7 +634,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
         if dialog --stdout --title "Reset IRC Servers?" \
           --backtitle "Server list reset" \
           --yesno "Yes: Reset!, No: Quit" 5 30; then
-          rm -R "${LOG_DIR:?}"/leeloo/irc.* &>/dev/null
+          rm -R "${LOG_DIR:?}"/leeloo/chat/irc.* &>/dev/null
         fi
         rm -R /home/"$WHOAMI"/.irssi/* &>/dev/null
         irssi_first_run
