@@ -8,6 +8,32 @@ source /usr/local/bin/include/leeloo/indicators/ema
 
 ################################################################################
 
+STATUS_ROGUE_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $PAIR :: $LC :: Price ${NEW_PRICE} ${LISTING_OPEN_RESULT:?}% :: $POSITION"
+
+################################################################################
+
+BUY_ROGUE_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing buy order for ${PAIR} at ${NEW_PRICE}"
+SELL_ROGUE_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing sell order for ${PAIR} at ${NEW_PRICE}"
+
+################################################################################
+
+BUY_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER :: $TYPE"
+SELL_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Market $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+
+################################################################################
+
+BUY_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER :: $TYPE"
+SELL_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+
+################################################################################
+
+BUY_LIMIT_POSITION="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
+SELL_LIMIT_POSITION="$BUY_LIMIT_POSITION"
+BUY_MARKET_POSITION="$BUY_LIMIT_POSITION"
+SELL_MARKET_POSITION="$BUY_LIMIT_POSITION"
+
+################################################################################
+
 function listing_data() {
   # get available listing data
   LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
