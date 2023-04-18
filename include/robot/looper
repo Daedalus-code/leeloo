@@ -27,6 +27,11 @@ if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/nu
   ROBOT_LOG_MAX_AGE="300"
 
   if [[ "$ROBOT_LOG_AVERAGE" -gt "$ROBOT_LOG_MAX_AGE" ]] &>/dev/null; then
+
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/error.log ]] &>/dev/null; then
+      touch "${LOG_DIR:?}"/leeloo/error.log &>/dev/null
+    fi
+
     # collect any error
     ERRORS="Syntax|ERROR|Error|error|Failed|failed|Invalid|invalid|Exception|exception|Warning|warning|Missing|missing|Unrecognized|unrecognized|Unexpected|unexpected|Permission denied|No such file or directory|Segmentation fault|Out of memory"
     cat "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | egrep "$ERRORS" | awk '!a[$0]++' >>"${LOG_DIR:?}"/leeloo/error.log
