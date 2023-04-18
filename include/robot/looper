@@ -2,11 +2,47 @@
 
 source /usr/local/bin/include/leeloo/broker.conf
 
+################################################################################
+
 if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "0" ]] &>/dev/null; then
   # create new screen session
   screen -dmS leeloo &>/dev/null
   # start robot
   screen -S leeloo -X -p 0 stuff $'bash '"${SYS_DIR:?}"'/robot/leeloo\n'
+fi
+
+################################################################################
+
+# nothing is happening for n seconds, while something needs to be happening
+if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
+  # the age of all logs measured in seconds
+  ROBOT_LOG_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/*.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
+  # log file count
+  ROBOT_LOG_COUNT="$(ls -l "${LOG_DIR:?}"/leeloo/*.log 2>/dev/null | wc -l)"
+  # calculate average seconds
+  ROBOT_LOG_AVERAGE="$(echo "$ROBOT_LOG_AGE_SECONDS/$ROBOT_LOG_COUNT" | bc 2>/dev/null)"
+  # calculate minutes
+  ROBOT_LOG_AGE_MINUTES="$(echo "$ROBOT_LOG_AVERAGE/60" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # robot log max age
+  ROBOT_LOG_MAX_AGE="300"
+
+  if [[ "$ROBOT_LOG_AVERAGE" -gt "$ROBOT_LOG_MAX_AGE" ]] &>/dev/null; then
+    echo "$LOG_DATE :: Strategy NON WORK :: Reboot robots! $ROBOT_LOG_AGE_MINUTES Minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.log
+
+    # kill old screen
+    screen -S "$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
+    echo "$LOG_DATE :: Strategy NON WORK :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.log
+    sleep 1
+
+    if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
+      echo "$LOG_DATE :: Strategy NON WORK :: Still running.. Killall screen!!" >>"${LOG_DIR:?}"/leeloo/robot.log
+      killall screen &>/dev/null
+    fi
+
+    # start looper
+    echo "$LOG_DATE :: Strategy NON WORK :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.log
+    bash "${SYS_DIR:?}"/robot/looper
+  fi
 fi
 
 # END
