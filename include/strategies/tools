@@ -378,6 +378,7 @@ function rogue_profit() {
 
   function rogue_buying() {
     # n% amount
+    MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # market or limit order
     REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $REFERENCE_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
@@ -393,11 +394,12 @@ function rogue_profit() {
 
   function rogue_selling() {
     # n% amount
+    MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # market or limit order
     REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $LISTING_AMOUNT @ $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-      PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "false")"
+      PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
       rogue_vanish
     else
       PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
