@@ -32,6 +32,10 @@ if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/nu
     egrep "$ERRORS" "${LOG_DIR:?}"/leeloo/robot.log >>"${LOG_DIR:?}"/leeloo/error.log
     ERRORS_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/error.log | awk '{ print $1 }')"
 
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/robot.looper.log ]] &>/dev/null; then
+      touch "${LOG_DIR:?}"/leeloo/robot.looper.log &>/dev/null
+    fi
+
     echo "$LOG_DATE :: Strategy FFS :: ERROR: $ERRORS_COUNT :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.looper.log
 
     # kill old screen
