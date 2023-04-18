@@ -286,6 +286,7 @@ function open_positions() {
 function rogue_profit() {
   # rogue profit using rsi
 
+  ROGUE_TIMER_NOW="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)))" 2>/dev/null)"
   ROGUE_TIMER="3600"    # 1 hour cooldown
   ROGUE_AMOUNT="0.0123" # amount % to be used
   ROGUE_MAX_DAY="3"     # max trades a day
@@ -365,7 +366,7 @@ function rogue_profit() {
   if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
 
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)))" 2>/dev/null)" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
+    if [[ "$ROGUE_TIMER_NOW" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
       rogue_data
       rogue_stealth
       rogue_clean_lines
@@ -385,6 +386,7 @@ function rogue_profit() {
 
     # line count
     ROGUE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $1 }')"
+    ROGUE_LINES="$(echo "$ROGUE_COUNT/2" | bc 2>/dev/null)"
 
     # listing
     ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
@@ -410,7 +412,8 @@ function rogue_profit() {
 
     ############################################################################
 
-    echo "U: ${ROGUE_TIMER:?}s L: $(echo "$ROGUE_COUNT/2" | bc 2>/dev/null)h
+    echo "Update    $ROGUE_TIMER_NOW/${ROGUE_TIMER:?}s
+Lines     ${ROGUE_LINES:?}h
 
 L_NOW     $ROGUE_LISTING_NOW
 L_HIGHEST $ROGUE_LISTING_HIGH
