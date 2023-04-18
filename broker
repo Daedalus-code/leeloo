@@ -1167,7 +1167,8 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
               --no-collapse \
               --msgbox "$RESULT" "$LENGTH" "$WIDTH"
           }
-          RESULT="$(screen -list 2>/dev/null | grep "leeloo" | xargs)"
+          RESULT="Log Activity: $(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | xargs) seconds
+$(screen -list 2>/dev/null | grep "leeloo" | xargs)"
           LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)"
           WIDTH="$(echo "$(echo "$RESULT" | wc -L)+4" | bc 2>/dev/null)"
           display_result 2>/dev/null
