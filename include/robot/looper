@@ -43,20 +43,20 @@ if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/nu
       touch "${LOG_DIR:?}"/leeloo/robot.looper.log &>/dev/null
     fi
 
-    echo "$LOG_DATE :: Strategy FFS :: ERROR: $ERRORS_COUNT :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.looper.log
+    echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.looper.log
 
     # kill old screen
     screen -S "$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
-    echo "$LOG_DATE :: Strategy FFS :: ERROR: $ERRORS_COUNT :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log
+    echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log
     sleep 1
 
     if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-      echo "$LOG_DATE :: Strategy FFS :: ERROR: $ERRORS_COUNT :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log
+      echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log
       killall screen &>/dev/null
     fi
 
     # start looper
-    echo "$LOG_DATE :: Strategy FFS :: ERROR: $ERRORS_COUNT :: Restarting robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log
+    echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Restarting robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log
     bash "${SYS_DIR:?}"/robot/looper
   fi
 fi
