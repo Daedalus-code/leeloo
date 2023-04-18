@@ -148,7 +148,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   LC=$(lorentzian_classification "${NEW_PRICE}" "${LAMBDA}" | awk '{ printf "%.8f\n", $1 }')
   echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc
 
-  rogue_output
+  lorentzian_output
 
   # determine trading action
   if [[ "$(echo "${LC} > ${BUY_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "NONE" ]]; then
@@ -169,7 +169,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       ##########################################################################
 
       # buy market order
-      echo "$BUY_ROGUE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       echo "$BUY_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
@@ -181,7 +181,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       ##########################################################################
 
       # buy limit order
-      echo "$BUY_ROGUE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       echo "$BUY_LIMIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
@@ -213,7 +213,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       ##########################################################################
 
       # sell order
-      echo "$SELL_ROGUE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       echo "$SELL_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
@@ -226,7 +226,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       ##########################################################################
 
       # sell order
-      echo "$SELL_ROGUE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       echo "$SELL_LIMIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
@@ -238,7 +238,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
     PRICE=${NEW_PRICE}
     TIMESTAMP=${NEW_TIMESTAMP}
   else
-    echo "$STATUS_ROGUE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    echo "$STATUS_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
 fi
 
