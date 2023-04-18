@@ -112,6 +112,10 @@ open_positions
 
 ################################################################################
 
+trade_output
+
+################################################################################
+
 incoming_listing
 incoming_reference
 
@@ -143,6 +147,8 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   # calculate lorentzian classification indicator
   LC=$(lorentzian_classification "${NEW_PRICE}" "${LAMBDA}" | awk '{ printf "%.8f\n", $1 }')
   echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc
+
+  rogue_output
 
   # determine trading action
   if [[ "$(echo "${LC} > ${BUY_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "NONE" ]]; then
@@ -235,10 +241,6 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
     echo "$STATUS_ROGUE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   fi
 fi
-
-################################################################################
-
-text_output
 
 ################################################################################
 
