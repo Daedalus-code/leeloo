@@ -400,7 +400,7 @@ function rogue_profit() {
     # line count
     ROGUE_LINES="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $1 }')"
     ROGUE_COUNT="$(echo "$ROGUE_LINES/2" | bc 2>/dev/null)"
-    ROGUE_DAYS="$(echo "$ROGUE_COUNT/24" | bc 2>/dev/null)"
+    ROGUE_DAYS="$(echo "$ROGUE_COUNT/24" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     # listing
     LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
@@ -457,6 +457,7 @@ function rogue_profit() {
 
     echo "Update    $ROGUE_TIMER_NOW/${ROGUE_TIMER:?}s ${ROGUE_UPDATE_PERCENTAGE:?}%
 Lines     $ROGUE_LINES/${ROGUE_COUNT:?}h/${ROGUE_DAYS:?}d
+RSI       get_rsi 14
 
 L_PRICE   $ROGUE_LISTING_PRICE Diff: ${ROGUE_LISTING_PRICE_DIFF:?}%
 L_NOW     $ROGUE_LISTING_NOW
