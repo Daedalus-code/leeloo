@@ -403,6 +403,7 @@ function rogue_profit() {
     ROGUE_DAYS="$(echo "$ROGUE_COUNT/24" | bc 2>/dev/null)"
 
     # listing
+    LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
     ROGUE_LISTING_PRICE="$LISTING_PRICE"
     ROGUE_LISTING_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $3 }')"
     if [[ -z "$ROGUE_LISTING_PRICE_OLD" ]] &>/dev/null; then
@@ -424,6 +425,7 @@ function rogue_profit() {
     ROGUE_LISTING_X_FACTOR="$(echo "$ROGUE_LISTING_X_CALCULATE/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
     # reference
+    REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
     ROGUE_REFERENCE_PRICE="$REFERENCE_PRICE"
     ROGUE_REFERENCE_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $5 }')"
     if [[ -z "$ROGUE_REFERENCE_PRICE_OLD" ]] &>/dev/null; then
