@@ -523,8 +523,19 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
     if [[ "$(date '+%H:%M' | egrep "00:00" | wc -l)" -eq "1" ]] &>/dev/null; then
       truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status &>/dev/null
     fi
+  fi
+}
 
-    ############################################################################
+################################################################################
+
+function save_orders() {
+  TRADE_HISTORY_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/*.orders | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  if [[ "$TRADE_HISTORY_SECONDS" -gt "60" ]] &>/dev/null; then
+    # keep orders, remove empty lines
+    TRADE_HISTORY="$(cat "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | sed '/^$/d')"
+    echo "$TRADE_HISTORY" >>"${SYS_DIR:?}"/robot/orders
+    # remove duplicates, remove empty lines
+    echo "$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/orders
   fi
 }
 
