@@ -310,10 +310,10 @@ function rogue_profit() {
   ##############################################################################
 
   function rogue_stealth() {
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".stealth ]] &>/dev/null; then
-      echo "Lurking in the Shadows.." >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".stealth
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth ]] &>/dev/null; then
+      echo "Lurking in the Shadows.." >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth
     fi
-    STEALTH_TIME_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".stealth | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    STEALTH_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
     STEALTH_TIME=$(printf '%dh:%dm:%ds\n' $(("$STEALTH_TIME_SECONDS/3600")) $(("$STEALTH_TIME_SECONDS%3600/60")) $(("$STEALTH_TIME_SECONDS%60")))
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Rogue in Stealth mode.. $STEALTH_TIME" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   }
@@ -439,7 +439,7 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
     ############################################################################
 
     function lurkingInTheShadows() {
-      echo "Lurking in the Shadows.." >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".stealth
+      echo "Lurking in the Shadows.." >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth
     }
 
     ############################################################################
