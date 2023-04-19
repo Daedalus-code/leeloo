@@ -112,11 +112,11 @@ open_positions
 
 ################################################################################
 
-BUY_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER :: $TYPE"
-SELL_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Market $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+BUY_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT"
+SELL_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Market $LISTING_AMOUNT"
 
-BUY_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER :: $TYPE"
-SELL_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+BUY_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT"
+SELL_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT"
 
 BUY_LIMIT_POSITION="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
 SELL_LIMIT_POSITION="$BUY_LIMIT_POSITION"
@@ -186,7 +186,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
       # buy market order
       echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$BUY_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BUY_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
       echo "$BUY_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
@@ -198,7 +198,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
       # buy limit order
       echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$BUY_LIMIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BUY_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
       echo "$BUY_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
@@ -230,7 +230,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
       # sell order
       echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$SELL_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$SELL_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
       echo "$SELL_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
@@ -243,7 +243,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
       # sell order
       echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$SELL_LIMIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$SELL_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
       tx_id
       cost_price
       echo "$SELL_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
