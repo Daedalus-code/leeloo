@@ -355,78 +355,80 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
   "1")
 
-    proxy_configuration
+    if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
 
-    irssi_status
-    tor_status
+      proxy_configuration
 
-    irssi_version
-    tor_version
+      irssi_status
+      tor_status
 
-    irc_connect
-    irc_disconnect
+      irssi_version
+      tor_version
 
-    welcome_banned
+      irc_connect
+      irc_disconnect
 
-    ############################################################################
-    # random server
-    ############################################################################
+      welcome_banned
 
-    random_server
+      ##########################################################################
+      # random server
+      ##########################################################################
 
-    ############################################################################
-    # no port is set
-    ############################################################################
+      random_server
 
-    # zero, default port
-    if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
-      IRSSI_PORT="6667"
-    fi
+      ##########################################################################
+      # no port is set
+      ##########################################################################
 
-    ############################################################################
-    # random port
-    ############################################################################
+      # zero, default port
+      if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
+        IRSSI_PORT="6667"
+      fi
 
-    random_port
+      ##########################################################################
+      # random port
+      ##########################################################################
 
-    ############################################################################
-    # no server is set
-    ############################################################################
+      random_port
 
-    # zero, default random server
-    if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
-      IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
-    fi
+      ##########################################################################
+      # no server is set
+      ##########################################################################
 
-    ############################################################################
-    # port is set
-    ############################################################################
+      # zero, default random server
+      if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
+        IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
+      fi
 
-    # port configuration set, continue
-    if [[ "$IRSSI_PORT_STATUS" -eq "1" ]] &>/dev/null; then
-      IRSSI_PORT="$IRSSI_PORT"
-    fi
+      ##########################################################################
+      # port is set
+      ##########################################################################
 
-    ############################################################################
-    # no nickname is set
-    ############################################################################
+      # port configuration set, continue
+      if [[ "$IRSSI_PORT_STATUS" -eq "1" ]] &>/dev/null; then
+        IRSSI_PORT="$IRSSI_PORT"
+      fi
 
-    # zero, default random nickname
-    if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
-      IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
-    fi
+      ##########################################################################
+      # no nickname is set
+      ##########################################################################
 
-    ############################################################################
-    # setup before connection
-    ############################################################################
+      # zero, default random nickname
+      if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
+        IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
+      fi
 
-    display_result() {
-      dialog --title "IRC Client (irssi)" \
-        --no-collapse \
-        --msgbox "$RESULT" 13 "$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
-    }
+      ##########################################################################
+      # setup before connection
+      ##########################################################################
 
-    RESULT="$(echo "IRC.Client...:  $IRSSI_CLIENT
+      display_result() {
+        dialog --title "IRC Client (irssi)" \
+          --no-collapse \
+          --msgbox "$RESULT" 13 "$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
+      }
+
+      RESULT="$(echo "IRC.Client...:  $IRSSI_CLIENT
 Status.......:  $IRSSI_COM_STATUS
 Server.......:  $IRSSI_SERVER $IRSSI_LIST
 Port.........:  ${IRSSI_PORT:?} $IRSSI_PORTS_ALL_BANNED
@@ -435,11 +437,10 @@ Proxy.Client.:  $PROXY_CLIENT
 Status.......:  $PROXY_COM_STATUS
 Config.......:  $PROXY_CONFIG_STATUS
 COMMANDS.....:  /help")"
-    display_result 2>/dev/null
+      display_result 2>/dev/null
 
-    # confirm start ############################################################
+      # confirm start ##########################################################
 
-    if [ -x "$(command -v irssi)" ] &>/dev/null; then
       WIDTH="$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"
       if [[ "$WIDTH" -lt "30" ]] &>/dev/null; then
         WIDTH="30"
@@ -491,7 +492,11 @@ COMMANDS.....:  /help")"
 
   "2")
 
-    nano "${LOG_DIR:?}"/leeloo/chat/irc.servers
+    if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+      nano "${LOG_DIR:?}"/leeloo/chat/irc.servers
+    else
+      no_irssi_no_access
+    fi
 
     ;;
 
@@ -499,87 +504,89 @@ COMMANDS.....:  /help")"
 
   "3")
 
-    proxy_configuration
+    if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
 
-    irssi_status
-    tor_status
+      proxy_configuration
 
-    irssi_version
-    tor_version
+      irssi_status
+      tor_status
 
-    irc_connect
-    irc_disconnect
+      irssi_version
+      tor_version
 
-    welcome_banned
+      irc_connect
+      irc_disconnect
 
-    IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-    IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-    IRSSI_IRC_DISCONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-    IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-    IRSSI_IRC_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+      welcome_banned
 
-    # total ports
-    IRSSI_TOTAL_PORTS="13"
-    # total times ports
-    IRSSI_SERVER_LIST_TOTAL="$(echo "$(echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' | wc -l)*$IRSSI_TOTAL_PORTS" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-    # server list
-    IRSSI_SERVER_LIST="$(echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' | wc -l)"
-    # server list based on amount of ports
-    IRSSI_SERVER_PORTS=$(echo "$IRSSI_SERVER_LIST*$IRSSI_TOTAL_PORTS" | sed '/^$/d' | bc 2>/dev/null)
-    # connected list
-    IRSSI_CONNECTED_TOTAL="$(echo "$IRSSI_IRC_CONNECT" | sed '/^$/d' | wc -l)"
-    IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-    # disconnect list
-    IRSSI_DISCONNECT_TOTAL="$(echo "$IRSSI_IRC_DISCONNECT" | sed '/^$/d' | wc -l)"
-    IRSSI_DISCONNECT_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_DISCONNECT_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-    # banned list
-    IRSSI_BANNED_TOTAL="$(echo "$IRSSI_IRC_BANNED" | sed '/^$/d' | wc -l)"
-    IRSSI_BANNED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_BANNED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-    # welcome total
-    IRSSI_WELCOME_TOTAL="$(echo "$IRSSI_IRC_WELCOME" | sed '/^$/d' | wc -l)"
-    IRSSI_WELCOME_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_WELCOME_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+      IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+      IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+      IRSSI_IRC_DISCONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+      IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+      IRSSI_IRC_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
 
-    if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
-      IRSSI_SERVER_LIST="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_PORTS" ]] &>/dev/null; then
-      IRSSI_SERVER_PORTS="0"
-    fi
-    if [[ -z "$IRSSI_CONNECTED_TOTAL" ]] &>/dev/null; then
-      IRSSI_CONNECTED_TOTAL="0"
-    fi
-    if [[ -z "$IRSSI_DISCONNECT_TOTAL" ]] &>/dev/null; then
-      IRSSI_DISCONNECT_TOTAL="0"
-    fi
-    if [[ -z "$IRSSI_BANNED_TOTAL" ]] &>/dev/null; then
-      IRSSI_BANNED_TOTAL="0"
-    fi
-    if [[ -z "$IRSSI_WELCOME_TOTAL" ]] &>/dev/null; then
-      IRSSI_WELCOME_TOTAL="0"
-    fi
-    if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
-      IRSSI_SERVER_LIST="0"
-    fi
-    if [[ -z "$IRSSI_CONNECTED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
-      IRSSI_CONNECTED_FILTERED_PERCENTAGE="0"
-    fi
-    if [[ -z "$IRSSI_DISCONNECT_FILTERED_PERCENTAGE" ]] &>/dev/null; then
-      IRSSI_DISCONNECT_FILTERED_PERCENTAGE="0"
-    fi
-    if [[ -z "$IRSSI_BANNED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
-      IRSSI_BANNED_FILTERED_PERCENTAGE="0"
-    fi
-    if [[ -z "$IRSSI_WELCOME_FILTERED_PERCENTAGE" ]] &>/dev/null; then
-      IRSSI_WELCOME_FILTERED_PERCENTAGE="0"
-    fi
+      # total ports
+      IRSSI_TOTAL_PORTS="13"
+      # total times ports
+      IRSSI_SERVER_LIST_TOTAL="$(echo "$(echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' | wc -l)*$IRSSI_TOTAL_PORTS" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+      # server list
+      IRSSI_SERVER_LIST="$(echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' | wc -l)"
+      # server list based on amount of ports
+      IRSSI_SERVER_PORTS=$(echo "$IRSSI_SERVER_LIST*$IRSSI_TOTAL_PORTS" | sed '/^$/d' | bc 2>/dev/null)
+      # connected list
+      IRSSI_CONNECTED_TOTAL="$(echo "$IRSSI_IRC_CONNECT" | sed '/^$/d' | wc -l)"
+      IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+      # disconnect list
+      IRSSI_DISCONNECT_TOTAL="$(echo "$IRSSI_IRC_DISCONNECT" | sed '/^$/d' | wc -l)"
+      IRSSI_DISCONNECT_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_DISCONNECT_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+      # banned list
+      IRSSI_BANNED_TOTAL="$(echo "$IRSSI_IRC_BANNED" | sed '/^$/d' | wc -l)"
+      IRSSI_BANNED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_BANNED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+      # welcome total
+      IRSSI_WELCOME_TOTAL="$(echo "$IRSSI_IRC_WELCOME" | sed '/^$/d' | wc -l)"
+      IRSSI_WELCOME_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_WELCOME_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 
-    display_result() {
-      dialog --title "IRC Chat information" \
-        --no-collapse \
-        --msgbox "$(echo "$RESULT" | column -t)" 13 "$(echo "$(echo "$RESULT" | wc -L)+13" | bc 2>/dev/null)"
-    }
+      if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
+        IRSSI_SERVER_LIST="0"
+      fi
+      if [[ -z "$IRSSI_SERVER_PORTS" ]] &>/dev/null; then
+        IRSSI_SERVER_PORTS="0"
+      fi
+      if [[ -z "$IRSSI_CONNECTED_TOTAL" ]] &>/dev/null; then
+        IRSSI_CONNECTED_TOTAL="0"
+      fi
+      if [[ -z "$IRSSI_DISCONNECT_TOTAL" ]] &>/dev/null; then
+        IRSSI_DISCONNECT_TOTAL="0"
+      fi
+      if [[ -z "$IRSSI_BANNED_TOTAL" ]] &>/dev/null; then
+        IRSSI_BANNED_TOTAL="0"
+      fi
+      if [[ -z "$IRSSI_WELCOME_TOTAL" ]] &>/dev/null; then
+        IRSSI_WELCOME_TOTAL="0"
+      fi
+      if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
+        IRSSI_SERVER_LIST="0"
+      fi
+      if [[ -z "$IRSSI_CONNECTED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
+        IRSSI_CONNECTED_FILTERED_PERCENTAGE="0"
+      fi
+      if [[ -z "$IRSSI_DISCONNECT_FILTERED_PERCENTAGE" ]] &>/dev/null; then
+        IRSSI_DISCONNECT_FILTERED_PERCENTAGE="0"
+      fi
+      if [[ -z "$IRSSI_BANNED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
+        IRSSI_BANNED_FILTERED_PERCENTAGE="0"
+      fi
+      if [[ -z "$IRSSI_WELCOME_FILTERED_PERCENTAGE" ]] &>/dev/null; then
+        IRSSI_WELCOME_FILTERED_PERCENTAGE="0"
+      fi
 
-    RESULT="IRC.Client...: $IRSSI_CLIENT
+      display_result() {
+        dialog --title "IRC Chat information" \
+          --no-collapse \
+          --msgbox "$(echo "$RESULT" | column -t)" 13 "$(echo "$(echo "$RESULT" | wc -L)+13" | bc 2>/dev/null)"
+      }
+
+      RESULT="IRC.Client...: $IRSSI_CLIENT
 IRC.Status...: $IRSSI_COM_STATUS
 IRC.Servers..: $IRSSI_SERVER_LIST:$IRSSI_TOTAL_PORTS/$IRSSI_SERVER_PORTS
 Welcome......: $IRSSI_WELCOME_TOTAL ${IRSSI_WELCOME_FILTERED_PERCENTAGE:?}%
@@ -588,7 +595,10 @@ Connected....: $IRSSI_CONNECTED_TOTAL ${IRSSI_CONNECTED_FILTERED_PERCENTAGE:?}%
 Disconnect...: $IRSSI_DISCONNECT_TOTAL ${IRSSI_DISCONNECT_FILTERED_PERCENTAGE:?}%
 Proxy.Client.: $PROXY_CLIENT
 Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
-    display_result 2>/dev/null
+      display_result 2>/dev/null
+    else
+      no_irssi_no_access
+    fi
 
     ;;
 
@@ -612,16 +622,20 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
   "5")
 
-    if dialog --stdout --title "Remove IRC Client?" \
-      --backtitle "Remove client" \
-      --yesno "Yes: Remove!, No: Quit" 5 30; then
-      clear
-      sudo apt-get purge --auto-remove irssi -y
-      # remove irc.client, config, default.theme
-      rm "${LOG_DIR:?}"/leeloo/chat/irc.client &>/dev/null
-      rm -R /home/"$WHOAMI"/.irssi &>/dev/null
-      read -r -p "Press Enter to continue" </dev/tty
-      echo
+    if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+      if dialog --stdout --title "Remove IRC Client?" \
+        --backtitle "Remove client" \
+        --yesno "Yes: Remove!, No: Quit" 5 30; then
+        clear
+        sudo apt-get purge --auto-remove irssi -y
+        # remove irc.client, config, default.theme
+        rm "${LOG_DIR:?}"/leeloo/chat/irc.client &>/dev/null
+        rm -R /home/"$WHOAMI"/.irssi &>/dev/null
+        read -r -p "Press Enter to continue" </dev/tty
+        echo
+      fi
+    else
+      no_irssi_no_access
     fi
 
     ;;
@@ -630,7 +644,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
   "6")
 
-    if [ -x "$(command -v irssi)" ] &>/dev/null; then
+    if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
       nano /home/"$WHOAMI"/.irssi/config
     else
       no_irssi_no_access
@@ -642,7 +656,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
   "7")
 
-    if [ -x "$(command -v irssi)" ] &>/dev/null; then
+    if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
       if dialog --stdout --title "Reset IRC configuration?" \
         --backtitle "Configuration reset" \
         --yesno "Yes: Reset!, No: Quit" 5 30; then
