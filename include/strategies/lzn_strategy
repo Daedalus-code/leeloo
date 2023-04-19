@@ -112,7 +112,17 @@ open_positions
 
 ################################################################################
 
-trade_output
+BUY_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT :: $PLACE_ORDER :: $TYPE"
+SELL_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Market $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+
+BUY_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT :: $PLACE_ORDER :: $TYPE"
+SELL_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT :: $PLACE_ORDER :: $TYPE"
+
+BUY_LIMIT_POSITION="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
+SELL_LIMIT_POSITION="$BUY_LIMIT_POSITION"
+
+BUY_MARKET_POSITION="$BUY_LIMIT_POSITION"
+SELL_MARKET_POSITION="$BUY_LIMIT_POSITION"
 
 ################################################################################
 
@@ -150,7 +160,11 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
   ##############################################################################
 
-  lorentzian_output
+  function lorentzian_output() {
+    STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $PAIR :: $LC :: Price ${NEW_PRICE} ${LISTING_OPEN_RESULT:?}% :: $POSITION"
+    BUY_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing buy order for ${PAIR} at ${NEW_PRICE}"
+    SELL_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing sell order for ${PAIR} at ${NEW_PRICE}"
+  }
 
   ##############################################################################
 
