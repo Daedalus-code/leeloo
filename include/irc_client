@@ -6,15 +6,17 @@ WHOAMI="$(whoami)"
 
 ################################################################################
 
-if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
-  echo "Installing /chat, please wait.."
-  mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
-  sleep 1
-fi
-if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
-  echo "Installing /.irssi, please wait.."
-  mkdir /home/"$WHOAMI"/.irssi &>/dev/null
-  sleep 1
+if [ -x "$(command -v irssi)" ] &>/dev/null; then
+  if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
+    echo "Installing /chat, please wait.."
+    mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
+    sleep 1
+  fi
+  if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+    echo "Installing /.irssi, please wait.."
+    mkdir /home/"$WHOAMI"/.irssi &>/dev/null
+    sleep 1
+  fi
 fi
 
 ################################################################################
@@ -673,9 +675,12 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
         if dialog --stdout --title "Reset IRC Servers?" \
           --backtitle "Server list reset" \
           --yesno "Yes: Reset!, No: Quit" 5 30; then
-          rm -R "${LOG_DIR:?}"/leeloo/chat/irc.* &>/dev/null
+          rm -R "${LOG_DIR:?}"/leeloo/chat/irc.servers &>/dev/null
         fi
         rm -R /home/"$WHOAMI"/.irssi/* &>/dev/null
+        rm -R "${LOG_DIR:?}"/leeloo/chat/irc.client &>/dev/null
+        rm -R "${LOG_DIR:?}"/leeloo/chat/tor.client &>/dev/null
+        rm -R "${LOG_DIR:?}"/leeloo/chat/pid.* &>/dev/null
         irssi_first_run
         exit
       fi
