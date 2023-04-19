@@ -36,6 +36,8 @@ RSI_VALUE="$(egrep "RSI_VALUE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config
 RSI_OVERBOUGHT="$(egrep "RSI_OVERBOUGHT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # above this is oversold
 RSI_OVERSOLD="$(egrep "RSI_OVERSOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# cooldown hours (hours)
+RSI_COOLDOWN="$(egrep "RSI_COOLDOWN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # max trades a day
 RSI_MAX_DAY="$(egrep "RSI_MAX_DAY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
@@ -58,6 +60,30 @@ last_tx               # last tx
 # R S I - T R I G G E R
 ################################################################################
 
+# get rsi value
+RSI_VALUE_NOW="$(get_rsi "$RSI_VALUE")"
+RSI_TIMER="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+################################################################################
+
+STATUS_RSI_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $RSI_VALUE_NOW"
+
+################################################################################
+
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
+  RSI_COOLDOWN="0"
+fi
+
+################################################################################
+
+function rsi_timer_check() {
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status &>/dev/null
+  fi
+}
+
+################################################################################
+
 function rsi_buy_order() {
   echo "BOUGHT @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
 }
@@ -65,28 +91,46 @@ function rsi_sell_order() {
   echo "SOLD @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
 }
 
-if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
-  if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
-    # overbought, sell
-    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-      PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
-    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
-      PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
+################################################################################
+
+if [[ "$RSI_TIMER" -gt "$RSI_COOLDOWN" ]] &>/dev/null; then
+  if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
+    if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -gt "$RSI_OVERBOUGHT" ]] &>/dev/null; then
+      # overbought, sell
+      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+        rsi_timer_check
+        PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
+        rsi_sell_order
+      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+        rsi_timer_check
+        PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
+        rsi_sell_order
+      fi
     fi
   fi
+else
+  echo "$STATUS_RSI_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 fi
 
-############################################################################
+################################################################################
 
-if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
-  if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -lt "30" ]] &>/dev/null; then
-    # oversold, buy
-    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-      PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
-    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
-      PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
+if [[ "$RSI_TIMER" -gt "$RSI_COOLDOWN" ]] &>/dev/null; then
+  if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
+    if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -lt "$RSI_OVERSOLD" ]] &>/dev/null; then
+      # oversold, buy
+      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+        rsi_timer_check
+        PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
+        rsi_buy_order
+      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+        rsi_timer_check
+        PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
+        rsi_buy_order
+      fi
     fi
   fi
+else
+  echo "$STATUS_RSI_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 fi
 
 ################################################################################
