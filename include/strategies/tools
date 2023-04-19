@@ -530,12 +530,12 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 
 function save_orders() {
   TRADE_TIMER="60"
-  TRADE_HISTORY_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   if [[ ! -f "${SYS_DIR:?}"/robot/orders ]] &>/dev/null; then
     touch "${SYS_DIR:?}"/robot/orders &>/dev/null
     TRADE_TIMER="0"
     sleep 1
   fi
+  TRADE_HISTORY_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   if [[ "$TRADE_HISTORY_SECONDS" -gt "$TRADE_TIMER" ]] &>/dev/null; then
     # keep orders, remove empty lines
     TRADE_HISTORY="$(cat "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | sed '/^$/d')"
