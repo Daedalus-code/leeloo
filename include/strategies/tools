@@ -312,6 +312,7 @@ function rogue_profit() {
   function rogue_stealth() {
     if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth ]] &>/dev/null; then
       echo "Lurking in the Shadows.." >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth
+      sleep 1
     fi
     STEALTH_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
     STEALTH_TIME=$(printf '%dh:%dm:%ds\n' $(("$STEALTH_TIME_SECONDS/3600")) $(("$STEALTH_TIME_SECONDS%3600/60")) $(("$STEALTH_TIME_SECONDS%60")))
@@ -438,7 +439,7 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 
     ############################################################################
 
-    function lurkingInTheShadows() {
+    function rogue_shadow_output() {
       echo "Lurking in the Shadows.." >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth
     }
 
@@ -452,7 +453,7 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
       fi
       if [[ "$(grep -c "SOLD" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
         rogue_selling
-        lurkingInTheShadows
+        rogue_shadow_output
         echo "SOLD" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
     fi
@@ -467,7 +468,7 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
       fi
       if [[ "$(grep -c "BOUGHT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
         rogue_buying
-        lurkingInTheShadows
+        rogue_shadow_output
         echo "BOUGHT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
     fi
