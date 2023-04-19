@@ -25,7 +25,7 @@ MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 # sell or buy order
 TYPE="$(egrep "TYPE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # execute cooldown (days)
-COOLDOWN="$(egrep "COOLDOWN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+BST_COOLDOWN="$(egrep "BST_COOLDOWN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # reference status
 REFERENCE_STATUS="$(egrep "REFERENCE_STATUS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # listing currency
@@ -67,7 +67,7 @@ total_trigger
 ################################################################################
 
 # calculate days into seconds
-COOLDOWN_SECONDS="$(echo "$COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+COOLDOWN_SECONDS="$(echo "$BST_COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 CONFIG_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$COOLDOWN_SECONDS/3600")) $(("$COOLDOWN_SECONDS%3600/60")) $(("$COOLDOWN_SECONDS%60")))
 
 # calculate seconds minus tx_time

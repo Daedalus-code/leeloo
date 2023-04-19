@@ -15,31 +15,29 @@ STRATEGY_NAME="$(egrep "STRATEGY_NAME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY
 LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 ################################################################################
-# custom strategy configuration (static)
+# rsi strategy configuration (static)
 ################################################################################
 
-STRATEGY_TYPE="CST"
+STRATEGY_TYPE="RSI"
 
 # market or limit order
 MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# sell or buy order
-TYPE="$(egrep "TYPE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# execute cooldown (days)
-CST_COOLDOWN="$(egrep "CST_COOLDOWN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# reference status
-REFERENCE_STATUS="$(egrep "REFERENCE_STATUS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # listing currency
 LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# listing trigger  (execute when amount is reached)
-LISTING_TRIGGER="$(egrep "LISTING_TRIGGER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # account allocated (n%)
 LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # reference currency
 REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# listing trigger (execute when amount is reached)
-REFERENCE_TRIGGER="$(egrep "REFERENCE_TRIGGER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # account allocated (n%)
 REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# rsi value (n)
+RSI_VALUE="$(egrep "RSI_VALUE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# above this is overbought
+RSI_OVERBOUGHT="$(egrep "RSI_OVERBOUGHT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# above this is oversold
+RSI_OVERSOLD="$(egrep "RSI_OVERSOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# max trades a day
+RSI_MAX_DAY="$(egrep "RSI_MAX_DAY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
 # log_timer
 LOG_TIMER="18"
@@ -57,10 +55,39 @@ reference_allocated   # total reference allocated
 last_tx               # last tx
 
 ################################################################################
-# C U S T O M - A N Y T H I N G
+# R S I - T R I G G E R
 ################################################################################
 
-# code
+function rsi_buy_order() {
+  echo "BOUGHT @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+}
+function rsi_sell_order() {
+  echo "SOLD @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+}
+
+if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
+  if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
+    # overbought, sell
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
+    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
+    fi
+  fi
+fi
+
+############################################################################
+
+if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
+  if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -lt "30" ]] &>/dev/null; then
+    # oversold, buy
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
+    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
+    fi
+  fi
+fi
 
 ################################################################################
 

@@ -31,11 +31,11 @@ REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAM
 # account allocated (n%)
 REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # width of the lorentzian distribution
-LAMBDA="$(egrep "LAMBDA=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+LZN_LAMBDA="$(egrep "LZN_LAMBDA=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # buy threshold
-BUY_THRESHOLD="$(egrep "BUY_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+LZN_BUY_THRESHOLD="$(egrep "LZN_BUY_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # sell threshold
-SELL_THRESHOLD="$(egrep "SELL_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+LZN_SELL_THRESHOLD="$(egrep "LZN_SELL_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
 # log_timer
 LOG_TIMER="18"
@@ -146,8 +146,8 @@ TIMESTAMP=0
 # define function to calculate the lorentzian classification indicator
 function lorentzian_classification {
   PRICE=$1
-  LAMBDA=$2
-  CLASSIFICATION=$(echo "scale=10; 1/(1 + (${PRICE}-${PRICE}*${PRICE})/(${LAMBDA}*${LAMBDA}))" | bc -l 2>/dev/null)
+  LZN_LAMBDA=$2
+  CLASSIFICATION=$(echo "scale=10; 1/(1 + (${PRICE}-${PRICE}*${PRICE})/(${LZN_LAMBDA}*${LZN_LAMBDA}))" | bc -l 2>/dev/null)
   echo ${CLASSIFICATION}
 }
 
@@ -159,7 +159,7 @@ NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 # check if new trade has been executed
 if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   # calculate lorentzian classification indicator
-  LC=$(lorentzian_classification "${NEW_PRICE}" "${LAMBDA}" | awk '{ printf "%.8f\n", $1 }')
+  LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.8f\n", $1 }')
   echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>/dev/null
 
   ##############################################################################
@@ -171,7 +171,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   ##############################################################################
 
   # determine trading action
-  if [[ "$(echo "${LC} > ${BUY_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "NONE" ]]; then
+  if [[ "$(echo "${LC} > ${LZN_BUY_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "NONE" ]]; then
 
     # hodl position
     POSITION="LONG"
@@ -215,7 +215,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
     PRICE=${NEW_PRICE}
     TIMESTAMP=${NEW_TIMESTAMP}
     # determine trading action
-  elif [[ "$(echo "${LC} < ${SELL_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "LONG" ]]; then
+  elif [[ "$(echo "${LC} < ${LZN_SELL_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "LONG" ]]; then
 
     # hodl position
     POSITION="NONE"
