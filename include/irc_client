@@ -237,6 +237,8 @@ function irc_client() {
     IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+    IRSSI_IRC_IRCLOGS="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//')"
+
     # irc.servers
     function irssi_servers_list() {
       IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
@@ -250,17 +252,27 @@ function irc_client() {
       IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
       IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
     }
+
     # disregard with banned if irc.connect survives
     IRSSI_IRC_CONNECT_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vf /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null)"
     if [[ "$(echo "$IRSSI_IRC_CONNECT_BANNED" | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
       IRSSI_IRC_CONNECT="$IRSSI_IRC_CONNECT_BANNED"
     fi
+
+    # add from irclogs if any data
+    if [[ "$(echo "$IRSSI_IRC_IRCLOGS" | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
+      echo "$IRSSI_IRC_IRCLOGS" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+      # sort, remove duplicates
+      echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+    fi
+
     # add from irc.welcome if any data
     if [[ "$(echo "$IRSSI_IRC_WELCOME" | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
       echo "$IRSSI_IRC_WELCOME" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
       # sort, remove duplicates
       echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
     fi
+
     # zero server configuration set, continue
     if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
       # pick random server list
