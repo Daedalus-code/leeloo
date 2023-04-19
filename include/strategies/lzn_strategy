@@ -20,22 +20,22 @@ LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 STRATEGY_TYPE="LZN"
 
-MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # market or limit order
-
-# listing
-LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # listing currency
-LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (90%)
-
-# reference
-REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # reference currency
-REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # account allocated (90%)
-
-# strategy parameters
-LAMBDA="$(egrep "LAMBDA=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"                 # width of the lorentzian distribution
-BUY_THRESHOLD="$(egrep "BUY_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"   # buy threshold
-SELL_THRESHOLD="$(egrep "SELL_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')" # sell threshold
-
-PAIR="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
+# market or limit order
+MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# listing currency
+LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# account allocated (n%)
+LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# reference currency
+REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# account allocated (n%)
+REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# width of the lorentzian distribution
+LAMBDA="$(egrep "LAMBDA=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# buy threshold
+BUY_THRESHOLD="$(egrep "BUY_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# sell threshold
+SELL_THRESHOLD="$(egrep "SELL_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
 # log_timer
 LOG_TIMER="18"
@@ -164,9 +164,9 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
   ##############################################################################
 
-  STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $PAIR :: $LC :: Price ${NEW_PRICE} ${LISTING_OPEN_RESULT:?}% :: $POSITION"
-  BUY_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing buy order for ${PAIR} at ${NEW_PRICE}"
-  SELL_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing sell order for ${PAIR} at ${NEW_PRICE}"
+  STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LC :: Price ${NEW_PRICE} ${LISTING_OPEN_RESULT:?}% :: $POSITION"
+  BUY_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing buy order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
+  SELL_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing sell order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
 
   ##############################################################################
 
