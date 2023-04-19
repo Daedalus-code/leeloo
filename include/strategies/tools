@@ -298,6 +298,7 @@ function rogue_profit() {
   ROGUE_TIMER="3600"      # 1 hour cooldown
   ROGUE_AMOUNT="0.009225" # amount % to be used
   ROGUE_MAX_DAY="4"       # max trades a day
+  ROGUE_RSI="14"          # relative strength index
 
   ##############################################################################
 
@@ -308,11 +309,11 @@ function rogue_profit() {
 
   ##############################################################################
 
-  # get_rsi 14
+  # get_rsi n
   function rogue_data() {
-    echo "L $LISTING_CURRENCY $(get_rsi 14 "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
+    echo "L $LISTING_CURRENCY $(get_rsi "$ROGUE_RSI" "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
     sleep 1
-    echo "R $REFERENCE_CURRENCY $(get_rsi 14 "$REFERENCE_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
+    echo "R $REFERENCE_CURRENCY $(get_rsi "$ROGUE_RSI" "$REFERENCE_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue
   }
 
   ##############################################################################
