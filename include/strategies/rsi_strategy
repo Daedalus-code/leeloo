@@ -61,21 +61,22 @@ last_tx               # last tx
 ################################################################################
 
 # get rsi value
-RSI_VALUE_NOW="$(get_rsi "$RSI_VALUE" | awk '{ print $3 }')"
+RSI_VALUE_NOW="$(get_rsi "$RSI_VALUE" "$LISTING_CURRENCY" | awk '{ print $3 }')"
 RSI_TIMER="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 ################################################################################
 
-STATUS_RSI_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $RSI_VALUE_NOW"
-
-################################################################################
-
-# calculate seconds into hours
-RSI_COOLDOWN_HOURS="$(echo "$RSI_COOLDOWN*3600" | bc 2>/dev/null)"
+# calculate hours into seconds
+RSI_COOLDOWN_HOURS="$(echo "$RSI_COOLDOWN/3600" | bc 2>/dev/null)"
+RSI_COOLDOWN_NOW="$(echo "$RSI_TIMER/3600" | bc 2>/dev/null)"
 
 if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
   RSI_COOLDOWN_HOURS="0"
 fi
+
+################################################################################
+
+STATUS_RSI_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $RSI_VALUE_NOW"
 
 ################################################################################
 
@@ -96,7 +97,7 @@ function rsi_sell_order() {
 
 ################################################################################
 
-if [[ "$RSI_TIMER" -gt "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
+if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
   if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
     if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -gt "$RSI_OVERBOUGHT" ]] &>/dev/null; then
       # overbought, sell
@@ -111,13 +112,11 @@ if [[ "$RSI_TIMER" -gt "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
       fi
     fi
   fi
-else
-  echo "$STATUS_RSI_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 fi
 
 ################################################################################
 
-if [[ "$RSI_TIMER" -gt "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
+if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
   if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
     if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -lt "$RSI_OVERSOLD" ]] &>/dev/null; then
       # oversold, buy
@@ -132,9 +131,11 @@ if [[ "$RSI_TIMER" -gt "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
       fi
     fi
   fi
-else
-  echo "$STATUS_RSI_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 fi
+
+################################################################################
+
+echo "$STATUS_RSI_OUTPUT :: $RSI_COOLDOWN_NOW/${RSI_COOLDOWN_HOURS:?}h" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
 ################################################################################
 
