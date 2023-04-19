@@ -410,6 +410,9 @@ function rogue_profit() {
       ROGUE_LISTING_PRICE="0"
     fi
     ROGUE_LISTING_PRICE_DIFF="$(echo "100/$ROGUE_LISTING_PRICE_OLD*$ROGUE_LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    if [[ -z "$ROGUE_LISTING_PRICE_DIFF" ]] &>/dev/null; then
+      ROGUE_LISTING_PRICE_DIFF="0"
+    fi
     ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
@@ -428,6 +431,9 @@ function rogue_profit() {
       ROGUE_REFERENCE_PRICE="0"
     fi
     ROGUE_REFERENCE_PRICE_DIFF="$(echo "100/$ROGUE_REFERENCE_PRICE_OLD*$ROGUE_REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    if [[ -z "$ROGUE_REFERENCE_PRICE_DIFF" ]] &>/dev/null; then
+      ROGUE_REFERENCE_PRICE_DIFF="0"
+    fi
     ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
