@@ -403,6 +403,13 @@ function rogue_profit() {
     ROGUE_DAYS="$(echo "$ROGUE_COUNT/24" | bc 2>/dev/null)"
 
     # listing
+    ROGUE_LISTING_PRICE="$LISTING_PRICE"
+    ROGUE_LISTING_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $3 }')"
+    if [[ -z "$ROGUE_LISTING_PRICE_OLD" ]] &>/dev/null; then
+      ROGUE_LISTING_PRICE_OLD="0"
+      ROGUE_LISTING_PRICE="0"
+    fi
+    ROGUE_LISTING_PRICE_DIFF="$(echo "100/$ROGUE_LISTING_PRICE_OLD*$ROGUE_LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
@@ -414,6 +421,13 @@ function rogue_profit() {
     ROGUE_LISTING_X_FACTOR="$(echo "$ROGUE_LISTING_X_CALCULATE/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
     # reference
+    ROGUE_REFERENCE_PRICE="$REFERENCE_PRICE"
+    ROGUE_REFERENCE_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $5 }')"
+    if [[ -z "$ROGUE_REFERENCE_PRICE_OLD" ]] &>/dev/null; then
+      ROGUE_REFERENCE_PRICE_OLD="0"
+      ROGUE_REFERENCE_PRICE="0"
+    fi
+    ROGUE_REFERENCE_PRICE_DIFF="$(echo "100/$ROGUE_REFERENCE_PRICE_OLD*$ROGUE_REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
@@ -424,13 +438,21 @@ function rogue_profit() {
     ROGUE_REFERENCE_X_CALCULATE="$(echo "$ROGUE_REFERENCE_TOTAL+$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     ROGUE_REFERENCE_X_FACTOR="$(echo "$ROGUE_REFERENCE_X_CALCULATE/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
+    ############################################################################
+
     ROGUE_UPDATE_PERCENTAGE="$(echo "100/$ROGUE_TIMER*$ROGUE_TIMER_NOW" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    ############################################################################
+
+    ROGUE_BOUGHT="$(grep -c "BOUGHT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status)"
+    ROGUE_SOLD="$(grep -c "SOLD" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status)"
 
     ############################################################################
 
     echo "Update    $ROGUE_TIMER_NOW/${ROGUE_TIMER:?}s ${ROGUE_UPDATE_PERCENTAGE:?}%
 Lines     $ROGUE_LINES/${ROGUE_COUNT:?}h/${ROGUE_DAYS:?}d
 
+L_PRICE   $ROGUE_LISTING_PRICE ${ROGUE_LISTING_PRICE_DIFF:?}%
 L_NOW     $ROGUE_LISTING_NOW
 L_HIGHEST $ROGUE_LISTING_HIGH
 L_LOWEST  $ROGUE_LISTING_LOW
@@ -438,6 +460,7 @@ L_AVERAGE $ROGUE_LISTING_AVERAGE
 L_DIFF    $ROGUE_LISTING_DIFF ${ROGUE_LISTING_DIFF_PERCENTAGE:?}%
 X_FACTOR  $ROGUE_LISTING_X_FACTOR
 
+R_PRICE   $ROGUE_REFERENCE_PRICE ${ROGUE_REFERENCE_PRICE_OLD:?}%
 R_NOW     $ROGUE_REFERENCE_NOW
 R_HIGHEST $ROGUE_REFERENCE_HIGH
 R_LOWEST  $ROGUE_REFERENCE_LOW
@@ -453,16 +476,19 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 
     ############################################################################
 
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
+      touch >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status &>/dev/null
+    fi
+
+    ############################################################################
+
     # rogue_selling config n% of allocated n%
     if [[ "$(echo "$ROGUE_LISTING_X_FACTOR" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
       # overbought, pick pocket at top!
-      if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
-        echo "SOLD" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
-      fi
       if [[ "$(grep -c "SOLD" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
         rogue_selling
         rogue_shadow_output
-        echo "SOLD" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
+        echo "SOLD @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
     fi
 
@@ -471,13 +497,10 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
     # rogue_buying config n% of allocated n%
     if [[ "$(echo "$ROGUE_LISTING_X_FACTOR" | awk -F. '{ print $1 }')" -lt "30" ]] &>/dev/null; then
       # oversold, cheap shot at bottom!
-      if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
-        echo "BOUGHT" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
-      fi
       if [[ "$(grep -c "BOUGHT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
         rogue_buying
         rogue_shadow_output
-        echo "BOUGHT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
+        echo "BOUGHT @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
     fi
 
