@@ -151,12 +151,12 @@ EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | grep "EMA_Long" | awk '{ print $2 }')"
 # if zero, skip signal
 if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
   if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
-    echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+    echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>/dev/null
   fi
 fi
 
 # keep n lines
-echo "$(tail -21 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+echo "$(tail -21 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>/dev/null
 
 # latest signal
 EMA_REAL_SIGNAL="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | awk '{ print $1 }')"
@@ -193,8 +193,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
   ENJOYING_RIDE="$(grep -c "Bullish" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)"
   if [[ "$ENJOYING_RIDE" -lt "2" ]] &>/dev/null; then
     if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -c "Joining")" -gt "0" ]] &>/dev/null; then
-      echo "Buying :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-      echo "$BULLISH_EMA_RIDE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "Buying :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>/dev/null
+      echo "$BULLISH_EMA_RIDE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
 
@@ -202,7 +202,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
   if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
     if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
       # log bullish trend
-      echo "$BULLISH_EMA_STATUS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BULLISH_EMA_STATUS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
 
@@ -225,10 +225,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
           PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
           ######################################################################
 
-          echo "$BUY_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          echo "$BUY_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
           tx_id
           cost_price
-          echo "$BUY_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          echo "$BUY_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -236,13 +236,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] &>/dev/null; then
           PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
           ######################################################################
 
-          echo "$BUY_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          echo "$BUY_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
           tx_id
           cost_price
-          echo "$BUY_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          echo "$BUY_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
         fi
-        echo "$BULLISH_EMA_CROSS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+        echo "$BULLISH_EMA_CROSS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       fi
     fi
   fi
@@ -258,8 +258,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
   ENJOYING_RIDE="$(grep -c "Bearish" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)"
   if [[ "$ENJOYING_RIDE" -lt "2" ]] &>/dev/null; then
     if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -c "Leaving")" -gt "0" ]] &>/dev/null; then
-      echo "Selling :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-      echo "$BEARISH_EMA_RIDE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "Selling :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>/dev/null
+      echo "$BEARISH_EMA_RIDE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
 
@@ -267,7 +267,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
   if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
     if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
       # log bearish trend
-      echo "$BEARISH_EMA_STATUS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BEARISH_EMA_STATUS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
 
@@ -290,10 +290,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
           PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
           ######################################################################
 
-          echo "$SELL_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          echo "$SELL_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
           tx_id
           cost_price
-          echo "$SELL_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          echo "$SELL_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -301,13 +301,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] &>/dev/null; then
           PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
           ######################################################################
 
-          echo "$SELL_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          echo "$SELL_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
           tx_id
           cost_price
-          echo "$SELL_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          echo "$SELL_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
         fi
-        echo "$BEARISH_EMA_CROSS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+        echo "$BEARISH_EMA_CROSS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       fi
     fi
   fi

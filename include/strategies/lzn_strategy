@@ -58,7 +58,7 @@ last_tx               # last tx
 
 if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position ]] &>/dev/null; then
   LZN_POSITION="LONG"
-  echo "$LZN_POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position
+  echo "$LZN_POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>/dev/null
 else
   LZN_POSITION="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>/dev/null)"
   LZN_POSITION_VALUE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>/dev/null)
@@ -70,7 +70,7 @@ fi
 function result_lzn() {
   # get listing, reference trades
   LZN_TRADES=$(trades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY")
-  echo "$LZN_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades
+  echo "$LZN_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>/dev/null
 
   echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
 
@@ -160,7 +160,7 @@ NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   # calculate lorentzian classification indicator
   LC=$(lorentzian_classification "${NEW_PRICE}" "${LAMBDA}" | awk '{ printf "%.8f\n", $1 }')
-  echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc
+  echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>/dev/null
 
   ##############################################################################
 
@@ -175,7 +175,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
     # hodl position
     POSITION="LONG"
-    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position
+    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>/dev/null
 
     # buy order ################################################################
 
@@ -189,11 +189,11 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       ##########################################################################
 
       # buy market order
-      echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$BUY_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      echo "$BUY_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       tx_id
       cost_price
-      echo "$BUY_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BUY_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
       # placeOrder limit #######################################################
@@ -201,11 +201,11 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       ##########################################################################
 
       # buy limit order
-      echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$BUY_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      echo "$BUY_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       tx_id
       cost_price
-      echo "$BUY_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$BUY_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
 
     ############################################################################
@@ -219,7 +219,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
     # hodl position
     POSITION="NONE"
-    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position
+    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>/dev/null
 
     # sell order ###############################################################
 
@@ -233,11 +233,11 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       ##########################################################################
 
       # sell order
-      echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$SELL_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      echo "$SELL_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       tx_id
       cost_price
-      echo "$SELL_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$SELL_MARKET_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
     elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -246,11 +246,11 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
       ##########################################################################
 
       # sell order
-      echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-      echo "$SELL_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      echo "$SELL_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       tx_id
       cost_price
-      echo "$SELL_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+      echo "$SELL_LIMIT_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
 
     # update position and price
@@ -258,7 +258,7 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
     PRICE=${NEW_PRICE}
     TIMESTAMP=${NEW_TIMESTAMP}
   else
-    echo "$STATUS_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    echo "$STATUS_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   fi
 fi
 

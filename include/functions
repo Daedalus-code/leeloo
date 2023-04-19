@@ -162,7 +162,7 @@ $LISTING_CURRENCY_PRICE $REFERENCE_CURRENCY_PRICE" 8 40 \
 # last log #####################################################################
 
 function last_log {
-  echo "$(cat "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log
+  echo "$(cat "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/broker.log)"
   WIDTH="$(echo "$(tail -20 "${LOG_DIR:?}"/leeloo/broker.log | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
   if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -183,7 +183,7 @@ function last_log {
 
 function last_log_robot {
   # sort by date
-  echo "$(sort -k 1.5M -k 1.3n -k 1.4n -k 2n -k 3.1n -k 3.2n "${LOG_DIR:?}"/leeloo/robot.log)" >"${LOG_DIR:?}"/leeloo/robot.log
+  echo "$(sort -k 1.5M -k 1.3n -k 1.4n -k 2n -k 3.1n -k 3.2n "${LOG_DIR:?}"/leeloo/robot.log)" >"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
   WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
   if [[ -z "$WIDTH" ]] &>/dev/null; then
@@ -204,10 +204,10 @@ function last_log_robot {
 
 function cleanup_log {
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
-    echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>/dev/null)" "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log
-    echo "$DATE :: LogReset :: Line $MAX_LOG" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>/dev/null)" "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
+    echo "$DATE :: LogReset :: Line $MAX_LOG" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   else
-    echo "$(cat "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log
+    echo "$(cat "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
   fi
 }
 

@@ -42,7 +42,7 @@ for (( ; ; )); do
 
   # get market
   function result_market {
-    prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market
+    prices | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%.6f\t",$i);} else {printf("%s\t",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null
   }
   # update data every n seconds
   if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/market 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
@@ -62,7 +62,7 @@ for (( ; ; )); do
   fi
 
   # update pool
-  echo "Strategy Currency Amount Cost Result Age" >"${SYS_DIR:?}"/robot/pool
+  echo "Strategy Currency Amount Cost Result Age" >"${SYS_DIR:?}"/robot/pool 2>/dev/null
 
   ##############################################################################
 
@@ -74,7 +74,7 @@ for (( ; ; )); do
   ##############################################################################
 
   # combine all logs, sort by date
-  echo "$(sort -t '.' -k 1.3n -k 1.1,1.2n -k 2 "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot.log
+  echo "$(sort -t '.' -k 1.3n -k 1.1,1.2n -k 2 "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
 
   ##############################################################################
 
