@@ -752,7 +752,10 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
         if [[ "$(ls -l "${SYS_DIR:?}"/robot/open.*.cost 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
 
           # make sure file has data
-          until egrep "Result" "${SYS_DIR:?}"/robot/pool &>/dev/null; do
+          until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market &>/dev/null; do
+            until egrep "Result" "${SYS_DIR:?}"/robot/pool &>/dev/null; do
+              sleep 1
+            done
             sleep 1
           done
 
