@@ -310,7 +310,12 @@ function rogue_profit() {
   ##############################################################################
 
   function rogue_stealth() {
-    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Rogue in Stealth mode.." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".stealth ]] &>/dev/null; then
+      echo "Lurking in the Shadows.." >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".stealth
+    fi
+    STEALTH_TIME_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".stealth | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    STEALTH_TIME=$(printf '%dh:%dm:%ds\n' $(("$STEALTH_TIME_SECONDS/3600")) $(("$STEALTH_TIME_SECONDS%3600/60")) $(("$STEALTH_TIME_SECONDS%60")))
+    echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Rogue in Stealth mode.. $STEALTH_TIME" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
   }
 
   ##############################################################################
@@ -433,6 +438,12 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 
     ############################################################################
 
+    function lurkingInTheShadows() {
+      echo "Lurking in the Shadows.." >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".stealth
+    }
+
+    ############################################################################
+
     # rogue_selling config n% of allocated n%
     if [[ "$(echo "$ROGUE_LISTING_X_FACTOR" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
       # overbought, pick pocket at top!
@@ -441,6 +452,7 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
       fi
       if [[ "$(grep -c "SOLD" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
         rogue_selling
+        lurkingInTheShadows
         echo "SOLD" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
     fi
@@ -455,6 +467,7 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
       fi
       if [[ "$(grep -c "BOUGHT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/nul)" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
         rogue_buying
+        lurkingInTheShadows
         echo "BOUGHT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status
       fi
     fi
