@@ -21,7 +21,7 @@ function listBalances {
     API_SOUTHX_NONCE=$(($(date +%s) * 10))
     JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
     HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-    curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+    curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances
   else
     cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
   fi
