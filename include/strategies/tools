@@ -200,13 +200,19 @@ function tx_id {
 ################################################################################
 
 function incoming_listing() {
+
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming &>/dev/null
+  fi
+
+  # create list from listing unconfirmed balance
+  echo "$LISTING_UNCONFIRMED_BALANCE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null
+  # keep n lines
+  echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null
+
   # incoming listing
   if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-
-    # create list from listing unconfirmed balance
-    echo "$LISTING_UNCONFIRMED_BALANCE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null
-    # keep n lines
-    echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null
+    # last lines are different, continue
     if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
       # make sure n exist
       if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming | egrep "[0-9]+.[0-9]+")" -eq "1" ]] &>/dev/null; then
@@ -224,13 +230,19 @@ function incoming_listing() {
 ################################################################################
 
 function incoming_reference() {
+
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming &>/dev/null
+  fi
+
+  # create list from reference unconfirmed balance
+  echo "$REFERENCE_UNCONFIRMED_BALANCE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null
+  # keep n lines
+  echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null
+
   # incoming reference
   if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-
-    # create list from reference unconfirmed balance
-    echo "$REFERENCE_UNCONFIRMED_BALANCE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null
-    # keep n lines
-    echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null
+    # last lines are different, continue
     if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
       # make sure n exist
       if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming | egrep "[0-9]+.[0-9]+")" -eq "1" ]] &>/dev/null; then
