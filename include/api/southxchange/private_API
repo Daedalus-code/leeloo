@@ -12,6 +12,9 @@ function listBalances {
     touch "${LOG_DIR:?}"/leeloo/southxchange/balances &>/dev/null
     API_BALANCES_TIMER="0"
     sleep 1
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+    API_BALANCES_TIMER="0"
+    sleep 1
   fi
   API_BALANCES_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/balances | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   if [[ "$API_BALANCES_SECONDS" -gt "$API_BALANCES_TIMER" ]] &>/dev/null; then
