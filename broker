@@ -1156,7 +1156,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         MENU="Choose one option:"
 
         OPTIONS=(1 "Status           Robot status"
-          2 "Start            Start robot"
+          2 "Re/Start         Start robot"
           3 "Stop             Stop robot"
           4 "Crontab          Linux jobs")
 
@@ -1188,7 +1188,22 @@ $(screen -list 2>/dev/null | grep "leeloo" | xargs)"
 
         "2")
 
-          bash "${SYS_DIR:?}"/robot/looper
+          if dialog --stdout --title "RESTART WARNING!" \
+            --backtitle "RESTARTING" \
+            --yesno "Yes: Restart!, No:  Go back!" 5 30; then
+
+            # kill old screen
+            screen -S "$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
+
+            echo "$LOG_DATE :: Control USER :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+            sleep 1
+            if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
+              echo "$LOG_DATE :: Control USER :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+              killall screen &>/dev/null
+            else
+              bash "${SYS_DIR:?}"/robot/looper
+            fi
+          fi
 
           ;;
 
