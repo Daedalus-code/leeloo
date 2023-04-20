@@ -7,13 +7,12 @@ LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 ################################################################################
 
 if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "0" ]] &>/dev/null; then
-  ERRORS_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/error.log | awk '{ print $1 }')"
   # create new screen session
   screen -dmS leeloo &>/dev/null
   # start robot
   screen -S leeloo -X -p 0 stuff $'bash '"${SYS_DIR:?}"'/robot/leeloo\n'
   # start looper
-  echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+  echo "$LOG_DATE :: Strategy FFS :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
   exit
 fi
 
@@ -33,23 +32,18 @@ if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/nu
   ROBOT_LOG_MAX_AGE="300"
 
   if [[ "$ROBOT_LOG_AVERAGE" -gt "$ROBOT_LOG_MAX_AGE" ]] &>/dev/null; then
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/error.log ]] &>/dev/null; then
-      touch "${LOG_DIR:?}"/leeloo/error.log &>/dev/null
-    fi
-    # collect any error
-    ERRORS="Syntax|ERROR|Error|error|Failed|failed|Invalid|invalid|Exception|exception|Warning|warning|Missing|missing|Unrecognized|unrecognized|Unexpected|unexpected|Permission denied|No such file or directory|Segmentation fault|Out of memory"
-    cat "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | egrep "$ERRORS" | awk '!a[$0]++' >>"${LOG_DIR:?}"/leeloo/error.log
-    ERRORS_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/error.log | awk '{ print $1 }')"
+
     if [[ ! -f "${LOG_DIR:?}"/leeloo/robot.looper.log ]] &>/dev/null; then
       touch "${LOG_DIR:?}"/leeloo/robot.looper.log &>/dev/null
     fi
-    echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+
+    echo "$LOG_DATE :: Strategy FFS :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
     # kill old screen
     screen -S "$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
-    echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+    echo "$LOG_DATE :: Strategy FFS :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
     sleep 1
     if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-      echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+      echo "$LOG_DATE :: Strategy FFS :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
       killall screen &>/dev/null
     fi
   fi
