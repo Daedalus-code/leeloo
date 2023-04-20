@@ -203,6 +203,9 @@ function last_log_robot {
 # cleanup log ##################################################################
 
 function cleanup_log {
+  # remove looper.log
+  rm "${LOG_DIR:?}"/leeloo/robot.looper.log &>/dev/null
+  # reset broker.log
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
     echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>/dev/null)" "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
     echo "$DATE :: LogReset :: Line $MAX_LOG" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
