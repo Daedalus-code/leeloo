@@ -31,7 +31,7 @@ if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
     fi
     API_PRICES_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/prices | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
     if [[ "$API_PRICES_SECONDS" -gt "$API_PRICES_TIMER" ]] &>/dev/null; then
-      curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"'
+      curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
     else
       cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
     fi
@@ -49,7 +49,7 @@ else
     fi
     API_PRICES_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/prices | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
     if [[ "$API_PRICES_SECONDS" -gt "$API_PRICES_TIMER" ]] &>/dev/null; then
-      curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"'
+      curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
     else
       cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
     fi
