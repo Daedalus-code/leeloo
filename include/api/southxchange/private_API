@@ -7,16 +7,17 @@
 # Lists balances for all currencies. Permission required: List Balances
 
 function listBalances {
-  API_BALANCE_TIMER="30"
+  API_BALANCES_TIMER="30"
   if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
     touch "${LOG_DIR:?}"/leeloo/southxchange/balances &>/dev/null
-    API_BALANCE_TIMER="0"
+    API_BALANCES_TIMER="0"
     sleep 1
   elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
-    API_BALANCE_TIMER="0"
+    API_BALANCES_TIMER="0"
     sleep 1
   fi
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$API_BALANCE_TIMER" ]] &>/dev/null; then
+  API_BALANCES_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/balances | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  if [[ "$API_BALANCES_SECONDS" -gt "$API_BALANCES_TIMER" ]] &>/dev/null; then
     API_SOUTHX_NONCE=$(($(date +%s) * 10))
     JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
     HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')

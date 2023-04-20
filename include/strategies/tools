@@ -13,7 +13,7 @@ function listing_data() {
   LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
   LISTING_UNCONFIRMED_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }' | awk '{ printf "%.8f\n", $1 }')"
   LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-  LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
+  LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
   LISTING_AMOUNT_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   LISTING_UNCONFIRMED_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
@@ -48,7 +48,7 @@ function reference_data() {
   REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.8f\n", $1 }')"
   REFERENCE_UNCONFIRMED_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }' | awk '{ printf "%.8f\n", $1 }')"
   REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
-  REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
+  REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
   REFERENCE_AMOUNT_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
   REFERENCE_UNCONFIRMED_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }')"
@@ -233,7 +233,7 @@ function open_positions() {
 
   # make sure files has data
   until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances &>/dev/null; do
-    until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/market &>/dev/null; do
+    until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices &>/dev/null; do
       sleep 1
     done
     sleep 1
@@ -404,7 +404,7 @@ function rogue_profit() {
     ROGUE_DAYS="$(echo "$ROGUE_COUNT/24" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     # listing
-    LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
+    LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
     ROGUE_LISTING_PRICE="$LISTING_PRICE"
     ROGUE_LISTING_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $3 }')"
     if [[ -z "$ROGUE_LISTING_PRICE_OLD" ]] &>/dev/null; then
@@ -425,7 +425,7 @@ function rogue_profit() {
     ROGUE_LISTING_X_FACTOR="$(echo "$ROGUE_LISTING_X_CALCULATE/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
     # reference
-    REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/market | awk '{ print $2 }')"
+    REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
     ROGUE_REFERENCE_PRICE="$REFERENCE_PRICE"
     ROGUE_REFERENCE_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $5 }')"
     if [[ -z "$ROGUE_REFERENCE_PRICE_OLD" ]] &>/dev/null; then
