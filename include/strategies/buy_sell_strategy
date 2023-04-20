@@ -26,6 +26,8 @@ MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 TYPE="$(egrep "TYPE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # execute cooldown (days)
 BST_COOLDOWN="$(egrep "BST_COOLDOWN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# cooldown until profit (0)
+BST_TAKE_PROFIT="$(egrep "BST_TAKE_PROFIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # reference status
 REFERENCE_STATUS="$(egrep "REFERENCE_STATUS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # listing currency
@@ -151,6 +153,7 @@ fi
 MARKET_BST_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE :: $TYPE"
 LIMIT_BST_POSITION="$MARKET_BST_POSITION"
 COOLDOWN_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: info :: Cooldown $ORDER_COOLDOWN"
+PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: info :: Waiting for profit"
 
 ################################################################################
 
@@ -168,6 +171,17 @@ if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -l)"
   fi
   COOLDOWN_SECONDS="0"
 fi
+
+################################################################################
+
+# take profit enabled, cancel normal cooldown
+if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
+  # cooldown is cancelled
+  COOLDOWN_SECONDS="0"
+  TX_TIME="0"
+fi
+
+################################################################################
 
 if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
 
@@ -230,8 +244,12 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
     fi
   fi
 else
-  if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Cooldown" | wc -l)" -gt "0" ]] &>/dev/null; then
-    echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | egrep "Cooldown|Waiting" | wc -l)" -gt "0" ]] &>/dev/null; then
+    if [[ "$BST_TAKE_PROFIT" == "0" ]] &>/dev/null; then
+      echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    else
+      echo "$PROFIT_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    fi
   fi
 fi
 
