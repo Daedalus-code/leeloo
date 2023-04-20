@@ -16,12 +16,14 @@ function listBalances {
     API_BALANCES_TIMER="0"
     sleep 1
   fi
+  TMP_FILE=$(mktemp)
   API_BALANCES_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/balances | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$API_BALANCES_TIMER" ]] &>/dev/null; then
+  if [[ "$API_BALANCES_SECONDS" -gt "$API_BALANCES_TIMER" ]] &>/dev/null; then
     API_SOUTHX_NONCE=$(($(date +%s) * 10))
     JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
     HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-    curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances
+    curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances >"$TMP_FILE"
+    echo "$TMP_FILE"
   else
     cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
   fi
