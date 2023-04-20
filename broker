@@ -757,11 +757,12 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
         # make sure file has data
-        until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices &>/dev/null; do
-          until egrep "Result" "${SYS_DIR:?}"/robot/pool &>/dev/null; do
-            sleep 1
+        until egrep "Result" "${SYS_DIR:?}"/robot/pool &>/dev/null; do
+          echo "Waiting on data.."
+          until egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices &>/dev/null; do
+            sleep 2
           done
-          sleep 1
+          sleep 3
         done
 
         OPEN_AGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $NF }' | egrep -o "[0-9]+h:" | tr -d 'h:' | awk '{ SUM += $1} END { print SUM }')"
