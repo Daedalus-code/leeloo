@@ -174,12 +174,16 @@ fi
 ################################################################################
 
 # order position
-BST_ORDER_POSITION="$(cat "${SYS_DIR:?}"/robot/pool | grep "$STRATEGY_TYPE" | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $5 }' | tr -d '%')"
+BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool | grep "$STRATEGY_TYPE" | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $5 }')"
+BST_ORDER_POSITION="$(cat "${SYS_DIR:?}"/robot/pool | grep "$STRATEGY_TYPE" | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $5 }' | tr -d '%.' | sed 's/^0*//' | sed -r '/^\s*$/d')"
+
+# zero, continue
 if [[ -z "$BST_ORDER_POSITION" ]] &>/dev/null; then
+  BST_ORDER_POSITION_RAW="0%"
   BST_ORDER_POSITION="0"
 fi
 
-PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: info :: Waiting for profit :: ${BST_ORDER_POSITION:?}%"
+PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: info :: Waiting for profit :: ${BST_ORDER_POSITION_RAW:?}"
 
 ################################################################################
 
@@ -190,8 +194,8 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   TX_TIME="0"
   if [[ "$BST_ORDER_POSITION" -gt "0" ]] &>/dev/null; then
     # cooldown is enabled, take profit
-    COOLDOWN_SECONDS="$COOLDOWN_SECONDS"
-    TX_TIME="$TX_TIME"
+    COOLDOWN_SECONDS="0" # lesser
+    TX_TIME="1"          # greater
   fi
 fi
 

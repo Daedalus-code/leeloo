@@ -68,8 +68,8 @@ RSI_TIMER="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | whi
 
 ################################################################################
 
-# calculate hours into seconds
-RSI_COOLDOWN_HOURS="$(echo "$RSI_COOLDOWN/3600" | bc 2>/dev/null)"
+# calculate days into seconds
+RSI_COOLDOWN_HOURS="$(echo "$RSI_COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 RSI_COOLDOWN_NOW="$(echo "$RSI_TIMER/3600" | bc 2>/dev/null)"
 
 if [[ -z "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
