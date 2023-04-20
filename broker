@@ -1194,11 +1194,9 @@ $(screen -list 2>/dev/null | grep "leeloo" | xargs)"
 
             # kill old screen
             screen -S "$(screen -list | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
-
-            echo "$LOG_DATE :: Control USER :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
             sleep 1
+            # screen still exist, continue
             if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-              echo "$LOG_DATE :: Control USER :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
               killall screen &>/dev/null
             else
               bash "${SYS_DIR:?}"/robot/looper
