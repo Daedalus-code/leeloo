@@ -11,6 +11,8 @@ if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "0" ]] &>/dev/null; then
   screen -dmS leeloo &>/dev/null
   # start robot
   screen -S leeloo -X -p 0 stuff $'bash '"${SYS_DIR:?}"'/robot/leeloo\n'
+  # start looper
+  echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
 fi
 
 ################################################################################
@@ -53,9 +55,6 @@ if [[ "$(screen -list | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/nu
       echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
       killall screen &>/dev/null
     fi
-    # start looper
-    echo "$LOG_DATE :: Strategy FFS :: !$ERRORS_COUNT :: Restarting robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
-    bash "${SYS_DIR:?}"/robot/looper
   fi
 fi
 
