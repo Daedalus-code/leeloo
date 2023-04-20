@@ -20,39 +20,11 @@ fi
 
 if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
   function prices {
-    API_PRICES_TIMER="30"
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
-      touch "${LOG_DIR:?}"/leeloo/southxchange/prices &>/dev/null
-      API_PRICES_TIMER="0"
-      sleep 1
-    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
-      API_PRICES_TIMER="0"
-      sleep 1
-    fi
-    API_PRICES_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/prices | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-    if [[ "$API_PRICES_SECONDS" -gt "$API_PRICES_TIMER" ]] &>/dev/null; then
-      curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
-    else
-      cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
-    fi
+    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"'
   }
 else
   function prices {
-    API_PRICES_TIMER="30"
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
-      touch "${LOG_DIR:?}"/leeloo/southxchange/prices &>/dev/null
-      API_PRICES_TIMER="0"
-      sleep 1
-    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
-      API_PRICES_TIMER="0"
-      sleep 1
-    fi
-    API_PRICES_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/prices | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-    if [[ "$API_PRICES_SECONDS" -gt "$API_PRICES_TIMER" ]] &>/dev/null; then
-      curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
-    else
-      cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
-    fi
+    curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"'
   }
 fi
 
