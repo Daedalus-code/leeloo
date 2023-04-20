@@ -17,7 +17,7 @@ function listBalances {
     sleep 1
   fi
   API_PRICES_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/balances | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  if [[ "$API_PRICES_SECONDS" -gt "$API_PRICES_TIMER" ]] &>/dev/null; then
+  if [[ "$API_PRICES_SECONDS" -gt "$API_BALANCES_TIMER" ]] &>/dev/null; then
     API_SOUTHX_NONCE=$(($(date +%s) * 10))
     JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
     HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
