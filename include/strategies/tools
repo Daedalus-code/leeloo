@@ -360,6 +360,7 @@ function rogue_profit() {
 
   ROGUE_TIMER_NOW="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)))" 2>/dev/null)"
   ROGUE_TIMER="3600"      # 1 hour cooldown
+  ROGUE_HOURS="369"       # hours of data
   ROGUE_AMOUNT="0.009225" # amount % to be used
   ROGUE_MAX_DAY="4"       # max trades a day
   ROGUE_RSI="14"          # relative strength index
@@ -436,7 +437,7 @@ function rogue_profit() {
 
   function rogue_clean_lines() {
     # keep n lines
-    echo "$(tail -369 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+    echo "$(tail -"$ROGUE_HOURS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
   }
 
   ##############################################################################
@@ -511,7 +512,17 @@ function rogue_profit() {
 
     ############################################################################
 
+    ROGUE_SYNCED_PERCENTAGE="$(echo "100/$ROGUE_HOURS*$ROGUE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    if [[ -z "$ROGUE_SYNCED_PERCENTAGE" ]] &>/dev/null; then
+      ROGUE_SYNCED_PERCENTAGE="0"
+    fi
+
+    ############################################################################
+
     ROGUE_UPDATE_PERCENTAGE="$(echo "100/$ROGUE_TIMER*$ROGUE_TIMER_NOW" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    if [[ -z "$ROGUE_UPDATE_PERCENTAGE" ]] &>/dev/null; then
+      ROGUE_UPDATE_PERCENTAGE="0"
+    fi
 
     ############################################################################
 
@@ -520,7 +531,7 @@ function rogue_profit() {
 
     ############################################################################
 
-    echo "Update    $ROGUE_TIMER_NOW/${ROGUE_TIMER:?}s ${ROGUE_UPDATE_PERCENTAGE:?}%
+    echo "Update    $ROGUE_TIMER_NOW/${ROGUE_TIMER:?}s ${ROGUE_UPDATE_PERCENTAGE:?}% (${ROGUE_SYNCED_PERCENTAGE:?}%)
 Lines     $ROGUE_LINES/${ROGUE_COUNT:?}h/${ROGUE_DAYS:?}d
 RSI       $ROGUE_RSI
 
