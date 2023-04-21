@@ -8,10 +8,9 @@ LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 if [[ "$(screen -list | grep "leeloo" | wc -l)" -eq "0" ]] &>/dev/null; then
   # create new screen session
-  screen -dmS leeloo &>/dev/null
+  screen -dmSL leeloo "$LOG_DIR/leeloo/screen.log"
   # start robot
-  screen -S leeloo -X -p 0 stuff $'bash '"${SYS_DIR:?}"'/robot/leeloo\n'
-  # start looper
+  screen -S leeloo -X stuff "bash ${SYS_DIR}/robot/leeloo"$'\n'
   echo "$LOG_DATE :: Strategy FFS :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
   exit
 fi
