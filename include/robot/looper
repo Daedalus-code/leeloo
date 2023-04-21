@@ -18,7 +18,7 @@ if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "0" ]] &>/dev/null; t
   screen -dmSL leeloo -Logfile "$LOG_DIR/leeloo/screen.log"
   # start the leeloo command in the screen session
   screen -S leeloo -p 0 -X stuff "bash ${SYS_DIR}/robot/leeloo >> "$LOG_DIR/leeloo/leeloo.log" 2>&1"$'\n'
-  echo "$LOG_DATE :: Strategy FFS :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+  echo "$LOG_DATE :: Strategy KEK :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
   exit
 fi
 
@@ -29,7 +29,7 @@ if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>
   # the age of all logs measured in seconds
   ROBOT_LOG_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
   # log file count
-  ROBOT_LOG_COUNT="$(ls -l "${LOG_DIR:?}"/leeloo/*.log 2>/dev/null | wc -l)"
+  ROBOT_LOG_COUNT="$(ls -l "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | wc -l)"
   # calculate average seconds
   ROBOT_LOG_AVERAGE="$(echo "$ROBOT_LOG_AGE_SECONDS/$ROBOT_LOG_COUNT" | bc 2>/dev/null)"
   # calculate minutes
@@ -43,13 +43,13 @@ if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>
       touch "${LOG_DIR:?}"/leeloo/robot.looper.log &>/dev/null
     fi
 
-    echo "$LOG_DATE :: Strategy FFS :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+    echo "$LOG_DATE :: Strategy KEK :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
     # kill old screen
     screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
-    echo "$LOG_DATE :: Strategy FFS :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+    echo "$LOG_DATE :: Strategy KEK :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
     sleep 1
     if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-      echo "$LOG_DATE :: Strategy FFS :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
+      echo "$LOG_DATE :: Strategy KEK :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.looper.log 2>/dev/null
       killall screen &>/dev/null
     fi
   fi
