@@ -66,13 +66,12 @@ fi
 
 ################################################################################
 
-# get data
-function result_lzn() {
-  # get listing, reference trades
-  LZN_TRADES=$(trades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY")
-  echo "$LZN_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>/dev/null
+# get listing, reference trades
+LZN_TRADES=$(trades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY")
+echo "$LZN_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>/dev/null
 
-  echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
+# get data
+echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
 
 LZN_Data..............: $STRATEGY_TYPE
 LZN_Position..........: $LZN_POSITION $LZN_POSITION_VALUE
@@ -87,26 +86,10 @@ Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY $REFERENCE_AMOUNT_
 Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY $REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY
 Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
-}
 
 ################################################################################
 
 executed_orders
-
-################################################################################
-
-LZN_TIMER="$(echo "${BOT_TIMER:?}*1.50" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-
-# update data every n seconds
-if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)))" 2>/dev/null)" -gt "$LZN_TIMER" ]] &>/dev/null; then
-  result_lzn
-  # update data if missing
-elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
-  result_lzn
-  # update data if empty
-elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
-  result_lzn
-fi
 
 ################################################################################
 # O P E N - P O S I T I O N S
