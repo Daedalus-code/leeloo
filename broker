@@ -822,7 +822,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
             --no-collapse \
             --tailbox "$RESULT" "$LENGTH" "$WIDTH"
         }
-        RESULT="${SYS_DIR:?}/robot/orders"
+        RESULT="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null | sed '/^$/d' | sort -r)"
         LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)"
         COUNT="$(echo "$RESULT" | wc -l)"
         if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
