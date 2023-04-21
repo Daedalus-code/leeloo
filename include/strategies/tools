@@ -216,8 +216,11 @@ function incoming_listing() {
     if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
       # make sure n exist
       if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming | tr -d '.' | sed 's/^0*//' | awk '{ printf "%.0f\n", $1 }')" -eq "0" ]] &>/dev/null; then
-        # combine old price and new price, divide with 2
-        echo "$(echo "$LISTING_PRICE+$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null)" | bc -l 2>/dev/null)/2" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
+        # existing cost
+        LISTING_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price)" | bc -l 2>/dev/null)
+        # calculate average new price
+        LISTING_AVERAGE_PRICE=$(echo "($LISTING_EXISTING_COST + $LISTING_UNCONFIRMED_BALANCE * $LISTING_PRICE) / ($LISTING_AMOUNT + $LISTING_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null)
+        echo "$LISTING_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
       fi
     fi
 
@@ -246,8 +249,11 @@ function incoming_reference() {
     if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
       # make sure n exist
       if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming | tr -d '.' | sed 's/^0*//' | awk '{ printf "%.0f\n", $1 }')" -eq "0" ]] &>/dev/null; then
-        # combine old price and new price, divide with 2
-        echo "$(echo "$REFERENCE_PRICE+$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null)" | bc -l 2>/dev/null)/2" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
+        # existing cost
+        REFERENCE_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price)" | bc -l 2>/dev/null)
+        # calculate average new price
+        REFERENCE_AVERAGE_PRICE=$(echo "($REFERENCE_EXISTING_COST + $REFERENCE_UNCONFIRMED_BALANCE * $REFERENCE_PRICE) / ($REFERENCE_AMOUNT + $REFERENCE_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null)
+        echo "$REFERENCE_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
       fi
     fi
 
