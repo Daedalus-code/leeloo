@@ -214,7 +214,7 @@ function incoming_listing() {
   if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     # last lines are different, continue
     if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-      # make sure n exist
+      # make sure change is a zero
       if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming | tr -d '.' | sed 's/^0*//' | awk '{ printf "%.0f\n", $1 }')" -eq "0" ]] &>/dev/null; then
         # existing cost
         LISTING_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price)" | bc -l 2>/dev/null)
@@ -247,7 +247,7 @@ function incoming_reference() {
   if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     # last lines are different, continue
     if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-      # make sure n exist
+      # make sure change is a zero
       if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming | tr -d '.' | sed 's/^0*//' | awk '{ printf "%.0f\n", $1 }')" -eq "0" ]] &>/dev/null; then
         # existing cost
         REFERENCE_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price)" | bc -l 2>/dev/null)
