@@ -9,6 +9,8 @@ source /usr/local/bin/include/leeloo/api/southxchange/public_API
 # loop
 for (( ; ; )); do
 
+  LEELOO_TIMER="$(echo "$BOT_TIMER-5" | bc 2>/dev/null)"
+
   ##############################################################################
 
   cleanup_log
@@ -20,7 +22,7 @@ for (( ; ; )); do
     echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
   }
   # update data every n seconds
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$LEELOO_TIMER" ]] &>/dev/null; then
     result_balances
     # update data if missing
   elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
@@ -38,7 +40,7 @@ for (( ; ; )); do
     echo "$(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
   }
   # update data every n seconds
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$LEELOO_TIMER" ]] &>/dev/null; then
     result_orders
     # update data if missing
   elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
@@ -56,7 +58,7 @@ for (( ; ; )); do
     echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
   }
   # update data every n seconds
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$LEELOO_TIMER" ]] &>/dev/null; then
     result_prices
     # update data if missing
   elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
@@ -89,7 +91,7 @@ for (( ; ; )); do
 
   ##############################################################################
 
-  sleep "$(echo "$BOT_TIMER-2" | bc 2>/dev/null)"
+  sleep "$BOT_TIMER"
 done
 
 # END
