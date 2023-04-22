@@ -14,10 +14,10 @@ BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
 LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 ################################################################################
-# market maker strategy configuration (static)
+# market chaser strategy configuration (static)
 ################################################################################
 
-STRATEGY_TYPE="MM"
+STRATEGY_TYPE="MCS"
 
 # listing currency
 LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
@@ -53,18 +53,18 @@ REFERENCE_PRICE_ASK="$(echo "$REFERENCE_PRICE_ASK" | tr -d '.' | sed 's/^0*//')"
 
 ################################################################################
 
-MARKET_MM_EXECUTE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Chasing Ask! $REFERENCE_PRICE_LAST > $REFERENCE_PRICE_ASK"
-MARKET_MM_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE :: $TYPE"
+MARKET_MCS_EXECUTE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Chasing Ask! $REFERENCE_PRICE_LAST > $REFERENCE_PRICE_ASK"
+MARKET_MCS_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE :: $TYPE"
 
 ################################################################################
 
 # if last is greater than ask, continue
 if [[ "$REFERENCE_PRICE_LAST" -gt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
   # price is equal
-  MM_STATUS="Price is ok."
+  MCS_STATUS="Price is ok."
 else
   # price is different
-  MM_STATUS="Price need to moon!"
+  MCS_STATUS="Price need to moon!"
   # listing market buy order
   AMOUNT_IN_REFERENCE_CURRENCY="false"
   TYPE="buy"
@@ -73,10 +73,10 @@ else
   PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
   ##############################################################################
 
-  echo "$MARKET_MM_EXECUTE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  echo "$MARKET_MCS_EXECUTE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   tx_id
   cost_price
-  echo "$MARKET_MM_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  echo "$MARKET_MCS_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 fi
 
 ################################################################################
@@ -91,11 +91,11 @@ open_positions
 
 ################################################################################
 
-MM_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $MM_STATUS"
+MCS_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $MCS_STATUS"
 
 ################################################################################
 
-echo "$MM_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+echo "$MCS_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
 ################################################################################
 
