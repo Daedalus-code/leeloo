@@ -57,8 +57,8 @@ MARKET_MCS_EXECUTE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$R
 
 ################################################################################
 
-# if ask is greater than last, continue
-if [[ "$REFERENCE_PRICE_ASK" -gt "$REFERENCE_PRICE_LAST" ]] &>/dev/null; then
+# if last is less than ask, continue
+if [[ "$REFERENCE_PRICE_LAST" -lt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
   # price is equal
   MCS_STATUS="Market price is ok. ${REFERENCE_PRICE_ASK:?}<"
 else
@@ -93,8 +93,8 @@ MARKET_MCS_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRE
 
 ################################################################################
 
-# if last is greater than ask, continue
-if [[ "$REFERENCE_PRICE_LAST" -gt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
+# if last is less than ask, continue
+if [[ "$REFERENCE_PRICE_LAST" -lt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
   echo "$MARKET_MCS_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 fi
 
