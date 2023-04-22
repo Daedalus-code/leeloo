@@ -11,7 +11,6 @@ source /usr/local/bin/include/leeloo/strategies/tools
 
 # get strategy id.config, run strategy
 BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
-STRATEGY_NAME="$(egrep "STRATEGY_NAME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 ################################################################################
@@ -99,13 +98,13 @@ open_positions
 
 ################################################################################
 
-BUY_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT"
-SELL_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Market $LISTING_AMOUNT"
+BUY_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $REFERENCE_CURRENCY Market $REFERENCE_AMOUNT"
+SELL_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY :: Market $LISTING_AMOUNT"
 
-BUY_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT"
-SELL_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT"
+BUY_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $REFERENCE_CURRENCY Limit $REFERENCE_PRICE $REFERENCE_AMOUNT"
+SELL_LIMIT_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT"
 
-BUY_LIMIT_POSITION="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
+BUY_LIMIT_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
 SELL_LIMIT_POSITION="$BUY_LIMIT_POSITION"
 
 BUY_MARKET_POSITION="$BUY_LIMIT_POSITION"
@@ -147,9 +146,9 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
   ##############################################################################
 
-  STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LC :: Price ${NEW_PRICE} ${LISTING_OPEN_RESULT:?}% :: $POSITION"
-  BUY_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing buy order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
-  SELL_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_NAME :: Placing sell order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
+  STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LC :: Price ${NEW_PRICE} ${LISTING_OPEN_RESULT:?}% :: $POSITION"
+  BUY_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Placing buy order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
+  SELL_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Placing sell order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
 
   ##############################################################################
 
