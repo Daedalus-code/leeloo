@@ -542,6 +542,12 @@ function rogue_profit() {
 
     ############################################################################
 
+    if [[ "$(echo "$ROGUE_SYNCED_PERCENTAGE" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+      ROGUE_SYNCED_PERCENTAGE="Ready 100"
+    fi
+
+    ############################################################################
+
     echo "Update    $ROGUE_TIMER_NOW/${ROGUE_TIMER:?}s ${ROGUE_UPDATE_PERCENTAGE:?}% (${ROGUE_SYNCED_PERCENTAGE:?}%)
 Lines     $ROGUE_LINES/${ROGUE_COUNT:?}h/${ROGUE_DAYS:?}d
 RSI       $ROGUE_RSI
@@ -576,25 +582,29 @@ X_FACTOR  $ROGUE_REFERENCE_X_FACTOR" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 
     ############################################################################
 
-    # rogue_selling config n% of allocated n%
-    if [[ "$(echo "$ROGUE_LISTING_X_FACTOR" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
-      # overbought, pick pocket at top!
-      if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
-        rogue_selling
-        rogue_shadow_output
-        echo "SOLD @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+    # wait on ready call
+    if [[ "$(echo "$ROGUE_SYNCED_PERCENTAGE" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+
+      # rogue_selling config n% of allocated n%
+      if [[ "$(echo "$ROGUE_LISTING_X_FACTOR" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
+        # overbought, pick pocket at top!
+        if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
+          rogue_selling
+          rogue_shadow_output
+          echo "SOLD @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+        fi
       fi
-    fi
 
-    ############################################################################
+      ##########################################################################
 
-    # rogue_buying config n% of allocated n%
-    if [[ "$(echo "$ROGUE_LISTING_X_FACTOR" | awk -F. '{ print $1 }')" -lt "30" ]] &>/dev/null; then
-      # oversold, cheap shot at bottom!
-      if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
-        rogue_buying
-        rogue_shadow_output
-        echo "BOUGHT @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+      # rogue_buying config n% of allocated n%
+      if [[ "$(echo "$ROGUE_LISTING_X_FACTOR" | awk -F. '{ print $1 }')" -lt "30" ]] &>/dev/null; then
+        # oversold, cheap shot at bottom!
+        if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
+          rogue_buying
+          rogue_shadow_output
+          echo "BOUGHT @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+        fi
       fi
     fi
 
