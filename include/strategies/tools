@@ -220,10 +220,15 @@ function incoming_listing() {
 
   # last lines are different, continue
   LIST_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null)"
+  # last n lines above
+  LIST_INCOMING_ABOVE="$(echo "$LIST_INCOMING" | tail -2 | head -1 | awk -F. '{ print $1 }' | sed 's/^0*//')"
+  # last n lines below
+  LIST_INCOMING_BELOW="$(echo "$LIST_INCOMING" | tail -2 | tail -1 | awk -F. '{ print $1 }' | sed 's/^0*//')"
 
-  if [[ ! "$(echo "$LIST_INCOMING" | tail -2 | head -1 | awk '{ print $1 }')" == "$(echo "$LIST_INCOMING" | tail -2 | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+  # lines are different, continue
+  if [[ ! "$LIST_INCOMING_ABOVE" -eq "$LIST_INCOMING_BELOW" ]] &>/dev/null; then
     # make sure last change is a negative
-    if [[ "$(echo "$LIST_INCOMING" | tail -2 | awk '{ print $1 }' | sort -nu | wc -l)" -eq 2 ]] && [[ "$(echo "$LIST_INCOMING" | tail -2 | awk '{ print $1 }' | uniq -c | awk '{ print $1 }')" == "1" ]] && [[ "$(echo "$LIST_INCOMING" | tail -2 | awk '{ print $1 }' | tail -n 1)" -lt "$(echo "$LIST_INCOMING" | tail -2 | awk '{ print $1 }' | head -n 1)" ]] &>/dev/null; then
+    if [[ "$LIST_INCOMING_ABOVE" -gt "$LIST_INCOMING_BELOW" ]] &>/dev/null; then
       # existing cost
       LISTING_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null)" | bc -l 2>/dev/null)
       # calculate total value of holdings
@@ -257,10 +262,15 @@ function incoming_reference() {
 
   # last lines are different, continue
   REF_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null)"
+  # last n lines above
+  REF_INCOMING_ABOVE="$(echo "$REF_INCOMING" | tail -2 | head -1 | awk -F. '{ print $1 }' | sed 's/^0*//')"
+  # last n lines below
+  REF_INCOMING_BELOW="$(echo "$REF_INCOMING" | tail -2 | tail -1 | awk -F. '{ print $1 }' | sed 's/^0*//')"
 
-  if [[ ! "$(echo "$REF_INCOMING" | tail -2 | head -1 | awk '{ print $1 }')" == "$(echo "$REF_INCOMING" | tail -2 | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+  # lines are different, continue
+  if [[ ! "$REF_INCOMING_ABOVE" -eq "$REF_INCOMING_BELOW" ]] &>/dev/null; then
     # make sure last change is a negative
-    if [[ "$(echo "$REF_INCOMING" | tail -2 | awk '{ print $1 }' | sort -nu | wc -l)" -eq 2 ]] && [[ "$(echo "$REF_INCOMING" | tail -2 | awk '{ print $1 }' | uniq -c | awk '{ print $1 }')" == "1" ]] && [[ "$(echo "$REF_INCOMING" | tail -2 | awk '{ print $1 }' | tail -n 1)" -lt "$(echo "$REF_INCOMING" | tail -2 | awk '{ print $1 }' | head -n 1)" ]] &>/dev/null; then
+    if [[ "$REF_INCOMING_ABOVE" -gt "$REF_INCOMING_BELOW" ]] &>/dev/null; then
       # existing cost
       REFERENCE_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null)" | bc -l 2>/dev/null)
       # calculate total value of holdings
