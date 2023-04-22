@@ -28,8 +28,8 @@ get_ema() {
       curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=${EMA_LONG}&aggregate=1&e=${API_EMA_EXCHANGE}" >"$TMP_FILE" 2>/dev/null
     fi
     PRICES=$(jq -r '.Data.Data[].'"$SOURCE" "$TMP_FILE")
-    SHORT=$(echo "$PRICES" | awk -v ema=$SHORT_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ printf "%.9f\n", $1 }')
-    LONG=$(echo "$PRICES" | awk -v ema=$LONG_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ printf "%.9f\n", $1 }')
+    SHORT=$(echo "$PRICES" | awk -v ema=$SHORT_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')
+    LONG=$(echo "$PRICES" | awk -v ema=$LONG_EMA '{ k = 2 / (ema + 1); if (NR == 1) s = $1; else s = k * $1 + (1 - k) * s } END { print s }' | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')
     if [[ "$(echo "$SHORT" | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$LONG" | sed 's/^0*//' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
       BEAR_BULL="Bullish"
     else

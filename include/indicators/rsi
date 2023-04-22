@@ -40,7 +40,7 @@ get_rsi() {
     else
       BEAR_BULL="Neutral"
     fi
-    RSI_OUTPUT="$BEAR_BULL RSI_$PERIOD $(echo "$RSI" | awk '{ printf "%.9f\n", $1 }')"
+    RSI_OUTPUT="$BEAR_BULL RSI_$PERIOD $(echo "$RSI" | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')"
     echo "$RSI_OUTPUT" >"${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null
     echo "$RSI_OUTPUT"
     rm "$TMP_FILE"
