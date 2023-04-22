@@ -218,26 +218,27 @@ function incoming_listing() {
   # keep n lines
   echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null
 
-  # incoming listing
-  if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-    # last lines are different, continue
-    LIST_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null)"
-    if [[ ! "$(echo "$LIST_INCOMING" | tail -2 | head -1 | awk '{ print $1 }')" == "$(echo "$LIST_INCOMING" | tail -2 | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-      # make sure change is a zero
-      if [[ "$(echo "$LIST_INCOMING" | tail -1 | tr -d '.' | sed 's/^0*//' | awk '{ printf "%.0f\n", $1 }')" -eq "0" ]] &>/dev/null; then
-        # check if file has been updated in the last hour
-        if [[ "$(find "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price -mmin +60)" ]]; then
-          # existing cost
-          LISTING_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price)" | bc -l 2>/dev/null)
-          # calculate total value of holdings
-          LISTING_TOTAL_VALUE=$(echo "($LISTING_AMOUNT + $LISTING_UNCONFIRMED_BALANCE) * $LISTING_PRICE" | bc -l 2>/dev/null)
-          # calculate new average price
-          LISTING_AVERAGE_PRICE=$(echo "($LISTING_EXISTING_COST + $LISTING_TOTAL_VALUE) / ($LISTING_AMOUNT + $LISTING_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-          echo "$LISTING_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
-        fi
+  # last lines are different, continue
+  LIST_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null)"
+
+  if [[ ! "$(echo "$LIST_INCOMING" | tail -2 | head -1 | awk '{ print $1 }')" == "$(echo "$LIST_INCOMING" | tail -2 | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+    # make sure change is a zero
+    if [[ "$(echo "$LIST_INCOMING" | tail -1 | tr -d '.' | sed 's/^0*//' | awk '{ printf "%.0f\n", $1 }')" -eq "0" ]] &>/dev/null; then
+      # check if file has been updated in the last hour
+      if [[ "$(find "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price -mmin +60)" ]] &>/dev/null; then
+        # existing cost
+        LISTING_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null)" | bc -l 2>/dev/null)
+        # calculate total value of holdings
+        LISTING_TOTAL_VALUE=$(echo "($LISTING_AMOUNT + $LISTING_UNCONFIRMED_BALANCE) * $LISTING_PRICE" | bc -l 2>/dev/null)
+        # calculate new average price
+        LISTING_AVERAGE_PRICE=$(echo "($LISTING_EXISTING_COST + $LISTING_TOTAL_VALUE) / ($LISTING_AMOUNT + $LISTING_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+        echo "$LISTING_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
       fi
     fi
+  fi
 
+  # incoming listing
+  if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
       echo "$LOG_DATE :: Incoming $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: info :: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
@@ -257,26 +258,27 @@ function incoming_reference() {
   # keep n lines
   echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null
 
-  # incoming reference
-  if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-    # last lines are different, continue
-    REF_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null)"
-    if [[ ! "$(echo "$REF_INCOMING" | tail -2 | head -1 | awk '{ print $1 }')" == "$(echo "$REF_INCOMING" | tail -2 | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
-      # make sure change is a zero
-      if [[ "$(echo "$REF_INCOMING" | tail -1 | tr -d '.' | sed 's/^0*//' | awk '{ printf "%.0f\n", $1 }')" -eq "0" ]] &>/dev/null; then
-        # check if file has been updated in the last hour
-        if [[ "$(find "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price -mmin +60)" ]]; then
-          # existing cost
-          REFERENCE_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price)" | bc -l 2>/dev/null)
-          # calculate total value of holdings
-          REFERENCE_TOTAL_VALUE=$(echo "($REFERENCE_AMOUNT + $REFERENCE_UNCONFIRMED_BALANCE) * $REFERENCE_PRICE" | bc -l 2>/dev/null)
-          # calculate new average price
-          REFERENCE_AVERAGE_PRICE=$(echo "($REFERENCE_EXISTING_COST + $REFERENCE_TOTAL_VALUE) / ($REFERENCE_AMOUNT + $REFERENCE_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-          echo "$REFERENCE_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
-        fi
+  # last lines are different, continue
+  REF_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null)"
+
+  if [[ ! "$(echo "$REF_INCOMING" | tail -2 | head -1 | awk '{ print $1 }')" == "$(echo "$REF_INCOMING" | tail -2 | tail -1 | awk '{ print $1 }')" ]] &>/dev/null; then
+    # make sure change is a zero
+    if [[ "$(echo "$REF_INCOMING" | tail -1 | tr -d '.' | sed 's/^0*//' | awk '{ printf "%.0f\n", $1 }')" -eq "0" ]] &>/dev/null; then
+      # check if file has been updated in the last hour
+      if [[ "$(find "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price -mmin +60)" ]] &>/dev/null; then
+        # existing cost
+        REFERENCE_EXISTING_COST=$(echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null) * $(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null)" | bc -l 2>/dev/null)
+        # calculate total value of holdings
+        REFERENCE_TOTAL_VALUE=$(echo "($REFERENCE_AMOUNT + $REFERENCE_UNCONFIRMED_BALANCE) * $REFERENCE_PRICE" | bc -l 2>/dev/null)
+        # calculate new average price
+        REFERENCE_AVERAGE_PRICE=$(echo "($REFERENCE_EXISTING_COST + $REFERENCE_TOTAL_VALUE) / ($REFERENCE_AMOUNT + $REFERENCE_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+        echo "$REFERENCE_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
       fi
     fi
+  fi
 
+  # incoming reference
+  if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
       echo "$LOG_DATE :: Incoming $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: info :: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
