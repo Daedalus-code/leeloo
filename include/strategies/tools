@@ -245,7 +245,7 @@ function incoming_listing() {
 
   # incoming listing
   if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-    if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
+    if [[ ! "$(tail -"$(echo "$LOG_TIMER*1.5" | bc 2>/dev/null | awk -F. '{ print $1 }')" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
       echo "$LOG_DATE :: Incoming $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
@@ -287,7 +287,7 @@ function incoming_reference() {
 
   # incoming reference
   if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-    if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
+    if [[ ! "$(tail -"$(echo "$LOG_TIMER*1.5" | bc 2>/dev/null | awk -F. '{ print $1 }')" "${LOG_DIR:?}"/leeloo/robot.log | grep "Incoming" | wc -l)" -gt "0" ]] &>/dev/null; then
       echo "$LOG_DATE :: Incoming $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
