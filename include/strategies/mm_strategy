@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+source /usr/local/bin/include/leeloo/broker.conf
+# southxchange api
+source /usr/local/bin/include/leeloo/api/southxchange/private_API
+source /usr/local/bin/include/leeloo/api/southxchange/public_API
+# strategy tools
+source /usr/local/bin/include/leeloo/strategies/tools
+
+# get strategy id.config, run strategy
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
+LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+
+################################################################################
+# market maker strategy configuration (static)
+################################################################################
+
+STRATEGY_TYPE="MM"
+
+# listing currency
+LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# account allocated (n%)
+LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# reference currency
+REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# account allocated (n%)
+REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+
+# log_timer
+LOG_TIMER="18"
+
+################################################################################
+# data
+################################################################################
+
+listing_data          # get available listing data
+reference_data        # get available reference data
+listing_total_value   # calculate total values
+reference_total_value # calculate total values
+listing_allocated     # total listing allocated
+reference_allocated   # total reference allocated
+last_tx               # last tx
+
+################################################################################
+# S T R A T E G Y - T R I G G E R
+################################################################################
+
+# chase and hodl the type
+
+REFERENCE_PRICE="$(echo "$REFERENCE_PRICE" | tr -d '.' | sed 's/^0*//')"
+REFERENCE_PRICE_ASK="$(echo "$REFERENCE_PRICE_ASK" | tr -d '.' | sed 's/^0*//')"
+
+# bid is less than ask, continue
+if [[ "$REFERENCE_PRICE" -lt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
+  # price is equal
+  MM_STATUS="Price is ok."
+else
+  # price is different
+  MM_STATUS="Price need to moon!"
+fi
+
+################################################################################
+
+executed_orders
+
+################################################################################
+# O P E N - P O S I T I O N S
+################################################################################
+
+open_positions
+
+################################################################################
+
+MM_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $MM_STATUS"
+
+################################################################################
+
+echo "$MM_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+
+################################################################################
+
+incoming_listing
+incoming_reference
+
+################################################################################
+
+save_orders
+
+################################################################################
+
+robot_Logs_by_date
+
+################################################################################
+
+# END

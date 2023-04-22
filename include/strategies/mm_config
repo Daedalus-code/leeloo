@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+source /usr/local/bin/include/leeloo/broker.conf
+
+################################################################################
+# market maker configuration
+################################################################################
+
+LISTING_CURRENCY=""       # listing currency
+LISTING_ALLOCATED="0.1"   # account allocated (0.1%)
+REFERENCE_CURRENCY=""     # reference currency
+REFERENCE_ALLOCATED="0.1" # account allocated (0.1%)
+
+################################################################################
+# strategy
+################################################################################
+
+# get strategy id.config, run strategy
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
+bash "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".strategy
+
+# END

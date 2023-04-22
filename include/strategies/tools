@@ -14,6 +14,8 @@ function listing_data() {
   LISTING_UNCONFIRMED_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
+  LISTING_PRICE_ASK="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $3 }')"
+  LISTING_PRICE_LAST="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
   LISTING_AMOUNT_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_UNCONFIRMED_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
@@ -49,6 +51,8 @@ function reference_data() {
   REFERENCE_UNCONFIRMED_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_PRICE="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
+  REFERENCE_PRICE_ASK="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $3 }')"
+  REFERENCE_PRICE_LAST="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
   REFERENCE_AMOUNT_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_UNCONFIRMED_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
@@ -221,9 +225,9 @@ function incoming_listing() {
   # last lines are different, continue
   LIST_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null)"
   # last n lines above
-  LIST_INCOMING_ABOVE="$(echo "$LIST_INCOMING" | tail -2 | head -1 | awk -F. '{ print $1 }' | sed 's/^0*//')"
+  LIST_INCOMING_ABOVE="$(echo "$LIST_INCOMING" | tail -2 | head -1 | tr -d '.' | sed 's/^0*//')"
   # last n lines below
-  LIST_INCOMING_BELOW="$(echo "$LIST_INCOMING" | tail -2 | tail -1 | awk -F. '{ print $1 }' | sed 's/^0*//')"
+  LIST_INCOMING_BELOW="$(echo "$LIST_INCOMING" | tail -2 | tail -1 | tr -d '.' | sed 's/^0*//')"
 
   # lines are different, continue
   if [[ ! "$LIST_INCOMING_ABOVE" -eq "$LIST_INCOMING_BELOW" ]] &>/dev/null; then
@@ -263,9 +267,9 @@ function incoming_reference() {
   # last lines are different, continue
   REF_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null)"
   # last n lines above
-  REF_INCOMING_ABOVE="$(echo "$REF_INCOMING" | tail -2 | head -1 | awk -F. '{ print $1 }' | sed 's/^0*//')"
+  REF_INCOMING_ABOVE="$(echo "$REF_INCOMING" | tail -2 | head -1 | tr -d '.' | sed 's/^0*//')"
   # last n lines below
-  REF_INCOMING_BELOW="$(echo "$REF_INCOMING" | tail -2 | tail -1 | awk -F. '{ print $1 }' | sed 's/^0*//')"
+  REF_INCOMING_BELOW="$(echo "$REF_INCOMING" | tail -2 | tail -1 | tr -d '.' | sed 's/^0*//')"
 
   # lines are different, continue
   if [[ ! "$REF_INCOMING_ABOVE" -eq "$REF_INCOMING_BELOW" ]] &>/dev/null; then
