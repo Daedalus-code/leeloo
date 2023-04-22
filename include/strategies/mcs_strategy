@@ -57,29 +57,27 @@ MARKET_MCS_EXECUTE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$R
 
 ################################################################################
 
-# if last is less than ask, continue
-if [[ "$REFERENCE_PRICE_LAST" -lt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
-  # price is equal
-  MCS_STATUS="Market price is ok. ${REFERENCE_PRICE_ASK:?}<"
-else
-  # price is different
-  MCS_STATUS="Market price needs to moon! ${REFERENCE_PRICE_ASK:?}>"
-  # listing market buy order
-  AMOUNT_IN_REFERENCE_CURRENCY="false"
-  TYPE="buy"
+# if last is less than ask, continue, wait if reversed
+if [[ ! "$REFERENCE_PRICE_LAST" -gt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
+  if [[ "$REFERENCE_PRICE_LAST" -lt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
+    # price is equal
+    MCS_STATUS="Market price is ok. ${REFERENCE_PRICE_ASK:?}<"
+  else
+    # price is different
+    MCS_STATUS="Market price needs to moon! ${REFERENCE_PRICE_ASK:?}>"
+    # listing market buy order
+    AMOUNT_IN_REFERENCE_CURRENCY="false"
+    TYPE="buy"
 
-  # placeOrder market ##########################################################
-  PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-  ##############################################################################
+    # placeOrder market ##########################################################
+    PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+    ##############################################################################
 
-  echo "$MARKET_MCS_EXECUTE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-  tx_id
-  cost_price
+    echo "$MARKET_MCS_EXECUTE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    tx_id
+    cost_price
+  fi
 fi
-
-################################################################################
-
-executed_orders
 
 ################################################################################
 # O P E N - P O S I T I O N S
@@ -89,13 +87,17 @@ open_positions
 
 ################################################################################
 
-MARKET_MCS_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE :: $TYPE"
+MARKET_MCS_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
 
 ################################################################################
 
-# if last is less than ask, continue
-if [[ "$REFERENCE_PRICE_LAST" -lt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
-  echo "$MARKET_MCS_POSITION" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+# if last is less than ask, continue, wait if reversed
+if [[ ! "$REFERENCE_PRICE_LAST" -gt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
+  if [[ "$REFERENCE_PRICE_LAST" -lt "$REFERENCE_PRICE_ASK" ]] &>/dev/null; then
+    echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+    # remove duplicates
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+  fi
 fi
 
 ################################################################################
