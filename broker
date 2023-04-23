@@ -686,13 +686,28 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
+
         display_result() {
-          dialog --title "Trade History +$COUNT" \
+          dialog --title "Trade History +$LOG_COUNT" \
             --no-collapse \
-            --tailbox "$RESULT" 0 0
+            --tailbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
-        COUNT="$(wc -l "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '{ print $1 }')"
+        LOG_COUNT="$(wc -l "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '{ print $1 }')"
+        WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
+        LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')+5" | bc 2>/dev/null)"
+
+        if [[ -z "$WIDTH" ]] &>/dev/null; then
+          WIDTH="77"
+        elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
+          WIDTH="77"
+        fi
+        if [[ -z "$LENGTH" ]] &>/dev/null; then
+          LENGTH="7"
+        elif [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
+          LENGTH="25"
+        fi
+
         RESULT="${SYS_DIR:?}"/robot/orders
 
         display_result 2>/dev/null
