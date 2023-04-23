@@ -129,19 +129,22 @@ function lorentzian_classification {
 
 # retrieve last trade
 TRADE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>/dev/null)
-NEW_PRICE=$(echo "${TRADE}" | jq '.Price')
-NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
+# not zero, continue
+if [[ ! -z "$TRADE" ]] &>/dev/null; then
+  NEW_PRICE=$(echo "${TRADE}" | jq '.Price')
+  NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 
-# check if new trade has been executed
-if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
-  # calculate lorentzian classification indicator
-  LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.9f\n", $1 }')
+  # check if new trade has been executed
+  if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
+    # calculate lorentzian classification indicator
+    LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.9f\n", $1 }')
 
-  if [[ -z "$LC" ]] &>/dev/null; then
-    LC="$(echo "0" | awk '{ printf "%.9f\n", $1 }')"
+    if [[ -z "$LC" ]] &>/dev/null; then
+      LC="$(echo "0" | awk '{ printf "%.9f\n", $1 }')"
+    fi
+
+    echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>/dev/null
   fi
-
-  echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>/dev/null
 
   ##############################################################################
 
