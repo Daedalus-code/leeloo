@@ -142,7 +142,9 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
   STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LC :: ${LISTING_OPEN_RESULT:?}% :: $POSITION"
   BUY_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Placing buy order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
+  BOUGHT_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Already bought, waiting. $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
   SELL_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Placing sell order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
+  SOLD_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Already sold, waiting. $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
 
   ##############################################################################
 
@@ -155,39 +157,44 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
     # buy order ################################################################
 
-    TYPE="buy"
-    AMOUNT_IN_REFERENCE_CURRENCY="true"
+    # amount must be greater than zero
+    if [[ "$(echo "$REFERENCE_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
-    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      TYPE="buy"
+      AMOUNT_IN_REFERENCE_CURRENCY="true"
 
-      # placeOrder market ######################################################
-      PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-      ##########################################################################
+      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
 
-      # buy market order
-      echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      echo "$BUY_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      tx_id
-      cost_price
-      echo "$BUY_MARKET_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-      # remove duplicates
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # placeOrder market ####################################################
+        PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+        ########################################################################
 
-    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+        # buy market order
+        echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        echo "$BUY_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        tx_id
+        cost_price
+        echo "$BUY_MARKET_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # remove duplicates
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
 
-      # placeOrder limit #######################################################
-      PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-      ##########################################################################
+      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
-      # buy limit order
-      echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      echo "$BUY_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      tx_id
-      cost_price
-      echo "$BUY_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-      # remove duplicates
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # placeOrder limit #####################################################
+        PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+        ########################################################################
 
+        # buy limit order
+        echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        echo "$BUY_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        tx_id
+        cost_price
+        echo "$BUY_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # remove duplicates
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+      fi
+    else
+      echo "$BOUGHT_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
 
     ############################################################################
@@ -205,40 +212,47 @@ if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
 
     # sell order ###############################################################
 
-    TYPE="sell"
-    AMOUNT_IN_REFERENCE_CURRENCY="false"
+    # amount must be greater than zero
+    if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
-    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      TYPE="sell"
+      AMOUNT_IN_REFERENCE_CURRENCY="false"
 
-      # placeOrder market ######################################################
-      PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-      ##########################################################################
+      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
 
-      # sell order
-      echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      echo "$SELL_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      tx_id
-      cost_price
-      echo "$SELL_MARKET_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-      # remove duplicates
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # placeOrder market ####################################################
+        PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+        ########################################################################
 
-    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+        # sell order
+        echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        echo "$SELL_MARKET_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        tx_id
+        cost_price
+        echo "$SELL_MARKET_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # remove duplicates
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
 
-      # placeOrder limit #######################################################
-      PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-      ##########################################################################
+      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
-      # sell order
-      echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      echo "$SELL_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      tx_id
-      cost_price
-      echo "$SELL_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-      # remove duplicates
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # placeOrder limit #####################################################
+        PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+        ########################################################################
 
+        # sell order
+        echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        echo "$SELL_LIMIT_OUTPUT :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        tx_id
+        cost_price
+        echo "$SELL_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # remove duplicates
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+      fi
+    else
+      echo "$SOLD_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
+
+    ############################################################################
 
     # update position and price
     POSITION="NONE"
