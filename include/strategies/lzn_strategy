@@ -113,6 +113,10 @@ incoming_reference
 # L O R E N T Z I A N - I N D I C A T O R
 ################################################################################
 
+STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Watching market"
+
+################################################################################
+
 POSITION="$(grep "LZN_Position" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data | awk '{ print $2 }')"
 
 # define initial price and timestamp
@@ -144,11 +148,14 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
     fi
 
     echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>/dev/null
+
+    ############################################################################
+
+    STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LC :: ${LISTING_OPEN_RESULT:?}% :: $POSITION"
   fi
 
   ##############################################################################
 
-  STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LC :: ${LISTING_OPEN_RESULT:?}% :: $POSITION"
   BUY_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Placing buy order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
   BOUGHT_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Already bought, waiting. $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
   SELL_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Placing sell order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
