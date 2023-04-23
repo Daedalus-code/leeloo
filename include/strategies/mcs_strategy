@@ -46,22 +46,23 @@ last_tx               # last tx
 ################################################################################
 
 # chase and hodl the type
-REFERENCE_MCS_PRICE_LAST="$(echo "$REFERENCE_PRICE" | tr -d '.' | sed 's/^0*//')"
+REFERENCE_MCS_PRICE_BID="$(echo "$REFERENCE_PRICE" | tr -d '.' | sed 's/^0*//')"
 REFERENCE_MCS_PRICE_ASK="$(echo "$REFERENCE_PRICE_ASK" | tr -d '.' | sed 's/^0*//')"
+REFERENCE_MCS_PRICE_LAST="$(echo "$REFERENCE_PRICE_ASK" | tr -d '.' | sed 's/^0*//')"
 
 ################################################################################
 
 # if last is less than ask, continue, wait if reversed
 if [[ ! "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-    MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST<$REFERENCE_MCS_PRICE_ASK]"
+    MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_BID<$REFERENCE_MCS_PRICE_ASK]"
     MCS_POSITION_STATUS="OK"
   else
-    MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST>$REFERENCE_MCS_PRICE_ASK]"
+    MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_BID>$REFERENCE_MCS_PRICE_ASK]"
     MCS_POSITION_STATUS="Moon!"
   fi
 else
-  MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST*$REFERENCE_MCS_PRICE_ASK]"
+  MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_BID*$REFERENCE_MCS_PRICE_ASK]"
   MCS_POSITION_STATUS="Waiting"
 fi
 
@@ -72,9 +73,7 @@ echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
 
 MCS_Data..............: $STRATEGY_TYPE
 MCS_Position..........: $MCS_POSITION_STATUS $MCS_POSITION_VALUE
-MCS_Bid...............: $REFERENCE_PRICE $REFERENCE_CURRENCY
-MCS_Ask...............: $REFERENCE_PRICE_ASK $REFERENCE_CURRENCY
-MCS_Last..............: $REFERENCE_PRICE_LAST $REFERENCE_CURRENCY
+MCS_Bid/Ask/Last......: $REFERENCE_MCS_PRICE_BID/$REFERENCE_MCS_PRICE_ASK/$REFERENCE_MCS_PRICE_LAST
 
 Price.................: $LISTING_PRICE $REFERENCE_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL:?}%/${LISTING_ALLOCATED:?}%
@@ -95,7 +94,7 @@ open_positions
 
 ################################################################################
 
-MARKET_MCS_EXECUTE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Chasing Ask! $REFERENCE_MCS_PRICE_LAST > $REFERENCE_MCS_PRICE_ASK"
+MARKET_MCS_EXECUTE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Chasing Ask! $REFERENCE_MCS_PRICE_BID > $REFERENCE_MCS_PRICE_ASK"
 MARKET_MCS_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
 
 ################################################################################
