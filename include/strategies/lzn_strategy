@@ -136,6 +136,11 @@ NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
   # calculate lorentzian classification indicator
   LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.9f\n", $1 }')
+
+  if [[ -z "$LC" ]] &>/dev/null; then
+    LC="$(echo "0" | awk '{ printf "%.9f\n", $1 }')"
+  fi
+
   echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>/dev/null
 
   ##############################################################################
