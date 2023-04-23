@@ -45,17 +45,23 @@ last_tx               # last tx
 
 ################################################################################
 
+# chase and hodl the type
+REFERENCE_MCS_PRICE_LAST="$(echo "$REFERENCE_PRICE" | tr -d '.' | sed 's/^0*//')"
+REFERENCE_MCS_PRICE_ASK="$(echo "$REFERENCE_PRICE_ASK" | tr -d '.' | sed 's/^0*//')"
+
+################################################################################
+
 # if last is less than ask, continue, wait if reversed
 if [[ ! "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-    MCS_POSITION_VALUE="[$LISTING_PRICE_ASK<$REFERENCE_PRICE_ASK]"
+    MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST<$REFERENCE_MCS_PRICE_ASK]"
     MCS_POSITION_STATUS="Ok"
   else
-    MCS_POSITION_VALUE="[$LISTING_PRICE_ASK>$REFERENCE_PRICE_ASK]"
+    MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST>$REFERENCE_MCS_PRICE_ASK]"
     MCS_POSITION_STATUS="Moon!"
   fi
 else
-  MCS_POSITION_VALUE="[$LISTING_PRICE_ASK*$REFERENCE_PRICE_ASK]"
+  MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST*$REFERENCE_MCS_PRICE_ASK]"
   MCS_POSITION_STATUS="Waiting"
 fi
 
@@ -83,12 +89,6 @@ Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAM
 ################################################################################
 
 open_positions
-
-################################################################################
-
-# chase and hodl the type
-REFERENCE_MCS_PRICE_LAST="$(echo "$REFERENCE_PRICE" | tr -d '.' | sed 's/^0*//')"
-REFERENCE_MCS_PRICE_ASK="$(echo "$REFERENCE_PRICE_ASK" | tr -d '.' | sed 's/^0*//')"
 
 ################################################################################
 
