@@ -9,6 +9,8 @@ export NCURSES_NO_UTF8_ACS=1
 
 # shellcheck disable=SC2034  # Unused variables left for readability
 
+################################################################################
+
 source /usr/local/bin/include/leeloo/broker.conf
 source /usr/local/bin/include/leeloo/functions
 source /usr/local/bin/include/leeloo/irc_client
@@ -20,6 +22,8 @@ source /usr/local/bin/include/leeloo/api/southxchange/public_API
 # indicators
 source /usr/local/bin/include/leeloo/indicators/ema
 source /usr/local/bin/include/leeloo/indicators/rsi
+
+################################################################################
 
 # menu
 HEIGHT=21
@@ -55,6 +59,8 @@ CHOICE=$(dialog --clear \
 
 clear
 case $CHOICE in
+
+################################################################################
 
 # balance
 
@@ -101,7 +107,9 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
   ;;
 
-  # balances
+  ##############################################################################
+
+  # prices
 
 "2")
 
@@ -149,6 +157,10 @@ $MARKET_RESULT"
   display_result 2>/dev/null
 
   ;;
+
+  ##############################################################################
+
+  # search market
 
 "3")
 
@@ -213,6 +225,8 @@ $MARKET_RESULT"
   fi
 
   ;;
+
+  ##############################################################################
 
   # orders
 
@@ -416,6 +430,8 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   ;;
 
+  ##############################################################################
+
   # update repo
 
 "5")
@@ -464,6 +480,10 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   ;;
 
+  ##############################################################################
+
+  # manual history
+
 "H")
 
   if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
@@ -478,15 +498,27 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   ;;
 
+  ##############################################################################
+
+  # leeloo.log
+
 "L")
 
   nano "$LOG_DIR"/leeloo/leeloo.log
 
   ;;
 
+  ##############################################################################
+
+  # broker.conf
+
 "7")
 
   nano "${SYS_DIR:?}"/broker.conf
+
+  ##############################################################################
+
+  # auto strategy
 
   ;;
 
@@ -1292,6 +1324,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
   ;;
 
+  ##############################################################################
+
   # check indicators
 
 "I")
@@ -1562,15 +1596,22 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
 
   ;;
 
+  ##############################################################################
+
+  # chat
+
 "C")
 
   irc_client
 
   ;;
 
+  ##############################################################################
+
+  # exit menu
+
 "0")
 
-  echo "Exiting..."
   exit 0
 
   ;;
