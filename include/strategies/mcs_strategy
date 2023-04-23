@@ -52,16 +52,17 @@ REFERENCE_MCS_PRICE_LAST="$(echo "$REFERENCE_PRICE_LAST" | tr -d '.' | sed 's/^0
 
 ################################################################################
 
-# if last is less than ask, continue, wait if reversed
-if [[ ! "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-  if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-    MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST<$REFERENCE_MCS_PRICE_ASK]"
-    MCS_POSITION_STATUS="OK"
-  else
-    MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST>$REFERENCE_MCS_PRICE_ASK]"
-    MCS_POSITION_STATUS="Moon!"
-  fi
-else
+if [[ ! "$REFERENCE_MCS_PRICE_LAST" == "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+  MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST<$REFERENCE_MCS_PRICE_ASK]"
+  MCS_POSITION_STATUS="OK"
+fi
+
+if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+  MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST>$REFERENCE_MCS_PRICE_ASK]"
+  MCS_POSITION_STATUS="Moon!"
+fi
+
+if [[ "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   MCS_POSITION_VALUE="[$REFERENCE_MCS_PRICE_LAST*$REFERENCE_MCS_PRICE_ASK]"
   MCS_POSITION_STATUS="Waiting"
 fi
@@ -99,31 +100,37 @@ MARKET_MCS_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRE
 
 ################################################################################
 
-# if last is less than ask, continue, wait if reversed
-if [[ ! "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-  if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-    # price is equal
-    MCS_STATUS="Position OK :: ${REFERENCE_PRICE_ASK:?}"
-  else
-    # price is different
-    MCS_STATUS="Reaching for the Moon! :: ${REFERENCE_PRICE_ASK:?}"
-    # listing market buy order
-    AMOUNT_IN_REFERENCE_CURRENCY="false"
-    TYPE="buy"
+# price is equal
+if [[ "$REFERENCE_MCS_PRICE_LAST" == "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+  MCS_STATUS="Position: $MCS_POSITION_STATUS :: ${MCS_POSITION_VALUE:?}"
+fi
 
-    # placeOrder market ########################################################
-    PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-    ############################################################################
+################################################################################
 
-    echo "$MARKET_MCS_EXECUTE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-    tx_id
-    cost_price
-    echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-    # remove duplicates
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-  fi
-else
-  MCS_STATUS="Waiting :: ${REFERENCE_PRICE_ASK:?}"
+if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+  # price is different
+  MCS_STATUS="Position: $MCS_POSITION_STATUS! :: ${MCS_POSITION_VALUE:?}"
+
+  # listing market buy order
+  AMOUNT_IN_REFERENCE_CURRENCY="false"
+  TYPE="buy"
+
+  # placeOrder market ##########################################################
+  PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+  ##############################################################################
+
+  echo "$MARKET_MCS_EXECUTE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  tx_id
+  cost_price
+  echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+  # remove duplicates
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+fi
+
+################################################################################
+
+if [[ "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+  MCS_STATUS="Position: $MCS_POSITION_STATUS :: ${MCS_POSITION_VALUE:?}"
 fi
 
 ################################################################################
