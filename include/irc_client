@@ -172,9 +172,8 @@ function irc_client() {
         echo "$(echo "$IRSSI_IRC_BANNED" | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
       fi
       # welcome on connect
-      WELCOME_STRING="Welcome|welcome"
       if [[ "$(egrep "$WELCOME_STRING" /home/"$WHOAMI"/.irssi/irclogs/*/* | wc -l)" -gt "0" ]] &>/dev/null; then
-        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$WELCOME_STRING" | awk -F! '{ print $2 }' | awk '{ print $1 }' | awk '!a[$0]++' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | cat /home/"$WHOAMI"/.irssi/irclogs/*/* | grep -E "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | grep -v "has joined" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
         echo "$(echo "$IRSSI_IRC_WELCOME" | tr '.' ' ' | rev | awk '{ print $1"."$2 }' | rev | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
       fi
     fi
@@ -198,8 +197,8 @@ function irc_client() {
       while read -r LOG_FILE; do
         MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
         if [[ -n "$MATCH" ]] &>/dev/null; then
-          echo "$MATCH" | sed -r '/^\s*$/d' >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-          echo "$(echo "$IRSSI_IRC_CONNECT" | sort | awk '!a[$0]++' | sed -r '/^\s*$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+          echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+          echo "$(echo "$IRSSI_IRC_CONNECT" | sed -r '/^\s*$/d' | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
         fi
       done </home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
 
