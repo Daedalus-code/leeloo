@@ -22,9 +22,9 @@ source /usr/local/bin/include/leeloo/indicators/ema
 source /usr/local/bin/include/leeloo/indicators/rsi
 
 # menu
-HEIGHT=20
+HEIGHT=21
 WIDTH=44
-CHOICE_HEIGHT=12
+CHOICE_HEIGHT=13
 BACKTITLE="Leeloo (Multipass)"
 TITLE="Main Menu"
 MENU="Multipass $DATE
@@ -40,6 +40,7 @@ OPTIONS=(1 "Balance          Account Balance"
   7 "Config           Configuration"
   A "Robot            Auto Strategy"
   C "Chat             Chat Menu"
+  I "Check            Indicators"
   D "Donate           Donation"
   0 "Quit             Exit Menu")
 
@@ -503,23 +504,22 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
     ROBOT_UPTIME="0h:0m:0s"
   fi
 
-  HEIGHT=18
+  HEIGHT=17
   WIDTH=45
-  CHOICE_HEIGHT=11
+  CHOICE_HEIGHT=10
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Robot Strategy Menu"
   MENU="Multipass $DATE
 Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
   OPTIONS=(1 "Data             Strategy data"
-    2 "Check            Indicator info"
-    3 "Positions        Open positions"
+    2 "Positions        Open positions"
     H "History          Robot history"
-    4 "Config           Configurations"
-    5 "Setup            Setup strategy"
-    6 "Control          Robot controller"
-    7 "Bots             robot.log"
-    8 "Debug            Specific log"
+    3 "Config           Configurations"
+    4 "Setup            Setup strategy"
+    5 "Control          Robot controller"
+    L "Bots             robot.log"
+    P "Debug            Specific log"
     0 "Delete           Remove strategy")
 
   CHOICE=$(dialog --clear \
@@ -588,177 +588,9 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
     ;;
 
-    # check
-
-  "2")
-
-    HEIGHT=10
-    WIDTH=55
-    CHOICE_HEIGHT=10
-    BACKTITLE="Leeloo (Multipass)"
-    TITLE="Indicator Menu"
-    MENU="Multipass $DATE"
-
-    OPTIONS=(1 "RSI & EMA        RSI & EMA check"
-      2 "RSI              Relative Strength Index"
-      3 "EMA              Exponential Moving Average")
-
-    CHOICE=$(dialog --clear \
-      --backtitle "$BACKTITLE" \
-      --title "$TITLE" \
-      --menu "$MENU" \
-      $HEIGHT $WIDTH $CHOICE_HEIGHT \
-      "${OPTIONS[@]}" \
-      2>&1 >/dev/tty)
-
-    clear
-    case $CHOICE in
-
-    # rsi & ema
-
-    "1")
-
-      coin_token_search
-
-      if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-
-        COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
-
-        RESULT_RAW="-
-RSI
-$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)
-$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)
-EMA
-$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
--"
-
-        echo "$RESULT_RAW" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
-
-        BEARISH_SIGNAL="$(echo "$RESULT_RAW" | grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
-        BULLISH_SIGNAL="$(echo "$RESULT_RAW" | grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
-        TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc 2>/dev/null)"
-        BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc 2>/dev/null)"
-        BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc 2>/dev/null)"
-
-        if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
-          echo "EMA_Signal Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
-        elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
-          echo "EMA_Signal Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
-        fi
-
-        mv "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-        echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null
-
-        RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)"
-
-        if [[ ! "$(grep "EMA" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $5 }' | head -1)" == "0.00000000" ]] &>/dev/null; then
-
-          LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
-          WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
-
-          display_result() {
-            dialog --title "RSI & EMA Indicator ($COIN_TOKEN)" \
-              --no-collapse \
-              --msgbox "$RESULT" "$LENGTH" "$WIDTH"
-          }
-
-          display_result 2>/dev/null
-        else
-          display_result() {
-            dialog --title "Market info (404)" \
-              --no-collapse \
-              --msgbox "$RESULT" 5 25
-          }
-
-          RESULT="No $COIN_TOKEN EMA found!"
-          display_result 2>/dev/null
-        fi
-      else
-        display_result() {
-          dialog --title "Market info (empty)" \
-            --no-collapse \
-            --msgbox "$RESULT" 0 0
-        }
-
-        RESULT="No data found!"
-        display_result 2>/dev/null
-      fi
-
-      ;;
-
-    "2")
-
-      coin_token_search
-      rsi_value_output
-
-      COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
-      GET_RSI="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-      WIDTH="$(echo "$(echo "$GET_RSI" | wc -L)+4" | bc 2>/dev/null)"
-
-      if [[ -z "$WIDTH" ]] &>/dev/null; then
-        WIDTH="30"
-      fi
-      if [[ "$WIDTH" -lt "30" ]] &>/dev/null; then
-        WIDTH="30"
-      fi
-
-      if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-        if [[ ! -z "$GET_RSI" ]] &>/dev/null; then
-          display_result() {
-            dialog --title "RSI $COIN_TOKEN" \
-              --no-collapse \
-              --msgbox "$RESULT" 5 "$WIDTH"
-          }
-
-          RESULT="$GET_RSI"
-          display_result 2>/dev/null
-        fi
-      fi
-
-      ;;
-
-    "3")
-
-      coin_token_search
-      ema_value_output
-
-      COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
-      GET_EMA="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-      WIDTH="$(echo "$(echo "$GET_EMA" | wc -L)+4" | bc 2>/dev/null)"
-
-      if [[ -z "$WIDTH" ]] &>/dev/null; then
-        WIDTH="60"
-      fi
-      if [[ "$WIDTH" -lt "60" ]] &>/dev/null; then
-        WIDTH="60"
-      fi
-
-      if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-        if [[ ! -z "$GET_EMA" ]] &>/dev/null; then
-          display_result() {
-            dialog --title "EMA $COIN_TOKEN" \
-              --no-collapse \
-              --msgbox "$RESULT" 5 "$WIDTH"
-          }
-
-          RESULT="$GET_EMA"
-          display_result 2>/dev/null
-        fi
-      fi
-
-      ;;
-
-    esac
-
-    ;;
-
     # open positions
 
-  "3")
+  "2")
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
@@ -843,7 +675,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 
     # configurations
 
-  "4")
+  "3")
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
@@ -892,7 +724,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 
     # setup strategies
 
-  "5")
+  "4")
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
@@ -1222,7 +1054,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
     # robot controller
 
-  "6")
+  "5")
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
@@ -1328,7 +1160,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
     ;;
 
-  "7")
+  "L")
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
@@ -1342,7 +1174,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
     ;;
 
-  "8")
+  "P")
 
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
@@ -1452,6 +1284,174 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
       fi
     else
       no_key_no_secret
+    fi
+
+    ;;
+
+  esac
+
+  ;;
+
+  # check indicators
+
+"I")
+
+  HEIGHT=10
+  WIDTH=55
+  CHOICE_HEIGHT=10
+  BACKTITLE="Leeloo (Multipass)"
+  TITLE="Indicator Menu"
+  MENU="Multipass $DATE"
+
+  OPTIONS=(1 "RSI & EMA        RSI & EMA check"
+    2 "RSI              Relative Strength Index"
+    3 "EMA              Exponential Moving Average")
+
+  CHOICE=$(dialog --clear \
+    --backtitle "$BACKTITLE" \
+    --title "$TITLE" \
+    --menu "$MENU" \
+    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${OPTIONS[@]}" \
+    2>&1 >/dev/tty)
+
+  clear
+  case $CHOICE in
+
+  # rsi & ema
+
+  "1")
+
+    coin_token_search
+
+    if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
+
+      COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
+
+      RESULT_RAW="-
+RSI
+$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)
+$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)
+EMA
+$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)
+$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)
+$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)
+$(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)
+$(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
+-"
+
+      echo "$RESULT_RAW" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
+
+      BEARISH_SIGNAL="$(echo "$RESULT_RAW" | grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
+      BULLISH_SIGNAL="$(echo "$RESULT_RAW" | grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
+      TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc 2>/dev/null)"
+      BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc 2>/dev/null)"
+      BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc 2>/dev/null)"
+
+      if [[ "$BEARISH_SIGNAL" -gt "$BULLISH_SIGNAL" ]] &>/dev/null; then
+        echo "EMA_Signal Bearish ${BEARISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
+      elif [[ "$BULLISH_SIGNAL" -gt "$BEARISH_SIGNAL" ]] &>/dev/null; then
+        echo "EMA_Signal Bullish ${BULLISH_PERCENTAGE:?}%" >>"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
+      fi
+
+      mv "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
+      echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null
+
+      RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)"
+
+      if [[ ! "$(grep "EMA" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $5 }' | head -1)" == "0.00000000" ]] &>/dev/null; then
+
+        LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
+        WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
+
+        display_result() {
+          dialog --title "RSI & EMA Indicator ($COIN_TOKEN)" \
+            --no-collapse \
+            --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+        }
+
+        display_result 2>/dev/null
+      else
+        display_result() {
+          dialog --title "Market info (404)" \
+            --no-collapse \
+            --msgbox "$RESULT" 5 25
+        }
+
+        RESULT="No $COIN_TOKEN EMA found!"
+        display_result 2>/dev/null
+      fi
+    else
+      display_result() {
+        dialog --title "Market info (empty)" \
+          --no-collapse \
+          --msgbox "$RESULT" 0 0
+      }
+
+      RESULT="No data found!"
+      display_result 2>/dev/null
+    fi
+
+    ;;
+
+  "2")
+
+    coin_token_search
+    rsi_value_output
+
+    COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
+    GET_RSI="$(get_rsi "$RSI_VALUE_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$GET_RSI" | wc -L)+4" | bc 2>/dev/null)"
+
+    if [[ -z "$WIDTH" ]] &>/dev/null; then
+      WIDTH="30"
+    fi
+    if [[ "$WIDTH" -lt "30" ]] &>/dev/null; then
+      WIDTH="30"
+    fi
+
+    if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
+      if [[ ! -z "$GET_RSI" ]] &>/dev/null; then
+        display_result() {
+          dialog --title "RSI $COIN_TOKEN" \
+            --no-collapse \
+            --msgbox "$RESULT" 5 "$WIDTH"
+        }
+
+        RESULT="$GET_RSI"
+        display_result 2>/dev/null
+      fi
+    fi
+
+    ;;
+
+  "3")
+
+    coin_token_search
+    ema_value_output
+
+    COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
+    GET_EMA="$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$GET_EMA" | wc -L)+4" | bc 2>/dev/null)"
+
+    if [[ -z "$WIDTH" ]] &>/dev/null; then
+      WIDTH="60"
+    fi
+    if [[ "$WIDTH" -lt "60" ]] &>/dev/null; then
+      WIDTH="60"
+    fi
+
+    if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
+      if [[ ! -z "$GET_EMA" ]] &>/dev/null; then
+        display_result() {
+          dialog --title "EMA $COIN_TOKEN" \
+            --no-collapse \
+            --msgbox "$RESULT" 5 "$WIDTH"
+        }
+
+        RESULT="$GET_EMA"
+        display_result 2>/dev/null
+      fi
     fi
 
     ;;
