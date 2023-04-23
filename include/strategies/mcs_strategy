@@ -44,6 +44,41 @@ reference_allocated   # total reference allocated
 last_tx               # last tx
 
 ################################################################################
+
+# if last is less than ask, continue, wait if reversed
+if [[ ! "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+  if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+    MCS_POSITION_VALUE="[$LISTING_PRICE_ASK<$REFERENCE_PRICE_ASK]"
+    MCS_POSITION_STATUS="Ok"
+  else
+    MCS_POSITION_VALUE="[$LISTING_PRICE_ASK>$REFERENCE_PRICE_ASK]"
+    MCS_POSITION_STATUS="Moon!"
+  fi
+else
+  MCS_POSITION_VALUE="[$LISTING_PRICE_ASK*$REFERENCE_PRICE_ASK]"
+  MCS_POSITION_STATUS="Waiting"
+fi
+
+################################################################################
+
+# get data
+echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
+
+MCS_Data..............: $STRATEGY_TYPE
+MCS_Position..........: $MCS_POSITION_STATUS $MCS_POSITION_VALUE
+
+Price.................: $LISTING_PRICE $REFERENCE_CURRENCY $REFERENCE_PRICE $LISTING_CURRENCY
+Listing_Allocated.....: ${LISTING_ALLOCATED_REAL:?}%/${LISTING_ALLOCATED:?}%
+Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY
+Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY $LISTING_AVAILABLE_VALUED $REFERENCE_CURRENCY
+Listing_Unconfirmed...: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY
+Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL:?}%/${REFERENCE_ALLOCATED:?}%
+Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY $REFERENCE_AMOUNT_VALUED $LISTING_CURRENCY
+Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY $REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY
+Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY
+Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
+
+################################################################################
 # O P E N - P O S I T I O N S
 ################################################################################
 
@@ -69,7 +104,7 @@ if [[ ! "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/nul
     MCS_STATUS="Market OK :: ${REFERENCE_PRICE_ASK:?}"
   else
     # price is different
-    MCS_STATUS="Market needs to Moon! :: ${REFERENCE_PRICE_ASK:?}"
+    MCS_STATUS="Reaching for the Moon! :: ${REFERENCE_PRICE_ASK:?}"
     # listing market buy order
     AMOUNT_IN_REFERENCE_CURRENCY="false"
     TYPE="buy"
@@ -85,6 +120,8 @@ if [[ ! "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/nul
     # remove duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
   fi
+else
+  MCS_STATUS="Waiting :: ${REFERENCE_PRICE_ASK:?}"
 fi
 
 ################################################################################
