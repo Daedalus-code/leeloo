@@ -179,15 +179,23 @@ $LISTING_CURRENCY_PRICE $REFERENCE_CURRENCY_PRICE" 8 40 \
 function last_log {
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/broker.log)"
   WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/broker.log | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+  LENGTH="$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')"
+
   if [[ -z "$WIDTH" ]] &>/dev/null; then
-    WIDTH="89"
-  elif [[ "$WIDTH" -lt "89" ]] &>/dev/null; then
-    WIDTH="89"
+    WIDTH="77"
+  elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
+    WIDTH="77"
   fi
+  if [[ -z "$LENGTH" ]] &>/dev/null; then
+    LENGTH="7"
+  elif [[ "$LENGTH" -lt "7" ]] &>/dev/null; then
+    LENGTH="7"
+  fi
+
   display_result() {
     dialog --title "Broker Log: $LOG_COUNT" \
       --no-collapse \
-      --tailbox "$RESULT" 25 "$WIDTH"
+      --tailbox "$RESULT" "$LENGTH" "$WIDTH"
   }
   RESULT="${LOG_DIR:?}/leeloo/broker.log"
   display_result 2>/dev/null
