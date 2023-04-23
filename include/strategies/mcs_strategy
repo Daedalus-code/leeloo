@@ -115,6 +115,12 @@ if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null;
   AMOUNT_IN_REFERENCE_CURRENCY="false"
   TYPE="buy"
 
+  # random order amount
+  RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))
+  RANDOM_ORDER_NUMBER="$(echo "$RANDOM_ORDER_NUMBER/369369" | bc -l 2>/dev/null | awk '{ printf "%.18f\n", $1 }')"
+  # new listing amount
+  LISTING_AMOUNT="$(echo "$LISTING_AMOUNT+$RANDOM_ORDER_NUMBER" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
   # placeOrder market ##########################################################
   PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
   ##############################################################################
