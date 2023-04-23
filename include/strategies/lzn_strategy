@@ -133,10 +133,11 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
   # check if new trade has been executed
   if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
     # calculate lorentzian classification indicator
-    LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.9f\n", $1 }')
+    LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.34f\n", $1 }')
+    LC_OUTPUT="$(echo "$LC" | awk '{ printf "%.9f\n", $1 }')"
 
-    if [[ -z "$LC" ]] &>/dev/null; then
-      LC="$(echo "0" | awk '{ printf "%.9f\n", $1 }')"
+    if [[ -z "$LC_OUTPUT" ]] &>/dev/null; then
+      LC_OUTPUT="$(echo "0" | awk '{ printf "%.9f\n", $1 }')"
     fi
 
     echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>/dev/null
@@ -144,7 +145,7 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
 
   ##############################################################################
 
-  STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LC :: ${LISTING_OPEN_RESULT:?}% :: $POSITION"
+  STATUS_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LC_OUTPUT :: ${LISTING_OPEN_RESULT:?}% :: $POSITION"
   BUY_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Placing buy order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
   BOUGHT_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Already bought, waiting. $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
   SELL_LZN_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: Placing sell order for $LISTING_CURRENCY/$REFERENCE_CURRENCY at ${NEW_PRICE}"
