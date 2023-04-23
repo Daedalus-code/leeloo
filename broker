@@ -187,21 +187,19 @@ $MARKET_RESULT"
 
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
     MARKET_RESULT="$(grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | sort -k2 -n -r)"
-    MARKET_COUNT="$(echo "$MARKET_RESULT" | wc -l)"
+    MARKET_COUNT="$(echo "$MARKET_RESULT" | sed -r '/^\s*$/d' | wc -l)"
     MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
     MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | wc -l)"
     MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     LENGTH="$(echo "$MARKET_COUNT+5" | bc 2>/dev/null)"
-    WIDTH="$(echo "$(echo "$MARKET_RESULT" | column -t | wc -L)+6" | bc 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$MARKET_RESULT" | column -t | wc -L)+5" | bc 2>/dev/null)"
 
     if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
       LENGTH="25"
     fi
 
-    if [[ "$WIDTH" -lt "70" ]] &>/dev/null; then
-      WIDTH="70"
-    elif [[ "$(echo "$MARKET_RESULT" | wc -L)" -eq "0" ]] &>/dev/null; then
-      WIDTH="70"
+    if [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
+      WIDTH="77"
     fi
 
     display_result() {
