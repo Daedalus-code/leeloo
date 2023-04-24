@@ -411,7 +411,7 @@ function rogue_profit() {
       echo "Lurking in the Shadows.." >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth 2>/dev/null
       sleep 1
     fi
-    STEALTH_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    STEALTH_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
     STEALTH_TIME=$(printf '%dh:%dm:%ds\n' $(("$STEALTH_TIME_SECONDS/3600")) $(("$STEALTH_TIME_SECONDS%3600/60")) $(("$STEALTH_TIME_SECONDS%60")))
     echo "$LOG_DATE :: Strategy RGP :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Stealth mode $STEALTH_TIME" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   }
@@ -644,7 +644,7 @@ function save_orders() {
     TRADE_TIMER="0"
     sleep 1
   fi
-  TRADE_HISTORY_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  TRADE_HISTORY_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   if [[ "$TRADE_HISTORY_SECONDS" -gt "$TRADE_TIMER" ]] &>/dev/null; then
     # keep orders, remove empty lines
     TRADE_HISTORY="$(cat "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | sed '/^$/d')"
@@ -658,7 +658,7 @@ function save_orders() {
 
 function last_orders {
   # reset broker.log
-  LAST_ORDERS_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  LAST_ORDERS_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   if [[ "$LAST_ORDERS_AGE" -gt "$(echo "$BOT_TIMER*2" | bc | awk -F. '{ print $1 }')" ]] &>/dev/null; then
     echo "$(sort -k 1.5M -k 1.3n -k 1.4n -k 2n -k 3.1n -k 3.2n "${SYS_DIR:?}"/robot/orders)" >"${SYS_DIR:?}"/robot/orders
   fi
