@@ -1388,10 +1388,16 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
             if [ -n "$CHOICE" ] &>/dev/null; then
               SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
               FILE_NAME="$(echo "$SELECTED_FILE" | awk -F. '{ print $1 }' | awk -F/ '{ print $NF }')"
-              rm "$SELECTED_FILE" &>/dev/null
-              rm "${SYS_DIR:?}"/robot/"$FILE_NAME".* &>/dev/null
-              rm "${LOG_DIR:?}"/leeloo/robot."$FILE_NAME".* &>/dev/null
-              rm "${LOG_DIR:?}"/leeloo/open."$FILE_NAME".* &>/dev/null
+
+              if dialog --stdout --title "$SELECTED_FILE!" \
+                --backtitle "DELETING $FILE_NAME" \
+                --yesno "Yes: Delete!, No:  Go back!" 5 30; then
+                rm "$SELECTED_FILE" &>/dev/null
+                rm "${SYS_DIR:?}"/robot/"$FILE_NAME".* &>/dev/null
+                rm "${LOG_DIR:?}"/leeloo/robot."$FILE_NAME".* &>/dev/null
+                rm "${LOG_DIR:?}"/leeloo/open."$FILE_NAME".* &>/dev/null
+              fi
+
               break
             else
               break
