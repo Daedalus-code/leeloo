@@ -314,12 +314,20 @@ function open_positions() {
   OPEN_POSITION_COST="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.list_cost"
   OPEN_POSITION_PRICE="${SYS_DIR:?}/robot/open.$BASENAME_STRATEGY.list_price"
 
-  if [ ! -f "$OPEN_POSITION_COST" ] &>/dev/null; then
-    echo "$LISTING_AVAILABLE_VALUED" >"$OPEN_POSITION_COST" 2>/dev/null
+  if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
+    if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+      if [ ! -f "$OPEN_POSITION_COST" ] &>/dev/null; then
+        echo "$LISTING_AVAILABLE_VALUED" >"$OPEN_POSITION_COST" 2>/dev/null
+      fi
+    fi
   fi
 
-  if [ ! -f "$OPEN_POSITION_PRICE" ] &>/dev/null; then
-    echo "$LISTING_PRICE" >"$OPEN_POSITION_PRICE" 2>/dev/null
+  if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
+    if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
+      if [ ! -f "$OPEN_POSITION_PRICE" ] &>/dev/null; then
+        echo "$LISTING_PRICE" >"$OPEN_POSITION_PRICE" 2>/dev/null
+      fi
+    fi
   fi
 
   LISTING_OPEN_BALANCE="$(cat "$OPEN_POSITION_COST" 2>/dev/null)"
