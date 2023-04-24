@@ -147,18 +147,18 @@ fi
 ################################################################################
 
 # order position
-BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool | grep "$STRATEGY_TYPE" | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $5 }')"
-BST_ORDER_POSITION="$(cat "${SYS_DIR:?}"/robot/pool | grep "$STRATEGY_TYPE" | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $5 }' | tr -d '%.' | sed 's/^0*//' | sed -r '/^\s*$/d')"
+BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | egrep -o "[0-9]+.[0-9]+%")"
+BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | tr -d '%')"
+
+# zero, continue
+if [[ -z "$BST_ORDER_POSITION_RAW" ]] &>/dev/null; then
+  BST_ORDER_POSITION_RAW="0%"
+fi
 
 # zero, continue
 if [[ -z "$BST_ORDER_POSITION" ]] &>/dev/null; then
   BST_ORDER_POSITION_RAW="0%"
   BST_ORDER_POSITION="0"
-fi
-
-# zero, continue
-if [[ -z "$BST_ORDER_POSITION_RAW" ]] &>/dev/null; then
-  BST_ORDER_POSITION_RAW="0%"
 fi
 
 PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${BST_ORDER_POSITION_RAW:?}"
