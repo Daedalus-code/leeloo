@@ -345,12 +345,13 @@ function open_positions() {
   if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
     if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
 
-      if [ ! -f "$OPEN_POSITION_COST" ] &>/dev/null; then
-        echo "$LISTING_AVAILABLE_VALUED" >"$OPEN_POSITION_COST" 2>/dev/null
+      # listing price null, continue
+      if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price)" -eq "0" ]] &>/dev/null; then
+        echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
       fi
-
-      if [ ! -f "$OPEN_POSITION_PRICE" ] &>/dev/null; then
-        echo "$LISTING_PRICE" >"$OPEN_POSITION_PRICE" 2>/dev/null
+      # reference price null, continue
+      if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price)" -eq "0" ]] &>/dev/null; then
+        echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
       fi
     fi
   fi
@@ -377,18 +378,6 @@ function open_positions() {
       LISTING_OPEN_AMOUNT_SECONDS="0"
     fi
     LISTING_OPEN_AMOUNT_AGE=$(printf '%dh:%dm:%ds\n' $(("$LISTING_OPEN_AMOUNT_SECONDS/3600")) $(("$LISTING_OPEN_AMOUNT_SECONDS%3600/60")) $(("$LISTING_OPEN_AMOUNT_SECONDS%60")))
-  fi
-
-  ##############################################################################
-
-  # listing price null, continue
-  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price)" -eq "0" ]] &>/dev/null; then
-    echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
-  fi
-
-  # reference price null, continue
-  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price)" -eq "0" ]] &>/dev/null; then
-    echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
   fi
 
   ##############################################################################
