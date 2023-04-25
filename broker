@@ -29,7 +29,6 @@ source /usr/local/bin/include/leeloo/strategies/tools
 ################################################################################
 
 clear
-SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
 
 # menu
 
@@ -455,10 +454,11 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
 
-  # restart looper if any updates
+  # any updates relating to the auto strategies system, restart
+  UPDATE_KEYS="looper|leeloo|functions|private_API|public_API"
   if [[ "$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | grep '[+-]' | wc -l)" -gt "0" ]] &>/dev/null; then
-    ROBOT_UPDATES="$(egrep "looper|leeloo" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | awk '{ print $3,$4 }')"
-    echo " Robot updated! $ROBOT_UPDATES" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+    ROBOT_UPDATES="$(egrep "$UPDATE_KEYS" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | awk '{ print $3,$4 }')"
+    echo " New updates! $ROBOT_UPDATES" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
 
     if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
       screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
