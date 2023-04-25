@@ -706,11 +706,7 @@ function save_orders() {
 ################################################################################
 
 function last_orders {
-  # reset broker.log
-  LAST_ORDERS_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  if [[ "$LAST_ORDERS_AGE" -gt "$(echo "$BOT_TIMER*2" | bc | awk -F. '{ print $1 }')" ]] &>/dev/null; then
-    echo "$(sort -k 1.5M -k 1.3n -k 1.4n -k 2n -k 3.1n -k 3.2n "${SYS_DIR:?}"/robot/orders)" >"${SYS_DIR:?}"/robot/orders
-  fi
+  # keep n lines
   if [[ "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
     echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>/dev/null)" "${SYS_DIR:?}"/robot/orders 2>/dev/null)" >"${SYS_DIR:?}"/robot/orders 2>/dev/null
   fi
