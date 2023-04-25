@@ -349,9 +349,17 @@ function open_positions() {
       if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price)" -eq "0" ]] &>/dev/null; then
         echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
       fi
+      # listing cost null, continue
+      if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost)" -eq "0" ]] &>/dev/null; then
+        echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null
+      fi
       # reference price null, continue
       if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price)" -eq "0" ]] &>/dev/null; then
         echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
+      fi
+      # reference cost null, continue
+      if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost)" -eq "0" ]] &>/dev/null; then
+        echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null
       fi
     fi
   fi
