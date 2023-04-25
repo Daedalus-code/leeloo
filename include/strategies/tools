@@ -337,6 +337,7 @@ function open_positions() {
 
   ##############################################################################
 
+  # make sure prices, balances exist, continue
   if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -gt "0" ]] &>/dev/null; then
     if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -gt "0" ]] &>/dev/null; then
 
@@ -408,9 +409,11 @@ function open_positions() {
 
   ##############################################################################
 
-  # is this an open position?
+  # make sure prices, balances exist, continue
   if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -gt "0" ]] &>/dev/null; then
     if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+
+      # is this an open position?
       if [[ "$(echo "$LISTING_OPEN_AMOUNT" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
         # currency amount cost result age
         echo "$STRATEGY_TYPE $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
