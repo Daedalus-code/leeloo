@@ -461,7 +461,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
     echo " New updates! $ROBOT_UPDATES" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
 
     if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-      screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
+      screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
       echo " Robot stopping! --" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
       if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
         killall screen &>/dev/null
@@ -1216,7 +1216,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
             --yesno "Yes: Restart!, No:  Go back!" 5 32; then
 
             # kill old screen
-            screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
+            screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
             sleep 1
 
             # screen still exist, continue
@@ -1235,7 +1235,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         "3")
 
           # kill old screen
-          screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
+          screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
           sleep 1
 
           if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
