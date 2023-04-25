@@ -392,7 +392,7 @@ function rogue_profit() {
 
   ROGUE_TIMER_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   ROGUE_TIMER="3600"      # 1 hour cooldown
-  ROGUE_HOURS="24"       # hours of data
+  ROGUE_HOURS="24"        # hours of data
   ROGUE_AMOUNT="0.009225" # amount % to be used
   ROGUE_MAX_DAY="4"       # max trades a day
   ROGUE_RSI="14"          # relative strength index
@@ -468,7 +468,7 @@ function rogue_profit() {
   ##############################################################################
 
   function rogue_clean_lines() {
-    ROGUE_LINE_CALCULATION="$(echo "$ROGUE_HOURS*2" | bc 2>/dev/null)"
+    ROGUE_LINE_CALCULATION="$(echo "$ROGUE_HOURS/2" | bc 2>/dev/null)"
     # keep n lines
     echo "$(tail -"$ROGUE_LINE_CALCULATION" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
   }
