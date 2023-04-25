@@ -1347,6 +1347,15 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
             }
             RESULT="${SELECTED_FILE:?}"
             display_result 2>/dev/null
+            if [[ "$LOG_COUNT" -gt "0" ]] &>/dev/null; then
+              # keep history, delete history
+              if ! dialog --stdout --title "Keep history? +$LOG_COUNT" \
+                --backtitle "Keep history?" \
+                --yesno "Yes: Keep!, No: Delete!" 5 30; then
+                truncate -s 0 "${SELECTED_FILE:?}" &>/dev/null
+                truncate -s 0 "${SELECTED_FILE:?}" &>/dev/null
+              fi
+            fi
             break
           else
             break
