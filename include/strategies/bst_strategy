@@ -146,6 +146,9 @@ fi
 
 ################################################################################
 
+# profit trigger if enabled
+# only when profit
+
 # order position
 BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | egrep -o "[0-9]+.[0-9]+%")"
 BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | tr -d '%.' | sed 's/^0*//' | sed -r '/^\s*$/d')"
@@ -153,6 +156,13 @@ BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | tr -d '%.' | sed 's/^0*//
 # zero, continue
 if [[ -z "$BST_ORDER_POSITION_RAW" ]] &>/dev/null; then
   BST_ORDER_POSITION_RAW="0%"
+  BST_ORDER_POSITION="0"
+fi
+
+# negative, continue
+if [[ "$(echo "$BST_ORDER_POSITION_RAW" | grep -c "-")" -eq "1" ]] &>/dev/null; then
+  BST_ORDER_POSITION_RAW="0%"
+  BST_ORDER_POSITION="0"
 fi
 
 # zero, continue
