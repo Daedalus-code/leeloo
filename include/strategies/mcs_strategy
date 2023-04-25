@@ -114,7 +114,7 @@ BUYING_POWER="$(tail -19 "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$ST
 
 ################################################################################
 
-MARKET_MCS_EXECUTE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Chasing Ask! $REFERENCE_MCS_PRICE_LAST > $REFERENCE_MCS_PRICE_ASK"
+MARKET_MCS_EXECUTE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Chasing Ask! $REFERENCE_MCS_PRICE_ASK"
 MARKET_MCS_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
 MARKET_MCS_NO_BALANCE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: No balance $LISTING_AMOUNT-$REFERENCE_AMOUNT"
 
@@ -127,39 +127,45 @@ fi
 
 ################################################################################
 
-# get buying power
-if [[ "$BUYING_POWER" -eq "0" ]] &>/dev/null; then
+# skip if data is null
+if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
 
-  if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-    # price is different
-    MCS_STATUS="$MCS_POSITION_STATUS! :: ${MCS_POSITION_VALUE:?}"
+  # get buying power
+  if [[ "$BUYING_POWER" -eq "0" ]] &>/dev/null; then
 
-    # listing market buy order
-    AMOUNT_IN_REFERENCE_CURRENCY="false"
-    TYPE="buy"
+    if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+      # price is different
+      MCS_STATUS="$MCS_POSITION_STATUS! :: ${MCS_POSITION_VALUE:?}"
 
-    # random order amount
-    RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))
-    RANDOM_ORDER_NUMBER="$(echo "$RANDOM_ORDER_NUMBER/369369" | bc -l 2>/dev/null | awk '{ printf "%.18f\n", $1 }')"
-    # new listing amount
-    LISTING_AMOUNT="$(echo "$LISTING_AMOUNT+$RANDOM_ORDER_NUMBER" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+      # listing market buy order
+      AMOUNT_IN_REFERENCE_CURRENCY="false"
+      TYPE="buy"
 
-    # placeOrder market ########################################################
-    PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+      # random order amount
+      RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))
+      RANDOM_ORDER_NUMBER="$(echo "$RANDOM_ORDER_NUMBER/369369" | bc -l 2>/dev/null | awk '{ printf "%.18f\n", $1 }')"
+      # new listing amount
+      LISTING_AMOUNT="$(echo "$LISTING_AMOUNT+$RANDOM_ORDER_NUMBER" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+      # placeOrder market ######################################################
+      PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+      ##########################################################################
+
+      echo "$MARKET_MCS_EXECUTE :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      tx_id
+      cost_price
+      echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+      # remove duplicates
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+    fi
+
     ############################################################################
 
-    echo "$MARKET_MCS_EXECUTE :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-    tx_id
-    cost_price
-    echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-    # remove duplicates
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-  fi
-
-  ##############################################################################
-
-  if [[ "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-    MCS_STATUS="$MCS_POSITION_STATUS :: ${MCS_POSITION_VALUE:?}"
+    if [[ "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+      MCS_STATUS="$MCS_POSITION_STATUS :: ${MCS_POSITION_VALUE:?}"
+    fi
+  else
+    MCS_STATUS="Waiting :: ${MCS_POSITION_VALUE:?} -> $REFERENCE_AMOUNT $REFERENCE_CURRENCY"
   fi
 else
   MCS_STATUS="Waiting :: ${MCS_POSITION_VALUE:?} -> $REFERENCE_AMOUNT $REFERENCE_CURRENCY"
