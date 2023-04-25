@@ -146,7 +146,7 @@ fi
 
 # order position, profit trigger if enabled
 BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | egrep -o "[0-9]+.[0-9]+%")"
-# above n, take profit
+# order position, without decimal
 BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | awk -F. '{ print $1 }' 2>/dev/null)"
 
 ################################################################################
@@ -168,6 +168,8 @@ if [[ -z "$BST_ORDER_POSITION" ]] &>/dev/null; then
   BST_ORDER_POSITION_RAW="0%"
   BST_ORDER_POSITION="0"
 fi
+
+################################################################################
 
 PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${BST_ORDER_POSITION_RAW:?}"
 
@@ -226,9 +228,9 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
         echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
         # remove duplicates
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-
       fi
-    # reference true
+
+      # reference true
     elif [[ "$REFERENCE_STATUS" == "true" ]] &>/dev/null; then
       # market
       if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
@@ -257,15 +259,19 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
         echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
         # remove duplicates
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-
       fi
     fi
   fi
 else
+
   if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | egrep "Cooldown|Waiting for profit" | wc -l)" -gt "0" ]] &>/dev/null; then
     if [[ "$BST_TAKE_PROFIT" == "0" ]] &>/dev/null; then
+
+      # sell output
       echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     else
+
+      # profit output
       echo "$PROFIT_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
