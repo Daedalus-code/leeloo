@@ -766,7 +766,7 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
         display_result 2>/dev/null
 
-        ORDERS_COUNT="$(wc -l "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '{ print $1 }')"
+        ORDERS_COUNT="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null | sed -r '/^\s*$/d' | wc -l)"
         if [[ "$ORDERS_COUNT" -gt "0" ]] &>/dev/null; then
           # keep history, delete history
           if ! dialog --stdout --title "Keep history? +$ORDERS_COUNT" \
