@@ -742,12 +742,12 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
         display_result() {
-          dialog --title "Trade History +$LOG_COUNT" \
+          dialog --title "Trade History +$ORDERS_COUNT" \
             --no-collapse \
             --tailbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
-        LOG_COUNT="$(wc -l "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '{ print $1 }')"
+        ORDERS_COUNT="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null | sed -r '/^\s*$/d' | wc -l)"
         WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
         LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')+5" | bc 2>/dev/null)"
 
@@ -766,7 +766,6 @@ Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
 
         display_result 2>/dev/null
 
-        ORDERS_COUNT="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null | sed -r '/^\s*$/d' | wc -l)"
         if [[ "$ORDERS_COUNT" -gt "0" ]] &>/dev/null; then
           # keep history, delete history
           if ! dialog --stdout --title "Keep history? +$ORDERS_COUNT" \
