@@ -144,12 +144,12 @@ fi
 
 ################################################################################
 
-# profit trigger if enabled
-# only when profit
+# order position, profit trigger if enabled
+BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | egrep -o "[0-9]+.[0-9]+%")"
+# above n, take profit
+BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | awk -F. '{ print $1 }' 2>/dev/null)"
 
-# order position
-BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | egrep -o "[0-9]+.[0-9]+%")"
-BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | tr -d '%.' | sed 's/^0*//' | sed -r '/^\s*$/d')"
+################################################################################
 
 # zero, continue
 if [[ -z "$BST_ORDER_POSITION_RAW" ]] &>/dev/null; then
