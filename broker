@@ -1226,9 +1226,6 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
             --backtitle "RESTARTING" \
             --yesno "Yes: Restart!, No:  Go back!" 5 32; then
 
-            # kill old bash
-            killall bash &>/dev/null
-
             # kill old screen
             screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
             sleep 1
@@ -1238,9 +1235,9 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
               killall screen &>/dev/null
             else
               # create a new screen session with logging enabled
-              screen -dmSL leeloo -Logfile "$LOG_DIR/leeloo/screen.log" 2>/dev/null
+              screen -dmSL leeloo -Logfile "$LOG_DIR/leeloo/screen.log"
               # start the leeloo command in the screen session
-              screen -S leeloo -p 0 -X stuff "bash ${SYS_DIR}/robot/leeloo >> "$LOG_DIR/leeloo/leeloo.log" 2>&1"$'\n' 2>/dev/null
+              screen -S leeloo -p 0 -X stuff "bash ${SYS_DIR}/robot/leeloo >> "$LOG_DIR/leeloo/leeloo.log" 2>&1"$'\n'
             fi
           fi
 
