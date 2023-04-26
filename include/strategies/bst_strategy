@@ -128,6 +128,16 @@ MARKET_BST_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRE
 LIMIT_BST_POSITION="$MARKET_BST_POSITION"
 
 COOLDOWN_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cooldown $ORDER_COOLDOWN"
+
+################################################################################
+
+# order position, profit trigger if enabled
+BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | egrep -o "[0-9]+.[0-9]+%")"
+# order position, without decimal
+BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | awk -F. '{ print $1 }' 2>/dev/null)"
+
+################################################################################
+
 PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${BST_ORDER_POSITION_RAW:?}"
 
 ################################################################################

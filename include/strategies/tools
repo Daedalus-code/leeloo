@@ -184,10 +184,6 @@ function total_trigger() {
 ################################################################################
 
 function take_profit() {
-  # order position, profit trigger if enabled
-  BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | egrep -o "[0-9]+.[0-9]+%")"
-  # order position, without decimal
-  BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | awk -F. '{ print $1 }' 2>/dev/null)"
   if [[ "$BST_ORDER_POSITION" -gt "0" ]] &>/dev/null; then
     COOLDOWN_SECONDS="0" # less
     TX_TIME="1"          # greater
