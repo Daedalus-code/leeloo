@@ -75,7 +75,7 @@ if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
   COOLDOWN_SECONDS="0"
 fi
 
-TX_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)))" 2>/dev/null)"
+TX_TIME="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>/dev/null)"
 if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] &>/dev/null; then
