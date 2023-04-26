@@ -146,7 +146,9 @@ fi
 
 ################################################################################
 
-take_profit
+if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
+  take_profit
+fi
 
 ################################################################################
 
@@ -217,16 +219,17 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
       fi
     fi
   fi
-else
+fi
 
-  if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | egrep "Cooldown|Waiting for profit" | wc -l)" -gt "0" ]] &>/dev/null; then
-    if [[ "$BST_TAKE_PROFIT" == "0" ]] &>/dev/null; then
-      # sell output
-      echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-    else
-      # profit output
-      echo "$PROFIT_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-    fi
+################################################################################
+
+if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep "Cooldown|Waiting for profit" | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$BST_TAKE_PROFIT" == "0" ]] &>/dev/null; then
+    # cooldown output
+    echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  else
+    # profit output
+    echo "$PROFIT_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   fi
 fi
 
