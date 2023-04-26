@@ -190,12 +190,9 @@ function take_profit() {
     # order position, without decimal
     BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | awk -F. '{ print $1 }' 2>/dev/null)"
     if [[ "$BST_ORDER_POSITION" -gt "0" ]] &>/dev/null; then
-      COOLDOWN_SECONDS="0" # equal
-      TX_TIME="0"          # equal
+      COOLDOWN_SECONDS="0" # less
+      TX_TIME="1"          # greater
       TOTAL_TRIGGER="1"    # trigger take profit
-    else
-      # waiting for profit
-      echo "$PROFIT_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
 }
