@@ -56,6 +56,14 @@ REFERENCE_MCS_PRICE_LAST="$(echo "$REFERENCE_PRICE_LAST" | awk '{ printf "%.9f\n
 
 ################################################################################
 
+REFERENCE_MCS_SPREAD="$(echo "100/$REFERENCE_PRICE_ASK*$REFERENCE_PRICE" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+
+if [[ -z "$REFERENCE_MCS_SPREAD" ]] &>/dev/null; then
+  REFERENCE_MCS_SPREAD="0"
+fi
+
+################################################################################
+
 if [[ "$REFERENCE_MCS_PRICE_LAST" == "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST-$REFERENCE_MCS_PRICE_ASK"
   MCS_POSITION_STATUS="HODL"
@@ -174,7 +182,7 @@ fi
 
 ################################################################################
 
-MCS_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $MCS_STATUS"
+MCS_MARKET_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $MCS_STATUS ${REFERENCE_MCS_SPREAD:?}%"
 
 ################################################################################
 
