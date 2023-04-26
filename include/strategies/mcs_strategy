@@ -138,25 +138,29 @@ if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   if [[ "$BUYING_POWER" -eq "0" ]] &>/dev/null; then
 
     if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-      # price is different
-      MCS_STATUS="$MCS_POSITION_STATUS! :: ${MCS_POSITION_VALUE:?}"
+      # skip if allocated is less than n%
+      if [[ ! "$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -lt "10" ]] &>/dev/null; then
 
-      # random order amount
-      RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))
-      RANDOM_ORDER_NUMBER="$(echo "$RANDOM_ORDER_NUMBER/369369" | bc -l 2>/dev/null | awk '{ printf "%.18f\n", $1 }')"
-      # new listing amount
-      LISTING_AMOUNT="$(echo "$LISTING_AMOUNT+$RANDOM_ORDER_NUMBER" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+        # price is different
+        MCS_STATUS="$MCS_POSITION_STATUS! :: ${MCS_POSITION_VALUE:?}"
 
-      # placeOrder market ######################################################
-      PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-      ##########################################################################
+        # random order amount
+        RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))
+        RANDOM_ORDER_NUMBER="$(echo "$RANDOM_ORDER_NUMBER/369369" | bc -l 2>/dev/null | awk '{ printf "%.18f\n", $1 }')"
+        # new listing amount
+        LISTING_AMOUNT="$(echo "$LISTING_AMOUNT+$RANDOM_ORDER_NUMBER" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
-      echo "$MARKET_MCS_EXECUTE :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      tx_id
-      cost_price
-      echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-      # remove duplicates
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # placeOrder market ####################################################
+        PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+        ########################################################################
+
+        echo "$MARKET_MCS_EXECUTE :: $TYPE :: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        tx_id
+        cost_price
+        echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+        # remove duplicates
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+      fi
     fi
 
     ############################################################################
