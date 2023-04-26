@@ -185,6 +185,7 @@ fi
 
 ################################################################################
 
+# take profit enabled, continue
 if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
 
   # disable normal trigger
@@ -192,7 +193,7 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
 
   # order position, without decimal
   BST_ORDER_POSITION="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }' 2>/dev/null)"
-
+  # profit output
   PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${LISTING_OPEN_RESULT:?}%"
 
   if [[ "$BST_ORDER_POSITION" -gt "0" ]] &>/dev/null; then
@@ -224,8 +225,8 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
     if [[ "$REFERENCE_STATUS" == "false" ]] &>/dev/null; then
       # market
       if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-
-        if [[ ! "$(echo "$ALLOCATED_REAL" | awk -F. '{ print $1 }')" -lt "1" ]] &>/dev/null; then
+        # allocated limit
+        if [[ "$(echo "$ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "1" ]] &>/dev/null; then
 
           # placeOrder market ##################################################
           PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
@@ -258,8 +259,8 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
     elif [[ "$REFERENCE_STATUS" == "true" ]] &>/dev/null; then
       # market
       if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-
-        if [[ ! "$(echo "$ALLOCATED_REAL" | awk -F. '{ print $1 }')" -lt "1" ]] &>/dev/null; then
+        # allocated limit
+        if [[ "$(echo "$ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "1" ]] &>/dev/null; then
 
           # placeOrder market ##################################################
           PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
