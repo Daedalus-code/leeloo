@@ -58,6 +58,8 @@ REFERENCE_MCS_PRICE_LAST="$(echo "$REFERENCE_PRICE_LAST" | awk '{ printf "%.9f\n
 
 REFERENCE_MCS_SPREAD="$(echo "100/$REFERENCE_PRICE_ASK*$REFERENCE_PRICE-100" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 
+################################################################################
+
 if [[ -z "$REFERENCE_MCS_SPREAD" ]] &>/dev/null; then
   REFERENCE_MCS_SPREAD="0"
 fi
@@ -66,32 +68,36 @@ fi
 
 if [[ "$REFERENCE_MCS_PRICE_LAST" == "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST-$REFERENCE_MCS_PRICE_ASK"
-  MCS_POSITION_STATUS="HODL"
+  MCS_POSITION_STATUS="OK"
 fi
 
 if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST>$REFERENCE_MCS_PRICE_ASK"
-  MCS_POSITION_STATUS="Moon!"
+  MCS_POSITION_STATUS="!!"
 fi
 
 if [[ "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST*$REFERENCE_MCS_PRICE_ASK"
-  MCS_POSITION_STATUS="Wait"
+  MCS_POSITION_STATUS=".."
 fi
+
+################################################################################
+
+MCS_STATUS="$MCS_POSITION_STATUS ${MCS_POSITION_VALUE:?}"
 
 ################################################################################
 
 if [[ -z "$REFERENCE_MCS_PRICE_BID" ]] &>/dev/null; then
   REFERENCE_MCS_PRICE_BID="0"
-  MCS_POSITION_STATUS="Idle"
+  MCS_POSITION_STATUS="??"
 fi
 if [[ -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   REFERENCE_MCS_PRICE_ASK="0"
-  MCS_POSITION_STATUS="Idle"
+  MCS_POSITION_STATUS="??"
 fi
 if [[ -z "$REFERENCE_MCS_PRICE_LAST" ]] &>/dev/null; then
   REFERENCE_MCS_PRICE_LAST="0"
-  MCS_POSITION_STATUS="Idle"
+  MCS_POSITION_STATUS="??"
 fi
 
 ################################################################################
@@ -133,22 +139,12 @@ MARKET_MCS_NO_BALANCE="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CUR
 
 ################################################################################
 
-# price is equal
-if [[ "$REFERENCE_MCS_PRICE_LAST" == "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-  MCS_STATUS="$MCS_POSITION_STATUS :: ${MCS_POSITION_VALUE:?}"
-fi
-
-################################################################################
-
 # skip if data is null
 if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
   # get buying power
   if [[ "$BUYING_POWER" -eq "0" ]] &>/dev/null; then
-
+    # last is less than ask, continue
     if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-
-      # price is different
-      MCS_STATUS="$MCS_POSITION_STATUS! :: ${MCS_POSITION_VALUE:?}"
 
       # random order amount
       RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))
@@ -166,12 +162,6 @@ if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
       echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
       # remove duplicates
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
-    fi
-
-    ############################################################################
-
-    if [[ "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-      MCS_STATUS="$MCS_POSITION_STATUS ${MCS_POSITION_VALUE:?}"
     fi
   fi
 fi
