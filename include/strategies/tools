@@ -141,48 +141,6 @@ function last_tx() {
 
 ################################################################################
 
-function listing_trigger() {
-  # listing trigger
-  if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
-    if [[ "$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-      TRIGGER_L="1"
-    else
-      TRIGGER_L="0"
-    fi
-  fi
-  if [[ -z "$TRIGGER_L" ]] &>/dev/null; then
-    TRIGGER_L="0"
-  fi
-}
-
-################################################################################
-
-function reference_trigger() {
-  # reference trigger
-  if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
-    if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-      TRIGGER_R="1"
-    else
-      TRIGGER_R="0"
-    fi
-  fi
-  if [[ -z "$TRIGGER_R" ]] &>/dev/null; then
-    TRIGGER_R="0"
-  fi
-}
-
-################################################################################
-
-function total_trigger() {
-  # get total trigger
-  TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
-  if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
-    TOTAL_TRIGGER="0"
-  fi
-}
-
-################################################################################
-
 function cost_price() {
   # update balances, prices after last order
   echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null

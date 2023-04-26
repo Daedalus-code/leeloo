@@ -59,9 +59,39 @@ last_tx               # last tx
 
 ################################################################################
 
-listing_trigger
-reference_trigger
-total_trigger
+# listing trigger
+if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+    TRIGGER_L="1"
+  else
+    TRIGGER_L="0"
+  fi
+fi
+if [[ -z "$TRIGGER_L" ]] &>/dev/null; then
+  TRIGGER_L="0"
+fi
+
+################################################################################
+
+# reference trigger
+if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+    TRIGGER_R="1"
+  else
+    TRIGGER_R="0"
+  fi
+fi
+if [[ -z "$TRIGGER_R" ]] &>/dev/null; then
+  TRIGGER_R="0"
+fi
+
+################################################################################
+
+# get total trigger
+TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
+if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
+  TOTAL_TRIGGER="0"
+fi
 
 ################################################################################
 
