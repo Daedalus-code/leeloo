@@ -126,7 +126,9 @@ fi
 
 MARKET_BST_POSITION="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
 LIMIT_BST_POSITION="$MARKET_BST_POSITION"
+
 COOLDOWN_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cooldown $ORDER_COOLDOWN"
+PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${BST_ORDER_POSITION_RAW:?}"
 
 ################################################################################
 
@@ -219,11 +221,9 @@ else
 
   if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | egrep "Cooldown|Waiting for profit" | wc -l)" -gt "0" ]] &>/dev/null; then
     if [[ "$BST_TAKE_PROFIT" == "0" ]] &>/dev/null; then
-
       # sell output
       echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     else
-
       # profit output
       echo "$PROFIT_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
