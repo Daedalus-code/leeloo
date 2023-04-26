@@ -150,6 +150,11 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
 
     # order position, profit trigger if enabled
     BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | egrep -o "[0-9]+.[0-9]+%")"
+
+    if [[ -z "$BST_ORDER_POSITION_RAW" ]] &>/dev/null; then
+      BST_ORDER_POSITION_RAW="0"
+    fi
+
     # order position, without decimal
     BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | awk -F. '{ print $1 }' 2>/dev/null)"
 
