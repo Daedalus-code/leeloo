@@ -156,7 +156,19 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
     PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${BST_ORDER_POSITION_RAW:?}"
 
     if [[ "$BST_ORDER_POSITION" -gt "0" ]] &>/dev/null; then
-      take_profit
+      if [[ "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "$STRATEGY_TYPE" | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep "Amount below minimum" | wc -l)" -gt "0" ]] &>/dev/null; then
+
+        if [[ "$TYPE" == "sell" ]] &>/dev/null; then
+          TYPE="buy"
+        fi
+        if [[ "$TYPE" == "buy" ]] &>/dev/null; then
+          TYPE="sell"
+        fi
+
+      fi
+      COOLDOWN_SECONDS="0" # less
+      TX_TIME="1"          # greater
+      TOTAL_TRIGGER="1"    # trigger take profit
     fi
   fi
 fi
