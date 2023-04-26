@@ -19,6 +19,10 @@ LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 STRATEGY_TYPE="MCS"
 
+# sell or buy order
+TYPE="buy"
+# listing market buy order
+AMOUNT_IN_REFERENCE_CURRENCY="false"
 # listing currency
 LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # account allocated (n%)
@@ -130,17 +134,12 @@ fi
 
 # skip if data is null
 if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-
   # get buying power
   if [[ "$BUYING_POWER" -eq "0" ]] &>/dev/null; then
 
     if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
       # price is different
       MCS_STATUS="$MCS_POSITION_STATUS! :: ${MCS_POSITION_VALUE:?}"
-
-      # listing market buy order
-      AMOUNT_IN_REFERENCE_CURRENCY="false"
-      TYPE="buy"
 
       # random order amount
       RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))
