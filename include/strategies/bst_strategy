@@ -146,25 +146,16 @@ fi
 ################################################################################
 
 if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
-  if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/pool)" -gt "0" ]] &>/dev/null; then
 
-    # order position, profit trigger if enabled
-    BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | egrep -o "[0-9]+.[0-9]+%")"
+  # order position, without decimal
+  BST_ORDER_POSITION="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }' 2>/dev/null)"
 
-    if [[ -z "$BST_ORDER_POSITION_RAW" ]] &>/dev/null; then
-      BST_ORDER_POSITION_RAW="0.00%"
-    fi
+  PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${LISTING_OPEN_RESULT:?}%"
 
-    # order position, without decimal
-    BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | awk -F. '{ print $1 }' 2>/dev/null)"
-
-    PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${BST_ORDER_POSITION_RAW:?}"
-
-    if [[ "$BST_ORDER_POSITION" -gt "0" ]] &>/dev/null; then
-      COOLDOWN_SECONDS="0" # less
-      TX_TIME="1"          # greater
-      TOTAL_TRIGGER="1"    # trigger take profit
-    fi
+  if [[ "$LISTING_OPEN_RESULT" -gt "0" ]] &>/dev/null; then
+    COOLDOWN_SECONDS="0" # less
+    TX_TIME="1"          # greater
+    TOTAL_TRIGGER="1"    # trigger take profit
   fi
 fi
 
