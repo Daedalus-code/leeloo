@@ -183,6 +183,25 @@ function total_trigger() {
 
 ################################################################################
 
+function take_profit() {
+  if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
+    # order position, profit trigger if enabled
+    BST_ORDER_POSITION_RAW="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep -w "$STRATEGY_TYPE" | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | egrep -o "[0-9]+.[0-9]+%")"
+    # order position, without decimal
+    BST_ORDER_POSITION="$(echo "$BST_ORDER_POSITION_RAW" | awk -F. '{ print $1 }' 2>/dev/null)"
+    if [[ "$BST_ORDER_POSITION" -gt "0" ]] &>/dev/null; then
+      COOLDOWN_SECONDS="0" # equal
+      TX_TIME="0"          # equal
+      TOTAL_TRIGGER="1"    # trigger take profit
+    else
+      # waiting for profit
+      PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${BST_ORDER_POSITION_RAW:?}"
+    fi
+  fi
+}
+
+################################################################################
+
 function cost_price() {
   # update balances, prices after last order
   echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
