@@ -194,7 +194,7 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   # order position, without decimal
   BST_ORDER_POSITION="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }' 2>/dev/null)"
   # profit output
-  PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Waiting for profit :: ${LISTING_OPEN_RESULT:?}%"
+  PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Profit :: ${LISTING_OPEN_RESULT:?}%"
 
   if [[ "$BST_ORDER_POSITION" -gt "0" ]] &>/dev/null; then
     COOLDOWN_SECONDS="0" # less
@@ -294,7 +294,7 @@ fi
 
 ################################################################################
 
-if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep "Cooldown|Waiting for profit" | wc -l)" -gt "0" ]] &>/dev/null; then
+if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep "Cooldown| :: Profit :: " | wc -l)" -gt "0" ]] &>/dev/null; then
   if [[ "$BST_TAKE_PROFIT" == "0" ]] &>/dev/null; then
     # cooldown output
     echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
