@@ -161,12 +161,14 @@ function cost_price() {
   # calculate new average price
   LISTING_AVERAGE_PRICE=$(echo "($LISTING_EXISTING_COST + $LISTING_TOTAL_VALUE) / ($LISTING_AMOUNT + $LISTING_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
 
-  # listing
-  echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null
-  echo "$LISTING_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
+  if [[ ! -z "$LISTING_AVERAGE_PRICE" ]] &>/dev/null; then
+    # listing
+    echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null
+    echo "$LISTING_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
 
-  # listing output
-  echo "$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Average $LISTING_AVERAGE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    # listing output
+    echo "$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Average $LISTING_AVERAGE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  fi
 
   ##############################################################################
 
@@ -185,12 +187,14 @@ function cost_price() {
   # calculate new average price
   REFERENCE_AVERAGE_PRICE=$(echo "($REFERENCE_EXISTING_COST + $REFERENCE_TOTAL_VALUE) / ($REFERENCE_AMOUNT + $REFERENCE_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
 
-  # reference
-  echo "$REFERENCE_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null
-  echo "$REFERENCE_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
+  if [[ ! -z "$REFERENCE_AVERAGE_PRICE" ]] &>/dev/null; then
+    # reference
+    echo "$REFERENCE_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null
+    echo "$REFERENCE_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
 
-  # reference output
-  echo "$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Average $REFERENCE_AVERAGE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    # reference output
+    echo "$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Average $REFERENCE_AVERAGE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  fi
 }
 
 ################################################################################
@@ -243,7 +247,13 @@ function incoming_listing() {
       # calculate new average price
       LISTING_AVERAGE_PRICE=$(echo "($LISTING_EXISTING_COST + $LISTING_TOTAL_VALUE) / ($LISTING_AMOUNT + $LISTING_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
 
-      echo "$LISTING_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
+      if [[ ! -z "$LISTING_AVERAGE_PRICE" ]] &>/dev/null; then
+        # listing
+        echo "$LISTING_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
+
+        # listing output
+        echo "$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Average $LISTING_AVERAGE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      fi
     fi
   fi
 
@@ -299,7 +309,13 @@ function incoming_reference() {
       # calculate new average price
       REFERENCE_AVERAGE_PRICE=$(echo "($REFERENCE_EXISTING_COST + $REFERENCE_TOTAL_VALUE) / ($REFERENCE_AMOUNT + $REFERENCE_UNCONFIRMED_BALANCE)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
 
-      echo "$REFERENCE_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
+      if [[ ! -z "$REFERENCE_AVERAGE_PRICE" ]] &>/dev/null; then
+        # reference
+        echo "$REFERENCE_AVERAGE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
+
+        # reference output
+        echo "$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Average $REFERENCE_AVERAGE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      fi
     fi
   fi
 
