@@ -531,17 +531,20 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   LEELOO_LINES="$(wc -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }')"
   LEELOO_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $8 }')")"
   LEELOO_ERROR="$(grep "$LEELOO_TIMED" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk -Flog: '{ print $2 }' | tail -1)"
+  LEELOO_ERRORS="$(wc -l "${LOG_DIR:?}"/leeloo/leeloo.log | awk '{ print $1 }')"
   WIDTH="$(echo "$(echo "$LEELOO_ERROR" | wc -L)+5" | bc 2>/dev/null)"
 
   if [[ "$LEELOO_DATA" -eq "0" ]] &>/dev/null; then
     WIDTH="35"
-    LEELOO_TIMED="Nothing"
-    LEELOO_ERROR="No error found"
+    LEELOO_TIMED="Empty"
+    LEELOO_ERROR="Empty"
+    LEELOO_ERRORS="Empty"
   fi
 
   RESULT="
-Age..: $LEELOO_TIME
-Time.: $LEELOO_TIMED
+Age....: $LEELOO_TIME
+Time...: $LEELOO_TIMED
+ERRORS.: $LEELOO_ERRORS
 
 $LEELOO_ERROR"
   display_result 2>/dev/null
@@ -549,9 +552,9 @@ $LEELOO_ERROR"
   if [[ "$LEELOO_DATA" -gt "0" ]] &>/dev/null; then
     nano "$LOG_DIR"/leeloo/leeloo.log
     clear
-    if dialog --stdout --title "Deleting data!" \
-      --backtitle "Delete data?" \
-      --yesno "Yes: Delete!, No:  Go back!" 5 32; then
+    if ! dialog --stdout --title "Keep data?" \
+      --backtitle "Kepp data?" \
+      --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
       truncate -s 0 "$LOG_DIR"/leeloo/leeloo.log &>/dev/null
     fi
   fi
