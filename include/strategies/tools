@@ -158,23 +158,6 @@ function cost_price() {
     # listing output
     echo "$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Price $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   fi
-
-  ##############################################################################
-
-  REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
-  REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
-  REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
-  if [[ ! -z "$REFERENCE_PRICE" ]] &>/dev/null; then
-    # reference
-    echo "$REFERENCE_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null
-    echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
-
-    # reference output
-    if [[ "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep " :: Price " | wc -l)" -lt "1" ]] &>/dev/null; then
-      echo "$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Price $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-    fi
-  fi
 }
 
 ################################################################################
