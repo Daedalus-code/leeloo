@@ -530,8 +530,14 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   LEELOO_TIME=$(printf '%dh:%dm:%ds\n' $(("$LEELOO_SECONDS/3600")) $(("$LEELOO_SECONDS%3600/60")) $(("$LEELOO_SECONDS%60")))
   LEELOO_LINES="$(wc -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }')"
   LEELOO_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $8 }')")"
+
+  LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
+  LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
+  LEELOO_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LEELOO_TIME:?}" 2>&1)/3600")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%60")))
+
   LEELOO_ERROR="$(grep "$LEELOO_TIMED" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk -Flog: '{ print $2 }' | tail -1)"
   LEELOO_ERRORS="$(wc -l "${LOG_DIR:?}"/leeloo/leeloo.log | awk '{ print $1 }')"
+
   WIDTH="$(echo "$(echo "$LEELOO_ERROR" | wc -L)+5" | bc 2>/dev/null)"
 
   if [[ "$LEELOO_DATA" -eq "0" ]] &>/dev/null; then
@@ -544,6 +550,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   RESULT="
 Age....: $LEELOO_TIME
 Time...: $LEELOO_TIMED
+Uptime.: $LEELOO_UPTIME
 ERRORS.: $LEELOO_ERRORS
 
 $LEELOO_ERROR"
@@ -579,15 +586,15 @@ $LEELOO_ERROR"
 "A")
 
   if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
-    ROBOT_RUNNING="Online"
-    ROBOT_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
-    ROBOT_TIME=$(ps -p $ROBOT_PID -o etimes=)
-    ROBOT_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${ROBOT_TIME:?}" 2>&1)/3600")) $(("$(echo "${ROBOT_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${ROBOT_TIME:?}" 2>&1)%60")))
-    ROBOT_STRAT="$(ls -l "${SYS_DIR:?}"/robot/*.config 2>/dev/null | wc -l)"
+    LEELOO_RUNNING="Online"
+    LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
+    LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
+    LEELOO_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LEELOO_TIME:?}" 2>&1)/3600")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%60")))
+    LEELOO_STRAT="$(ls -l "${SYS_DIR:?}"/robot/*.config 2>/dev/null | wc -l)"
   else
-    ROBOT_STRAT="0"
-    ROBOT_RUNNING="Offline"
-    ROBOT_UPTIME="0h:0m:0s"
+    LEELOO_STRAT="0"
+    LEELOO_RUNNING="Offline"
+    LEELOO_UPTIME="0h:0m:0s"
   fi
 
   HEIGHT=17
@@ -596,7 +603,7 @@ $LEELOO_ERROR"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Robot Strategy Menu"
   MENU="Multipass $DATE
-Bots: $ROBOT_STRAT $ROBOT_RUNNING :: Uptime: $ROBOT_UPTIME"
+Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
   OPTIONS=(1 "Data             Strategy data"
     2 "Positions        Open positions"
