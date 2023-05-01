@@ -656,8 +656,6 @@ function save_orders() {
     # keep orders, remove empty lines
     TRADE_HISTORY="$(cat "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | sed '/^$/d')"
     echo "$TRADE_HISTORY" >>"${SYS_DIR:?}"/robot/orders 2>/dev/null
-    # remove duplicates, remove empty lines
-    echo "$(sort -t '/' -k 2.3,2.4n -k 2.1,2.2n -k 1.4,1.5n -k 1.1,1.2n -k 2.6,2.7n -k 2.9,2.10n "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/orders 2>/dev/null
   fi
 }
 
