@@ -1237,14 +1237,17 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
             --backtitle "RESTARTING" \
             --yesno "Yes: Restart!, No:  Go back!" 5 32; then
 
-            # kill old screen
+            # kill screen
             screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
+
+            # kill leeloo pid (shell)
+            echo "$(ps aux 2>/dev/null | grep "leeloo" | grep -v "grep" | grep "bash.*robot/leeloo" | awk '{ print $2 }' | tail -1)" >"${LOG_DIR:?}"/leeloo/ps_aux
+            LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
+            kill -9 "$LEELOO_PID" &>/dev/null
+
             sleep 1
 
-            # screen still exist, continue
-            if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-              killall screen &>/dev/null
-            fi
+            # start looper
             bash "${SYS_DIR:?}"/robot/looper
           fi
 
@@ -1252,13 +1255,15 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
         "3")
 
-          # kill old screen
+          # kill screen
           screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
-          sleep 1
 
-          if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
-            killall screen &>/dev/null
-          fi
+          # kill leeloo pid (shell)
+          echo "$(ps aux 2>/dev/null | grep "leeloo" | grep -v "grep" | grep "bash.*robot/leeloo" | awk '{ print $2 }' | tail -1)" >"${LOG_DIR:?}"/leeloo/ps_aux
+          LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
+          kill -9 "$LEELOO_PID" &>/dev/null
+
+          sleep 1
 
           display_result() {
             dialog --title "Robot (crontab)" \
