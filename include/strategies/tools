@@ -673,8 +673,6 @@ function last_orders {
 ################################################################################
 
 function robot_Logs_by_date() {
-  # sort by date
-  echo "$(sort -t '.' -k 1.3n -k 1.1,1.2n -k 2 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
     echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>/dev/null)" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     echo "$LOG_DATE :: LogReset :: Line $MAX_LOG" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
