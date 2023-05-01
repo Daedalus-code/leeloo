@@ -87,7 +87,7 @@ for (( ; ; )); do
   ##############################################################################
 
   # combine all logs, sort by date
-  echo "$(sort -t '.' -k 1.3n -k 1.1,1.2n -k 2 "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  echo "$(cat "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
 
   ##############################################################################
 
