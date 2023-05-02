@@ -537,11 +537,6 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
     LEELOO_SECONDS="0"
   fi
 
-  # clean up duplicates
-  if [[ -f "${LOG_DIR:?}"/leeloo/leeloo.log ]] &>/dev/null; then
-    echo "$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/leeloo.log
-  fi
-
   LEELOO_DATA="$(wc -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }')"
   LEELOO_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$LEELOO_SECONDS/3600")) $(("$LEELOO_SECONDS%3600/60")) $(("$LEELOO_SECONDS%60")))
   LEELOO_LINES="$(wc -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }')"
@@ -586,6 +581,11 @@ $LEELOO_ERROR"
       --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
       truncate -s 0 "$LOG_DIR"/leeloo/leeloo.log &>/dev/null
     fi
+  fi
+
+  # clean up duplicates, after the fact
+  if [[ -f "${LOG_DIR:?}"/leeloo/leeloo.log ]] &>/dev/null; then
+    echo "$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/leeloo.log
   fi
 
   ;;
