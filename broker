@@ -542,6 +542,11 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
   LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
+
+  if [[ -z "$LEELOO_TIME" ]] &>/dev/null; then
+    LEELOO_TIME="0"
+  fi
+
   LEELOO_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LEELOO_TIME:?}" 2>&1)/3600")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%60")))
 
   LEELOO_ERROR="$(grep "$LEELOO_TIMED" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk -Flog: '{ print $2 }' | tail -1)"
