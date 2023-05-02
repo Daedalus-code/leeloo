@@ -220,7 +220,7 @@ function irc_client() {
 
     if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/chat/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
       # if the server is not found in the list, append the last connected server to the irc.disconnect file
-      echo "$IRSSI_CONNECTED" 2>/dev/null | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
+      echo "$IRSSI_CONNECTED" 2>/dev/null >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
 
       # remove duplicates and empty lines from irc.disconnect file
       sort /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp 2>/dev/null
