@@ -79,7 +79,7 @@ case $CHOICE in
 
       # get balance
       function result_balances() {
-        echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+        echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
       }
       # update data every n seconds
       if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
@@ -101,7 +101,7 @@ case $CHOICE in
       display_result() {
         dialog --title "$FILE_TIME :: Account Balance" \
           --no-collapse \
-          --msgbox "$(echo "$RESULT" | column -t 2>/dev/null)" 0 0
+          --msgbox "$(echo "$RESULT" | column -t)" 0 0
       }
       FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $8 }')"
       if [[ -z "$FILE_TIME" ]] &>/dev/null; then
@@ -129,7 +129,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
   # get prices
   function result_prices() {
-    echo "$(prices | column -t 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
+    echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
   }
   # update data every n seconds
   if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
@@ -162,7 +162,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
     dialog --title "$FILE_TIME :: Top 100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
       --no-collapse \
       --scrollbar \
-      --msgbox "$(echo "$RESULT" | column -t 2>/dev/null)" 25 "$WIDTH"
+      --msgbox "$(echo "$RESULT" | column -t)" 25 "$WIDTH"
   }
   FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ print $8 }')"
   if [[ -z "$FILE_TIME" ]] &>/dev/null; then
@@ -188,7 +188,7 @@ $MARKET_RESULT"
 
     # get prices
     function result_prices() {
-      echo "$(prices | column -t 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
+      echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
     }
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
@@ -208,7 +208,7 @@ $MARKET_RESULT"
     MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | wc -l)"
     MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     LENGTH="$(echo "$MARKET_COUNT+5" | bc 2>/dev/null)"
-    WIDTH="$(echo "$(echo "$MARKET_RESULT" | column -t 2>/dev/null | wc -L)+5" | bc 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$MARKET_RESULT" | column -t | wc -L)+5" | bc 2>/dev/null)"
 
     if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
       LENGTH="25"
@@ -221,7 +221,7 @@ $MARKET_RESULT"
     display_result() {
       dialog --title "Search result $MARKET_SEARCH: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
         --no-collapse \
-        --msgbox "$(echo "$RESULT" | column -t 2>/dev/null)" "$LENGTH" "$WIDTH"
+        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
     }
 
     RESULT="Market: Bid Ask Last (%) Volume24Hr
@@ -407,7 +407,7 @@ $MARKET_RESULT"
         USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
         function result_orders {
-          listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t 2>/dev/null | sort -r >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
+          listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t | sort -r >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
         }
         # update data every n seconds
         if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
@@ -425,7 +425,7 @@ $MARKET_RESULT"
         display_result() {
           dialog --title "Open Orders: +$ORDER_TOTAL" \
             --no-collapse \
-            --msgbox "$(echo "$RESULT" | column -t 2>/dev/null)" 0 0
+            --msgbox "$(echo "$RESULT" | column -t)" 0 0
         }
 
         RESULT="OrderID: Type Amount Original LimitPrice List Ref DateAdded
@@ -935,7 +935,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
             mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
 
             RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
             display_result 2>/dev/null
           else
             # not installing strategy
@@ -984,7 +984,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
             mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
 
             RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
             display_result 2>/dev/null
           else
             # not installing strategy
@@ -1033,7 +1033,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
             mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
 
             RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
             display_result 2>/dev/null
           else
             # not installing strategy
@@ -1082,7 +1082,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
             mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
 
             RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
             display_result 2>/dev/null
           else
             # not installing strategy
@@ -1131,7 +1131,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
             mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
 
             RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
             display_result 2>/dev/null
           else
             # not installing strategy
@@ -1180,7 +1180,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
             mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
 
             RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t 2>/dev/null)"
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
             display_result 2>/dev/null
           else
             # not installing strategy
@@ -1533,7 +1533,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
       fi
 
       mv "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN"
-      echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null | column -t 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null
+      echo "$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null
 
       RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)"
 
