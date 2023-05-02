@@ -163,15 +163,15 @@ function irc_client() {
 
   function welcome_banned() {
     if [[ -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
-      # banned on connect
-      BANNED_STRING="Banned|banned|Ban|ban|You are not welcome"
-      if [[ "$(egrep -c "$BANNED_STRING" /home/"$WHOAMI"/.irssi/irclogs/*/*)" -gt "0" ]] &>/dev/null; then
-        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$BANNED_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
-      fi
       # welcome on connect
       WELCOME_STRING="Welcome|has joined"
-      if [[ "$(egrep -c "$WELCOME_STRING" /home/"$WHOAMI"/.irssi/irclogs/*/*)" -gt "0" ]] &>/dev/null; then
+      if [[ "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep -c "$WELCOME_STRING")" -gt "0" ]] &>/dev/null; then
         echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$WELCOME_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+      fi
+      # banned on connect
+      BANNED_STRING="Banned|banned|Ban|ban|You are not welcome"
+      if [[ "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep -c "$BANNED_STRING")" -gt "0" ]] &>/dev/null; then
+        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$BANNED_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
       fi
     fi
   }
