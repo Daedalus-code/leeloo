@@ -6,11 +6,11 @@
 
 if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
   function markets {
-    curl -s --proxy socks5h://localhost:9050 https://www.southxchange.com/api/markets | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," / 2>/dev/null
+    curl -s --proxy socks5h://localhost:9050 https://www.southxchange.com/api/markets 2>/dev/null | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," /
   }
 else
   function markets {
-    curl -s https://www.southxchange.com/api/markets | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," / 2>/dev/null
+    curl -s https://www.southxchange.com/api/markets 2>/dev/null | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," /
   }
 fi
 
@@ -20,11 +20,11 @@ fi
 
 if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
   function prices {
-    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}' 2>/dev/null
+    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" 2>/dev/null | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
   }
 else
   function prices {
-    curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}' 2>/dev/null
+    curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" 2>/dev/null | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
   }
 fi
 
@@ -36,9 +36,9 @@ function trades() {
   LISTING_CURRENCY="$1"
   REFERENCE_CURRENCY="$2"
   if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
-    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/trades/$LISTING_CURRENCY/$REFERENCE_CURRENCY" -H "accept: application/json" | jq '.[0]' 2>/dev/null
+    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/trades/$LISTING_CURRENCY/$REFERENCE_CURRENCY" -H "accept: application/json" 2>/dev/null | jq '.[0]'
   else
-    curl -X GET "https://market.southxchange.com/api/v4/trades/$LISTING_CURRENCY/$REFERENCE_CURRENCY" -H "accept: application/json" | jq '.[0]' 2>/dev/null
+    curl -X GET "https://market.southxchange.com/api/v4/trades/$LISTING_CURRENCY/$REFERENCE_CURRENCY" -H "accept: application/json" 2>/dev/null | jq '.[0]'
   fi
 }
 
@@ -48,11 +48,11 @@ function trades() {
 
 if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
   function fees {
-    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" | jq -s 2>/dev/null
+    curl -s --proxy socks5h://localhost:9050 -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" 2>/dev/null | jq -s
   }
 else
   function fees {
-    curl -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" | jq -s 2>/dev/null
+    curl -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" 2>/dev/null | jq -s
   }
 fi
 
