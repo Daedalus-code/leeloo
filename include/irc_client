@@ -244,22 +244,27 @@ function irc_client() {
     IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_IRCLOGS="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//')"
 
+    # disregard non servers
+    NOT_A_SERVER="discord.gg|.html"
+
     # irc.servers
     function irssi_servers_list() {
-      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
+      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_SERVERS" | egrep -v "$NOT_A_SERVER" | sort -R | head -1)"
       IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
       IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
       IRSSI_LIST="+"
     }
+
     # irc.connect
     function irssi_servers_connect() {
-      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_CONNECT" | sort -R | head -1)"
+      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_CONNECT" | egrep -v "$NOT_A_SERVER" | sort -R | head -1)"
       IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
       IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
     }
 
     # disregard with banned if irc.connect survives
     IRSSI_IRC_CONNECT_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | grep -vf /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null)"
+
     if [[ "$(echo "$IRSSI_IRC_CONNECT_BANNED" | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
       IRSSI_IRC_CONNECT="$IRSSI_IRC_CONNECT_BANNED"
     fi
@@ -282,20 +287,18 @@ function irc_client() {
     if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
       # pick random server list
       RANDOM_SERVER_LIST=$((((RANDOM % 2) + 1)))
-      # random 1
+
+      # random 1 (irc.servers)
       if [[ "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
         irssi_servers_list
-      else
-        # random 2
+      elif [[ "$RANDOM_SERVER_LIST" -eq "2" ]] &>/dev/null; then
+        # random 2 (irc.connect)
         irssi_servers_connect
       fi
+
     else
       # configuration is set
       IRSSI_RANDOM_HOST="$IRSSI_SERVER"
-    fi
-    # irc.connect has data
-    if [[ "$(echo "$IRSSI_IRC_CONNECT" | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
-      irssi_servers_list
     fi
   }
 
