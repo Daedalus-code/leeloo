@@ -2,9 +2,14 @@
 
 source /usr/local/bin/include/leeloo/broker.conf
 source /usr/local/bin/include/leeloo/functions
+
 # southxchange api
 source /usr/local/bin/include/leeloo/api/southxchange/private_API
 source /usr/local/bin/include/leeloo/api/southxchange/public_API
+
+# poloniex api
+source /usr/local/bin/include/leeloo/api/poloniex/private_API
+source /usr/local/bin/include/leeloo/api/poloniex/public_API
 
 # loop
 for (( ; ; )); do
@@ -53,7 +58,24 @@ for (( ; ; )); do
 
   ##############################################################################
 
-  # get prices
+  # get poloniex prices
+  function result_prices() {
+    echo "$(getPrices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
+  }
+  # update data every n seconds
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null)))" 2>/dev/null)" -gt "$LEELOO_TIMER" ]] &>/dev/null; then
+    result_prices
+    # update data if missing
+  elif [[ ! -f "${LOG_DIR:?}"/leeloo/poloniex/prices ]] &>/dev/null; then
+    result_prices
+    # update data if empty
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/poloniex/prices ]] &>/dev/null; then
+    result_prices
+  fi
+
+  ##############################################################################
+
+  # get southxchange prices
   function result_prices() {
     echo "$(prices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
   }
