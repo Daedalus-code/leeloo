@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+# returnBalances ###############################################################
+# https://www.southxchange.com/api/listBalances
+# Return balances for all currencies. Permission required: Return Balances
+
+function returnBalances {
+  API_POLONIEX_NONCE=$(date +%s%N)
+  URL="https://poloniex.com/tradingApi"
+  BODY="command=returnBalances&nonce=$API_POLONIEX_NONCE"
+  SIGNATURE=$(echo -n "$BODY" | openssl dgst -sha512 -hmac "$API_POLONIEX_SECRET" | awk '{print $2}')
+  RESPONSE=$(curl -s -X POST -H "Key: $API_POLONIEX_KEY" -H "Sign: $SIGNATURE" -d "$BODY" "$URL")
+  echo "$RESPONSE"
+}
+
+# END
