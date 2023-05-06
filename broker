@@ -97,7 +97,43 @@ case $CHOICE in
 
     if [[ ! -z "$API_POLONIEX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_POLONIEX_SECRET" ]] &>/dev/null; then
-        kek
+
+        USER_TIMER="$(echo "$BOT_TIMER*1.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+
+        # get balance
+        function result_balances() {
+          echo "$(returnBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null
+        }
+        # update data every n seconds
+        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
+          result_balances
+          # update data if missing
+        elif [[ ! -f "${LOG_DIR:?}"/leeloo/poloniex/balances ]] &>/dev/null; then
+          result_balances
+          # update data if empty
+        elif [[ ! -s "${LOG_DIR:?}"/leeloo/poloniex/balances ]] &>/dev/null; then
+          result_balances
+        fi
+
+        until [[ -f "${LOG_DIR:?}"/leeloo/poloniex/balances ]] &>/dev/null; do
+          clear
+          echo "Please wait.."
+          sleep 1
+        done
+
+        display_result() {
+          dialog --title "$FILE_TIME :: Account Balance" \
+            --no-collapse \
+            --msgbox "$(echo "$RESULT" | column -t)" 0 0
+        }
+        FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null | awk '{ print $8 }')"
+        if [[ -z "$FILE_TIME" ]] &>/dev/null; then
+          FILE_TIME="00:00"
+        fi
+        RESULT="Coins: Deposited Available Unconfirmed
+$(cat "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null)"
+        display_result 2>/dev/null
+
       else
         no_key_no_secret
       fi
