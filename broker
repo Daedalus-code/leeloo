@@ -237,6 +237,13 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 
     USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
+    display_result() {
+      dialog --title "$FILE_TIME :: Top 100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
+        --no-collapse \
+        --scrollbar \
+        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+    }
+
     # get prices
     function result_prices() {
       echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
@@ -277,12 +284,6 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
 $MARKET_RESULT"
     fi
 
-    display_result() {
-      dialog --title "$FILE_TIME :: Top 100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
-        --no-collapse \
-        --scrollbar \
-        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
-    }
     FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | awk '{ print $8 }')"
     if [[ -z "$FILE_TIME" ]] &>/dev/null; then
       FILE_TIME="00:00"
@@ -297,6 +298,13 @@ $MARKET_RESULT"
   "2")
 
     USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+
+    display_result() {
+      dialog --title "$FILE_TIME :: Top 100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
+        --no-collapse \
+        --scrollbar \
+        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+    }
 
     # get prices
     function result_prices() {
@@ -338,12 +346,6 @@ $MARKET_RESULT"
 $MARKET_RESULT"
     fi
 
-    display_result() {
-      dialog --title "$FILE_TIME :: Top 100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
-        --no-collapse \
-        --scrollbar \
-        --msgbox "$(echo "$RESULT" | column -t)" 25 "$WIDTH"
-    }
     FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ print $8 }')"
     if [[ -z "$FILE_TIME" ]] &>/dev/null; then
       FILE_TIME="00:00"
