@@ -259,6 +259,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
     MARKET_MOON_COUNT="$(cat "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | awk '{ print $5 }' | wc -l)"
     MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)-9" | bc 2>/dev/null)"
+    LENGTH="25"
 
     if [[ -z "$WIDTH" ]] &>/dev/null; then
       WIDTH="77"
@@ -272,7 +273,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
       dialog --title "$FILE_TIME :: Top 100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
         --no-collapse \
         --scrollbar \
-        --msgbox "$(echo "$RESULT" | column -t)" 25 "$WIDTH"
+        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
     }
     FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | awk '{ print $8 }')"
     if [[ -z "$FILE_TIME" ]] &>/dev/null; then
@@ -280,8 +281,8 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
     fi
 
     if [[ "$MARKET_COUNT" -eq "0" ]] &>/dev/null; then
-      RESULT="No market was found.
-Support: https://support.poloniex.com"
+      LENGTH="5"
+      RESULT="Support: https://support.poloniex.com"
     else
       RESULT="Market: Bid Ask Last (%) Volume24Hr
 $MARKET_RESULT"
@@ -319,6 +320,7 @@ $MARKET_RESULT"
     MARKET_MOON_COUNT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ print $5 }' | wc -l)"
     MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+5" | bc 2>/dev/null)"
+    LENGTH="25"
 
     if [[ -z "$WIDTH" ]] &>/dev/null; then
       WIDTH="77"
@@ -340,8 +342,8 @@ $MARKET_RESULT"
     fi
 
     if [[ "$MARKET_COUNT" -eq "0" ]] &>/dev/null; then
-      RESULT="No market was found.
-Support: https://southxchange.gorgias.help"
+      LENGTH="5"
+      RESULT="Support: https://southxchange.gorgias.help"
     else
       RESULT="Market: Bid Ask Last (%) Volume24Hr
 $MARKET_RESULT"
