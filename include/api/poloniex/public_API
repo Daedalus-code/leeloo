@@ -8,7 +8,7 @@ function getPrices {
   URL="https://poloniex.com/public"
   PARAMETERS="command=returnTicker"
   API_RESPONSE=$(curl -s "$URL?$PARAMETERS")
-  echo "$API_RESPONSE" | jq -r 'to_entries[] | "\(.key) \(.value.highestBid) \(.value.lowestAsk) (%): \(.value.percentChange) \(.value.baseVolume)"'
+  echo "$API_RESPONSE" | jq -r 'to_entries[] | "\(.key) \(.value.highestBid) \(.value.lowestAsk) (%): \(.value.percentChange) \(.value.baseVolume)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
 }
 
 # END
