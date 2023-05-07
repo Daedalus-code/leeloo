@@ -171,12 +171,12 @@ function irc_client() {
       # welcome on connect
       WELCOME_STRING="Welcome|has joined"
       if [[ "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep -c "$WELCOME_STRING")" -gt "0" ]] &>/dev/null; then
-        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$WELCOME_STRING" | egrep -v "$NOT_A_SERVER" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$WELCOME_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
       fi
       # banned on connect
       BANNED_STRING="Banned|banned|Ban|ban|You are not welcome"
       if [[ "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep -c "$BANNED_STRING")" -gt "0" ]] &>/dev/null; then
-        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$BANNED_STRING" | egrep -v "$NOT_A_SERVER" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
+        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$BANNED_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
       fi
     fi
   }
@@ -198,7 +198,7 @@ function irc_client() {
         MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
         if [[ -n "$MATCH" ]] &>/dev/null; then
           echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-          echo "$(echo "$IRSSI_IRC_CONNECT" | sed -r '/^\s*$/d' | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+          echo "$(echo "$IRSSI_IRC_CONNECT" | egrep -v "$NOT_A_SERVER" | sed -r '/^\s*$/d' | sort | awk '!a[$0]++')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
         fi
       done </home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
 
