@@ -106,6 +106,12 @@ case $CHOICE in
 
         USER_TIMER="$(echo "$BOT_TIMER*1.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
+        display_result() {
+          dialog --title "$FILE_TIME :: Account Balance" \
+            --no-collapse \
+            --msgbox "$(echo "$RESULT" | column -t)" 0 0
+        }
+
         # get balance
         function result_balances() {
           echo "$(returnBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null
@@ -127,19 +133,20 @@ case $CHOICE in
           sleep 1
         done
 
-        display_result() {
-          dialog --title "$FILE_TIME :: Account Balance" \
-            --no-collapse \
-            --msgbox "$(echo "$RESULT" | column -t)" 0 0
-        }
         FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null | awk '{ print $8 }')"
         if [[ -z "$FILE_TIME" ]] &>/dev/null; then
           FILE_TIME="00:00"
         fi
-        RESULT="Coins: Deposited Available Unconfirmed
-$(cat "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null)"
-        display_result 2>/dev/null
 
+        if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/poloniex/balances | awk '{ print $1 }')" -lt "2" ]] &>/dev/null; then
+          LENGTH="5"
+          RESULT="No balance"
+        else
+          RESULT="Coins: Deposited Available Unconfirmed
+$(cat "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null)"
+        fi
+
+        display_result 2>/dev/null
       else
         no_key_no_secret
       fi
@@ -157,6 +164,12 @@ $(cat "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null)"
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
         USER_TIMER="$(echo "$BOT_TIMER*1.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+
+        display_result() {
+          dialog --title "$FILE_TIME :: Account Balance" \
+            --no-collapse \
+            --msgbox "$(echo "$RESULT" | column -t)" 0 0
+        }
 
         # get balance
         function result_balances() {
@@ -179,17 +192,19 @@ $(cat "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null)"
           sleep 1
         done
 
-        display_result() {
-          dialog --title "$FILE_TIME :: Account Balance" \
-            --no-collapse \
-            --msgbox "$(echo "$RESULT" | column -t)" 0 0
-        }
         FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $8 }')"
         if [[ -z "$FILE_TIME" ]] &>/dev/null; then
           FILE_TIME="00:00"
         fi
-        RESULT="Coins: Deposited Available Unconfirmed
+
+        if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $1 }')" -lt "2" ]] &>/dev/null; then
+          LENGTH="5"
+          RESULT="No balance"
+        else
+          RESULT="Coins: Deposited Available Unconfirmed
 $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
+        fi
+
         display_result 2>/dev/null
       else
         no_key_no_secret
