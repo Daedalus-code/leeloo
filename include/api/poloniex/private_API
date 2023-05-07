@@ -7,7 +7,7 @@
 # Return balances for all currencies. Permission required: Return Balances
 
 function returnBalances {
-  API_POLONIEX_NONCE=$(date +%s%N)
+  API_POLONIEX_NONCE=$(($(date +%s) * 10))
   URL="https://poloniex.com/tradingApi"
   BODY="command=returnBalances&nonce=$API_POLONIEX_NONCE"
   SIGNATURE=$(echo -n "$BODY" | openssl sha512 -hmac "$API_POLONIEX_SECRET" | awk '{print $2}')
