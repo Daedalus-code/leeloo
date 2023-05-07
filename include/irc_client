@@ -281,14 +281,14 @@ function irc_client() {
     if [[ "$(echo "$IRSSI_IRC_IRCLOGS" | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
       echo "$IRSSI_IRC_IRCLOGS" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
       # sort, remove duplicates, empty lines
-      echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+      echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep -v "$NOT_A_SERVER" | awk '{ print $1 }' | sed -r '/^\s*$/d' | sort | awk '!a[$0]++' | sed -r '/^.{,2}$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
     fi
 
     # add from irc.welcome if any data
     if [[ "$(echo "$IRSSI_IRC_WELCOME" | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
       echo "$IRSSI_IRC_WELCOME" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
       # sort, remove duplicates, empty lines
-      echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sort | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+      echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep -v "$NOT_A_SERVER" | awk '{ print $1 }' | sed -r '/^\s*$/d' | sort | awk '!a[$0]++' | sed -r '/^.{,2}$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
     fi
 
     # zero server configuration set, continue
