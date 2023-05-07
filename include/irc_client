@@ -326,6 +326,15 @@ function irc_client() {
 
     ############################################################################
 
+    function no_list() {
+      if [[ "$(egrep "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.servers | wc -l)" -gt "2" ]] &>/dev/null; then
+        irssi_servers_list
+      else
+        IRSSI_RANDOM_LENGTH=$((((RANDOM % 11) + 1)))
+        IRSSI_SERVER="$(tr -dc '0a-z9' </dev/urandom 2>/dev/null | head -c "$IRSSI_RANDOM_LENGTH" | rev)"
+      fi
+    }
+
     # zero server configuration set, continue
     if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
       # pick random server list
@@ -333,19 +342,35 @@ function irc_client() {
 
       # random 1 (irc.servers)
       if [[ "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
-        irssi_servers_list
+        no_list
       elif [[ "$RANDOM_SERVER_LIST" -eq "2" ]] &>/dev/null; then
         # random 2 (irc.connect)
-        irssi_servers_connect
+        if [[ "$(egrep "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.connect | wc -l)" -gt "2" ]] &>/dev/null; then
+          irssi_servers_connect
+        else
+          no_list
+        fi
       elif [[ "$RANDOM_SERVER_LIST" -eq "3" ]] &>/dev/null; then
         # random 3 (irc.welcome)
-        irssi_servers_welcome
+        if [[ "$(egrep "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.welcome | wc -l)" -gt "2" ]] &>/dev/null; then
+          irssi_servers_welcome
+        else
+          no_list
+        fi
       elif [[ "$RANDOM_SERVER_LIST" -eq "4" ]] &>/dev/null; then
         # random 4 (irc.banned)
-        irssi_servers_banned
+        if [[ "$(egrep "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.banned | wc -l)" -gt "2" ]] &>/dev/null; then
+          irssi_servers_banned
+        else
+          no_list
+        fi
       elif [[ "$RANDOM_SERVER_LIST" -eq "5" ]] &>/dev/null; then
         # random 5 (irc.irclogs)
-        irssi_servers_irclogs
+        if [[ "$(egrep "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.irclogs | wc -l)" -gt "2" ]] &>/dev/null; then
+          irssi_servers_irclogs
+        else
+          no_list
+        fi
       fi
 
     else
