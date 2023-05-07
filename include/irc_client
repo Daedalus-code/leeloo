@@ -24,6 +24,17 @@ fi
 # disregard non irc servers
 NOT_A_SERVER=".CAIRC|tor-exit|discord.gg|.html|.php|.pdf|.fm|.eu|.id|.IP"
 
+if [[ -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
+  # cleanup irc.connect
+  IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  echo "$(echo "$IRSSI_IRC_CONNECT" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d')" >/home/"$WHOAMI"/.irssi/irc.connect
+  # cleanup irc.welcome
+  IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  echo "$(echo "$IRSSI_IRC_WELCOME" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d')" >/home/"$WHOAMI"/.irssi/irc.welcome
+fi
+
+################################################################################
+
 function irssi_first_run() {
   # first time startup
   if [[ ! -f /home/"$WHOAMI"/.irssi/config ]] &>/dev/null; then
@@ -186,9 +197,6 @@ function irc_client() {
     if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
       touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
     fi
-
-    IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-    echo "$(echo "$IRSSI_IRC_CONNECT" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d')" >/home/"$WHOAMI"/.irssi/irc.connect
 
     # list files in irclogs directory and extract their names
     if [[ -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
