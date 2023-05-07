@@ -8,11 +8,9 @@
 
 function returnBalances {
   API_POLONIEX_NONCE=$(($(date +%s) * 10))
-  URL="https://poloniex.com/tradingApi"
-  BODY="command=returnBalances&nonce=$API_POLONIEX_NONCE"
-  SIGNATURE=$(echo -n "$BODY" | openssl sha512 -hmac "$API_POLONIEX_SECRET" | awk '{print $NF}')
-  RESPONSE=$(curl -s -X POST -H "Key: $API_POLONIEX_KEY" -H "Sign: $SIGNATURE" -d "$BODY" "$URL")
-  echo "$RESPONSE"
+  JSON_DATA="{\"nonce\":\"$API_POLONIEX_NONCE\",\"key\":\"$API_POLONIEX_KEY\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_POLONIEX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" "command=returnBalances&nonce=$API_POLONIEX_NONCE" https://poloniex.com/tradingApi
 }
 
 # END
