@@ -21,6 +21,9 @@ fi
 
 ################################################################################
 
+# disregard non irc servers
+NOT_A_SERVER=".CAIRC|tor-exit|discord.gg|.html|.php|.pdf|.fm|.eu|.id|.IP"
+
 function irssi_first_run() {
   # first time startup
   if [[ ! -f /home/"$WHOAMI"/.irssi/config ]] &>/dev/null; then
@@ -185,6 +188,7 @@ function irc_client() {
     fi
 
     IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+    echo "$IRSSI_IRC_CONNECT" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' >/home/"$WHOAMI"/.irssi/irc.connect
 
     # list files in irclogs directory and extract their names
     if [[ -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
@@ -245,9 +249,6 @@ function irc_client() {
     IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     IRSSI_IRC_IRCLOGS="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//')"
 
-    # disregard non irc servers
-    NOT_A_SERVER=".CAIRC|tor-exit|discord.gg|.html|.php|.pdf|.fm|.eu|.id|.IP"
-
     # irc.servers
     function irssi_servers_list() {
       # disregard with not_a_server, words less than n
@@ -263,7 +264,6 @@ function irc_client() {
     function irssi_servers_connect() {
       # disregard with not_a_server, words less than n
       IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_CONNECT" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' | sort -R | head -1)"
-      echo "$IRSSI_IRC_CONNECT" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' >/home/"$WHOAMI"/.irssi/irc.connect
 
       IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
       IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
