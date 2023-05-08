@@ -1956,19 +1956,21 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 "D")
 
   if [[ "$(echo "$BTC_DNT_ADDR" | egrep "bc1.*.c2" | wc -l)" -eq "0" ]] &>/dev/null; then
-    echo "grifters are a plague.."
-    exit
+    grifters
+  elif [[ "$(echo "$REF_POLONIEX" | egrep "R2L.*.SXB" | wc -l)" -eq "0" ]] &>/dev/null; then
+    grifters
   fi
 
-  HEIGHT=9
+  HEIGHT=10
   WIDTH=42
-  CHOICE_HEIGHT=3
+  CHOICE_HEIGHT=4
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Donation"
   MENU="Choose one option:"
 
   OPTIONS=(1 "Address          Plain Text"
-    2 "QRCODE           QRCODE address")
+    2 "QRCODE           QRCODE address"
+    3 "Codes            Referral Codes")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -2052,6 +2054,14 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
     echo "Bitcoin (BTC): $BTC_DNT_ADDR"
     BTC_DNT_ADDR_QR="$(cat "${LOG_DIR:?}"/leeloo/donate_qr 2>/dev/null)"
     echo "$BTC_DNT_ADDR_QR"
+    read -r -p "Press Enter to continue" </dev/tty
+    clear
+
+    ;;
+
+  "3")
+
+    echo "Poloniex: $REF_POLONIEX"
     read -r -p "Press Enter to continue" </dev/tty
     clear
 
