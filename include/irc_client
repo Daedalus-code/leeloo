@@ -71,6 +71,17 @@ EOF
 
 ################################################################################
 
+function irssi_files() {
+  IRSSI_IRC_DISCONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  IRSSI_IRC_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  IRSSI_IRC_IRCLOGS="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' | sed '/^$/d')"
+}
+
+################################################################################
+
 # start irc client
 function irc_client() {
   # get irc server list
@@ -243,13 +254,6 @@ function irc_client() {
   ##############################################################################
 
   function random_server() {
-    IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-    IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-    IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-    IRSSI_IRC_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-    IRSSI_IRC_IRCLOGS="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' | sed '/^$/d')"
-
-    ############################################################################
 
     echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers
     echo "$IRSSI_IRC_IRCLOGS" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.irclogs
@@ -367,7 +371,6 @@ function irc_client() {
   ##############################################################################
 
   function random_port() {
-    IRSSI_IRC_DISCONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
     # read the contents of irc.disconnect file
     BANNED_PORTS=$(echo "$IRSSI_IRC_DISCONNECT")
     # random IRC ports
@@ -426,6 +429,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   "1")
 
     if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+
+      irssi_files
 
       proxy_configuration
 
@@ -577,6 +582,8 @@ COMMANDS.....:  /help")"
 
     if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
 
+      irssi_files
+
       proxy_configuration
 
       irssi_status
@@ -589,12 +596,6 @@ COMMANDS.....:  /help")"
       irc_disconnect
 
       welcome_banned
-
-      IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d')"
-      IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d')"
-      IRSSI_IRC_DISCONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | sed '/^$/d')"
-      IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d')"
-      IRSSI_IRC_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | sed '/^$/d')"
 
       ##########################################################################
 
@@ -614,6 +615,14 @@ COMMANDS.....:  /help")"
         IRSSI_NEW_WELCOME="0"
       fi
 
+      # potential new irc servers from irc.irclogs
+      if [[ -f /home/"$WHOAMI"/.irssi/irc.irclogs ]] &>/dev/null; then
+        IRSSI_NEW_IRCLOGS="$(echo "$(grep -vf /home/"$WHOAMI"/.irssi/irc.servers /home/"$WHOAMI"/.irssi/irc.irclogs 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
+      fi
+      if [[ -z "$IRSSI_NEW_IRCLOGS" ]] &>/dev/null; then
+        IRSSI_NEW_IRCLOGS="0"
+      fi
+
       ##########################################################################
 
       # total ports
@@ -626,7 +635,7 @@ COMMANDS.....:  /help")"
       IRSSI_SERVER_LIST="$(echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' | wc -l)"
 
       # server list + potential new
-      IRSSI_SERVER_LIST="$(echo "$IRSSI_SERVER_LIST+$IRSSI_NEW_CONNECT+$IRSSI_NEW_WELCOME" | bc 2>/dev/null)"
+      IRSSI_SERVER_LIST="$(echo "$IRSSI_SERVER_LIST+$IRSSI_NEW_CONNECT+$IRSSI_NEW_WELCOME+$IRSSI_NEW_IRCLOGS" | bc 2>/dev/null)"
 
       # server list based on amount of ports
       IRSSI_SERVER_PORTS=$(echo "$IRSSI_SERVER_LIST*$IRSSI_TOTAL_PORTS" | sed '/^$/d' | bc 2>/dev/null)
