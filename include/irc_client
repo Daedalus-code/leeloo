@@ -628,53 +628,47 @@ COMMANDS.....:  /help")"
       # total ports
       IRSSI_TOTAL_PORTS="19"
 
-      # server list
-      IRSSI_SERVER_LIST="$(echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' | wc -l)"
+      # servers total
+      IRSSI_SERVER_TOTAL="$(echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' | wc -l)"
 
-      # server list + potential new
-      IRSSI_SERVER_LIST="$(echo "$IRSSI_SERVER_LIST+$IRSSI_NEW_CONNECT+$IRSSI_NEW_WELCOME+$IRSSI_NEW_IRCLOGS" | bc 2>/dev/null)"
-      if [[ -z "$IRSSI_SERVER_LIST" ]] &>/dev/null; then
-        IRSSI_SERVER_LIST="0"
+      # servers total + potential new
+      IRSSI_SERVER_TOTAL="$(echo "$IRSSI_SERVER_TOTAL+$IRSSI_NEW_CONNECT+$IRSSI_NEW_WELCOME+$IRSSI_NEW_IRCLOGS" | bc 2>/dev/null)"
+      if [[ -z "$IRSSI_SERVER_TOTAL" ]] &>/dev/null; then
+        IRSSI_SERVER_TOTAL="0"
       fi
 
-      # total times ports
-      IRSSI_SERVER_LIST_TOTAL="$(echo "$(echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' | wc -l)*$IRSSI_TOTAL_PORTS" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-      if [[ -z "$IRSSI_SERVER_LIST_TOTAL" ]] &>/dev/null; then
-        IRSSI_SERVER_LIST_TOTAL="0"
+      # total servers * ports
+      IRSSI_SERVER_WITH_PORTS=$(echo "$IRSSI_SERVER_TOTAL*$IRSSI_TOTAL_PORTS" | sed '/^$/d' | bc 2>/dev/null)
+      if [[ -z "$IRSSI_SERVER_WITH_PORTS" ]] &>/dev/null; then
+        IRSSI_SERVER_WITH_PORTS="0"
       fi
 
-      # server list based on amount of ports
-      IRSSI_SERVER_PORTS=$(echo "$IRSSI_SERVER_LIST*$IRSSI_TOTAL_PORTS" | sed '/^$/d' | bc 2>/dev/null)
-      if [[ -z "$IRSSI_SERVER_PORTS" ]] &>/dev/null; then
-        IRSSI_SERVER_PORTS="0"
-      fi
-
-      # connected list
+      # connected total
       IRSSI_CONNECTED_TOTAL="$(echo "$IRSSI_IRC_CONNECT" | sed '/^$/d' | wc -l)"
       if [[ -z "$IRSSI_CONNECTED_TOTAL" ]] &>/dev/null; then
         IRSSI_CONNECTED_TOTAL="0"
       fi
-      IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+      IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
       if [[ -z "$IRSSI_CONNECTED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
         IRSSI_CONNECTED_FILTERED_PERCENTAGE="0"
       fi
 
-      # disconnect list
+      # disconnect total
       IRSSI_DISCONNECT_TOTAL="$(echo "$IRSSI_IRC_DISCONNECT" | sed '/^$/d' | wc -l)"
       if [[ -z "$IRSSI_DISCONNECT_TOTAL" ]] &>/dev/null; then
         IRSSI_DISCONNECT_TOTAL="0"
       fi
-      IRSSI_DISCONNECT_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_DISCONNECT_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+      IRSSI_DISCONNECT_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_DISCONNECT_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
       if [[ -z "$IRSSI_DISCONNECT_FILTERED_PERCENTAGE" ]] &>/dev/null; then
         IRSSI_DISCONNECT_FILTERED_PERCENTAGE="0"
       fi
 
-      # banned list
+      # banned total
       IRSSI_BANNED_TOTAL="$(echo "$IRSSI_IRC_BANNED" | sed '/^$/d' | wc -l)"
       if [[ -z "$IRSSI_BANNED_TOTAL" ]] &>/dev/null; then
         IRSSI_BANNED_TOTAL="0"
       fi
-      IRSSI_BANNED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_BANNED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+      IRSSI_BANNED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_BANNED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
       if [[ -z "$IRSSI_BANNED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
         IRSSI_BANNED_FILTERED_PERCENTAGE="0"
       fi
@@ -684,7 +678,7 @@ COMMANDS.....:  /help")"
       if [[ -z "$IRSSI_WELCOME_TOTAL" ]] &>/dev/null; then
         IRSSI_WELCOME_TOTAL="0"
       fi
-      IRSSI_WELCOME_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_WELCOME_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+      IRSSI_WELCOME_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_WELCOME_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
       if [[ -z "$IRSSI_WELCOME_FILTERED_PERCENTAGE" ]] &>/dev/null; then
         IRSSI_WELCOME_FILTERED_PERCENTAGE="0"
       fi
@@ -694,7 +688,7 @@ COMMANDS.....:  /help")"
       if [[ -z "$IRSSI_IRCLOGS_TOTAL" ]] &>/dev/null; then
         IRSSI_IRCLOGS_TOTAL="0"
       fi
-      IRSSI_IRCLOGS_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_LIST_TOTAL*$IRSSI_IRCLOGS_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+      IRSSI_IRCLOGS_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_IRCLOGS_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
       if [[ -z "$IRSSI_IRCLOGS_FILTERED_PERCENTAGE" ]] &>/dev/null; then
         IRSSI_IRCLOGS_FILTERED_PERCENTAGE="0"
       fi
@@ -707,7 +701,7 @@ COMMANDS.....:  /help")"
 
       RESULT="IRC.Client...: $IRSSI_CLIENT
 IRC.Status...: $IRSSI_COM_STATUS
-IRC.Servers..: $IRSSI_SERVER_LIST:$IRSSI_TOTAL_PORTS/$IRSSI_SERVER_PORTS
+IRC.Servers..: $IRSSI_SERVER_TOTAL:$IRSSI_TOTAL_PORTS/$IRSSI_SERVER_WITH_PORTS
 irclogs......: $IRSSI_IRCLOGS_TOTAL ${IRSSI_IRCLOGS_FILTERED_PERCENTAGE:?}%
 Welcome......: $IRSSI_WELCOME_TOTAL ${IRSSI_WELCOME_FILTERED_PERCENTAGE:?}%
 Banned.......: $IRSSI_BANNED_TOTAL ${IRSSI_BANNED_FILTERED_PERCENTAGE:?}%
