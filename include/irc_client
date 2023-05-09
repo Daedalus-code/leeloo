@@ -208,9 +208,11 @@ function irc_client() {
       while read -r LOG_FILE; do
         MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
         if [[ -n "$MATCH" ]] &>/dev/null; then
+          # without port
           echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-          echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect_port 2>/dev/null
           echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep -v "$NOT_A_SERVER" | awk '{ print $1 }' | sed -r '/^\s*$/d' | sort | awk '!a[$0]++' | sed -r '/^.{,2}$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+          # with port
+          echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect_port 2>/dev/null
           echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect_port 2>/dev/null | egrep -v "$NOT_A_SERVER" | sed -r '/^\s*$/d' | sort | awk '!a[$0]++' | sed -r '/^.{,2}$/d')" >/home/"$WHOAMI"/.irssi/irc.connect_port 2>/dev/null
         fi
       done </home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
@@ -396,6 +398,10 @@ function irc_client() {
       # choose a random port from the valid ports
       IRSSI_INDEX=$((RANDOM % ${#VALID_PORTS[@]}))
       IRSSI_PORT="${VALID_PORTS[$IRSSI_INDEX]}"
+    fi
+    # first time connection
+    if [[ "$(echo "$IRSSI_IRC_DISCONNECT" | grep -c "6667")" -eq "0" ]] &>/dev/null; then
+      IRSSI_PORT="6667"
     fi
   }
 
