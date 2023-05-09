@@ -273,7 +273,7 @@ function irc_client() {
     # irc.banned
     function irssi_servers_banned() {
       # disregard with not_a_server, words less than n
-      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_BANNED" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' | sort -R | head -11 | sort -R | head -1)"
+      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_BANNED" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' | sort -R | head -21 | sort -R | head -1)"
       IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
       IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
       IRSSI_SERVER="$(echo "$IRSSI_RANDOM_HOST")"
@@ -283,7 +283,7 @@ function irc_client() {
     # irc.welcome
     function irssi_servers_welcome() {
       # disregard with not_a_server, words less than n
-      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_WELCOME" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' | sort -R | head -11 | sort -R | head -1)"
+      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_WELCOME" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' | sort -R | head -21 | sort -R | head -1)"
       IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
       IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
       IRSSI_SERVER="$(echo "$IRSSI_RANDOM_HOST")"
@@ -293,7 +293,7 @@ function irc_client() {
     # irc.connect
     function irssi_servers_connect() {
       # disregard with not_a_server, words less than n
-      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_CONNECT" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' | sort -R | head -11 | sort -R | head -1)"
+      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_CONNECT" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' | sort -R | head -21 | sort -R | head -1)"
       IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
       IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
       IRSSI_SERVER="$(echo "$IRSSI_RANDOM_HOST")"
@@ -303,7 +303,7 @@ function irc_client() {
     # irc.servers
     function irssi_servers_list() {
       # disregard with not_a_server, words less than n
-      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_SERVERS" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' | sort -R | head -11 | sort -R | head -1)"
+      IRSSI_RANDOM_DATA="$(echo "$IRSSI_IRC_SERVERS" | egrep -v "$NOT_A_SERVER" | sed -r '/^.{,2}$/d' | sort -R | head -21 | sort -R | head -1)"
       IRSSI_RANDOM_HOST="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $1 }')"
       IRSSI_RANDOM_PORT="$(echo "$IRSSI_RANDOM_DATA" | awk '{ print $2 }')"
       IRSSI_SERVER="$(echo "$IRSSI_RANDOM_HOST")"
@@ -327,7 +327,7 @@ function irc_client() {
     # zero server configuration set, continue
     if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
       # pick random server list
-      RANDOM_SERVER_LIST=$((((RANDOM % 5) + 1)))
+      RANDOM_SERVER_LIST=$((((RANDOM % 6) + 1)))
 
       # random 1 (irc.servers)
       if [[ "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
@@ -358,6 +358,11 @@ function irc_client() {
         if [[ "$(egrep -c "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.irclogs 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_irclogs
         else
+          no_list
+        fi
+      elif [[ "$RANDOM_SERVER_LIST" -eq "6" ]] &>/dev/null; then
+        # random 6 (irc.servers) again
+        if [[ "$(egrep -c "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           no_list
         fi
       fi
