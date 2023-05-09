@@ -270,6 +270,36 @@ function incoming_reference() {
 
 ################################################################################
 
+function signal_age() {
+  # hours into seconds
+  SIGNAL_AGE_SECONDS="$(echo "$SIGNAL_AGE*3600" | bc 2>/dev/null)"
+
+  # signal age file
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order ]] &>/dev/null; then
+    echo "IDLING :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${SIGNAL_AGE:?}hr/${SIGNAL_AGE_SECONDS:?}sec :: $(date | xargs)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null
+  fi
+}
+
+function signal_age_buying() {
+  # signal age
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order ]] &>/dev/null; then
+    echo "Buying :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${SIGNAL_AGE:?}hr :: $(date | xargs)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null
+  fi
+  # get signal order age (seconds)
+  SIGNAL_ORDER_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+}
+
+function signal_age_selling() {
+  # signal age
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order ]] &>/dev/null; then
+    echo "Selling :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${SIGNAL_AGE:?}hr :: $(date | xargs)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null
+  fi
+  # get signal order age (seconds)
+  SIGNAL_ORDER_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+}
+
+################################################################################
+
 function open_positions() {
 
   ##############################################################################
