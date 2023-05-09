@@ -7,10 +7,10 @@
 # Return balances for all currencies. Permission required: Return Balances
 
 returnBalances() {
-  API_POLONIEX_NONCE=$(($(date +%s) * 100))
-  JSON_DATA="{\"nonce\":\"$API_POLONIEX_NONCE\",\"command\":\"returnCompleteBalances\"}"
-  SIGNATURE=$(echo -n "$JSON_DATA" | openssl dgst -sha512 -hmac "$API_POLONIEX_SECRET" | awk '{print $NF}')
-  curl -s -X POST -H "Key: $API_POLONIEX_KEY" -H "Sign: $SIGNATURE" -d "$JSON_DATA" "https://poloniex.com/tradingApi"
+  API_POLONIEX_NONCE=$(($(date +%s) * 1000))
+  JSON_DATA="{\"nonce\":\"$API_POLONIEX_NONCE\",\"command\":\"returnAccountBalances\"}"
+  SIGNATURE=$(echo -n "$JSON_DATA" | openssl dgst -sha256 -hmac "$API_POLONIEX_SECRET" | awk '{print $NF}')
+  curl -s -X POST -H "Content-Type: application/json" -H "Key: $API_POLONIEX_KEY" -H "Sign: $SIGNATURE" -d "$JSON_DATA" "https://futures.poloniex.com/tradingApi"
 }
 
 # END
