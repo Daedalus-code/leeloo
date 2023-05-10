@@ -9,8 +9,9 @@
 function returnBalances {
   API_NONCE=$(date +%s%N)
   DATA="command=returnBalances&nonce=$API_NONCE"
-  SIGNATURE=$(echo -n "$DATA" | openssl sha512 -hmac "$API_POLONIEX_SECRET" | awk '{print $NF}')
-  curl -s -X POST -d "$DATA" -H "Key: $API_POLONIEX_KEY" -H "Sign: $SIGNATURE" https://poloniex.com/tradingApi
+  SIGNATURE=$(echo -n "$DATA" | openssl dgst -sha512 -hmac "$API_POLONIEX_SECRET" | awk '{print $NF}')
+  URL="https://api.poloniex.com/tradingApi"
+  curl -s -X POST -d "$DATA" -H "Key: $API_POLONIEX_KEY" -H "Sign: $SIGNATURE" -H "Content-Type: application/x-www-form-urlencoded" "$URL"
 }
 
 # END
