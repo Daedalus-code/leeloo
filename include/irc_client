@@ -91,7 +91,7 @@ function irc_client() {
     # proxy configuration = true
     if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
       # with proxy
-      curl -s --proxy socks5h://localhost:9050 https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
+      torify curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
     else
       curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
     fi
