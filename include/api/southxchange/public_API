@@ -38,7 +38,7 @@ function trades() {
   if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
     torify curl -s -X GET "https://market.southxchange.com/api/v4/trades/$LISTING_CURRENCY/$REFERENCE_CURRENCY" -H "accept: application/json" | jq '.[0]'
   else
-    curl -X GET "https://market.southxchange.com/api/v4/trades/$LISTING_CURRENCY/$REFERENCE_CURRENCY" -H "accept: application/json" | jq '.[0]'
+    curl -s -X GET "https://market.southxchange.com/api/v4/trades/$LISTING_CURRENCY/$REFERENCE_CURRENCY" -H "accept: application/json" | jq '.[0]'
   fi
 }
 
@@ -52,7 +52,7 @@ if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
   }
 else
   function fees {
-    curl -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" | jq -s
+    curl -s -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" | jq -s
   }
 fi
 
