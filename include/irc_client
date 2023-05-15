@@ -56,8 +56,7 @@ EOF
 
 ################################################################################
 
-function irssi_files() {
-
+function directory_install() {
   # chat directory
   if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
     echo "Installing /chat, please wait.."
@@ -71,7 +70,11 @@ function irssi_files() {
     mkdir /home/"$WHOAMI"/.irssi &>/dev/null
     sleep 1
   fi
+}
 
+################################################################################
+
+function irssi_files() {
   IRSSI_IRC_DISCONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
   IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
   IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
@@ -463,6 +466,8 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
 
+      directory_install
+
       irssi_files
 
       proxy_configuration
@@ -616,6 +621,8 @@ COMMANDS.....:  /help")"
   "3")
 
     if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+
+      directory_install
 
       irssi_files
 
