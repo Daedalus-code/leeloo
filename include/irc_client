@@ -97,6 +97,10 @@ function irc_client() {
     fi
   fi
 
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.servers ]] &>/dev/null; then
+    curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
+  fi
+
   ##############################################################################
 
   function proxy_configuration() {
