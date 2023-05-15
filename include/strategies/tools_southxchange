@@ -152,13 +152,37 @@ function backup_balances() {
 
 ################################################################################
 
+function backup_prices() {
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices | wc -l)" -gt "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.bkp &>/dev/null
+  fi
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices | wc -l)" -eq "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/southxchange/prices.bkp "${LOG_DIR:?}"/leeloo/southxchange/prices &>/dev/null
+  fi
+}
+
+################################################################################
+
+function backup_orders() {
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders | wc -l)" -gt "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/southxchange/orders "${LOG_DIR:?}"/leeloo/southxchange/orders.bkp &>/dev/null
+  fi
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders | wc -l)" -eq "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/southxchange/orders.bkp "${LOG_DIR:?}"/leeloo/southxchange/orders &>/dev/null
+  fi
+}
+
+################################################################################
+
 function cost_price() {
   # update balances, prices after last order
   echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
   echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
 
-  # backup balances
+  # backup balances, prices, orders
   backup_balances
+  backup_prices
+  backup_orders
 
   LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
@@ -209,8 +233,10 @@ function incoming_listing() {
       echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
       echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
 
-      # backup balances
+      # backup balances, prices, orders
       backup_balances
+      backup_prices
+      backup_orders
 
       LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
       LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
@@ -263,8 +289,10 @@ function incoming_reference() {
       echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
       echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
 
-      # backup balances
+      # backup balances, prices, orders
       backup_balances
+      backup_prices
+      backup_orders
 
       REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
       REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
