@@ -6,12 +6,13 @@ WHOAMI="$(whoami)"
 
 ################################################################################
 
+if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
+  echo "Installing /chat, please wait.."
+  mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
+  sleep 1
+fi
+
 if [ -x "$(command -v irssi)" ] &>/dev/null; then
-  if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
-    echo "Installing /chat, please wait.."
-    mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
-    sleep 1
-  fi
   if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
     echo "Installing /.irssi, please wait.."
     mkdir /home/"$WHOAMI"/.irssi &>/dev/null
@@ -95,10 +96,6 @@ function irc_client() {
     else
       curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
     fi
-  fi
-
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.servers ]] &>/dev/null; then
-    curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
   fi
 
   ##############################################################################
