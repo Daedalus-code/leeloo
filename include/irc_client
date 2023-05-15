@@ -88,15 +88,19 @@ function irssi_files() {
 
 # start irc client
 function irc_client() {
-  # get irc server list
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.servers ]] &>/dev/null; then
-    echo "Downloading IRC server list.."
-    # proxy configuration = true
-    if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
-      # with proxy
-      torify curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
-    else
-      curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
+
+  if [ -x "$(command -v irssi)" ] &>/dev/null; then
+    directory_install
+    # get irc server list
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.servers ]] &>/dev/null; then
+      echo "Downloading IRC server list.."
+      # proxy configuration = true
+      if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
+        # with proxy
+        torify curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
+      else
+        curl -s https://www.mirc.com/servers.ini | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
+      fi
     fi
   fi
 
