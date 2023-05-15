@@ -6,22 +6,6 @@ WHOAMI="$(whoami)"
 
 ################################################################################
 
-if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
-  echo "Installing /chat, please wait.."
-  mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
-  sleep 1
-fi
-
-if [ -x "$(command -v irssi)" ] &>/dev/null; then
-  if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
-    echo "Installing /.irssi, please wait.."
-    mkdir /home/"$WHOAMI"/.irssi &>/dev/null
-    sleep 1
-  fi
-fi
-
-################################################################################
-
 # disregard non irc servers
 NOT_A_SERVER=".CAIRC|cloak-|tor|tor-exit|-exit|discord.gg|.int|.html|.php|.pdf|.ip|.IP"
 
@@ -73,6 +57,21 @@ EOF
 ################################################################################
 
 function irssi_files() {
+
+  # chat directory
+  if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
+    echo "Installing /chat, please wait.."
+    mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
+    sleep 1
+  fi
+
+  # .irssi directory
+  if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+    echo "Installing /.irssi, please wait.."
+    mkdir /home/"$WHOAMI"/.irssi &>/dev/null
+    sleep 1
+  fi
+
   IRSSI_IRC_DISCONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
   IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
   IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
