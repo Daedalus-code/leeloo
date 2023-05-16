@@ -246,15 +246,29 @@ case $CHOICE in
 
 "2")
 
-  HEIGHT=9
+  VALID_OPTIONS=()
+
+  # poloniex option
+  if [[ ! -z "$API_POLONIEX_KEY" ]] && [[ ! -z "$API_POLONIEX_SECRET" ]]; then
+    VALID_OPTIONS+=("P" "Poloniex")
+  fi
+  # southxchange option
+  if [[ ! -z "$API_SOUTHX_KEY" ]] && [[ ! -z "$API_SOUTHX_SECRET" ]]; then
+    VALID_OPTIONS+=("S" "SouthXchange")
+  fi
+
+  BASE_HEIGHT=5
+  CHOICE_HEIGHT=${#VALID_OPTIONS[@]}
+  HEIGHT=$((BASE_HEIGHT + CHOICE_HEIGHT))
   WIDTH=24
-  CHOICE_HEIGHT=2
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Prices"
   MENU="$DATE"
 
-  OPTIONS=(1 "Poloniex"
-    2 "SouthXchange")
+  OPTIONS=()
+  for ((i = 0; i < CHOICE_HEIGHT; i += 2)); do
+    OPTIONS+=("${VALID_OPTIONS[i]}" "${VALID_OPTIONS[i + 1]}")
+  done
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -269,7 +283,7 @@ case $CHOICE in
 
   # poloniex prices ############################################################
 
-  "1")
+  "P")
 
     USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
@@ -331,7 +345,7 @@ $MARKET_RESULT"
 
     # southxchange prices ######################################################
 
-  "2")
+  "S")
 
     USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
@@ -401,15 +415,29 @@ $MARKET_RESULT"
 
 "3")
 
-  HEIGHT=9
+  VALID_OPTIONS=()
+
+  # poloniex option
+  if [[ ! -z "$API_POLONIEX_KEY" ]] && [[ ! -z "$API_POLONIEX_SECRET" ]]; then
+    VALID_OPTIONS+=("P" "Poloniex")
+  fi
+  # southxchange option
+  if [[ ! -z "$API_SOUTHX_KEY" ]] && [[ ! -z "$API_SOUTHX_SECRET" ]]; then
+    VALID_OPTIONS+=("S" "SouthXchange")
+  fi
+
+  BASE_HEIGHT=5
+  CHOICE_HEIGHT=${#VALID_OPTIONS[@]}
+  HEIGHT=$((BASE_HEIGHT + CHOICE_HEIGHT))
   WIDTH=24
-  CHOICE_HEIGHT=2
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Search"
   MENU="$DATE"
 
-  OPTIONS=(1 "Poloniex"
-    2 "SouthXchange")
+  OPTIONS=()
+  for ((i = 0; i < CHOICE_HEIGHT; i += 2)); do
+    OPTIONS+=("${VALID_OPTIONS[i]}" "${VALID_OPTIONS[i + 1]}")
+  done
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -424,7 +452,7 @@ $MARKET_RESULT"
 
   # poloniex search ############################################################
 
-  "1")
+  "P")
 
     search_poloniex
 
@@ -493,7 +521,7 @@ $MARKET_RESULT"
 
     # southxchange search ######################################################
 
-  "2")
+  "S")
 
     search_southxchange
 
