@@ -83,6 +83,15 @@ case $CHOICE in
 
 "1")
 
+  # poloniex option
+  if [[ ! -z "$API_POLONIEX_KEY" ]] && [[ ! -z "$API_POLONIEX_SECRET" ]]; then
+    OPTIONS+=("1" "Poloniex")
+  fi
+  # southxchange option
+  if [[ ! -z "$API_SOUTHX_KEY" ]] && [[ ! -z "$API_SOUTHX_SECRET" ]]; then
+    OPTIONS+=("2" "SouthXchange")
+  fi
+
   HEIGHT=9
   WIDTH=24
   CHOICE_HEIGHT=2
@@ -90,8 +99,7 @@ case $CHOICE in
   TITLE="Balances"
   MENU="$DATE"
 
-  OPTIONS=(1 "Poloniex"
-    2 "SouthXchange")
+  CHOICE_HEIGHT=${#OPTIONS[@]}
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -150,7 +158,7 @@ case $CHOICE in
           RESULT="No balance"
         else
           RESULT="Coins: Deposited Available Unconfirmed
-$(cat "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null)"
+    $(cat "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null)"
         fi
 
         display_result 2>/dev/null
@@ -209,7 +217,7 @@ $(cat "${LOG_DIR:?}"/leeloo/poloniex/balances 2>/dev/null)"
           RESULT="No balance"
         else
           RESULT="Coins: Deposited Available Unconfirmed
-$(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
+    $(cat "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)"
         fi
 
         display_result 2>/dev/null
