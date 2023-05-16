@@ -1688,18 +1688,18 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
               --msgbox "$RESULT" "$LENGTH" "$WIDTH"
           }
 
-          ROBOT_AVERAGE="$(cat "${LOG_DIR:?}"/leeloo/robot_average 2>/dev/null)"
-          ROBOT_MAX_AGE="$(cat "${LOG_DIR:?}"/leeloo/robot_max_age 2>/dev/null)"
+          ROBOT_LOG_AVERAGE="$(cat "${LOG_DIR:?}"/leeloo/robot_average 2>/dev/null)"
+          ROBOT_LOG_MAX_AGE="$(cat "${LOG_DIR:?}"/leeloo/robot_max_age 2>/dev/null)"
 
-          if [[ -z "$ROBOT_AVERAGE" ]] &>/dev/null; then
-            ROBOT_AVERAGE="0"
+          if [[ -z "$ROBOT_LOG_AVERAGE" ]] &>/dev/null; then
+            ROBOT_LOG_AVERAGE="0"
           fi
 
-          if [[ -z "$ROBOT_MAX_AGE" ]] &>/dev/null; then
-            ROBOT_MAX_AGE="0"
+          if [[ -z "$ROBOT_LOG_MAX_AGE" ]] &>/dev/null; then
+            ROBOT_LOG_MAX_AGE="0"
           fi
 
-          RESULT="Strategies: $(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | xargs | sed 's/^0*//') $ROBOT_AVERAGE/$ROBOT_MAX_AGE
+          RESULT="Strategies: $(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | xargs | sed 's/^0*//') $ROBOT_LOG_AVERAGE/$ROBOT_LOG_MAX_AGE
 $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
           LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)"
           WIDTH="$(echo "$(echo "$RESULT" | wc -L)+4" | bc 2>/dev/null)"
