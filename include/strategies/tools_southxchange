@@ -614,13 +614,13 @@ function rogue_profit() {
     # overbought
     if [[ "$(echo "$ROGUE_LISTING_NOW" | awk -F. '{ print $1 }')" -gt "60" ]] &>/dev/null; then
       # positive
-      ROGUE_LISTING_X_CALCULATE="$(echo "$ROGUE_LISTING_TOTAL+$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_LISTING_X_CALCULATE="$(echo "$ROGUE_LISTING_HIGH+$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
     # oversold
     if [[ "$(echo "$ROGUE_LISTING_NOW" | awk -F. '{ print $1 }')" -lt "40" ]] &>/dev/null; then
       # negative
-      ROGUE_LISTING_X_CALCULATE="$(echo "$ROGUE_LISTING_TOTAL-$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_LISTING_X_CALCULATE="$(echo "$ROGUE_LISTING_LOW-$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
     # x_factor, ruled by 60/40
