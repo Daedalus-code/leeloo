@@ -662,13 +662,13 @@ function rogue_profit() {
     # overbought
     if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -gt "60" ]] &>/dev/null; then
       # positive
-      ROGUE_REFERENCE_X_CALCULATE="$(echo "$ROGUE_REFERENCE_TOTAL+$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_REFERENCE_X_CALCULATE="$(echo "$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
     # oversold
     if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -lt "40" ]] &>/dev/null; then
       # negative
-      ROGUE_REFERENCE_X_CALCULATE="$(echo "$ROGUE_REFERENCE_TOTAL-$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_REFERENCE_X_CALCULATE="$(echo "$ROGUE_REFERENCE_LOW-$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
     ROGUE_REFERENCE_DIFF_PERCENTAGE="$(echo "100/$ROGUE_REFERENCE_AVERAGE*$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
