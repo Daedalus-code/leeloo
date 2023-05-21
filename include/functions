@@ -10,6 +10,10 @@
 
 ################################################################################
 
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+################################################################################
+
 LEELOO_CONFIG_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/broker.conf | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
 
 if [[ "$LEELOO_CONFIG_SECONDS" -lt "10" ]] &>/dev/null; then
@@ -37,8 +41,6 @@ if [[ "$LEELOO_CONFIG_SECONDS" -lt "10" ]] &>/dev/null; then
 fi
 
 ################################################################################
-
-# shellcheck disable=SC2034  # Unused variables left for readability
 
 function AGREED() {
   echo "All trading activities and any resulting losses are solely the user's responsibility.
