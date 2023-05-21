@@ -611,6 +611,8 @@ function rogue_profit() {
     ROGUE_LISTING_TOTAL="$(echo "$ROGUE_LISTING_NOW+$ROGUE_LISTING_HIGH+$ROGUE_LISTING_LOW" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     ROGUE_LISTING_AVERAGE="$(echo "$ROGUE_LISTING_TOTAL/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
+    ############################################################################
+
     # overbought
     if [[ "$(echo "$ROGUE_LISTING_NOW" | awk -F. '{ print $1 }')" -gt "60" ]] &>/dev/null; then
       # positive
@@ -623,6 +625,8 @@ function rogue_profit() {
       ROGUE_LISTING_X_CALCULATE="$(echo "$ROGUE_LISTING_TOTAL-$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
+    ############################################################################
+
     # x_factor, ruled by 60/40
     ROGUE_LISTING_DIFF_PERCENTAGE="$(echo "100/$ROGUE_LISTING_AVERAGE*$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
@@ -634,7 +638,7 @@ function rogue_profit() {
 
     # keep at idle if zero
     if [[ -z "$ROGUE_LISTING_X_FACTOR" ]] &>/dev/null; then
-      ROGUE_LISTING_X_FACTOR="IDLE"
+      ROGUE_LISTING_X_FACTOR="0"
     fi
 
     # reference
@@ -659,6 +663,8 @@ function rogue_profit() {
     ROGUE_REFERENCE_TOTAL="$(echo "$ROGUE_REFERENCE_NOW+$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_LOW" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     ROGUE_REFERENCE_AVERAGE="$(echo "$ROGUE_REFERENCE_TOTAL/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
+    ############################################################################
+
     # overbought
     if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -gt "60" ]] &>/dev/null; then
       # positive
@@ -671,6 +677,8 @@ function rogue_profit() {
       ROGUE_REFERENCE_X_CALCULATE="$(echo "$ROGUE_REFERENCE_TOTAL-$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
+    ############################################################################
+
     ROGUE_REFERENCE_DIFF_PERCENTAGE="$(echo "100/$ROGUE_REFERENCE_AVERAGE*$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     if [[ -z "$ROGUE_REFERENCE_DIFF_PERCENTAGE" ]] &>/dev/null; then
@@ -681,7 +689,7 @@ function rogue_profit() {
 
     # keep at idle if zero
     if [[ -z "$ROGUE_REFERENCE_X_FACTOR" ]] &>/dev/null; then
-      ROGUE_REFERENCE_X_FACTOR="IDLE"
+      ROGUE_REFERENCE_X_FACTOR="0"
     fi
 
     ############################################################################
@@ -713,6 +721,16 @@ function rogue_profit() {
 
     ROGUE_LISTING_X_FACTOR="$(echo "$ROGUE_LISTING_X_FACTOR-$ROGUE_LISTING_DIFF" | bc -l | awk '{ printf "%.9f\n", $1 }')"
     ROGUE_REFERENCE_X_FACTOR="$(echo "$ROGUE_REFERENCE_X_FACTOR-$ROGUE_REFERENCE_DIFF" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+
+    # keep at idle if zero
+    if [[ -z "$ROGUE_LISTING_X_FACTOR" ]] &>/dev/null; then
+      ROGUE_LISTING_X_FACTOR="IDLE"
+    fi
+
+    # keep at idle if zero
+    if [[ -z "$ROGUE_REFERENCE_X_FACTOR" ]] &>/dev/null; then
+      ROGUE_REFERENCE_X_FACTOR="IDLE"
+    fi
 
     ############################################################################
 
