@@ -23,21 +23,14 @@ LEELOO_CONFIG_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/broker.conf | while read la
 
 if [[ "$LEELOO_CONFIG_SECONDS" -lt "10" ]] &>/dev/null; then
   if [[ "$(echo "$SCREEN_LIST" | grep -c "leeloo")" -gt "0" ]] &>/dev/null; then
-
-    screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
-    echo " Robot stopping! --" >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
-
     # kill screen
     screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
-
     # kill leeloo pid (shell)
     echo "$(ps aux 2>/dev/null | grep "leeloo" | grep -v "grep" | grep "bash.*robot/leeloo" | awk '{ print $2 }' | tail -1)" >"${LOG_DIR:?}"/leeloo/ps_aux
     LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
     kill -9 "$LEELOO_PID" &>/dev/null
-
     bash "${SYS_DIR:?}"/robot/looper
-    echo " Robot starting! ++" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
-
+    echo "Robot restarting!" >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
     display_result() {
       dialog --title "Updating Configuration." \
         --no-collapse \
