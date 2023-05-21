@@ -722,13 +722,15 @@ function rogue_profit() {
     ROGUE_LISTING_X_FACTOR="$(echo "$ROGUE_LISTING_X_FACTOR-$ROGUE_LISTING_DIFF" | bc -l | awk '{ printf "%.9f\n", $1 }')"
     ROGUE_REFERENCE_X_FACTOR="$(echo "$ROGUE_REFERENCE_X_FACTOR-$ROGUE_REFERENCE_DIFF" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
+    ############################################################################
+
     # keep at idle if zero
-    if [[ -z "$ROGUE_LISTING_X_FACTOR" ]] &>/dev/null; then
+    if [[ "$(echo "$ROGUE_LISTING_X_FACTOR" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
       ROGUE_LISTING_X_FACTOR="IDLE"
     fi
 
     # keep at idle if zero
-    if [[ -z "$ROGUE_REFERENCE_X_FACTOR" ]] &>/dev/null; then
+    if [[ "$(echo "$ROGUE_REFERENCE_X_FACTOR" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
       ROGUE_REFERENCE_X_FACTOR="IDLE"
     fi
 
