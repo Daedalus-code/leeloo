@@ -14,11 +14,16 @@
 
 ################################################################################
 
+echo "$(screen -list 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/screen
+SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
+
+################################################################################
+
 LEELOO_CONFIG_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/broker.conf | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
 
 if [[ "$LEELOO_CONFIG_SECONDS" -lt "10" ]] &>/dev/null; then
   screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
-  echo " Robot stopping! --" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+  echo " Robot stopping! --" >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
 
   # kill screen
   screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
@@ -86,11 +91,6 @@ fi
 
 DATE="$(date +"%d.%m.%Y %H:%M:%S")"
 LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
-
-################################################################################
-
-echo "$(screen -list 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/screen
-SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
 
 # repo version #################################################################
 
