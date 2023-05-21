@@ -14,9 +14,9 @@
 
 ################################################################################
 
-LEELOO_CONFIG_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/broker.conf | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
+LEELOO_CONFIG_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/broker.conf | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
 
-if [[ "$LEELOO_CONFIG_SECONDS" -eq "0" ]] &>/dev/null; then
+if [[ "$LEELOO_CONFIG_SECONDS" -lt "10" ]] &>/dev/null; then
   screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
   echo " Robot stopping! --" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
 
