@@ -56,21 +56,17 @@ EOF
 
 ################################################################################
 
-function directory_install() {
-  # chat directory
-  if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
-    echo "Installing /chat, please wait.."
-    mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
-    sleep 1
-  fi
+# chat directory
+if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
+  mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
+  sleep 1
+fi
 
-  # .irssi directory
-  if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
-    echo "Installing /.irssi, please wait.."
-    mkdir /home/"$WHOAMI"/.irssi &>/dev/null
-    sleep 1
-  fi
-}
+# .irssi directory
+if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+  mkdir /home/"$WHOAMI"/.irssi &>/dev/null
+  sleep 1
+fi
 
 ################################################################################
 
@@ -90,7 +86,6 @@ function irssi_files() {
 function irc_client() {
 
   if [ -x "$(command -v irssi)" ] &>/dev/null; then
-    directory_install
     # get irc server list
     if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.servers ]] &>/dev/null; then
       echo "Downloading IRC server list.."
@@ -474,8 +469,6 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
 
     if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
 
-      directory_install
-
       irssi_files
 
       proxy_configuration
@@ -629,8 +622,6 @@ COMMANDS.....:  /help")"
   "3")
 
     if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
-
-      directory_install
 
       irssi_files
 
