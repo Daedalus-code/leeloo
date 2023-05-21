@@ -21,6 +21,7 @@ export NCURSES_NO_UTF8_ACS=1
 
 source /usr/local/bin/include/leeloo/broker.conf
 source /usr/local/bin/include/leeloo/functions
+source /usr/local/bin/include/leeloo/sMcD
 
 # southxchange api
 source /usr/local/bin/include/leeloo/api/southxchange/private_API
@@ -58,7 +59,7 @@ OPTIONS=(1 "Balance          Account Balance"
   5 "Update           New Law & Order"
   H "History          Manual History"
   L "Debug            Leeloo Logs"
-  7 "Config           Configuration"
+  7 "Config           Configurations"
   A "Robot            Auto Strategy"
   C "Chat             Chat Menu"
   I "Check            Indicators"
@@ -1032,12 +1033,51 @@ $LEELOO_ERROR"
 
   ##############################################################################
 
-  # broker.conf
+  # broker.conf, secret & key
 
 "7")
 
-  nano "${SYS_DIR:?}"/broker.conf
+  HEIGHT=9
+  WIDTH=47
+  CHOICE_HEIGHT=2
+  BACKTITLE="Leeloo (Multipass)"
+  TITLE="Main Menu"
+  MENU="Multipass $DATE"
+
+  OPTIONS=(
+    1 "Config           Leeloo config"
+    2 "API              Secret & Key config")
+
+  CHOICE=$(dialog --clear \
+    --backtitle "$BACKTITLE" \
+    --title "$TITLE" \
+    --menu "$MENU" \
+    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${OPTIONS[@]}" \
+    2>&1 >/dev/tty)
+
   clear
+  case $CHOICE in
+
+  # leeloo configuration
+
+  "1")
+
+    nano "${SYS_DIR:?}"/broker.conf
+    clear
+
+    ;;
+
+    # key & secret configuration
+
+  "2")
+
+    nano "${SYS_DIR:?}"/sMcD
+    clear
+
+    ;;
+
+  esac
 
   ##############################################################################
 
