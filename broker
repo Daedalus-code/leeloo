@@ -40,33 +40,31 @@ source /usr/local/bin/include/leeloo/strategies/templates/southxchange
 
 ################################################################################
 
-# poloniex option
-if [[ -z "$API_POLONIEX_KEY" ]] && [[ -z "$API_POLONIEX_SECRET" ]] &>/dev/null; then
-  KEY_SECRET_SET_PLX="0"
-else
-  KEY_SECRET_SET_PLX="1"
-fi
-
-# southxchange option
-if [[ -z "$API_SOUTHX_KEY" ]] && [[ -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
-  KEY_SECRET_SET_SXC="0"
-else
-  KEY_SECRET_SET_SXC="1"
-fi
-
-# calculate status
-KEY_SECRET_SET="$(echo "$KEY_SECRET_SET_PLX+$KEY_SECRET_SET_SXC" | bc 2>/dev/null)"
-
-if [[ -z "$KEY_SECRET_SET" ]] &>/dev/null; then
-  KEY_SECRET_SET="0"
-fi
-
-# if set, continue
-if [[ "$KEY_SECRET_SET" -gt "0" ]] &>/dev/null; then
-  KEY_SECRET_OK="1"
-else
-  KEY_SECRET_OK="0"
-fi
+function key_secret_set() {
+  # poloniex option
+  if [[ -z "$API_POLONIEX_KEY" ]] && [[ -z "$API_POLONIEX_SECRET" ]] &>/dev/null; then
+    KEY_SECRET_SET_PLX="0"
+  else
+    KEY_SECRET_SET_PLX="1"
+  fi
+  # southxchange option
+  if [[ -z "$API_SOUTHX_KEY" ]] && [[ -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
+    KEY_SECRET_SET_SXC="0"
+  else
+    KEY_SECRET_SET_SXC="1"
+  fi
+  # calculate status
+  KEY_SECRET_SET="$(echo "$KEY_SECRET_SET_PLX+$KEY_SECRET_SET_SXC" | bc 2>/dev/null)"
+  if [[ -z "$KEY_SECRET_SET" ]] &>/dev/null; then
+    KEY_SECRET_SET="0"
+  fi
+  # if set, continue
+  if [[ "$KEY_SECRET_SET" -gt "0" ]] &>/dev/null; then
+    KEY_SECRET_OK="1"
+  else
+    KEY_SECRET_OK="0"
+  fi
+}
 
 ################################################################################
 
@@ -938,6 +936,8 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
 "H")
 
+  key_secret_set
+
   if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
     last_log
   else
@@ -1119,6 +1119,8 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
   "1")
 
+    key_secret_set
+
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
       while true; do
@@ -1173,6 +1175,8 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     # open positions
 
   "2")
+
+    key_secret_set
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
@@ -1235,6 +1239,8 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
   "H")
 
+    key_secret_set
+
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
       display_result() {
@@ -1280,6 +1286,8 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     # configurations
 
   "3")
+
+    key_secret_set
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
@@ -1330,6 +1338,8 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     # setup strategies
 
   "4")
+
+    key_secret_set
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
@@ -1663,6 +1673,8 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
   "C")
 
+    key_secret_set
+
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
       HEIGHT=11
@@ -1782,6 +1794,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
   "L")
 
+    key_secret_set
+
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
       last_log_robot
     else
@@ -1791,6 +1805,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     ;;
 
   "P")
+
+    key_secret_set
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
@@ -1858,6 +1874,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     ;;
 
   "0")
+
+    key_secret_set
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
