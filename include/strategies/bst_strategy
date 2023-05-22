@@ -208,11 +208,11 @@ fi
 if [[ "$REFERENCE_STATUS" == "false" ]] &>/dev/null; then
   AMOUNT_IN_REFERENCE_CURRENCY="false"
   # skip if allocated is less than n%
-  ALLOCATED_REAL="$LISTING_ALLOCATED_REAL"
+  ALLOCATED_REAL="$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')"
 elif [[ "$REFERENCE_STATUS" == "true" ]] &>/dev/null; then
   AMOUNT_IN_REFERENCE_CURRENCY="true"
   # skip if allocated is less than n%
-  ALLOCATED_REAL="$REFERENCE_ALLOCATED_REAL"
+  ALLOCATED_REAL="$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')"
 fi
 
 ################################################################################
