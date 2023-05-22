@@ -190,15 +190,11 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   # disable normal trigger
   TX_TIME="0"
 
-  # order position, without decimal
-  BST_ORDER_POSITION="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }' 2>/dev/null)"
-
-  if [[ -z "$LISTING_OPEN_RESULT" ]] &>/dev/null; then
-    LISTING_OPEN_RESULT="0"
-  fi
-
   # profit output
   PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Status ${LISTING_OPEN_RESULT:?}%"
+
+  # order position, without decimal
+  BST_ORDER_POSITION="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }' 2>/dev/null)"
 
   if [[ "$BST_ORDER_POSITION" -gt "0" ]] &>/dev/null; then
     COOLDOWN_SECONDS="0" # less
