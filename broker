@@ -2174,24 +2174,12 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 $BTC_MEMPOOL"
     )"
     display_result 2>/dev/null
-
-    if dialog --stdout --title "Save information?" \
-      --backtitle "Donate information" \
-      --yesno "Yes: Save!, No:  Go back!" 5 30; then
-
-      echo "Bitcoin (BTC): $BTC_DNT_ADDR
-
-$BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
-
-      display_result() {
-        dialog --title "BTC Donation" \
-          --no-collapse \
-          --msgbox "$RESULT" 5 37
-      }
-
-      RESULT="$(echo "info saved: /home/$(whoami)/donate")"
-      display_result 2>/dev/null
-    fi
+    clear
+    echo "$RESULT"
+    echo
+    read -r -p "Press Enter to continue" </dev/tty
+    echo
+    clear
 
     ;;
 
@@ -2204,7 +2192,7 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
         clear
         # install npm
         if ! [ -x "$(command -v "npm")" ] &>/dev/null; then
-          sudo apt-get install npm -y
+          sudo apt-get install npm
         fi
         # https://github.com/vercel/install-node
         if ! [ -x "$(command -v "node")" ] &>/dev/null; then
@@ -2239,6 +2227,7 @@ $BTC_MEMPOOL" >/home/"$(whoami)"/donate 2>/dev/null
   "3")
 
     echo "Poloniex: $REF_POLONIEX"
+    echo
     read -r -p "Press Enter to continue" </dev/tty
     clear
 
