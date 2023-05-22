@@ -45,20 +45,18 @@ function key_secret_set() {
   KEY_SECRET_SET_PLX="0"
   KEY_SECRET_SET_SXC="0"
 
+  ##############################################################################
+
   # poloniex option
-  if [[ ! -z "$API_POLONIEX_KEY" ]] &>/dev/null; then
-    KEY_SECRET_SET_PLX="1"
-  fi
-  if [[ ! -z "$API_POLONIEX_SECRET" ]] &>/dev/null; then
+  if [[ -n "$API_POLONIEX_KEY" ]] && [[ -n "$API_POLONIEX_SECRET" ]]; then
     KEY_SECRET_SET_PLX="1"
   fi
   # southxchange option
-  if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
+  if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]]; then
     KEY_SECRET_SET_SXC="1"
   fi
-  if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
-    KEY_SECRET_SET_SXC="1"
-  fi
+
+  ##############################################################################
 
   # calculate status
   KEY_SECRET_SET="$(echo "$KEY_SECRET_SET_PLX+$KEY_SECRET_SET_SXC" | bc 2>/dev/null)"
