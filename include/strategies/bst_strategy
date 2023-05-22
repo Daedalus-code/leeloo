@@ -205,6 +205,8 @@ fi
 
 ################################################################################
 
+ALLOCATED_REAL="0"
+
 if [[ "$REFERENCE_STATUS" == "false" ]] &>/dev/null; then
   AMOUNT_IN_REFERENCE_CURRENCY="false"
   # skip if allocated is less than n%
@@ -226,7 +228,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
       # market
       if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
         # allocated limit
-        if [[ "$(echo "$ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+        if [[ "$ALLOCATED_REAL" -gt "1" ]] &>/dev/null; then
 
           # placeOrder market ##################################################
           PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
