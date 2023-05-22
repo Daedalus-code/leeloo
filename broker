@@ -1192,9 +1192,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
         # pool age in seconds
-        OPEN_POSITIONS_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-        until [[ "$OPEN_POSITIONS_SECONDS" -gt "5" ]] &>/dev/null; do
+        until [[ "$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]] &>/dev/null; do
           clear
           echo "Please wait.."
           sleep 1
