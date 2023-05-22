@@ -968,6 +968,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
       --msgbox "$RESULT" 12 "$WIDTH"
   }
 
+  # log age in seconds
   LEELOO_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
   if [[ -z "$LEELOO_SECONDS" ]] &>/dev/null; then
@@ -1190,7 +1191,10 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     if [[ ! -z "$API_SOUTHX_KEY" ]] &>/dev/null; then
       if [[ ! -z "$API_SOUTHX_SECRET" ]] &>/dev/null; then
 
-        until [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; do
+        # pool age in seconds
+        OPEN_POSITIONS_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+        until [[ "$OPEN_POSITIONS_SECONDS" -lt "10" ]] &>/dev/null; do
           clear
           echo "Please wait.."
           sleep 1
@@ -1735,6 +1739,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
             ROBOT_LOG_MAX_AGE="0"
           fi
 
+          # logs age in seconds
           RESULT="Strategies: $(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | xargs | sed 's/^0*//') $ROBOT_LOG_AVERAGE/$ROBOT_LOG_MAX_AGE
 $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
           LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)"
