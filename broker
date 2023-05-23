@@ -1267,10 +1267,16 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
       display_result() {
-        dialog --title "Trade History +$ORDERS_COUNT" \
+        dialog --title "Trade History +$ORDERS_COUNT - Profit: High $PROFIT_HIGH Low $PROFIT_LOW Average $PROFIT_AVERAGE" \
           --no-collapse \
           --tailbox "$RESULT" "$LENGTH" "$WIDTH"
       }
+
+      PROFIT_COUNT="$(cat "${SYS_DIR:?}"/robot/orders | grep "sell" | awk '{ print $11 }' | wc -l)"
+      PROFIT_HIGH="$(cat "${SYS_DIR:?}"/robot/orders | grep "sell" | awk '{ print $11 }' | sort -n | tail -1)"
+      PROFIT_LOW="$(cat "${SYS_DIR:?}"/robot/orders | grep "sell" | awk '{ print $11 }' | sort -n | head -1)"
+      PROFIT_SUM="$(cat "${SYS_DIR:?}"/robot/orders | grep "sell" | awk '{ print $11 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+      PROFIT_AVERAGE="$(echo "$SUM_PROFIT/$PROFIT_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')"
 
       ORDERS_COUNT="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null | sed -r '/^\s*$/d' | wc -l)"
       WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
