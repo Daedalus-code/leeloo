@@ -330,11 +330,13 @@ case $CHOICE in
       result_prices
     fi
 
+    CAT_POLONIEX_PRICES="$(cat "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null)"
+
     # 450 max before dialog breaks
-    MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | sort -k2 -n -r | head -100)"
+    MARKET_RESULT="$(echo "$CAT_POLONIEX_PRICES" | sort -k2 -n -r | head -100)"
     MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | sed '/^$/d' | wc -l)"
-    MARKET_MOON="$(cat "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
-    MARKET_MOON_COUNT="$(cat "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | awk '{ print $5 }' | wc -l)"
+    MARKET_MOON="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
+    MARKET_MOON_COUNT="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | wc -l)"
     MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)-7" | bc 2>/dev/null)"
     LENGTH="25"
@@ -392,11 +394,13 @@ $MARKET_RESULT"
       result_prices
     fi
 
+    CAT_SOUTHX_PRICES="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
+
     # 450 max before dialog breaks
-    MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | sort -k2 -n -r | head -100)"
+    MARKET_RESULT="$(echo "$CAT_SOUTHX_PRICES" | sort -k2 -n -r | head -100)"
     MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | sed '/^$/d' | wc -l)"
-    MARKET_MOON="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
-    MARKET_MOON_COUNT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ print $5 }' | wc -l)"
+    MARKET_MOON="$(echo "$CAT_SOUTHX_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
+    MARKET_MOON_COUNT="$(echo "$CAT_SOUTHX_PRICES" | awk '{ print $5 }' | wc -l)"
     MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+5" | bc 2>/dev/null)"
     LENGTH="25"
