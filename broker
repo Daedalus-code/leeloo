@@ -1274,11 +1274,31 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
       CAT_ORDERS="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null)"
 
+      # profit count
       PROFIT_COUNT="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $11 }' | wc -l)"
+      if [[ -z "$PROFIT_COUNT" ]] &>/dev/null; then
+        PROFIT_COUNT="0"
+      fi
+      # profit high
       PROFIT_HIGH="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $11 }' | sort -n | tail -1)"
+      if [[ -z "$PROFIT_HIGH" ]] &>/dev/null; then
+        PROFIT_HIGH="0"
+      fi
+      # profit low
       PROFIT_LOW="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $11 }' | sort -n | head -1)"
+      if [[ -z "$PROFIT_LOW" ]] &>/dev/null; then
+        PROFIT_LOW="0"
+      fi
+      # profit sum
       PROFIT_SUM="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $11 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
-      PROFIT_AVERAGE="$(echo "$PROFIT_SUM/$PROFIT_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+      if [[ -z "$PROFIT_SUM" ]] &>/dev/null; then
+        PROFIT_SUM="0"
+      fi
+      # profit average
+      PROFIT_AVERAGE="$(echo "$PROFIT_SUM/$PROFIT_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')%"
+      if [[ -z "$PROFIT_AVERAGE" ]] &>/dev/null; then
+        PROFIT_AVERAGE="0%"
+      fi
 
       ORDERS_COUNT="$(echo "$CAT_ORDERS" | sed -r '/^\s*$/d' | wc -l)"
       WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
