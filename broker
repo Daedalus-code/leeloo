@@ -1272,13 +1272,15 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
           --tailbox "$RESULT" "$LENGTH" "$WIDTH"
       }
 
-      PROFIT_COUNT="$(cat "${SYS_DIR:?}"/robot/orders | grep "sell" | awk '{ print $11 }' | wc -l)"
-      PROFIT_HIGH="$(cat "${SYS_DIR:?}"/robot/orders | grep "sell" | awk '{ print $11 }' | sort -n | tail -1)"
-      PROFIT_LOW="$(cat "${SYS_DIR:?}"/robot/orders | grep "sell" | awk '{ print $11 }' | sort -n | head -1)"
-      PROFIT_SUM="$(cat "${SYS_DIR:?}"/robot/orders | grep "sell" | awk '{ print $11 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
-      PROFIT_AVERAGE="$(echo "$SUM_PROFIT/$PROFIT_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+      CAT_ORDERS="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null)"
 
-      ORDERS_COUNT="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null | sed -r '/^\s*$/d' | wc -l)"
+      PROFIT_COUNT="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $11 }' | wc -l)"
+      PROFIT_HIGH="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $11 }' | sort -n | tail -1)"
+      PROFIT_LOW="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $11 }' | sort -n | head -1)"
+      PROFIT_SUM="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $11 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+      PROFIT_AVERAGE="$(echo "$PROFIT_SUM/$PROFIT_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')"
+
+      ORDERS_COUNT="$(echo "$CAT_ORDERS" | sed -r '/^\s*$/d' | wc -l)"
       WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
       LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')+5" | bc 2>/dev/null)"
 
