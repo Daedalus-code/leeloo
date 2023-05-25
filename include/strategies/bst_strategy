@@ -196,7 +196,12 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   # profit ok, without decimal
   BST_PROFIT_OK="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }' 2>/dev/null)"
 
-  if [[ "$BST_PROFIT_OK" -gt "0" ]] &>/dev/null; then
+  if [[ -z "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
+    BST_PROFIT_AMOUNT="0"
+  fi
+
+  # profit trigger amount
+  if [[ "$BST_PROFIT_OK" -gt "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
     COOLDOWN_SECONDS="0" # less
     TX_TIME="1"          # greater
     TOTAL_TRIGGER="1"    # trigger take profit
