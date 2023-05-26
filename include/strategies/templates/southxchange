@@ -607,6 +607,18 @@ function rogue_profit() {
     ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
+
+    # rsi can not be zero, regardless
+    if [[ -z "$ROGUE_LISTING_NOW" ]] &>/dev/null; then
+      ROGUE_LISTING_NOW="42.2222"
+    fi
+    if [[ -z "$ROGUE_LISTING_HIGH" ]] &>/dev/null; then
+      ROGUE_LISTING_HIGH="42.2222"
+    fi
+    if [[ -z "$ROGUE_LISTING_LOW" ]] &>/dev/null; then
+      ROGUE_LISTING_LOW="42.2222"
+    fi
+
     ROGUE_LISTING_DIFF="$(echo "$ROGUE_LISTING_HIGH-$ROGUE_LISTING_LOW" | bc -l 2>/dev/null | tr -d '-' | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_LISTING_TOTAL="$(echo "$ROGUE_LISTING_NOW+$ROGUE_LISTING_HIGH+$ROGUE_LISTING_LOW" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     ROGUE_LISTING_AVERAGE="$(echo "$ROGUE_LISTING_TOTAL/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
