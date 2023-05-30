@@ -29,8 +29,10 @@ TYPE="$(egrep "TYPE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F=
 BST_COOLDOWN="$(egrep "BST_COOLDOWN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # cooldown or profit (0)
 BST_TAKE_PROFIT="$(egrep "BST_TAKE_PROFIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# profit amount (greater than 0%)
+# profit amount (default greater than 0%)
 BST_PROFIT_AMOUNT="$(egrep "BST_PROFIT_AMOUNT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# spread limit (default less than 3%)
+BST_SPREAD_LIMIT="$(egrep "BST_SPREAD_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # reference status
 REFERENCE_STATUS="$(egrep "REFERENCE_STATUS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # listing currency
@@ -192,21 +194,39 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   # disable normal trigger
   TX_TIME="0"
 
-  # profit output
-  PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Status ${LISTING_OPEN_RESULT:?}%"
+  # get low
+  BST_SPREAD_LOW="$LISTING_PRICE"
+  # spread high
+  BST_SPREAD_HIGH="$LISTING_PRICE_ASK"
+  # get difference
+  BST_SPREAD_DIFF="$(echo "$BST_SPREAD_HIGH-$BST_SPREAD_LOW" | bc -l 2>/dev/null)"
+  # calculate percentage
+  BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-  # profit ok, without decimal
-  BST_PROFIT_OK="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }' 2>/dev/null)"
+  # status, spread output with decimal (n%)
+  PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Status ${LISTING_OPEN_RESULT:?}% Spread ${BST_DIFF_PERCENTAGE:?}%"
+  # bst spread without decimal (n%)
+  BST_SPREAD="$(echo "$BST_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')"
+  # profit without decimal (n%)
+  BST_PROFIT_OK="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }')"
 
+  if [[ -z "$BST_SPREAD" ]] &>/dev/null; then
+    BST_SPREAD="0"
+  fi
   if [[ -z "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
     BST_PROFIT_AMOUNT="0"
   fi
 
-  # profit trigger amount
+  # profit greater than n%
   if [[ "$BST_PROFIT_OK" -gt "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
-    COOLDOWN_SECONDS="0" # less
-    TX_TIME="1"          # greater
-    TOTAL_TRIGGER="1"    # trigger take profit
+    # spread less than n%
+    if [[ "$BST_SPREAD" -lt "$BST_SPREAD_LIMIT" ]] &>/dev/null; then
+
+      # trigger everything
+      COOLDOWN_SECONDS="0" # less
+      TX_TIME="1"          # greater
+      TOTAL_TRIGGER="1"    # trigger take profit
+    fi
   fi
 fi
 
