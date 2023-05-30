@@ -67,9 +67,14 @@ fi
 
 ################################################################################
 
-REFERENCE_MCS_SPREAD="$(echo "100/$REFERENCE_PRICE_ASK*$REFERENCE_PRICE-100" | bc -l | awk '{ printf "%.2f\n", $1 }')"
-
-################################################################################
+# get low
+MCS_SPREAD_LOW="$REFERENCE_PRICE"
+# spread high
+MCS_SPREAD_HIGH="$REFERENCE_PRICE_ASK"
+# get difference
+MCS_SPREAD_DIFF="$(echo "$MCS_SPREAD_HIGH-$MCS_SPREAD_LOW" | bc -l 2>/dev/null)"
+# calculate percentage
+REFERENCE_MCS_SPREAD="$(echo "100/$REFERENCE_PRICE*$MCS_SPREAD_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 if [[ -z "$REFERENCE_MCS_SPREAD" ]] &>/dev/null; then
   REFERENCE_MCS_SPREAD="0"
