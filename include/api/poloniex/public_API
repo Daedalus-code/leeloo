@@ -5,10 +5,11 @@
 # Example: getPrices
 
 function getPrices {
-  URL="https://poloniex.com/public"
-  PARAMETERS="command=returnTicker"
-  API_RESPONSE=$(curl -s "$URL?$PARAMETERS")
-  echo "$API_RESPONSE" | jq -r 'to_entries[] | "\(.key) \(.value.highestBid) \(.value.lowestAsk) \(.value.last) \(.value.percentChange) \(.value.baseVolume)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
+  if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
+    torify curl -s https://poloniex.com/public?command=returnTicker | jq -r 'to_entries[] | "\(.key) \(.value.highestBid) \(.value.lowestAsk) \(.value.last) \(.value.percentChange) \(.value.baseVolume)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
+  else
+    curl -s https://poloniex.com/public?command=returnTicker | jq -r 'to_entries[] | "\(.key) \(.value.highestBid) \(.value.lowestAsk) \(.value.last) \(.value.percentChange) \(.value.baseVolume)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
+  fi
 }
 
 # END
