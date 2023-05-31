@@ -471,8 +471,8 @@ $MARKET_RESULT"
     # 450 max before dialog breaks
     MARKET_RESULT="$(echo "$CAT_STAKECUBE_PRICES" | sort -k2 -n -r | head -100)"
     MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null | sed '/^$/d' | wc -l)"
-    MARKET_MOON="$(echo "$CAT_STAKECUBE_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.2f\n", $1 }')"
-    MARKET_MOON_COUNT="$(echo "$CAT_STAKECUBE_PRICES" | awk '{ print $5 }' | wc -l)"
+    MARKET_MOON="$(echo "$CAT_STAKECUBE_PRICES" | awk '{ print $3 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.2f\n", $1 }')"
+    MARKET_MOON_COUNT="$(echo "$CAT_STAKECUBE_PRICES" | awk '{ print $3 }' | wc -l)"
     MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+5" | bc 2>/dev/null)"
     LENGTH="25"
@@ -489,7 +489,7 @@ $MARKET_RESULT"
       LENGTH="5"
       RESULT="Support Mail: support@stakecube.zohodesk.com"
     else
-      RESULT="Market: Bid Ask Last (%) Volume24Hr
+      RESULT="Market: Last Price24hr Change24hr High24hr Low24hr Volume24Hr
 $MARKET_RESULT"
     fi
 
