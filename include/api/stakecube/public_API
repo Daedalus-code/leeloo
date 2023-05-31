@@ -6,9 +6,9 @@
 
 function getMarkets {
   if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
-    torify curl -s --compressed https://stakecube.io/api/v2/exchange/spot/markets | jq -r '.result[] | "\(.baseMarket)_\(.tradeMarket) \(.lastPrice) \(.ask) \(.change24h) \(.volumeTrade24h)"' | awk '{for(i=1;i<=NF;i++) {if(i==1){printf("%s\t",$i)} else if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
+    torify curl -s --compressed https://stakecube.io/api/v2/exchange/spot/markets | jq -r '.result[] | "\(.baseMarket)_\(.tradeMarket)\t\(.lastPrice)\t\(.ask)\t\(.change24h)\t\(.volumeTrade24h)"' | awk '{for(i=1;i<=NF;i++) {if(i==1){printf("%s\t",$i)} else if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
   else
-    curl -s --compressed https://stakecube.io/api/v2/exchange/spot/markets | jq -r '.result[] | "\(.baseMarket)_\(.tradeMarket) \(.lastPrice) \(.ask) \(.change24h) \(.volumeTrade24h)"' | awk '{for(i=1;i<=NF;i++) {if(i==1){printf("%s\t",$i)} else if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
+    curl -s --compressed https://stakecube.io/api/v2/exchange/spot/markets | jq -r '.result[] | "\(.baseMarket)_\(.tradeMarket)\t\(.lastPrice)\t\(.ask)\t\(.change24h)\t\(.volumeTrade24h)"' | awk '{for(i=1;i<=NF;i++) {if(i==1){printf("%s\t",$i)} else if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
   fi
 }
 
