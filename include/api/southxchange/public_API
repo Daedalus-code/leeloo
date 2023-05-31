@@ -4,29 +4,25 @@
 # https://www.southxchange.com/api/markets
 # Example: markets BTC
 
-if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
-  function markets {
+function markets {
+  if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
     torify curl -s https://www.southxchange.com/api/markets | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," /
-  }
-else
-  function markets {
+  else
     curl -s https://www.southxchange.com/api/markets | egrep -o '"[aA0-zZ9]+","[aA0-zZ9]+"' | tr -d '"' | tr "," /
-  }
-fi
+  fi
+}
 
 # prices #######################################################################
 # https://market.southxchange.com/api/v4/prices
 # Example: prices
 
-if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
-  function prices {
+function prices {
+  if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
     torify curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
-  }
-else
-  function prices {
+  else
     curl -s -X GET "https://market.southxchange.com/api/v4/prices" -H "accept: application/json" | jq -r '.[] | "\(.Market): \(.Bid) \(.Ask) \(.Last) \(.Variation24Hr) \(.Volume24Hr)"' | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
-  }
-fi
+  fi
+}
 
 # trades #######################################################################
 # https://market.southxchange.com/api/v4/trades
@@ -46,14 +42,12 @@ function trades() {
 # https://market.southxchange.com/api/v4/fees
 # Example: fees
 
-if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
-  function fees {
+function fees {
+  if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
     torify curl -s -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" | jq -s
-  }
-else
-  function fees {
+  else
     curl -s -X GET "https://market.southxchange.com/api/v4/fees" -H "accept: application/json" | jq -s
-  }
-fi
+  fi
+}
 
 # END
