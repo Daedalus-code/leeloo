@@ -204,7 +204,7 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   # status, spread output with decimal (n%)
-  PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Status ${LISTING_OPEN_RESULT:?}%/${BST_PROFIT_AMOUNT:?}% Spread ${BST_DIFF_PERCENTAGE:?}%/${BST_SPREAD_LIMIT:?}%"
+  PROFIT_BST_OUTPUT="$LOG_DATE :: Strategy $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Result ${LISTING_OPEN_RESULT:?}%/${BST_PROFIT_AMOUNT:?}% Spread ${BST_DIFF_PERCENTAGE:?}%/${BST_SPREAD_LIMIT:?}%"
   # bst spread without decimal (n%)
   BST_SPREAD="$(echo "$BST_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')"
   # profit without decimal (n%)
@@ -323,7 +323,7 @@ fi
 
 ################################################################################
 
-if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep "Cooldown| :: Status " | wc -l)" -gt "0" ]] &>/dev/null; then
+if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep "Cooldown| :: Result " | wc -l)" -gt "0" ]] &>/dev/null; then
   if [[ "$BST_TAKE_PROFIT" == "0" ]] &>/dev/null; then
     # cooldown output
     echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
