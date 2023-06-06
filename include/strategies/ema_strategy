@@ -150,11 +150,19 @@ fi
 signal_age
 
 ################################################################################
+
+if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
+  ROGUE_PROFIT_INDICATOR="RPI $(echo "$ROGUE_LISTING_RPI" | awk '{ printf "%.2f\n", $1 }')/$(echo "$ROGUE_REFERENCE_RPI" | awk '{ printf "%.2f\n", $1 }')"
+else
+  ROGUE_PROFIT_INDICATOR=""
+fi
+
+################################################################################
 # B U L L I S H - S I G N A L
 ################################################################################
 
 BULLISH_EMA_CROSS="$LOG_DATE :: $EMA_REAL_STRATEGY :: ${REFERENCE_ALLOCATED:?}% :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $TYPE"
-BULLISH_EMA_STATUS="$LOG_DATE :: $EMA_REAL_STRATEGY :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}%"
+BULLISH_EMA_STATUS="$LOG_DATE :: $EMA_REAL_STRATEGY :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}% ${ROGUE_PROFIT_INDICATOR:?}"
 
 ################################################################################
 
@@ -228,7 +236,7 @@ fi
 ################################################################################
 
 BEARISH_EMA_CROSS="$LOG_DATE :: $EMA_REAL_STRATEGY :: ${LISTING_ALLOCATED:?}% :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $TYPE"
-BEARISH_EMA_STATUS="$LOG_DATE :: $EMA_REAL_STRATEGY :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish ${EMA_PERCENTAGE:?}%"
+BEARISH_EMA_STATUS="$LOG_DATE :: $EMA_REAL_STRATEGY :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish ${EMA_PERCENTAGE:?}% ${ROGUE_PROFIT_INDICATOR:?}"
 
 ################################################################################
 
