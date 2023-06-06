@@ -112,6 +112,13 @@ incoming_reference
 
 rogue_profit
 
+# rogue profit indicator output
+if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
+  ROGUE_PROFIT_INDICATOR="RPI $(echo "$ROGUE_LISTING_RPI" | awk '{ printf "%.0f\n", $1 }')/$(echo "$ROGUE_REFERENCE_RPI" | awk '{ printf "%.0f\n", $1 }')"
+else
+  ROGUE_PROFIT_INDICATOR=""
+fi
+
 ################################################################################
 
 EMA_REAL_RAW="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null)"
@@ -148,14 +155,6 @@ fi
 ################################################################################
 
 signal_age
-
-################################################################################
-
-if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
-  ROGUE_PROFIT_INDICATOR="RPI $(echo "$ROGUE_LISTING_RPI" | awk '{ printf "%.2f\n", $1 }')/$(echo "$ROGUE_REFERENCE_RPI" | awk '{ printf "%.2f\n", $1 }')"
-else
-  ROGUE_PROFIT_INDICATOR=""
-fi
 
 ################################################################################
 # B U L L I S H - S I G N A L
