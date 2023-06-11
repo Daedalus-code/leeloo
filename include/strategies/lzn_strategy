@@ -42,7 +42,39 @@ LZN_SELL_THRESHOLD="$(egrep "LZN_SELL_THRESHOLD=" "${SYS_DIR:?}"/robot/"$BASENAM
 # exchange template
 ################################################################################
 
-exchange_template
+# poloniex template
+if [[ "$EXCHANGE_API" == "POL" ]] &>/dev/null; then
+  if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/poloniex ]] &>/dev/null; then
+    EXCHANGE_API="Nothing"
+    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    exit
+  fi
+  source /usr/local/bin/include/leeloo/strategies/templates/poloniex
+fi
+# southxchange template
+if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+  if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/southxchange ]] &>/dev/null; then
+    EXCHANGE_API="Nothing"
+    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    exit
+  fi
+  source /usr/local/bin/include/leeloo/strategies/templates/southxchange
+fi
+# stakecube template
+if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
+  if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/stakecube ]] &>/dev/null; then
+    EXCHANGE_API="Nothing"
+    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    exit
+  fi
+  source /usr/local/bin/include/leeloo/strategies/templates/stakecube
+fi
+
+if [[ -z "$EXCHANGE_API" ]] &>/dev/null; then
+  EXCHANGE_API="No config!"
+  echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No EXCHANGE_API= set in configuration!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  exit
+fi
 
 ################################################################################
 # data
