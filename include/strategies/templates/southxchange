@@ -12,6 +12,44 @@ source /usr/local/bin/include/leeloo/indicators/ema
 
 ################################################################################
 
+function exchange_template() {
+  # poloniex template ##########################################################
+  if [[ "$EXCHANGE_API" == "POL" ]] &>/dev/null; then
+    if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/poloniex ]] &>/dev/null; then
+      EXCHANGE_API="Nothing"
+      echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      exit
+    fi
+    source /usr/local/bin/include/leeloo/strategies/templates/poloniex
+  fi
+  # southxchange template ######################################################
+  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+    if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/southxchange ]] &>/dev/null; then
+      EXCHANGE_API="Nothing"
+      echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      exit
+    fi
+    source /usr/local/bin/include/leeloo/strategies/templates/southxchange
+  fi
+  # stakecube template #########################################################
+  if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
+    if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/stakecube ]] &>/dev/null; then
+      EXCHANGE_API="Nothing"
+      echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      exit
+    fi
+    source /usr/local/bin/include/leeloo/strategies/templates/stakecube
+  fi
+
+  if [[ -z "$EXCHANGE_API" ]] &>/dev/null; then
+    EXCHANGE_API="No config!"
+    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No EXCHANGE_API= set in configuration!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    exit
+  fi
+}
+
+################################################################################
+
 function sxc_backup_balances() {
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/balances "${LOG_DIR:?}"/leeloo/southxchange/balances.bkp &>/dev/null

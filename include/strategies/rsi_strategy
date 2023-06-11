@@ -43,27 +43,10 @@ RSI_COOLDOWN="$(egrep "RSI_COOLDOWN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 RSI_MAX_DAY="$(egrep "RSI_MAX_DAY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
 ################################################################################
-# strategy templates
+# exchange template
 ################################################################################
 
-# poloniex template
-if [[ "$EXCHANGE_API" == "POL" ]] &>/dev/null; then
-  source /usr/local/bin/include/leeloo/strategies/templates/poloniex
-fi
-# southxchange template
-if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-  source /usr/local/bin/include/leeloo/strategies/templates/southxchange
-fi
-# stakecube template
-if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
-  source /usr/local/bin/include/leeloo/strategies/templates/stakecube
-fi
-
-if [[ -z "$EXCHANGE_API" ]] &>/dev/null; then
-  EXCHANGE_API="Nothing"
-  echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No EXCHANGE_API= set in configuration!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-  exit
-fi
+exchange_template
 
 ################################################################################
 # data
