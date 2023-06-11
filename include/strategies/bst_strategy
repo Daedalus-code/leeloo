@@ -244,19 +244,18 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   # profit greater than n%
   if [[ "$LISTING_OPEN_RESULT_OK" -gt "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
     PROFIT_OK="OK"
-    # spread less than n%
-    if [[ "$BST_SPREAD" -lt "$BST_SPREAD_LIMIT" ]] &>/dev/null; then
-      TRIGGER_ALL="1"
-      SPREAD_OK="OK"
-    fi
   fi
-fi
+  # spread less than n%
+  if [[ "$BST_SPREAD" -lt "$BST_SPREAD_LIMIT" ]] &>/dev/null; then
+    SPREAD_OK="OK"
+  fi
 
-if [[ "$TRIGGER_ALL" == "1" ]] &>/dev/null; then
   # trigger everything
-  COOLDOWN_SECONDS="0" # less
-  TX_TIME="1"          # greater
-  TOTAL_TRIGGER="1"    # trigger take profit
+  if [[ "$PROFIT_OK" == "OK" ]] && [[ "$SPREAD_OK" == "OK" ]]; then
+    COOLDOWN_SECONDS="0" # less
+    TX_TIME="1"          # greater
+    TOTAL_TRIGGER="1"    # trigger take profit
+  fi
 fi
 
 # status, spread output with decimal (n%)
