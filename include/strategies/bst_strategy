@@ -8,8 +8,6 @@ source /usr/local/bin/include/leeloo/sMcD
 # southxchange api
 source /usr/local/bin/include/leeloo/api/southxchange/private_API
 source /usr/local/bin/include/leeloo/api/southxchange/public_API
-# strategy tools
-source /usr/local/bin/include/leeloo/strategies/templates/southxchange
 
 # get strategy id.config, run strategy
 BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
@@ -21,6 +19,8 @@ LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
 STRATEGY_TYPE="BST"
 
+# exchange template
+EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # market or limit order
 MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # sell or buy order
@@ -47,6 +47,28 @@ REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAM
 REFERENCE_TRIGGER="$(egrep "REFERENCE_TRIGGER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # account allocated (n%)
 REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+
+################################################################################
+# trategy templates
+################################################################################
+
+# poloniex template
+if [[ "$EXCHANGE_API" == "POL" ]] &>/dev/null; then
+  source /usr/local/bin/include/leeloo/strategies/templates/poloniex
+fi
+# southxchange template
+if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+  source /usr/local/bin/include/leeloo/strategies/templates/southxchange
+fi
+# stakecube template
+if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
+  source /usr/local/bin/include/leeloo/strategies/templates/stakecube
+fi
+
+if [[ -z "$EXCHANGE_API" ]] &>/dev/null; then
+  echo "$LOG_DATE :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No EXCHANGE_API= set in configuration!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  exit
+fi
 
 ################################################################################
 # data
