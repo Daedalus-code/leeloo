@@ -225,12 +225,10 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   # calculate percentage
   BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-  # status, spread output with decimal (n%)
-  PROFIT_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Result ${LISTING_OPEN_RESULT:?}%/${BST_PROFIT_AMOUNT:?}% Spread ${BST_DIFF_PERCENTAGE:?}%/${BST_SPREAD_LIMIT:?}%"
   # bst spread without decimal (n%)
   BST_SPREAD="$(echo "$BST_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')"
   # profit without decimal (n%)
-  BST_PROFIT_OK="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }')"
+  LISTING_OPEN_RESULT_OK="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }')"
 
   if [[ -z "$BST_SPREAD" ]] &>/dev/null; then
     BST_SPREAD="0"
@@ -239,18 +237,30 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
     BST_PROFIT_AMOUNT="0"
   fi
 
+  SPREAD_OK="!"
+  PROFIT_OK="!"
+  TRIGGER_ALL="!"
+
   # profit greater than n%
-  if [[ "$BST_PROFIT_OK" -gt "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
+  if [[ "$LISTING_OPEN_RESULT_OK" -gt "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
+    PROFIT_OK="OK"
     # spread less than n%
     if [[ "$BST_SPREAD" -lt "$BST_SPREAD_LIMIT" ]] &>/dev/null; then
-
-      # trigger everything
-      COOLDOWN_SECONDS="0" # less
-      TX_TIME="1"          # greater
-      TOTAL_TRIGGER="1"    # trigger take profit
+      TRIGGER_ALL="1"
+      SPREAD_OK="OK"
     fi
   fi
 fi
+
+if [[ "$TRIGGER_ALL" == "1" ]] &>/dev/null; then
+  # trigger everything
+  COOLDOWN_SECONDS="0" # less
+  TX_TIME="1"          # greater
+  TOTAL_TRIGGER="1"    # trigger take profit
+fi
+
+# status, spread output with decimal (n%)
+PROFIT_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Result ($PROFIT_OK) ${LISTING_OPEN_RESULT:?}%/${BST_PROFIT_AMOUNT:?}% Spread ($SPREAD_OK) ${BST_DIFF_PERCENTAGE:?}%/${BST_SPREAD_LIMIT:?}%"
 
 ################################################################################
 
