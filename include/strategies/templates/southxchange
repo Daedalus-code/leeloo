@@ -203,7 +203,7 @@ function cost_price() {
     echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
 
     # listing output
-    echo "$LOG_DATE :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Price $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    echo "$LOG_DATE :: $EXCHANGE_API :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Price $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   fi
 }
 
@@ -255,7 +255,7 @@ function incoming_listing() {
         echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
 
         # listing output
-        echo "$LOG_DATE :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Price $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        echo "$LOG_DATE :: $EXCHANGE_API :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Price $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       fi
     fi
   fi
@@ -263,7 +263,7 @@ function incoming_listing() {
   # incoming listing
   if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     if [[ "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep " :: Inc :: " | wc -l)" -lt "1" ]] &>/dev/null; then
-      echo "$LOG_DATE :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Inc :: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      echo "$LOG_DATE :: $EXCHANGE_API :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Inc :: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
 }
@@ -310,7 +310,7 @@ function incoming_reference() {
         echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
 
         # reference output
-        echo "$LOG_DATE :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Price $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+        echo "$LOG_DATE :: $EXCHANGE_API :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Price $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       fi
     fi
   fi
@@ -318,7 +318,7 @@ function incoming_reference() {
   # incoming reference
   if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     if [[ "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep " :: Inc :: " | wc -l)" -lt "1" ]] &>/dev/null; then
-      echo "$LOG_DATE :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Inc :: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      echo "$LOG_DATE :: $EXCHANGE_API :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Inc :: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     fi
   fi
 }
@@ -814,7 +814,7 @@ RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/
 
     TYPE="sell"
 
-    MARKET_RGP_OUTPUT="$LOG_DATE :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market $LISTING_AMOUNT"
+    MARKET_RGP_OUTPUT="$LOG_DATE :: $EXCHANGE_API :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market $LISTING_AMOUNT"
     MARKET_RGP_POSITION="$LOG_DATE :: $TYPE :: $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
     MARKET_RGP_STATUS_SOLD="SOLD @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)"
 
@@ -839,7 +839,7 @@ RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/
 
       TYPE="buy"
 
-      MARKET_RGP_OUTPUT="$LOG_DATE :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market $LISTING_AMOUNT"
+      MARKET_RGP_OUTPUT="$LOG_DATE :: $EXCHANGE_API :: $STRATEGY_TYPE :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market $LISTING_AMOUNT"
       MARKET_RGP_POSITION="$LOG_DATE :: $TYPE :: $STRATEGY_TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
       MARKET_RGP_STATUS_BOUGHT="BOUGHT @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)"
 
