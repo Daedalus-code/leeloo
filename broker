@@ -1208,20 +1208,23 @@ $LEELOO_ERROR"
 
   ##############################################################################
 
-  # broker.conf, secret & key
+  # broker.conf, secret & key, reset
 
 "7")
 
-  HEIGHT=9
+  HEIGHT=14
   WIDTH=47
-  CHOICE_HEIGHT=2
+  CHOICE_HEIGHT=5
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configurations Menu"
   MENU="Multipass $DATE"
 
   OPTIONS=(
     1 "Config           Leeloo config"
-    2 "API              Secret & Key config")
+    2 "API              Secret & Key config"
+    3 "Reset            All Configurations!"
+    4 "Reset            Leeloo Config"
+    5 "Reset            Secret & Key config")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -1248,6 +1251,34 @@ $LEELOO_ERROR"
   "2")
 
     nano "${SYS_DIR:?}"/sMcD
+    clear
+
+    ;;
+
+    # reset all configurations
+
+  "3")
+
+    cp /home/"$(whoami)"/leeloo/broker.conf "${SYS_DIR:?}"/*.conf
+    cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD
+    clear
+
+    ;;
+
+    # reset broker configuration
+
+  "4")
+
+    cp /home/"$(whoami)"/leeloo/broker.conf "${SYS_DIR:?}"/*.conf
+    clear
+
+    ;;
+
+    # reset secret & key configuration
+
+  "5")
+
+    cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD
     clear
 
     ;;
