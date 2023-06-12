@@ -12,6 +12,19 @@
 
 # shellcheck disable=SC2034  # Unused variables left for readability
 
+################################################################################
+
+function home_dir_set() {
+  if [[ -z "$HOME_DIR" ]] &>/dev/null; then
+    HOME_DIR=$(
+      dialog --title "Set install (HOME_DIR/leeloo/broker.conf)" \
+        --inputbox "git clone directory:
+Example: /home/$(whoami)" 8 47 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+  fi
+}
+
 # directories ##################################################################
 
 if [[ ! -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
@@ -34,6 +47,10 @@ fi
 if [[ -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
   source /usr/local/bin/include/leeloo/broker.conf
 else
+
+  # set home directory
+  home_dir_set
+
   HOME_DIR=$(
     dialog --title "Set install (HOME_DIR/leeloo/broker.conf)" \
       --inputbox "git clone directory:
@@ -69,6 +86,9 @@ No install found!")"
   fi
   exit
 fi
+
+# set home directory
+home_dir_set
 
 if [[ ! -f /usr/local/bin/include/leeloo/sMcD ]] &>/dev/null; then
   cp "$HOME_DIR"/leeloo/include/api/DcMs /usr/local/bin/include/leeloo/sMcD &>/dev/null
