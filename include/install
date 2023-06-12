@@ -25,6 +25,11 @@ Example: /home/$(whoami)" 8 47 \
   fi
 }
 
+# set home directory
+echo "$HOME_DIR" >/usr/local/bin/include/leeloo/home_dir
+HOME_DIR="$(cat /usr/local/bin/include/leeloo/home_dir 2>/dev/null)"
+home_dir_set
+
 # directories ##################################################################
 
 if [[ ! -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
@@ -47,11 +52,6 @@ fi
 if [[ -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
   source /usr/local/bin/include/leeloo/broker.conf
 else
-
-  # set home directory
-  home_dir_set
-  echo "$HOME_DIR" >/usr/local/bin/include/leeloo/home_dir
-  HOME_DIR="$(cat /usr/local/bin/include/leeloo/home_dir 2>/dev/null)"
 
   mv "$HOME_DIR"/leeloo-main "$HOME_DIR"/leeloo &>/dev/null
   cp "$HOME_DIR"/leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf &>/dev/null
@@ -81,11 +81,6 @@ No install found!")"
   fi
   exit
 fi
-
-# set home directory
-home_dir_set
-echo "$HOME_DIR" >/usr/local/bin/include/leeloo/home_dir
-HOME_DIR="$(cat /usr/local/bin/include/leeloo/home_dir 2>/dev/null)"
 
 if [[ "$(egrep -c "HOME_DIR=" /usr/local/bin/include/leeloo/broker.conf)" -eq "0" ]] &>/dev/null; then
   echo "HOME_DIR=${HOME_DIR:?}" >>/usr/local/bin/include/leeloo/broker.conf
