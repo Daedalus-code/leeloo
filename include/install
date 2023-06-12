@@ -15,6 +15,7 @@
 ################################################################################
 
 function home_dir_set() {
+  HOME_DIR="$(cat /usr/local/bin/include/leeloo/home_dir 2>/dev/null)"
   if [[ -z "$HOME_DIR" ]] &>/dev/null; then
     HOME_DIR=$(
       dialog --title "Set install (HOME_DIR/leeloo/broker.conf)" \
@@ -22,11 +23,9 @@ function home_dir_set() {
 Example: /home/$(whoami)" 8 47 \
         3>&1 1>&2 2>&3 3>&-
     )
+    echo "$HOME_DIR" >/usr/local/bin/include/leeloo/home_dir
   fi
-  echo "$HOME_DIR" >/usr/local/bin/include/leeloo/home_dir
 }
-
-HOME_DIR="$(cat /usr/local/bin/include/leeloo/home_dir 2>/dev/null)"
 
 # directories ##################################################################
 
