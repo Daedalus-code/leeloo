@@ -19,8 +19,13 @@ export NCURSES_NO_UTF8_ACS=1
 
 ################################################################################
 
+# configuration
 source /usr/local/bin/include/leeloo/broker.conf
+
+# functions
 source /usr/local/bin/include/leeloo/functions
+
+# s & k
 source /usr/local/bin/include/leeloo/sMcD
 
 # poloniex api
@@ -47,6 +52,7 @@ function key_secret_set() {
 
   KEY_SECRET_SET_PLX="0" # poloniex
   KEY_SECRET_SET_SXC="0" # southxchange
+  KEY_SECRET_SET_SCE="0" # stakecube
 
   ##############################################################################
 
@@ -58,11 +64,15 @@ function key_secret_set() {
   if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]]; then
     KEY_SECRET_SET_SXC="1"
   fi
+  # stakecube option
+  if [[ -n "$API_STAKECUBE_KEY" ]] && [[ -n "$API_STAKECUBE_SECRET" ]]; then
+    KEY_SECRET_SET_SCE="1"
+  fi
 
   ##############################################################################
 
   # calculate status
-  KEY_SECRET_SET="$(echo "$KEY_SECRET_SET_PLX+$KEY_SECRET_SET_SXC" | bc 2>/dev/null)"
+  KEY_SECRET_SET="$(echo "$KEY_SECRET_SET_PLX+$KEY_SECRET_SET_SXC+$KEY_SECRET_SET_SCE" | bc 2>/dev/null)"
   if [[ -z "$KEY_SECRET_SET" ]] &>/dev/null; then
     KEY_SECRET_SET="0"
   fi
