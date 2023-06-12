@@ -15,7 +15,6 @@
 ################################################################################
 
 function home_dir_set() {
-  HOME_DIR="$(cat /usr/local/bin/include/leeloo/home_dir 2>/dev/null)"
   if [[ -z "$HOME_DIR" ]] &>/dev/null; then
     HOME_DIR=$(
       dialog --title "Set install (HOME_DIR/leeloo/broker.conf)" \
@@ -23,7 +22,6 @@ function home_dir_set() {
 Example: /home/$(whoami)" 8 47 \
         3>&1 1>&2 2>&3 3>&-
     )
-    echo "$HOME_DIR" >/usr/local/bin/include/leeloo/home_dir
   fi
 }
 
@@ -52,13 +50,8 @@ else
 
   # set home directory
   home_dir_set
-
-  HOME_DIR=$(
-    dialog --title "Set install (HOME_DIR/leeloo/broker.conf)" \
-      --inputbox "git clone directory:
-Example: /home/$(whoami)" 8 47 \
-      3>&1 1>&2 2>&3 3>&-
-  )
+  echo "$HOME_DIR" >/usr/local/bin/include/leeloo/home_dir
+  HOME_DIR="$(cat /usr/local/bin/include/leeloo/home_dir 2>/dev/null)"
 
   mv "$HOME_DIR"/leeloo-main "$HOME_DIR"/leeloo &>/dev/null
   cp "$HOME_DIR"/leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf &>/dev/null
@@ -91,6 +84,8 @@ fi
 
 # set home directory
 home_dir_set
+echo "$HOME_DIR" >/usr/local/bin/include/leeloo/home_dir
+HOME_DIR="$(cat /usr/local/bin/include/leeloo/home_dir 2>/dev/null)"
 
 if [[ ! -f /usr/local/bin/include/leeloo/sMcD ]] &>/dev/null; then
   cp "$HOME_DIR"/leeloo/include/api/DcMs /usr/local/bin/include/leeloo/sMcD &>/dev/null
