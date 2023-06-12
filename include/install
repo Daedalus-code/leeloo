@@ -40,8 +40,11 @@ else
 Example: /home/$(whoami)" 8 47 \
       3>&1 1>&2 2>&3 3>&-
   )
+
   mv "$HOME_DIR"/leeloo-main "$HOME_DIR"/leeloo &>/dev/null
   cp "$HOME_DIR"/leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf &>/dev/null
+
+  # error
   if [[ ! -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
     WIDTH="$(echo "$(echo "$HOME_DIR" | wc -L)*2" | bc 2>/dev/null)"
     if [[ "$WIDTH" -lt "30" ]] &>/dev/null; then
@@ -57,6 +60,7 @@ No install found!")"
     display_result 2>/dev/null
     clear
     exit
+    # working directory
   else
     clear
     echo "HOME_DIR=$HOME_DIR # repo install" >>/usr/local/bin/include/leeloo/broker.conf
@@ -117,6 +121,12 @@ function proxy_public_false() {
 function proxy_indicator_false() {
   echo "PROXY_INDICATOR_API=false" >>/usr/local/bin/include/leeloo/broker.conf
 }
+
+if [[ "$(egrep -c "true|false" /usr/local/bin/include/leeloo/broker.conf)" -eq "0" ]] &>/dev/null; then
+  proxy_chat_false
+  proxy_public_false
+  proxy_indicator_false
+fi
 
 clear
 
