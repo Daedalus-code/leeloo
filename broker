@@ -318,6 +318,9 @@ case $CHOICE in
         FILE_TIME="00:00"
       fi
 
+      RESULT_FORMAT="Coins: Deposited InOrder InMasternodes InInterest
+  $(cat "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)"
+
       if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/stakecube/balances | awk '{ print $1 }')" -lt "1" ]] &>/dev/null; then
         WIDTH="$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
         LENGTH="5"
@@ -325,8 +328,7 @@ case $CHOICE in
       else
         WIDTH="$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
         LENGTH="$(echo "$(echo "$RESULT" | wc -l)+5" | bc 2>/dev/null)"
-        RESULT="Coins: Deposited InOrder InMasternodes InInterest
-    $(cat "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)"
+        RESULT="$RESULT_FORMAT"
       fi
 
       display_result 2>/dev/null
