@@ -1208,7 +1208,7 @@ $LEELOO_ERROR"
 
   ##############################################################################
 
-  # broker.conf, secret & key, reset
+  # broker.conf, k & s, reset
 
 "7")
 
@@ -1246,7 +1246,7 @@ $LEELOO_ERROR"
 
     ;;
 
-    # key & secret configuration
+    # k & s configuration
 
   "2")
 
@@ -1259,9 +1259,14 @@ $LEELOO_ERROR"
 
   "3")
 
-    cp /home/"$(whoami)"/leeloo/broker.conf "${SYS_DIR:?}"/*.conf
-    cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD
-    clear
+    if dialog --stdout --title "Reset all configurations?" \
+      --backtitle "Reset all?" \
+      --yesno "Yes: Reset!, No: Go back!" 5 31; then
+      sudo rm "${SYS_DIR:?}"/*.conf &>/dev/null
+      cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
+      bash /usr/local/bin/include/leeloo/install
+      clear
+    fi
 
     ;;
 
@@ -1269,16 +1274,21 @@ $LEELOO_ERROR"
 
   "4")
 
-    cp /home/"$(whoami)"/leeloo/broker.conf "${SYS_DIR:?}"/*.conf
-    clear
+    if dialog --stdout --title "Reset broker configuration?" \
+      --backtitle "Reset broker.conf?" \
+      --yesno "Yes: Reset!, No: Go back!" 5 33; then
+      sudo rm "${SYS_DIR:?}"/*.conf &>/dev/null
+      bash /usr/local/bin/include/leeloo/install
+      clear
+    fi
 
     ;;
 
-    # reset secret & key configuration
+    # reset k & s configuration
 
   "5")
 
-    cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD
+    cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
     clear
 
     ;;
