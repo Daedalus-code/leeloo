@@ -286,7 +286,7 @@ case $CHOICE in
       display_result() {
         dialog --title "$FILE_TIME :: Account Balance" \
           --no-collapse \
-          --msgbox "$(echo "$RESULT" | column -t)" 0 0
+          --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
       }
 
       # get balance
@@ -319,9 +319,12 @@ case $CHOICE in
       fi
 
       if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/stakecube/balances | awk '{ print $1 }')" -lt "1" ]] &>/dev/null; then
+        WIDTH="$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
         LENGTH="5"
         RESULT="No balance"
       else
+        WIDTH="$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
+        LENGTH="$(echo "$(echo "$RESULT" | wc -l)+5" | bc 2>/dev/null)"
         RESULT="Coins: Deposited InOrder InMasternodes InInterest
     $(cat "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)"
       fi
