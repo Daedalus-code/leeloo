@@ -286,12 +286,12 @@ case $CHOICE in
       display_result() {
         dialog --title "$FILE_TIME :: Account Balance" \
           --no-collapse \
-          --msgbox "$(echo "$RESULT" | column -t)" 0 70
+          --msgbox "$(echo "$RESULT" | column -t)" 0 0
       }
 
       # get balance
       function result_balances() {
-        echo "$(returnAccount | jq -r '.result.wallets[] | "\(.asset): \(.balance) \(.balanceInOrder) \(.balanceInMasternodes) \(.balanceInInterest)"' 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null
+        echo "$(returnAccount | jq -r '.result.wallets[] | "\(.asset): \(.balance) \(.balanceInOrder) \(.balanceInMasternodes) \(.balanceInInterest)"' 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null
       }
       # update data every n seconds
       if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
