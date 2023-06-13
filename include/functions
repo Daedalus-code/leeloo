@@ -19,8 +19,47 @@ SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
 
 ################################################################################
 
+function key_secret_set() {
+
+  KEY_SECRET_SET_PLX="0" # poloniex
+  KEY_SECRET_SET_SXC="0" # southxchange
+  KEY_SECRET_SET_SCE="0" # stakecube
+
+  ##############################################################################
+
+  # poloniex option
+  if [[ -n "$API_POLONIEX_KEY" ]] && [[ -n "$API_POLONIEX_SECRET" ]]; then
+    KEY_SECRET_SET_PLX="1"
+  fi
+  # southxchange option
+  if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]]; then
+    KEY_SECRET_SET_SXC="1"
+  fi
+  # stakecube option
+  if [[ -n "$API_STAKECUBE_KEY" ]] && [[ -n "$API_STAKECUBE_SECRET" ]]; then
+    KEY_SECRET_SET_SCE="1"
+  fi
+
+  ##############################################################################
+
+  # calculate status
+  KEY_SECRET_SET="$(echo "$KEY_SECRET_SET_PLX+$KEY_SECRET_SET_SXC+$KEY_SECRET_SET_SCE" | bc 2>/dev/null)"
+  if [[ -z "$KEY_SECRET_SET" ]] &>/dev/null; then
+    KEY_SECRET_SET="0"
+  fi
+  # if set, continue
+  if [[ "$KEY_SECRET_SET" -gt "0" ]] &>/dev/null; then
+    KEY_SECRET_OK="1"
+  else
+    KEY_SECRET_OK="0"
+  fi
+}
+
+################################################################################
+
 LEELOO_CONFIG_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/broker.conf | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
 
+# updating robot scripts, restart robots
 if [[ "$LEELOO_CONFIG_SECONDS" -lt "10" ]] &>/dev/null; then
   if [[ "$(echo "$SCREEN_LIST" | grep -c "leeloo")" -gt "0" ]] &>/dev/null; then
     # kill screen
