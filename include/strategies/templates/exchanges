@@ -11,6 +11,18 @@ LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 ################################################################################
 
 function exchange_template() {
+
+  # always public, poloniex, southxchange, stakecube api
+  source /usr/local/bin/include/leeloo/api/poloniex/public_API
+  source /usr/local/bin/include/leeloo/api/southxchange/public_API
+  source /usr/local/bin/include/leeloo/api/stakecube/public_API
+  # stakecube, southxchange, poloniex templates
+  source /usr/local/bin/include/leeloo/strategies/templates/stakecube
+  source /usr/local/bin/include/leeloo/strategies/templates/southxchange
+  source /usr/local/bin/include/leeloo/strategies/templates/poloniex
+
+  ##############################################################################
+
   # poloniex template
   if [[ "$EXCHANGE_API" == "POL" ]] &>/dev/null; then
     if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/poloniex ]] &>/dev/null; then
@@ -20,10 +32,10 @@ function exchange_template() {
     fi
     # poloniex api
     source /usr/local/bin/include/leeloo/api/poloniex/private_API
-    source /usr/local/bin/include/leeloo/api/poloniex/public_API
-    # poloniex template
-    source /usr/local/bin/include/leeloo/strategies/templates/poloniex
   fi
+
+  ##############################################################################
+
   # southxchange template
   if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
     if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/southxchange ]] &>/dev/null; then
@@ -33,10 +45,10 @@ function exchange_template() {
     fi
     # southxchange api
     source /usr/local/bin/include/leeloo/api/southxchange/private_API
-    source /usr/local/bin/include/leeloo/api/southxchange/public_API
-    # southxchange template
-    source /usr/local/bin/include/leeloo/strategies/templates/southxchange
   fi
+
+  ##############################################################################
+
   # stakecube template
   if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
     if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/stakecube ]] &>/dev/null; then
@@ -46,10 +58,9 @@ function exchange_template() {
     fi
     # stakecube api
     source /usr/local/bin/include/leeloo/api/stakecube/private_API
-    source /usr/local/bin/include/leeloo/api/stakecube/public_API
-    # stakecube template
-    source /usr/local/bin/include/leeloo/strategies/templates/stakecube
   fi
+
+  ##############################################################################
 
   if [[ -z "$EXCHANGE_API" ]] &>/dev/null; then
     EXCHANGE_API="No config!"
