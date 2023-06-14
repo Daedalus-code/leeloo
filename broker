@@ -1093,6 +1093,10 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   ##############################################################################
 
+  update_screen
+
+  ##############################################################################
+
   # cleanup old junk #
   if [[ -f "${LOG_DIR:?}"/leeloo/robot.broker.log || -f "${LOG_DIR:?}"/leeloo/looper.log ]] &>/dev/null; then
     echo "Removing old junk.."
@@ -1173,6 +1177,8 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # leeloo.log
 
 "L")
+
+  update_screen
 
   display_result() {
     dialog --title "Leeloo Debug info: +$LEELOO_LINES" \
@@ -1337,6 +1343,8 @@ $LEELOO_ERROR"
   ;;
 
 "A")
+
+  update_screen
 
   if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
     LEELOO_RUNNING="Online"
@@ -1994,6 +2002,8 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
 
       "1")
 
+        update_screen
+
         display_result() {
           dialog --title "Robot (screen)" \
             --no-collapse \
@@ -2026,6 +2036,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
       "2")
 
+        update_screen
+
         if dialog --stdout --title "RESTART WARNING!" \
           --backtitle "RESTARTING" \
           --yesno "Yes: Restart!, No:  Go back!" 5 32; then
@@ -2045,6 +2057,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         ;;
 
       "3")
+
+        update_screen
 
         # kill leeloo pid (shell)
         echo "$(ps aux 2>/dev/null | grep "leeloo" | grep -v "grep" | grep "bash.*robot/leeloo" | awk '{ print $2 }' | tail -1)" >"${LOG_DIR:?}"/leeloo/ps_aux
