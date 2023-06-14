@@ -24,7 +24,7 @@ if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "0" ]] &>/dev/null; t
   screen -dmSL leeloo -Logfile "$LOG_DIR/leeloo/screen.log"
   # start the leeloo command in the screen session
   screen -S leeloo -p 0 -X stuff "bash ${SYS_DIR}/robot/leeloo >> "$LOG_DIR/leeloo/leeloo.log" 2>&1"$'\n'
-  echo "$LOG_DATE :: Strategy KEK :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/looper.log 2>/dev/null
+  echo "$LOG_DATE :: KEK :: KEK :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
   exit
 fi
 
@@ -33,7 +33,7 @@ fi
 # nothing is happening for n seconds, while something needs to be happening
 if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
   # the age of all logs measured in seconds
-  ROBOT_LOG_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
+  ROBOT_LOG_AGE_SECONDS="$(stat -c '%Y' "$(grep -v "broker" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null)" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
   # log file count
   ROBOT_LOG_COUNT="$(ls -l "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | wc -l)"
   # calculate average seconds
@@ -49,17 +49,13 @@ if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>
 
   if [[ "$ROBOT_LOG_AVERAGE" -gt "$ROBOT_LOG_MAX_AGE" ]] &>/dev/null; then
 
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/looper.log ]] &>/dev/null; then
-      touch "${LOG_DIR:?}"/leeloo/looper.log &>/dev/null
-    fi
-
-    echo "$LOG_DATE :: Strategy KEK :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/looper.log 2>/dev/null
+    echo "$LOG_DATE :: KEK :: KEK :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
     # kill old screen
     screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
-    echo "$LOG_DATE :: Strategy KEK :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/looper.log 2>/dev/null
+    echo "$LOG_DATE :: KEK :: KEK :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
     sleep 1
     if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-      echo "$LOG_DATE :: Strategy KEK :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/looper.log 2>/dev/null
+      echo "$LOG_DATE :: KEK :: KEK :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
       killall screen &>/dev/null
     fi
   fi
@@ -68,13 +64,13 @@ fi
 ################################################################################
 
 if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -eq "0" ]]; then
-  echo "$LOG_DATE :: Exchange SXC :: Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  echo "$LOG_DATE :: KEK :: SXC :: Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
 fi
 if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)" -eq "0" ]]; then
-  echo "$LOG_DATE :: Exchange SXC :: Orders is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  echo "$LOG_DATE :: KEK :: SXC :: Orders is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
 fi
 if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -eq "0" ]]; then
-  echo "$LOG_DATE :: Exchange SXC :: Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  echo "$LOG_DATE :: KEK :: SXC :: Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
 fi
 
 ################################################################################
