@@ -24,6 +24,9 @@ if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "0" ]] &>/dev/null; t
   screen -dmSL leeloo -Logfile "$LOG_DIR/leeloo/screen.log"
   # start the leeloo command in the screen session
   screen -S leeloo -p 0 -X stuff "bash ${SYS_DIR}/robot/leeloo >> "$LOG_DIR/leeloo/leeloo.log" 2>&1"$'\n'
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }')" ]] &>/dev/null; then
+    echo "$(tail -1024 "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/leeloo.log
+  fi
   echo "$LOG_DATE :: KEK :: KEK :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
   exit
 fi
