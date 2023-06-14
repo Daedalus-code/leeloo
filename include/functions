@@ -27,6 +27,7 @@ LOAD="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
 
 # screen -list #################################################################
 
+# update screen list
 echo "$(screen -list 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/screen
 SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
 
@@ -70,28 +71,30 @@ function key_secret_set() {
 
 ################################################################################
 
-LEELOO_CONFIG_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/broker.conf | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
+function broker_conf_update() {
+  LEELOO_CONFIG_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/broker.conf | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
 
-# updating broker configuration, restart robots
-if [[ "$LEELOO_CONFIG_SECONDS" -lt "10" ]] &>/dev/null; then
-  if [[ "$(echo "$SCREEN_LIST" | grep -c "leeloo")" -gt "0" ]] &>/dev/null; then
-    # kill screen
-    screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
-    # kill leeloo pid (shell)
-    echo "$(ps aux 2>/dev/null | grep "leeloo" | grep -v "grep" | grep "bash.*robot/leeloo" | awk '{ print $2 }' | tail -1)" >"${LOG_DIR:?}"/leeloo/ps_aux
-    LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
-    kill -9 "$LEELOO_PID" &>/dev/null
-    bash "${SYS_DIR:?}"/robot/looper
-    echo "Robot restarting!" >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
-    display_result() {
-      dialog --title "Updating Configuration." \
-        --no-collapse \
-        --msgbox "$RESULT" 0 0
-    }
-    RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
-    display_result 2>/dev/null
+  # updating broker configuration, restart robots
+  if [[ "$LEELOO_CONFIG_SECONDS" -lt "10" ]] &>/dev/null; then
+    if [[ "$(echo "$SCREEN_LIST" | grep -c "leeloo")" -gt "0" ]] &>/dev/null; then
+      # kill screen
+      screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
+      # kill leeloo pid (shell)
+      echo "$(ps aux 2>/dev/null | grep "leeloo" | grep -v "grep" | grep "bash.*robot/leeloo" | awk '{ print $2 }' | tail -1)" >"${LOG_DIR:?}"/leeloo/ps_aux
+      LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
+      kill -9 "$LEELOO_PID" &>/dev/null
+      bash "${SYS_DIR:?}"/robot/looper
+      echo "Robot restarting!" >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+      display_result() {
+        dialog --title "Updating Configuration." \
+          --no-collapse \
+          --msgbox "$RESULT" 0 0
+      }
+      RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
+      display_result 2>/dev/null
+    fi
   fi
-fi
+}
 
 ################################################################################
 
@@ -101,6 +104,7 @@ This software is provided without warranties or guarantees, use it at your own r
 Embrace the chaos, adapt to the shadows, may the odds ever be in your favor."
 }
 
+# create if not found
 if [[ ! -f "${LOG_DIR:?}"/leeloo/AGREED ]] &>/dev/null; then
 
   # agreed
@@ -137,18 +141,20 @@ fi
 
 # repo version #################################################################
 
-if [[ ! -f "${LOG_DIR:?}"/leeloo/repo ]] &>/dev/null; then
-  cd "${HOME_DIR:?}"/leeloo || exit && git rev-parse --short HEAD 2>&1 | grep -Eo '[a0-z9]{7}' 2>&1 | head -1 >"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
-  cd "${HOME_DIR:?}"/leeloo || exit && git log -1 --format="%at" | xargs -I{} date -d @{} '+%Y' >>"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
-fi
+function repo_head_data() {
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/repo ]] &>/dev/null; then
+    cd "${HOME_DIR:?}"/leeloo || exit && git rev-parse --short HEAD 2>&1 | grep -Eo '[a0-z9]{7}' 2>&1 | head -1 >"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
+    cd "${HOME_DIR:?}"/leeloo || exit && git log -1 --format="%at" | xargs -I{} date -d @{} '+%Y' >>"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
+  fi
 
-REPO_HEAD="$(cat "${LOG_DIR:?}"/leeloo/repo 2>/dev/null | head -1)"
-REPO_DATE="$(cat "${LOG_DIR:?}"/leeloo/repo 2>/dev/null | tail -1)"
+  REPO_HEAD="$(cat "${LOG_DIR:?}"/leeloo/repo 2>/dev/null | head -1)"
+  REPO_DATE="$(cat "${LOG_DIR:?}"/leeloo/repo 2>/dev/null | tail -1)"
 
-if [[ -z "$REPO_HEAD" ]] &>/dev/null; then
-  REPO_HEAD="edit"
-  REPO_DATE="config."
-fi
+  if [[ -z "$REPO_HEAD" ]] &>/dev/null; then
+    REPO_HEAD="edit"
+    REPO_DATE="config."
+  fi
+}
 
 # no key no secret #############################################################
 
