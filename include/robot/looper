@@ -27,7 +27,7 @@ if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "0" ]] &>/dev/null; t
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }')" ]] &>/dev/null; then
     echo "$(tail -1024 "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/leeloo.log
   fi
-  echo "$LOG_DATE :: KEK :: KEK :: Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  echo "$LOG_DATE : KEK : KEK : Starting robots!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
   exit
 fi
 
@@ -52,13 +52,13 @@ if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>
 
   if [[ "$ROBOT_LOG_AVERAGE" -gt "$ROBOT_LOG_MAX_AGE" ]] &>/dev/null; then
 
-    echo "$LOG_DATE :: KEK :: KEK :: Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+    echo "$LOG_DATE : KEK : KEK : Failing robots! $ROBOT_LOG_AGE_MINUTES minutes behind.." >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
     # kill old screen
     screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit
-    echo "$LOG_DATE :: KEK :: KEK :: Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+    echo "$LOG_DATE : KEK : KEK : Stopping robots!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
     sleep 1
     if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-      echo "$LOG_DATE :: KEK :: KEK :: Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+      echo "$LOG_DATE : KEK : KEK : Still running! Killall screen!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
       killall screen &>/dev/null
     fi
   fi
@@ -67,13 +67,13 @@ fi
 ################################################################################
 
 if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -eq "0" ]]; then
-  echo "$LOG_DATE :: KEK :: SXC :: Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  echo "$LOG_DATE : KEK : SXC : Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
 fi
 if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)" -eq "0" ]]; then
-  echo "$LOG_DATE :: KEK :: SXC :: Orders is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  echo "$LOG_DATE : KEK : SXC : Orders is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
 fi
 if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -eq "0" ]]; then
-  echo "$LOG_DATE :: KEK :: SXC :: Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  echo "$LOG_DATE : KEK : SXC : Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
 fi
 
 ################################################################################
