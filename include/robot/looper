@@ -33,7 +33,7 @@ fi
 # nothing is happening for n seconds, while something needs to be happening
 if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
   # the age of all logs measured in seconds
-  ROBOT_LOG_AGE_SECONDS="$(stat -c '%Y' "$(grep -v "broker" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null)" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
+  ROBOT_LOG_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
   # log file count
   ROBOT_LOG_COUNT="$(ls -l "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | wc -l)"
   # calculate average seconds
