@@ -8,15 +8,24 @@
 # This software is provided without warranties or guarantees, use it at your own risk.
 # Embrace the chaos, adapt to the shadows, may the odds ever be in your favor.
 
-################################################################################
+## shellcheck ##################################################################
 
 # shellcheck disable=SC2034  # Unused variables left for readability
 
-################################################################################
+# system directory #############################################################
 
 SYS_DIR="/usr/local/bin/include/leeloo" # system folder
 
-################################################################################
+# date, log date ###############################################################
+
+DATE="$(date +"%d.%m.%Y %H:%M:%S")"
+LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+
+# system #######################################################################
+
+LOAD="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
+
+# screen -list #################################################################
 
 echo "$(screen -list 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/screen
 SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
@@ -126,11 +135,6 @@ if [[ -f /usr/local/bin/broker ]] &>/dev/null; then
   fi
 fi
 
-################################################################################
-
-DATE="$(date +"%d.%m.%Y %H:%M:%S")"
-LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
-
 # repo version #################################################################
 
 if [[ ! -f "${LOG_DIR:?}"/leeloo/repo ]] &>/dev/null; then
@@ -145,10 +149,6 @@ if [[ -z "$REPO_HEAD" ]] &>/dev/null; then
   REPO_HEAD="edit"
   REPO_DATE="config."
 fi
-
-# system #######################################################################
-
-LOAD="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
 
 # no key no secret #############################################################
 
