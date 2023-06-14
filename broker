@@ -1995,7 +1995,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         fi
 
         # logs age in seconds
-        RESULT="Strategies: $(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | xargs | sed 's/^0*//') $ROBOT_LOG_AVERAGE/$ROBOT_LOG_MAX_AGE
+        RESULT="Strategies: $(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done) $ROBOT_LOG_AVERAGE/$ROBOT_LOG_MAX_AGE
 $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)"
         WIDTH="$(echo "$(echo "$RESULT" | wc -L)+4" | bc 2>/dev/null)"
