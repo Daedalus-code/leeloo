@@ -228,6 +228,10 @@ function incoming_listing() {
     touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming &>/dev/null
   fi
 
+  if [[ -z "$LISTING_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
+    LISTING_UNCONFIRMED_BALANCE="0.000000000"
+  fi
+
   # create list from listing unconfirmed balance
   echo "$LISTING_UNCONFIRMED_BALANCE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null
   # keep n lines
@@ -281,6 +285,10 @@ function incoming_reference() {
 
   if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming ]] &>/dev/null; then
     touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming &>/dev/null
+  fi
+
+  if [[ -z "$REFERENCE_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
+    REFERENCE_UNCONFIRMED_BALANCE="0.000000000"
   fi
 
   # create list from reference unconfirmed balance
