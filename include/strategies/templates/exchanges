@@ -35,19 +35,6 @@ function account_public_api() {
 
 function exchange_template() {
 
-  # stakecube, southxchange, poloniex templates
-  if [[ -f /usr/local/bin/include/leeloo/strategies/templates/stakecube ]] &>/dev/null; then
-    source /usr/local/bin/include/leeloo/strategies/templates/stakecube 2>/dev/null
-  fi
-  if [[ -f /usr/local/bin/include/leeloo/strategies/templates/southxchange ]] &>/dev/null; then
-    source /usr/local/bin/include/leeloo/strategies/templates/southxchange 2>/dev/null
-  fi
-  if [[ -f /usr/local/bin/include/leeloo/strategies/templates/poloniex ]] &>/dev/null; then
-    source /usr/local/bin/include/leeloo/strategies/templates/poloniex 2>/dev/null
-  fi
-
-  ##############################################################################
-
   # if broker is using this
   if [[ -z "$EXCHANGE_API" ]] &>/dev/null; then
     EXCHANGE_API="BROKER"
@@ -57,11 +44,15 @@ function exchange_template() {
 
   # poloniex template
   if [[ "$EXCHANGE_API" == "POL" ]] &>/dev/null; then
+
     if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/poloniex ]] &>/dev/null; then
       EXCHANGE_API="Nothing"
       echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       exit
+    else
+      source /usr/local/bin/include/leeloo/strategies/templates/poloniex
     fi
+
     # poloniex api
     source /usr/local/bin/include/leeloo/api/poloniex/private_API
     source /usr/local/bin/include/leeloo/api/poloniex/public_API
@@ -71,11 +62,15 @@ function exchange_template() {
 
   # southxchange template
   if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+
     if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/southxchange ]] &>/dev/null; then
       EXCHANGE_API="Nothing"
       echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       exit
+    else
+      source /usr/local/bin/include/leeloo/strategies/templates/southxchange
     fi
+
     # southxchange api
     source /usr/local/bin/include/leeloo/api/southxchange/private_API
     source /usr/local/bin/include/leeloo/api/southxchange/public_API
@@ -85,11 +80,15 @@ function exchange_template() {
 
   # stakecube template
   if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
+
     if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/stakecube ]] &>/dev/null; then
       EXCHANGE_API="Nothing"
       echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       exit
+    else
+      source /usr/local/bin/include/leeloo/strategies/templates/stakecube
     fi
+
     # stakecube api
     source /usr/local/bin/include/leeloo/api/stakecube/private_API
     source /usr/local/bin/include/leeloo/api/stakecube/public_API
