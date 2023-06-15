@@ -642,15 +642,6 @@ function rogue_profit() {
     if [[ -z "$ROGUE_LISTING_LOW" ]] &>/dev/null; then
       ROGUE_LISTING_LOW="50.1111"
     fi
-    if [[ "$ROGUE_LISTING_NOW" -eq "0" ]] &>/dev/null; then
-      ROGUE_LISTING_NOW="50.1111"
-    fi
-    if [[ "$ROGUE_LISTING_HIGH" -eq "0" ]] &>/dev/null; then
-      ROGUE_LISTING_HIGH="50.1111"
-    fi
-    if [[ "$ROGUE_LISTING_LOW" -eq "0" ]] &>/dev/null; then
-      ROGUE_LISTING_LOW="50.1111"
-    fi
 
     ROGUE_LISTING_DIFF="$(echo "$ROGUE_LISTING_HIGH-$ROGUE_LISTING_LOW" | bc -l 2>/dev/null | tr -d '-' | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_LISTING_TOTAL="$(echo "$ROGUE_LISTING_NOW+$ROGUE_LISTING_HIGH+$ROGUE_LISTING_LOW" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
@@ -709,6 +700,18 @@ function rogue_profit() {
     ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.4f\n", $1 }')"
     ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
+
+    # rsi can not be empty/zero, regardless
+    if [[ -z "$ROGUE_REFERENCE_NOW" ]] &>/dev/null; then
+      ROGUE_REFERENCE_NOW="50.1111"
+    fi
+    if [[ -z "$ROGUE_REFERENCE_HIGH" ]] &>/dev/null; then
+      ROGUE_REFERENCE_HIGH="50.1111"
+    fi
+    if [[ -z "$ROGUE_REFERENCE_LOW" ]] &>/dev/null; then
+      ROGUE_REFERENCE_LOW="50.1111"
+    fi
+
     ROGUE_REFERENCE_DIFF="$(echo "$ROGUE_REFERENCE_HIGH-$ROGUE_REFERENCE_LOW" | bc -l 2>/dev/null | tr -d '-' | awk '{ printf "%.2f\n", $1 }')"
     ROGUE_REFERENCE_TOTAL="$(echo "$ROGUE_REFERENCE_NOW+$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_LOW" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     ROGUE_REFERENCE_AVERAGE="$(echo "$ROGUE_REFERENCE_TOTAL/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
