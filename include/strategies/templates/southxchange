@@ -664,7 +664,7 @@ function rogue_profit() {
       ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_AVERAGE-$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
-    ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_RPI" | awk '{ printf "%.4f\n", $1 }')"
+    ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_RPI" | awk '{ printf "%.9f\n", $1 }')"
 
     # keep at idle if zero
     if [[ -z "$ROGUE_LISTING_RPI" ]] &>/dev/null; then
@@ -717,23 +717,21 @@ function rogue_profit() {
     ############################################################################
 
     # set idle
-    ROGUE_REFERENCE_X_CALCULATE="$ROGUE_REFERENCE_TOTAL"
+    ROGUE_REFERENCE_RPI="50.1111"
 
-    # overbought
-    if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -gt "60" ]] &>/dev/null; then
+    # overbought, greater than n
+    if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -gt "50" ]] &>/dev/null; then
       # positive
-      ROGUE_REFERENCE_X_CALCULATE="$(echo "$ROGUE_REFERENCE_TOTAL+$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_AVERAGE+$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
-    # oversold
-    if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -lt "40" ]] &>/dev/null; then
+    # oversold, greater than n
+    if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -lt "50" ]] &>/dev/null; then
       # negative
-      ROGUE_REFERENCE_X_CALCULATE="$(echo "$ROGUE_REFERENCE_TOTAL-$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_AVERAGE-$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
-    ############################################################################
-
-    ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_X_CALCULATE/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+    ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_RPI" | awk '{ printf "%.9f\n", $1 }')"
 
     # keep at idle if zero
     if [[ -z "$ROGUE_REFERENCE_RPI" ]] &>/dev/null; then
