@@ -1085,7 +1085,7 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
 
   ##############################################################################
 
-  # cleanup old junk #
+  ### cleanup old junk ###
   if [[ -f "${LOG_DIR:?}"/leeloo/robot.broker.log || -f "${LOG_DIR:?}"/leeloo/looper.log ]] &>/dev/null; then
     echo "Removing old junk.."
     sudo rm "${LOG_DIR:?}"/leeloo/robot.broker.log &>/dev/null
@@ -1112,11 +1112,11 @@ $(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
     if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
       echo " Robot stopping! --" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
       # kill leeloo pid (shell)
-      echo "$(ps aux 2>/dev/null | grep "leeloo" | grep -v "grep" | grep "bash.*robot/leeloo" | awk '{ print $2 }' | tail -1)" >"${LOG_DIR:?}"/leeloo/ps_aux
+      echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
       LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
       kill -9 "$LEELOO_PID" &>/dev/null
       # kill screen
-      screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
+      screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit &>/dev/null
       sleep 1
       # start looper
       bash "${SYS_DIR:?}"/robot/looper
@@ -2031,11 +2031,11 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
           --yesno "Yes: Restart!, No:  Go back!" 5 32; then
 
           # kill leeloo pid (shell)
-          echo "$(ps aux 2>/dev/null | grep "leeloo" | grep -v "grep" | grep "bash.*robot/leeloo" | awk '{ print $2 }' | tail -1)" >"${LOG_DIR:?}"/leeloo/ps_aux
+          echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
           LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
           kill -9 "$LEELOO_PID" &>/dev/null
           # kill screen
-          screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
+          screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit &>/dev/null
           sleep 1
 
           # start looper
@@ -2049,11 +2049,11 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         update_screen
 
         # kill leeloo pid (shell)
-        echo "$(ps aux 2>/dev/null | grep "leeloo" | grep -v "grep" | grep "bash.*robot/leeloo" | awk '{ print $2 }' | tail -1)" >"${LOG_DIR:?}"/leeloo/ps_aux
+        echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
         LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
         kill -9 "$LEELOO_PID" &>/dev/null
         # kill screen
-        screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit 2>/dev/null
+        screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit &>/dev/null
         sleep 1
 
         display_result() {
