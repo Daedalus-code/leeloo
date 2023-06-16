@@ -84,16 +84,45 @@ if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>
   fi
 fi
 
-################################################################################
+# southxchange #################################################################
 
-if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-  echo "$LOG_DATE : SXC : KEK : Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+# get active robot
+SXC_ROBOT_API="$(grep -c "SXC" "${LOG_DIR:?}"/leeloo/robots)"
+
+if [[ -z "$SXC_ROBOT_API" ]] &>/dev/null; then
+  SXC_ROBOT_API="0"
 fi
-if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-  echo "$LOG_DATE : SXC : KEK : Orders is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+
+# active robot, continue
+if [[ "$SXC_ROBOT_API" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+    echo "$LOG_DATE : SXC : KEK : Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  fi
+  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+    echo "$LOG_DATE : SXC : KEK : Orders is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  fi
+  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+    echo "$LOG_DATE : SXC : KEK : Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  fi
 fi
-if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-  echo "$LOG_DATE : SXC : KEK : Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+
+# stakecube ####################################################################
+
+# get active robot
+SCE_ROBOT_API="$(grep -c "SCE" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
+
+if [[ -z "$SCE_ROBOT_API" ]] &>/dev/null; then
+  SCE_ROBOT_API="0"
+fi
+
+# active robot, continue
+if [[ "$SCE_ROBOT_API" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+    echo "$LOG_DATE : SCE : KEK : Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  fi
+  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+    echo "$LOG_DATE : SCE : KEK : Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  fi
 fi
 
 ################################################################################
