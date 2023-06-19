@@ -1504,18 +1504,24 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
       display_result() {
-        dialog --title "Trade History +$ORDERS_COUNT - Profit: High $PROFIT_HIGH Low $PROFIT_LOW Average $PROFIT_AVERAGE" \
+        dialog --title "Trade History +$ORDERS_COUNT - S:$SELL_COUNT B:$BUY_COUNT Profit: High $PROFIT_HIGH Low $PROFIT_LOW Average $PROFIT_AVERAGE" \
           --no-collapse \
           --tailbox "$RESULT" "$LENGTH" "$WIDTH"
       }
 
       CAT_ORDERS="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null)"
 
-      # profit count
-      PROFIT_COUNT="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $13 }' | wc -l)"
-      if [[ -z "$PROFIT_COUNT" ]] &>/dev/null; then
-        PROFIT_COUNT="0"
+      # sell count
+      SELL_COUNT="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $13 }' | wc -l)"
+      if [[ -z "$SELL_COUNT" ]] &>/dev/null; then
+        SELL_COUNT="0"
       fi
+      # buy count
+      BUY_COUNT="$(echo "$CAT_ORDERS" | grep "buy" | awk '{ print $13 }' | wc -l)"
+      if [[ -z "$BUY_COUNT" ]] &>/dev/null; then
+        BUY_COUNT="0"
+      fi
+
       # profit high
       PROFIT_HIGH="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $13 }' | sort -n | tail -1)"
       if [[ -z "$PROFIT_HIGH" ]] &>/dev/null; then
@@ -1532,7 +1538,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         PROFIT_SUM="0"
       fi
       # profit average
-      PROFIT_AVERAGE="$(echo "$PROFIT_SUM/$PROFIT_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')%"
+      PROFIT_AVERAGE="$(echo "$PROFIT_SUM/$SELL_COUNT" | bc -l | awk '{ printf "%.2f\n", $1 }')%"
       if [[ -z "$PROFIT_AVERAGE" ]] &>/dev/null; then
         PROFIT_AVERAGE="0%"
       fi
