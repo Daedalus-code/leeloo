@@ -1523,17 +1523,17 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       fi
 
       # profit high
-      PROFIT_HIGH="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $13 }' | sed -r '/^\s*$/d' | sort -n | tail -1)"
+      PROFIT_HIGH="$(echo "$CAT_ORDERS" | grep "sell" | egrep "[0-9]+.[0-9]+%" | sort -n | tail -1)"
       if [[ -z "$PROFIT_HIGH" ]] &>/dev/null; then
         PROFIT_HIGH="0"
       fi
       # profit low
-      PROFIT_LOW="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $13 }' | sed -r '/^\s*$/d' | sort -n | head -1)"
+      PROFIT_LOW="$(echo "$CAT_ORDERS" | grep "sell" | egrep "[0-9]+.[0-9]+%" | sort -n | head -1)"
       if [[ -z "$PROFIT_LOW" ]] &>/dev/null; then
         PROFIT_LOW="0"
       fi
       # profit sum
-      PROFIT_SUM="$(echo "$CAT_ORDERS" | grep "sell" | awk '{ print $13 }' | sed -r '/^\s*$/d' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+      PROFIT_SUM="$(echo "$CAT_ORDERS" | grep "sell" | egrep "[0-9]+.[0-9]+%" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
       if [[ -z "$PROFIT_SUM" ]] &>/dev/null; then
         PROFIT_SUM="0"
       fi
