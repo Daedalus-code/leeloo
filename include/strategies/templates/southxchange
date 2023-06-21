@@ -1,5 +1,11 @@
 #!/bin/bash
 
+################################################################################
+
+# SouthXchange template - 2023
+
+################################################################################
+
 # shellcheck disable=SC2034  # Unused variables left for readability
 
 ################################################################################
@@ -530,9 +536,12 @@ function rogue_profit() {
       echo "Lurking in the Shadows.." >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth 2>/dev/null
       sleep 1
     fi
+
     STEALTH_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
     STEALTH_TIME=$(printf '%dh:%dm:%ds\n' $(("$STEALTH_TIME_SECONDS/3600")) $(("$STEALTH_TIME_SECONDS%3600/60")) $(("$STEALTH_TIME_SECONDS%60")))
-    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Stealth mode $STEALTH_TIME" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    STEALTH_TIME_H="$(("$STEALTH_TIME_SECONDS/3600"))"
+    STEALTH_TIME_D="$(("$STEALTH_TIME_H/24"))"
+    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Stealth mode ${STEALTH_TIME_D:?}d (${STEALTH_TIME:?})" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   }
 
   ##############################################################################
