@@ -1,6 +1,8 @@
 # leeloo
 Multipass
 
+This script was built on a Ubuntu Linux System (Raspberry Pi4)  
+
 First time use:  
 ````git clone https://github.com/Daedalus-code/leeloo.git````  
 ````bash leeloo/include/install````  
