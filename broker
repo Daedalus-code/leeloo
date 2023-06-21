@@ -2296,8 +2296,8 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
       echo "$RESULT_RAW" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
 
       # disregard ema_signal, count bearish and bullish
-      BEARISH_SIGNAL="$(echo "$RESULT_RAW" | grep -v "EMA_Signal" | grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
-      BULLISH_SIGNAL="$(echo "$RESULT_RAW" | grep -v "EMA_Signal" | grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
+      BEARISH_SIGNAL="$(echo "$RESULT_RAW" | egrep "Short_EMA|Long_EMA" | grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
+      BULLISH_SIGNAL="$(echo "$RESULT_RAW" | egrep "Short_EMA|Long_EMA" | grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
       TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc 2>/dev/null)"
       BEARISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BEARISH_SIGNAL" | bc 2>/dev/null)"
       BULLISH_PERCENTAGE="$(echo "100/$TOTAL_SIGNAL*$BULLISH_SIGNAL" | bc 2>/dev/null)"
