@@ -273,6 +273,11 @@ function ema_value_output {
 # last log #####################################################################
 
 function last_log {
+
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/broker.log ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/broker.log &>/dev/null
+  fi
+
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null)"
   WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/broker.log | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
   LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')+5" | bc 2>/dev/null)"
