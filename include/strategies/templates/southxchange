@@ -196,12 +196,11 @@ function reference_allocated() {
 ################################################################################
 
 function last_tx() {
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
+    echo "null" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  fi
   # last tx
   TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | egrep -o "[0-9]+")"
-  # zero, continue
-  if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
-    TX_ID_LAST="null"
-  fi
 }
 
 ################################################################################
