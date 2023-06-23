@@ -78,13 +78,13 @@ last_tx               # last tx
 RSI_VALUE_RAW_NOW="$(get_rsi "$RSI_VALUE" "$LISTING_CURRENCY")"
 RSI_VALUE_NOW="$(echo "$RSI_VALUE_RAW_NOW" | awk '{ print $3 }')"
 RSI_VALUE_STATUS_NOW="$(echo "$RSI_VALUE_RAW_NOW" | awk '{ print $1 }')"
-RSI_TIMER="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+RSI_TIMER="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"${LOG_DIR:?}"/leeloo/error.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 ################################################################################
 
 # calculate days into seconds
-RSI_COOLDOWN_HOURS="$(echo "$RSI_COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-RSI_COOLDOWN_NOW="$(echo "$RSI_TIMER/3600" | bc 2>/dev/null)"
+RSI_COOLDOWN_HOURS="$(echo "$RSI_COOLDOWN*86400" | bc 2>>"${LOG_DIR:?}"/leeloo/error.log | awk -F. '{ print $1 }')"
+RSI_COOLDOWN_NOW="$(echo "$RSI_TIMER/3600" | bc 2>>"${LOG_DIR:?}"/leeloo/error.log)"
 
 if [[ -z "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
   RSI_COOLDOWN_HOURS="0"
@@ -106,23 +106,23 @@ STATUS_RSI_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENC
 
 function rsi_timer_check() {
   if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
-    echo "IDLE @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+    echo "IDLE @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"${LOG_DIR:?}"/leeloo/error.log
   fi
 }
 
 ################################################################################
 
 function rsi_buy_order() {
-  echo "BOUGHT @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+  echo "BOUGHT @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"${LOG_DIR:?}"/leeloo/error.log
 }
 function rsi_sell_order() {
-  echo "SOLD @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+  echo "SOLD @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"${LOG_DIR:?}"/leeloo/error.log
 }
 
 ################################################################################
 
 if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
-  if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | grep -c "SOLD")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
+  if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"${LOG_DIR:?}"/leeloo/error.log | grep -c "SOLD")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
     if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -gt "$RSI_OVERBOUGHT" ]] &>/dev/null; then
       # overbought, sell
       if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
@@ -163,7 +163,7 @@ fi
 
 ################################################################################
 
-echo "$STATUS_RSI_OUTPUT :: $RSI_VALUE_STATUS_NOW :: $RSI_COOLDOWN_NOW/${RSI_COOLDOWN_HOURS:?}h :: $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+echo "$STATUS_RSI_OUTPUT :: $RSI_VALUE_STATUS_NOW :: $RSI_COOLDOWN_NOW/${RSI_COOLDOWN_HOURS:?}h :: $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
 
 ################################################################################
 

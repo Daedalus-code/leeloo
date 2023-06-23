@@ -119,7 +119,7 @@ fi
 ################################################################################
 
 # get total trigger
-TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
+TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>>"${LOG_DIR:?}"/leeloo/error.log)"
 if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
   TOTAL_TRIGGER="0"
 fi
@@ -127,7 +127,7 @@ fi
 ################################################################################
 
 # calculate days into seconds
-COOLDOWN_SECONDS="$(echo "$BST_COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+COOLDOWN_SECONDS="$(echo "$BST_COOLDOWN*86400" | bc 2>>"${LOG_DIR:?}"/leeloo/error.log | awk -F. '{ print $1 }')"
 CONFIG_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$COOLDOWN_SECONDS/3600")) $(("$COOLDOWN_SECONDS%3600/60")) $(("$COOLDOWN_SECONDS%60")))
 
 # calculate seconds minus tx_time
@@ -136,9 +136,9 @@ if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
   COOLDOWN_SECONDS="0"
 fi
 
-TX_TIME="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+TX_TIME="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>>"${LOG_DIR:?}"/leeloo/error.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>/dev/null)"
+CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>>"${LOG_DIR:?}"/leeloo/error.log)"
 if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] &>/dev/null; then
   CALCULATE_SECONDS="0"
 fi
@@ -168,7 +168,7 @@ Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL:?}%/${REFERENCE_ALLOCATED:?}%
 Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY $REFERENCE_AMOUNT_VALUED $LISTING_CURRENCY
 Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY $REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY
-Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null
+Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_DIR:?}"/leeloo/error.log
 
 ################################################################################
 
@@ -221,9 +221,9 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   # high (ask)
   BST_SPREAD_HIGH="$LISTING_PRICE_ASK"
   # get difference
-  BST_SPREAD_DIFF="$(echo "$BST_SPREAD_HIGH-$BST_SPREAD_LOW" | bc -l 2>/dev/null)"
+  BST_SPREAD_DIFF="$(echo "$BST_SPREAD_HIGH-$BST_SPREAD_LOW" | bc -l 2>>"${LOG_DIR:?}"/leeloo/error.log)"
   # calculate percentage
-  BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '{ printf "%.2f\n", $1 }')"
 
   # bst spread without decimal (n%)
   BST_SPREAD="$(echo "$BST_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')"
@@ -291,12 +291,12 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
           PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
           ######################################################################
 
-          echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+          echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
           tx_id
           cost_price
-          echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
           # remove duplicates
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
 
           # limit
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
@@ -305,12 +305,12 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
           PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
           ######################################################################
 
-          echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+          echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
           tx_id
           cost_price
-          echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
           # remove duplicates
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
         fi
       fi
 
@@ -325,12 +325,12 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
           PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
           ######################################################################
 
-          echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+          echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
           tx_id
           cost_price
-          echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
           # remove duplicates
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
 
           # limit
         elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
@@ -339,12 +339,12 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
           PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
           ######################################################################
 
-          echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+          echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
           tx_id
           cost_price
-          echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
           # remove duplicates
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
         fi
       fi
     fi
@@ -353,13 +353,13 @@ fi
 
 ################################################################################
 
-if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep "Cooldown| :: Result " | wc -l)" -gt "0" ]] &>/dev/null; then
+if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log 2>>"${LOG_DIR:?}"/leeloo/error.log | egrep "Cooldown| :: Result " | wc -l)" -gt "0" ]] &>/dev/null; then
   if [[ "$BST_TAKE_PROFIT" == "0" ]] &>/dev/null; then
     # cooldown output
-    echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
   else
     # profit output
-    echo "$PROFIT_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    echo "$PROFIT_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
   fi
 fi
 
