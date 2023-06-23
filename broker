@@ -232,9 +232,13 @@ case $CHOICE in
     "3")
 
       USER_TIMER="$(echo "$BOT_TIMER*1.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+      SCE_NONCE_COUNTER=$(cat "${LOG_DIR:?}"/leeloo/nonce.count 2>/dev/null)
+      if [[ -z "$SCE_NONCE_COUNTER" ]] &>/dev/null; then
+        SCE_NONCE_COUNTER="0"
+      fi
 
       display_result() {
-        dialog --title "$FILE_TIME :: Account Balance" \
+        dialog --title "$FILE_TIME :: Account Balance ($SCE_NONCE_COUNTER)" \
           --no-collapse \
           --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
       }
