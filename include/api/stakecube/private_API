@@ -8,7 +8,21 @@
 
 function returnAccount {
   API_ENDPOINT="https://stakecube.io/api/v2/user/account"
-  API_NONCE_COUNTER=1
+  API_COUNTER_FILE="/path/to/counter_file.txt"
+  # check if the counter file exists
+  if [ -f "$API_COUNTER_FILE" ]; then
+    # read the counter value from the file
+    API_NONCE_COUNTER=$(cat "$API_COUNTER_FILE")
+    # validate the counter value
+    if ! [[ "$API_NONCE_COUNTER" =~ ^[0-9]+$ ]]; then
+      # counter file contains an invalid value, set a default starting value
+      API_NONCE_COUNTER=1
+    fi
+  else
+    # counter file doesn't exist, set a default starting value
+    API_NONCE_COUNTER=1
+  fi
+  # append counter to the timestamp
   API_NONCE=$(date +%s%N)-${API_NONCE_COUNTER}
   DATA="nonce=${API_NONCE}"
   SIGNATURE=$(echo -n "${DATA}" | openssl dgst -sha256 -hmac "${API_STAKECUBE_SECRET}" | awk '{print $NF}')
@@ -16,6 +30,8 @@ function returnAccount {
   curl -s -H "X-API-KEY: ${API_STAKECUBE_KEY}" "${URL}"
   # increment the nonce counter for the next request
   ((API_NONCE_COUNTER++))
+  # write the updated counter value back to the file
+  echo "$API_NONCE_COUNTER" >"$API_COUNTER_FILE"
 }
 
 # END
