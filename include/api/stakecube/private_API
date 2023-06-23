@@ -8,11 +8,14 @@
 
 function returnAccount {
   API_ENDPOINT="https://stakecube.io/api/v2/user/account"
-  API_NONCE=$(date +%s%N)
+  API_NONCE_COUNTER=1
+  API_NONCE=$(date +%s%N)-${API_NONCE_COUNTER}
   DATA="nonce=${API_NONCE}"
   SIGNATURE=$(echo -n "${DATA}" | openssl dgst -sha256 -hmac "${API_STAKECUBE_SECRET}" | awk '{print $NF}')
   URL="${API_ENDPOINT}?${DATA}&signature=${SIGNATURE}"
   curl -s -H "X-API-KEY: ${API_STAKECUBE_KEY}" "${URL}"
+  # increment the nonce counter for the next request
+  ((API_NONCE_COUNTER++))
 }
 
 # END
