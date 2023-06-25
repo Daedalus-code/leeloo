@@ -1166,7 +1166,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   ##############################################################################
 
-  # leeloo.log
+  # leeloo.log, error.log
 
 "L")
 
@@ -1178,18 +1178,18 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
       --msgbox "$RESULT" 12 "$WIDTH"
   }
 
-  # log age in seconds
+  # leeloo log age in seconds
   LEELOO_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
   if [[ -z "$LEELOO_SECONDS" ]] &>/dev/null; then
     LEELOO_SECONDS="0"
   fi
 
+  # leeloo output
   LEELOO_DATA="$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
   LEELOO_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$LEELOO_SECONDS/3600")) $(("$LEELOO_SECONDS%3600/60")) $(("$LEELOO_SECONDS%60")))
   LEELOO_LINES="$LEELOO_DATA"
   LEELOO_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $8 }')")"
-
   LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
   LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes= 2>/dev/null)
 
@@ -1198,29 +1198,59 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   fi
 
   LEELOO_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LEELOO_TIME:?}" 2>&1)/3600")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%60")))
-
   LEELOO_ERROR="$(grep "$LEELOO_TIMED" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk -Flog: '{ print $2 }' | tail -1)"
   LEELOO_ERRORS="$LEELOO_DATA"
-
-  WIDTH="$(echo "$(echo "$LEELOO_ERROR" | wc -L)+5" | bc 2>/dev/null)"
 
   if [[ "$LEELOO_DATA" -eq "0" ]] &>/dev/null; then
     WIDTH="35"
     LEELOO_TIMED="None"
     LEELOO_ERROR="Nothing."
     LEELOO_ERRORS="None"
+  else
+    WIDTH="$(echo "$(echo "$LEELOO_ERROR" | wc -L)+5" | bc 2>/dev/null)"
   fi
 
-  RESULT="
-LogAge.: $LEELOO_LOG_TIME
-Uptime.: $LEELOO_UPTIME
+  ##############################################################################
 
-Time...: $LEELOO_TIMED
-ERRORS.: $LEELOO_ERRORS
+  # error log age in seconds
+  STRATEGY_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  if [[ -z "$STRATEGY_SECONDS" ]] &>/dev/null; then
+    STRATEGY_SECONDS="0"
+  fi
+
+  # strategy output
+  STRATEGY_DATA="$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
+  STRATEGY_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$STRATEGY_SECONDS/3600")) $(("$STRATEGY_SECONDS%3600/60")) $(("$STRATEGY_SECONDS%60")))
+  STRATEGY_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $8 }')")"
+  STRATEGY_ERROR="$(grep "$STRATEGY_TIMED" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk -Flog: '{ print $2 }' | tail -1)"
+  STRATEGY_ERRORS="$(wc -l "${LOG_DIR:?}"/leeloo/error.log | awk '{ print $1 }')"
+
+  if [[ "$STRATEGY_DATA" -eq "0" ]] &>/dev/null; then
+    WIDTH="35"
+    STRATEGY_TIMED="None"
+    STRATEGY_ERROR="Nothing."
+    STRATEGY_ERRORS="None"
+  else
+    WIDTH="$(echo "$(echo "$STRATEGY_ERROR" | wc -L)+5" | bc 2>/dev/null)"
+  fi
+
+  ##############################################################################
+
+  RESULT="
+Leeloo.log......: $LEELOO_LOG_TIME
+Leeloo.Uptime...: $LEELOO_UPTIME
+
+Leeloo.Time.....: $LEELOO_TIMED
+Leeloo ERRORS...: $LEELOO_ERRORS
+
+Error.log.......: $STRATEGY_LOG_TIME
+Strategy ERRORS.: $STRATEGY_ERRORS
 
 $LEELOO_ERROR"
   display_result 2>/dev/null
 
+  # leeloo
   if [[ "$LEELOO_DATA" -gt "0" ]] &>/dev/null; then
     nano "$LOG_DIR"/leeloo/leeloo.log
     clear
@@ -1231,9 +1261,27 @@ $LEELOO_ERROR"
     fi
   fi
 
-  # clean up duplicates, after the fact
-  if [[ -f "${LOG_DIR:?}"/leeloo/leeloo.log ]] &>/dev/null; then
-    echo "$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/leeloo.log
+  # strategy
+  if [[ "$LEELOO_DATA" -gt "0" ]] &>/dev/null; then
+    nano "$LOG_DIR"/leeloo/error.log
+    clear
+    if ! dialog --stdout --title "Keep data?" \
+      --backtitle "Kepp data?" \
+      --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
+      truncate -s 0 "$LOG_DIR"/leeloo/error.log &>/dev/null
+    fi
+  fi
+
+  # check for leeloo duplicates
+  if [[ "$(sort "${LOG_DIR:?}"/leeloo/leeloo.log | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+    # remove duplicates
+    echo "$(cat "${LOG_DIR:?}"/leeloo/leeloo.log | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/leeloo.log
+  fi
+
+  # check for strategy duplicates
+  if [[ "$(sort "${LOG_DIR:?}"/leeloo/error.log | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+    # remove duplicates
+    echo "$(cat "${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
   fi
 
   ;;
