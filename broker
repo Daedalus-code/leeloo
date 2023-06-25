@@ -1173,9 +1173,9 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   update_screen
 
   display_result() {
-    dialog --title "Leeloo Debug info: +$LEELOO_LINES" \
+    dialog --title "Leeloo / Strategy debug info: +$LEELOO_DATA / +$STRATEGY_DATA" \
       --no-collapse \
-      --msgbox "$RESULT" 19 "$WIDTH"
+      --msgbox "$RESULT" 20 "$WIDTH"
   }
 
   ##############################################################################
@@ -1190,7 +1190,6 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # leeloo output
   LEELOO_DATA="$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
   LEELOO_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$LEELOO_SECONDS/3600")) $(("$LEELOO_SECONDS%3600/60")) $(("$LEELOO_SECONDS%60")))
-  LEELOO_LINES="$LEELOO_DATA"
   LEELOO_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $8 }')")"
   LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
   LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes= 2>/dev/null)
@@ -1239,7 +1238,8 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   ##############################################################################
 
-  RESULT="Leeloo Uptime.: $LEELOO_UPTIME
+  RESULT="
+Leeloo Uptime.: $LEELOO_UPTIME
 
 Last Error....: $LEELOO_LOG_TIME
 Error Count...: $LEELOO_ERRORS
