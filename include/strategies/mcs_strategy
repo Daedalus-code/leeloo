@@ -90,9 +90,9 @@ MCS_SPREAD_LOW="$REFERENCE_PRICE"
 # high (ask)
 MCS_SPREAD_HIGH="$REFERENCE_PRICE_ASK"
 # get difference
-MCS_SPREAD_DIFF="$(echo "$MCS_SPREAD_HIGH-$MCS_SPREAD_LOW" | bc -l 2>>"${LOG_DIR:?}"/leeloo/error.log)"
+MCS_SPREAD_DIFF="$(echo "$MCS_SPREAD_HIGH-$MCS_SPREAD_LOW" | bc -l 2>>"${LOG_ERROR:?}")"
 # calculate percentage
-REFERENCE_MCS_SPREAD="$(echo "100/$REFERENCE_PRICE*$MCS_SPREAD_DIFF" | bc -l 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '{ printf "%.2f\n", $1 }')"
+REFERENCE_MCS_SPREAD="$(echo "100/$REFERENCE_PRICE*$MCS_SPREAD_DIFF" | bc -l 2>>"${LOG_ERROR:?}" | awk '{ printf "%.2f\n", $1 }')"
 
 if [[ -z "$REFERENCE_MCS_SPREAD" ]] &>/dev/null; then
   REFERENCE_MCS_SPREAD="0"
@@ -155,7 +155,7 @@ Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL:?}%/${REFERENCE_ALLOCATED:?}%
 Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY $REFERENCE_AMOUNT_VALUED $LISTING_CURRENCY
 Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY $REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY
-Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_DIR:?}"/leeloo/error.log
+Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_ERROR:?}"
 
 ################################################################################
 
@@ -179,20 +179,20 @@ if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
 
     # random order amount
     RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))
-    RANDOM_ORDER_NUMBER="$(echo "$RANDOM_ORDER_NUMBER/369369" | bc -l 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '{ printf "%.18f\n", $1 }')"
+    RANDOM_ORDER_NUMBER="$(echo "$RANDOM_ORDER_NUMBER/369369" | bc -l 2>>"${LOG_ERROR:?}" | awk '{ printf "%.18f\n", $1 }')"
     # new listing amount
-    LISTING_AMOUNT="$(echo "$LISTING_AMOUNT+$RANDOM_ORDER_NUMBER" | bc -l 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '{ printf "%.9f\n", $1 }')"
+    LISTING_AMOUNT="$(echo "$LISTING_AMOUNT+$RANDOM_ORDER_NUMBER" | bc -l 2>>"${LOG_ERROR:?}" | awk '{ printf "%.9f\n", $1 }')"
 
     # placeOrder market ########################################################
     PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
     ############################################################################
 
-    echo "$MARKET_MCS_EXECUTE :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
+    echo "$MARKET_MCS_EXECUTE :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     tx_id
     cost_price
-    echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+    echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
     # remove duplicates
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
   fi
 fi
 
@@ -202,7 +202,7 @@ MCS_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENC
 
 ################################################################################
 
-echo "$MCS_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
+echo "$MCS_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
 

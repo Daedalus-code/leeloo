@@ -72,10 +72,10 @@ last_tx               # last tx
 
 if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position ]] &>/dev/null; then
   LZN_POSITION="LONG"
-  echo "$LZN_POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>>"${LOG_DIR:?}"/leeloo/error.log
+  echo "$LZN_POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>>"${LOG_ERROR:?}"
 else
-  LZN_POSITION="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>>"${LOG_DIR:?}"/leeloo/error.log)"
-  LZN_POSITION_VALUE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>>"${LOG_DIR:?}"/leeloo/error.log)
+  LZN_POSITION="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>>"${LOG_ERROR:?}")"
+  LZN_POSITION_VALUE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>>"${LOG_ERROR:?}")
 fi
 
 if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
@@ -86,7 +86,7 @@ fi
 
 # get listing, reference trades
 LZN_TRADES=$(trades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY")
-echo "$LZN_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>>"${LOG_DIR:?}"/leeloo/error.log
+echo "$LZN_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>>"${LOG_ERROR:?}"
 
 # get data
 echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
@@ -103,7 +103,7 @@ Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL:?}%/${REFERENCE_ALLOCATED:?}%
 Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY $REFERENCE_AMOUNT_VALUED $LISTING_CURRENCY
 Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY $REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY
-Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_DIR:?}"/leeloo/error.log
+Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_ERROR:?}"
 
 ################################################################################
 
@@ -140,19 +140,19 @@ TIMESTAMP=0
 function lorentzian_classification {
   PRICE=$1
   LZN_LAMBDA=$2
-  CLASSIFICATION=$(echo "scale=10; 1/(1 + (${PRICE}-${PRICE}*${PRICE})/(${LZN_LAMBDA}*${LZN_LAMBDA}))" | bc -l 2>>"${LOG_DIR:?}"/leeloo/error.log)
+  CLASSIFICATION=$(echo "scale=10; 1/(1 + (${PRICE}-${PRICE}*${PRICE})/(${LZN_LAMBDA}*${LZN_LAMBDA}))" | bc -l 2>>"${LOG_ERROR:?}")
   echo ${CLASSIFICATION}
 }
 
 # retrieve last trade
-TRADE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>>"${LOG_DIR:?}"/leeloo/error.log)
+TRADE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>>"${LOG_ERROR:?}")
 # not zero, continue
 if [[ ! -z "$TRADE" ]] &>/dev/null; then
   NEW_PRICE=$(echo "${TRADE}" | jq '.Price')
   NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 
   # check if new trade has been executed
-  if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>>"${LOG_DIR:?}"/leeloo/error.log))); then
+  if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>>"${LOG_ERROR:?}"))); then
     # calculate lorentzian classification indicator
     LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.10f\n", $1 }')
     LC_OUTPUT="$(echo "$LC" | awk '{ printf "%.9f\n", $1 }')"
@@ -161,7 +161,7 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
       LC_OUTPUT="$(echo "0" | awk '{ printf "%.9f\n", $1 }')"
     fi
 
-    echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>>"${LOG_DIR:?}"/leeloo/error.log
+    echo "$LC" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>>"${LOG_ERROR:?}"
   fi
 
   ##############################################################################
@@ -179,7 +179,7 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
 
     # hodl position
     POSITION="LONG"
-    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>>"${LOG_DIR:?}"/leeloo/error.log
+    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>>"${LOG_ERROR:?}"
 
     # buy order ################################################################
 
@@ -196,13 +196,13 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
         ########################################################################
 
         # buy market order
-        echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
-        echo "$BUY_MARKET_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        echo "$BUY_MARKET_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         tx_id
         cost_price
-        echo "$MARKET_LZN_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$MARKET_LZN_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
         # remove duplicates
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
       elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -211,16 +211,16 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
         ########################################################################
 
         # buy limit order
-        echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
-        echo "$BUY_LIMIT_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        echo "$BUY_LIMIT_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         tx_id
         cost_price
-        echo "$LIMIT_LZN_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$LIMIT_LZN_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
         # remove duplicates
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
       fi
     else
-      echo "$BOUGHT_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
+      echo "$BOUGHT_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
 
     ############################################################################
@@ -234,7 +234,7 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
 
     # hodl position
     POSITION="NONE"
-    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>>"${LOG_DIR:?}"/leeloo/error.log
+    echo "$POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>>"${LOG_ERROR:?}"
 
     # sell order ###############################################################
 
@@ -251,13 +251,13 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
         ########################################################################
 
         # sell order
-        echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
-        echo "$SELL_MARKET_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        echo "$SELL_MARKET_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         tx_id
         cost_price
-        echo "$MARKET_LZN_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$MARKET_LZN_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
         # remove duplicates
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
       elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -266,16 +266,16 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
         ########################################################################
 
         # sell order
-        echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
-        echo "$SELL_LIMIT_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        echo "$SELL_LIMIT_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         tx_id
         cost_price
-        echo "$LIMIT_LZN_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$LIMIT_LZN_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
         # remove duplicates
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_DIR:?}"/leeloo/error.log
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
       fi
     else
-      echo "$SOLD_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
+      echo "$SOLD_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
 
     ############################################################################
@@ -285,7 +285,7 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
     PRICE=${NEW_PRICE}
     TIMESTAMP=${NEW_TIMESTAMP}
   else
-    echo "$STATUS_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_DIR:?}"/leeloo/error.log
+    echo "$STATUS_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 fi
 
