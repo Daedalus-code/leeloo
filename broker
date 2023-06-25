@@ -1178,6 +1178,8 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
       --msgbox "$RESULT" 19 "$WIDTH"
   }
 
+  ##############################################################################
+
   # leeloo log age in seconds
   LEELOO_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -1239,13 +1241,13 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   RESULT="Leeloo Uptime.: $LEELOO_UPTIME
 
-Leeloo.log....: $LEELOO_LOG_TIME
+Last Error....: $LEELOO_LOG_TIME
 Error Count...: $LEELOO_ERRORS
 Leeloo Time...: $LEELOO_TIMED
 
-Error.log.....: $STRATEGY_LOG_TIME
+Last Error....: $STRATEGY_LOG_TIME
 Error Count...: $STRATEGY_ERRORS
-Error Time....: $STRATEGY_TIMED
+Strategy Time.: $STRATEGY_TIMED
 
 leeloo.log
 $LEELOO_ERROR
@@ -1254,7 +1256,9 @@ error.log
 $STRATEGY_ERROR"
   display_result 2>/dev/null
 
-  # leeloo data exist
+  ##############################################################################
+
+  # leeloo data exist, edit
   if [[ "$LEELOO_DATA" -gt "0" ]] &>/dev/null; then
     nano "$LOG_DIR"/leeloo/leeloo.log
     clear
@@ -1265,7 +1269,7 @@ $STRATEGY_ERROR"
     fi
   fi
 
-  # strategy data exist
+  # strategy data exist, edit
   if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
     nano "$LOG_DIR"/leeloo/error.log
     clear
