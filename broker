@@ -1180,6 +1180,22 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   ##############################################################################
 
+  # check for leeloo duplicates
+  if [[ -f "${LOG_DIR:?}"/leeloo/leeloo.log ]] &>/dev/null; then
+    if [[ "$(sort "${LOG_DIR:?}"/leeloo/leeloo.log | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+      # remove duplicates
+      echo "$(cat "${LOG_DIR:?}"/leeloo/leeloo.log | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/leeloo.log
+    fi
+  fi
+
+  # check for strategy duplicates
+  if [[ -f "${LOG_DIR:?}"/leeloo/error.log ]] &>/dev/null; then
+    if [[ "$(sort "${LOG_DIR:?}"/leeloo/error.log | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+      # remove duplicates
+      echo "$(cat "${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
+    fi
+  fi
+
   # leeloo log age in seconds
   LEELOO_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -1260,38 +1276,30 @@ $STRATEGY_ERROR"
 
   ##############################################################################
 
-  # leeloo data exist, edit
-  if [[ "$LEELOO_DATA" -gt "0" ]] &>/dev/null; then
-    nano "$LOG_DIR"/leeloo/leeloo.log
-    clear
-    if ! dialog --stdout --title "Keep data?" \
-      --backtitle "Kepp data?" \
-      --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
-      truncate -s 0 "$LOG_DIR"/leeloo/leeloo.log &>/dev/null
+  if ! dialog --stdout --title "Check data?" \
+    --backtitle "Check data?" \
+    --yesno "Yes: Check!, No:  Go back!" 5 32; then
+    # leeloo data exist, edit
+    if [[ "$LEELOO_DATA" -gt "0" ]] &>/dev/null; then
+      nano "$LOG_DIR"/leeloo/leeloo.log
+      clear
+      if ! dialog --stdout --title "Keep data?" \
+        --backtitle "Keep data?" \
+        --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
+        truncate -s 0 "$LOG_DIR"/leeloo/leeloo.log &>/dev/null
+      fi
     fi
-  fi
 
-  # strategy data exist, edit
-  if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
-    nano "$LOG_DIR"/leeloo/error.log
-    clear
-    if ! dialog --stdout --title "Keep data?" \
-      --backtitle "Kepp data?" \
-      --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
-      truncate -s 0 "$LOG_DIR"/leeloo/error.log &>/dev/null
+    # strategy data exist, edit
+    if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
+      nano "$LOG_DIR"/leeloo/error.log
+      clear
+      if ! dialog --stdout --title "Keep data?" \
+        --backtitle "Keep data?" \
+        --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
+        truncate -s 0 "$LOG_DIR"/leeloo/error.log &>/dev/null
+      fi
     fi
-  fi
-
-  # check for leeloo duplicates
-  if [[ "$(sort "${LOG_DIR:?}"/leeloo/leeloo.log | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
-    # remove duplicates
-    echo "$(cat "${LOG_DIR:?}"/leeloo/leeloo.log | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/leeloo.log
-  fi
-
-  # check for strategy duplicates
-  if [[ "$(sort "${LOG_DIR:?}"/leeloo/error.log | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
-    # remove duplicates
-    echo "$(cat "${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
   fi
 
   ;;
