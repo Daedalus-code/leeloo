@@ -1237,21 +1237,6 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   ##############################################################################
 
-  # get leelo pid
-  LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
-  # get leelo time, in seconds
-  LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes= 2>/dev/null)
-
-  # zero, continue
-  if [[ -z "$LEELOO_TIME" ]] &>/dev/null; then
-    LEELOO_TIME="0"
-  fi
-
-  # time format
-  LEELOO_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LEELOO_TIME:?}" 2>&1)/3600")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%60")))
-
-  ##############################################################################
-
   # leeloo log age in seconds
   LEELOO_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -1267,13 +1252,13 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # uptime in days
   LEELOO_UPTIME_DAYS="$(echo "$LEELOO_SECONDS/86400" | bc 2>/dev/null)"
 
-  LEELOO_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $8 }')")"
-  LEELOO_ERROR="$(grep "$LEELOO_TIMED" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk -Flog: '{ print $2 }' | tail -1)"
+  LEELOO_CLOCK="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $8 }')")"
+  LEELOO_ERROR="$(grep "$LEELOO_CLOCK" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk -Flog: '{ print $2 }' | tail -1)"
   LEELOO_ERRORS="$LEELOO_DATA"
 
   if [[ "$LEELOO_DATA" -eq "0" ]] &>/dev/null; then
     WIDTH="$(echo "$(echo "$SYSTEM_UPTIME" | wc -L)+30" | bc 2>/dev/null)"
-    LEELOO_TIMED="None"
+    LEELOO_CLOCK="None"
     LEELOO_ERROR="None"
     LEELOO_ERRORS="None"
   else
@@ -1297,13 +1282,13 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # uptime in days
   STRATEGY_UPTIME_DAYS="$(echo "$STRATEGY_SECONDS/86400" | bc 2>/dev/null)"
 
-  STRATEGY_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $8 }')")"
+  STRATEGY_CLOCK="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $8 }')")"
   STRATEGY_ERROR="$(tail -1 "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null)"
   STRATEGY_ERRORS="$STRATEGY_DATA"
 
   if [[ "$STRATEGY_DATA" -eq "0" ]] &>/dev/null; then
     WIDTH="$(echo "$(echo "$SYSTEM_UPTIME" | wc -L)+30" | bc 2>/dev/null)"
-    STRATEGY_TIMED="None"
+    STRATEGY_CLOCK="None"
     STRATEGY_ERROR="None"
     STRATEGY_ERRORS="None"
   else
@@ -1319,12 +1304,12 @@ System Idle...: (${SYSTEM_IDLE_DAYS:?}d) $SYSTEM_IDLE_TIME
 Leeloo
 Last Error....: (${LEELOO_UPTIME_DAYS:?}d) $LEELOO_LOG_TIME
 Error Count...: $LEELOO_ERRORS
-Leeloo Time...: $LEELOO_TIMED
+Leeloo Time...: $LEELOO_CLOCK
 
 Strategy
 Last Error....: (${STRATEGY_UPTIME_DAYS:?}d) $STRATEGY_LOG_TIME
 Error Count...: $STRATEGY_ERRORS
-Strategy Time.: $STRATEGY_TIMED
+Strategy Time.: $STRATEGY_CLOCK
 
 leeloo.log....: $LEELOO_ERROR
 error.log.....: $STRATEGY_ERROR"
@@ -1470,6 +1455,12 @@ error.log.....: $STRATEGY_ERROR"
     LEELOO_RUNNING="Online"
     LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
     LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
+
+    # zero, continue
+    if [[ -z "$LEELOO_TIME" ]] &>/dev/null; then
+      LEELOO_TIME="0"
+    fi
+
     # time format
     LEELOO_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LEELOO_TIME:?}" 2>&1)/3600")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%60")))
     LEELOO_STRAT="$(ls -l "${SYS_DIR:?}"/robot/*.config 2>/dev/null | wc -l)"
