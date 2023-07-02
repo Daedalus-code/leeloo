@@ -1261,7 +1261,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   # system uptime
   function system_uptime() {
-    echo "$(uptime -p 2>/dev/null | awk -Fup '{ print $2 }' | xargs 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/system 2>/dev/null
+    echo "$(uptime -p 2>/dev/null | awk -Fup '{ print $2 }' | xargs 2>/dev/null | tr -d ',')" >"${LOG_DIR:?}"/leeloo/system 2>/dev/null
   }
 
   SYSTEM_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/system 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
