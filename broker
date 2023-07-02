@@ -1182,27 +1182,35 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   # system uptime
   function system_uptime() {
-    echo "$(uptime -p 2>/dev/null | awk -Fup '{ print $2 }' | xargs 2>/dev/null | tr -d ',')" >"${LOG_DIR:?}"/leeloo/system 2>/dev/null
+    # get uptime
+    echo "$(cat /proc/uptime 2>/dev/null | awk '{ print $1 }')" >"${LOG_DIR:?}"/leeloo/system
+    # get idletime
+    echo "$(cat /proc/uptime 2>/dev/null | awk '{ print $2 }')" >"${LOG_DIR:?}"/leeloo/system.idle
   }
 
   # not found, continue
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/system ]] &>/dev/null; then
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/system || ! -f "${LOG_DIR:?}"/leeloo/system.idle ]] &>/dev/null; then
     system_uptime
   fi
 
-  # since last edit, in seconds
-  SYSTEM_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/system 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # system uptime, in seconds
+  SYSTEM_UPTIME_SECONDS="$(cat "${LOG_DIR:?}"/leeloo/system 2>/dev/null)"
+  # time format (uptime)
+  SYSTEM_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%60")))
+
+  # system idle, in seconds
+  SYSTEM_IDLE_SECONDS="$(cat "${LOG_DIR:?}"/leeloo/system.idle 2>/dev/null | awk -F. '{ print $1 }')"
+  # time format (idle)
+  SYSTEM_IDLE_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%60")))
 
   # greater than n seconds, continue
-  if [[ "$SYSTEM_SECONDS" -gt "60" ]] &>/dev/null; then
+  if [[ "$(echo "$SYSTEM_SECONDS" | awk -F. '{ print $1 }')" -gt "60" ]] &>/dev/null; then
     system_uptime
   fi
-
-  SYSTEM_UPTIME="$(cat "${LOG_DIR:?}"/leeloo/system 2>/dev/null)"
 
   # zero, continue
   if [[ -z "$SYSTEM_UPTIME" ]] &>/dev/null; then
-    SYSTEM_UPTIME="0 minutes"
+    SYSTEM_UPTIME="0h:00m:00s"
   fi
 
   ##############################################################################
@@ -1232,6 +1240,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
     LEELOO_TIME="0"
   fi
 
+  # time format
   LEELOO_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LEELOO_TIME:?}" 2>&1)/3600")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%60")))
 
   ##############################################################################
@@ -1245,6 +1254,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   # leeloo output
   LEELOO_DATA="$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
+  # time format
   LEELOO_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$LEELOO_SECONDS/3600")) $(("$LEELOO_SECONDS%3600/60")) $(("$LEELOO_SECONDS%60")))
   LEELOO_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $8 }')")"
   LEELOO_ERROR="$(grep "$LEELOO_TIMED" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk -Flog: '{ print $2 }' | tail -1)"
@@ -1270,6 +1280,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   # strategy output
   STRATEGY_DATA="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
+  # time format
   STRATEGY_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$STRATEGY_SECONDS/3600")) $(("$STRATEGY_SECONDS%3600/60")) $(("$STRATEGY_SECONDS%60")))
   STRATEGY_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $8 }')")"
   STRATEGY_ERROR="$(tail -1 "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null)"
@@ -1288,6 +1299,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   RESULT="
 System Uptime.: $SYSTEM_UPTIME
+System Idle...: $SYSTEM_IDLE_TIME
 Leeloo Uptime.: $LEELOO_UPTIME
 
 Leeloo
@@ -1444,6 +1456,7 @@ error.log.....: $STRATEGY_ERROR"
     LEELOO_RUNNING="Online"
     LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
     LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
+    # time format
     LEELOO_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LEELOO_TIME:?}" 2>&1)/3600")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%3600/60")) $(("$(echo "${LEELOO_TIME:?}" 2>&1)%60")))
     LEELOO_STRAT="$(ls -l "${SYS_DIR:?}"/robot/*.config 2>/dev/null | wc -l)"
   else
