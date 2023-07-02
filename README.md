@@ -16,3 +16,6 @@ SouthXchange : Balance, Trade, Autotrade, Search market
 StakeCube    : Balance, Search market
 Poloniex     : Search market
 ```
+[SouthXchange](https://main.southxchange.com)  
+[StakeCube](https://stakecube.net)  
+[Poloniex](https://poloniex.com/signup?c=R2LDDSXB)  
