@@ -1175,7 +1175,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   display_result() {
     dialog --title "Leeloo/Strategy Debug" \
       --no-collapse \
-      --msgbox "$RESULT" 21 "$WIDTH"
+      --msgbox "$RESULT" 20 "$WIDTH"
   }
 
   ##############################################################################
@@ -1197,11 +1197,15 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   SYSTEM_UPTIME_SECONDS="$(cat "${LOG_DIR:?}"/leeloo/system 2>/dev/null | awk -F. '{ print $1 }')"
   # time format (uptime)
   SYSTEM_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%60")))
+  # uptime in days
+  SYSTEM_UPTIME_DAYS="$(echo "$SYSTEM_UPTIME_SECONDS/86400" | bc 2>/dev/null)"
 
   # system idle, in seconds
   SYSTEM_IDLE_SECONDS="$(cat "${LOG_DIR:?}"/leeloo/system.idle 2>/dev/null | awk -F. '{ print $1 }')"
   # time format (idle)
   SYSTEM_IDLE_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%60")))
+  # idle in days
+  SYSTEM_IDLE_DAYS="$(echo "$SYSTEM_IDLE_SECONDS/86400" | bc 2>/dev/null)"
 
   # greater than n seconds, continue
   if [[ "$SYSTEM_SECONDS" -gt "60" ]] &>/dev/null; then
@@ -1256,6 +1260,9 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   LEELOO_DATA="$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
   # time format
   LEELOO_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$LEELOO_SECONDS/3600")) $(("$LEELOO_SECONDS%3600/60")) $(("$LEELOO_SECONDS%60")))
+  # uptime in days
+  LEELOO_UPTIME_DAYS="$(echo "$LEELOO_SECONDS/86400" | bc 2>/dev/null)"
+
   LEELOO_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $8 }')")"
   LEELOO_ERROR="$(grep "$LEELOO_TIMED" "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | awk -Flog: '{ print $2 }' | tail -1)"
   LEELOO_ERRORS="$LEELOO_DATA"
@@ -1282,6 +1289,9 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   STRATEGY_DATA="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
   # time format
   STRATEGY_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$STRATEGY_SECONDS/3600")) $(("$STRATEGY_SECONDS%3600/60")) $(("$STRATEGY_SECONDS%60")))
+  # uptime in days
+  STRATEGY_UPTIME_DAYS="$(echo "$STRATEGY_SECONDS/86400" | bc 2>/dev/null)"
+
   STRATEGY_TIMED="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $8 }')")"
   STRATEGY_ERROR="$(tail -1 "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null)"
   STRATEGY_ERRORS="$STRATEGY_DATA"
@@ -1298,17 +1308,16 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   ##############################################################################
 
   RESULT="
-System Uptime.: $SYSTEM_UPTIME
-System Idle...: $SYSTEM_IDLE_TIME
-Leeloo Uptime.: $LEELOO_UPTIME
+System Uptime.: (${SYSTEM_UPTIME_DAYS:?}d):$SYSTEM_UPTIME
+System Idle...: (${SYSTEM_IDLE_DAYS:?}d):$SYSTEM_IDLE_TIME
 
 Leeloo
-Last Error....: $LEELOO_LOG_TIME
+Last Error....: (${LEELOO_UPTIME_DAYS:?}d):$LEELOO_LOG_TIME
 Error Count...: $LEELOO_ERRORS
 Leeloo Time...: $LEELOO_TIMED
 
 Strategy
-Last Error....: $STRATEGY_LOG_TIME
+Last Error....: (${STRATEGY_UPTIME_DAYS:?}d):$STRATEGY_LOG_TIME
 Error Count...: $STRATEGY_ERRORS
 Strategy Time.: $STRATEGY_TIMED
 
