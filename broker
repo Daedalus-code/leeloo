@@ -1185,18 +1185,22 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
     echo "$(uptime -p 2>/dev/null | awk -Fup '{ print $2 }' | xargs 2>/dev/null | tr -d ',')" >"${LOG_DIR:?}"/leeloo/system 2>/dev/null
   }
 
-  SYSTEM_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/system 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
+  # not found, continue
   if [[ ! -f "${LOG_DIR:?}"/leeloo/system ]] &>/dev/null; then
     system_uptime
   fi
 
+  # since last edit, in seconds
+  SYSTEM_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/system 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # greater than n seconds, continue
   if [[ "$SYSTEM_SECONDS" -gt "60" ]] &>/dev/null; then
     system_uptime
   fi
 
   SYSTEM_UPTIME="$(cat "${LOG_DIR:?}"/leeloo/system 2>/dev/null)"
 
+  # zero, continue
   if [[ -z "$SYSTEM_UPTIME" ]] &>/dev/null; then
     SYSTEM_UPTIME="0 minutes"
   fi
