@@ -1200,10 +1200,17 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   # system uptime
   function system_uptime() {
-    # get uptime
-    echo "$(cat /proc/uptime 2>/dev/null | awk '{ print $1 }')" >"${LOG_DIR:?}"/leeloo/system
-    # get idletime
-    echo "$(cat /proc/uptime 2>/dev/null | awk '{ print $2 }')" >"${LOG_DIR:?}"/leeloo/system.idle
+    if [[ -f /proc/uptime ]] &>/dev/null; then
+      # get uptime
+      echo "$(cat /proc/uptime 2>/dev/null | awk '{ print $1 }')" >"${LOG_DIR:?}"/leeloo/system
+      # get idletime
+      echo "$(cat /proc/uptime 2>/dev/null | awk '{ print $2 }')" >"${LOG_DIR:?}"/leeloo/system.idle
+    else
+      # set uptime
+      echo "0.0" >"${LOG_DIR:?}"/leeloo/system
+      # set idletime
+      echo "0.0" >"${LOG_DIR:?}"/leeloo/system.idle
+    fi
   }
 
   # not found, continue
