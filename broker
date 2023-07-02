@@ -367,7 +367,7 @@ case $CHOICE in
     CAT_POLONIEX_PRICES="$(cat "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null)"
 
     # 450 max before dialog breaks
-    MARKET_RESULT="$(echo "$CAT_POLONIEX_PRICES" | sort -k2 -n -r | head -100)"
+    MARKET_RESULT="$(echo "$CAT_POLONIEX_PRICES" | sort -k2 -n -r 2>/dev/null | head -100)"
     MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | sed '/^$/d' | wc -l)"
     MARKET_MOON="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
     MARKET_MOON_COUNT="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | wc -l)"
@@ -431,7 +431,7 @@ $MARKET_RESULT"
     CAT_SOUTHX_PRICES="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 
     # 450 max before dialog breaks
-    MARKET_RESULT="$(echo "$CAT_SOUTHX_PRICES" | sort -k2 -n -r | head -100)"
+    MARKET_RESULT="$(echo "$CAT_SOUTHX_PRICES" | sort -k2 -n -r 2>/dev/null | head -100)"
     MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | sed '/^$/d' | wc -l)"
     MARKET_MOON="$(echo "$CAT_SOUTHX_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
     MARKET_MOON_COUNT="$(echo "$CAT_SOUTHX_PRICES" | awk '{ print $5 }' | wc -l)"
@@ -495,7 +495,7 @@ $MARKET_RESULT"
     CAT_STAKECUBE_PRICES="$(cat "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null)"
 
     # 450 max before dialog breaks
-    MARKET_RESULT="$(echo "$CAT_STAKECUBE_PRICES" | sort -k2 -n -r | head -100)"
+    MARKET_RESULT="$(echo "$CAT_STAKECUBE_PRICES" | sort -k2 -n -r 2>/dev/null | head -100)"
     MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null | sed '/^$/d' | wc -l)"
     MARKET_MOON="$(echo "$CAT_STAKECUBE_PRICES" | awk '{ print $3 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.2f\n", $1 }')"
     MARKET_MOON_COUNT="$(echo "$CAT_STAKECUBE_PRICES" | awk '{ print $3 }' | wc -l)"
@@ -597,7 +597,7 @@ $MARKET_RESULT"
       fi
 
       MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-      MARKET_RESULT="$(grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | sort -k2 -n -r)"
+      MARKET_RESULT="$(grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | sort -k2 -n -r 2>/dev/null)"
       MARKET_COUNT="$(echo "$MARKET_RESULT" | sed -r '/^\s*$/d' | wc -l)"
       MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
       MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | wc -l)"
@@ -666,7 +666,7 @@ $MARKET_RESULT"
       fi
 
       MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-      MARKET_RESULT="$(grep -w "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | sort -k2 -n -r)"
+      MARKET_RESULT="$(grep -w "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | sort -k2 -n -r 2>/dev/null)"
       MARKET_COUNT="$(echo "$MARKET_RESULT" | sed -r '/^\s*$/d' | wc -l)"
       MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
       MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | wc -l)"
@@ -735,7 +735,7 @@ $MARKET_RESULT"
       fi
 
       MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-      MARKET_RESULT="$(grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null | sort -k2 -n -r)"
+      MARKET_RESULT="$(grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null | sort -k2 -n -r 2>/dev/null)"
       MARKET_COUNT="$(echo "$MARKET_RESULT" | sed -r '/^\s*$/d' | wc -l)"
       MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $3 }' | awk '{ SUM += $1} END { print SUM }')"
       MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $3 }' | wc -l)"
@@ -1060,7 +1060,7 @@ $MARKET_RESULT"
         }
 
         RESULT="OrderID: Type Amount Original LimitPrice List Ref DateAdded
-$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r)"
+$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r 2>/dev/null)"
         display_result 2>/dev/null
 
         ;;
@@ -1209,17 +1209,17 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   # check for leeloo error duplicates
   if [[ -f "${LOG_DIR:?}"/leeloo/leeloo.log ]] &>/dev/null; then
-    if [[ "$(sort "${LOG_DIR:?}"/leeloo/leeloo.log | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+    if [[ "$(sort "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
       # remove duplicates
-      echo "$(cat "${LOG_DIR:?}"/leeloo/leeloo.log | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/leeloo.log
+      echo "$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/leeloo.log
     fi
   fi
 
   # check for strategy error duplicates
   if [[ -f "${LOG_DIR:?}"/leeloo/error.log ]] &>/dev/null; then
-    if [[ "$(sort "${LOG_DIR:?}"/leeloo/error.log | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+    if [[ "$(sort "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
       # remove duplicates
-      echo "$(cat "${LOG_DIR:?}"/leeloo/error.log | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
+      echo "$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
     fi
   fi
 
@@ -1629,12 +1629,12 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       fi
 
       # profit high
-      PROFIT_HIGH="$(echo "$CAT_ORDERS" | grep "sell" | egrep -o "[0-9]+.[0-9]+%" | tr -d '%' | sort -n | tail -1)"
+      PROFIT_HIGH="$(echo "$CAT_ORDERS" | grep "sell" | egrep -o "[0-9]+.[0-9]+%" | tr -d '%' | sort -n 2>/dev/null | tail -1)"
       if [[ -z "$PROFIT_HIGH" ]] &>/dev/null; then
         PROFIT_HIGH="0"
       fi
       # profit low
-      PROFIT_LOW="$(echo "$CAT_ORDERS" | grep "sell" | egrep -o "[0-9]+.[0-9]+%" | tr -d '%' | sort -n | head -1)"
+      PROFIT_LOW="$(echo "$CAT_ORDERS" | grep "sell" | egrep -o "[0-9]+.[0-9]+%" | tr -d '%' | sort -n 2>/dev/null | head -1)"
       if [[ -z "$PROFIT_LOW" ]] &>/dev/null; then
         PROFIT_LOW="0"
       fi
