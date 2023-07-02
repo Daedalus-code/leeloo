@@ -26,11 +26,16 @@ function irssi_first_run() {
   # first time startup
   if [[ ! -f /home/"$WHOAMI"/.irssi/config ]] &>/dev/null; then
 
-    echo "Installing configuration, please wait.."
-    sleep 1
-    clear
-    timeout 1 irssi &
-    pidof irssi &>/dev/null
+    if [ -x "$(command -v irssi)" ] &>/dev/null; then
+      echo "Installing configuration, please wait.."
+      sleep 1
+      clear
+      timeout 1 irssi &
+      pidof irssi &>/dev/null
+    else
+      echo "Chat client (irssi) not installed!"
+      sleep 1
+    fi
   fi
   # sleep so loc above works.
   sleep 1
