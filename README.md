@@ -9,3 +9,10 @@ First time use:
 
 Start leeloo:  
 ````broker````  
+
+API Status:  
+```
+SouthXchange : Balance, Trade, Autotrade, Search markets
+StakeCube    : Balance, Search market
+Poloniex     : Search market
+```
