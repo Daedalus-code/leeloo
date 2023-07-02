@@ -12,7 +12,7 @@ Start leeloo:
 
 API Status:  
 ```
-SouthXchange : Balance, Trade, Autotrade, Search markets
+SouthXchange : Balance, Trade, Autotrade, Search market
 StakeCube    : Balance, Search market
 Poloniex     : Search market
 ```
