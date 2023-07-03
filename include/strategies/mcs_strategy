@@ -73,13 +73,13 @@ REFERENCE_MCS_PRICE_LAST="$(echo "$REFERENCE_PRICE_LAST" | awk '{ printf "%.9f\n
 
 ################################################################################
 
-if [[ -z "$REFERENCE_MCS_PRICE_BID" ]] &>/dev/null; then
+if [[ -z "$REFERENCE_MCS_PRICE_BID" ]] 2>>"${LOG_ERROR:?}"; then
   REFERENCE_MCS_PRICE_BID="0"
 fi
-if [[ -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+if [[ -z "$REFERENCE_MCS_PRICE_ASK" ]] 2>>"${LOG_ERROR:?}"; then
   REFERENCE_MCS_PRICE_ASK="0"
 fi
-if [[ -z "$REFERENCE_MCS_PRICE_LAST" ]] &>/dev/null; then
+if [[ -z "$REFERENCE_MCS_PRICE_LAST" ]] 2>>"${LOG_ERROR:?}"; then
   REFERENCE_MCS_PRICE_LAST="0"
 fi
 
@@ -94,23 +94,23 @@ MCS_SPREAD_DIFF="$(echo "$MCS_SPREAD_HIGH-$MCS_SPREAD_LOW" | bc -l 2>>"${LOG_ERR
 # calculate percentage
 REFERENCE_MCS_SPREAD="$(echo "100/$REFERENCE_PRICE*$MCS_SPREAD_DIFF" | bc -l 2>>"${LOG_ERROR:?}" | awk '{ printf "%.2f\n", $1 }')"
 
-if [[ -z "$REFERENCE_MCS_SPREAD" ]] &>/dev/null; then
+if [[ -z "$REFERENCE_MCS_SPREAD" ]] 2>>"${LOG_ERROR:?}"; then
   REFERENCE_MCS_SPREAD="0"
 fi
 
 ################################################################################
 
-if [[ "$REFERENCE_MCS_PRICE_LAST" == "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+if [[ "$REFERENCE_MCS_PRICE_LAST" == "$REFERENCE_MCS_PRICE_ASK" ]] 2>>"${LOG_ERROR:?}"; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST-$REFERENCE_MCS_PRICE_ASK"
   MCS_POSITION_STATUS="OK"
 fi
 
-if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] 2>>"${LOG_ERROR:?}"; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST>$REFERENCE_MCS_PRICE_ASK"
   MCS_POSITION_STATUS="->"
 fi
 
-if [[ "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+if [[ "$REFERENCE_MCS_PRICE_LAST" -gt "$REFERENCE_MCS_PRICE_ASK" ]] 2>>"${LOG_ERROR:?}"; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST*$REFERENCE_MCS_PRICE_ASK"
   MCS_POSITION_STATUS="<>"
 fi
@@ -121,19 +121,19 @@ MCS_STATUS="$MCS_POSITION_STATUS ${MCS_POSITION_VALUE:?}"
 
 ################################################################################
 
-if [[ -z "$REFERENCE_MCS_PRICE_BID" ]] &>/dev/null; then
+if [[ -z "$REFERENCE_MCS_PRICE_BID" ]] 2>>"${LOG_ERROR:?}"; then
   REFERENCE_MCS_PRICE_BID="0"
   MCS_POSITION_STATUS="><"
 fi
-if [[ -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+if [[ -z "$REFERENCE_MCS_PRICE_ASK" ]] 2>>"${LOG_ERROR:?}"; then
   REFERENCE_MCS_PRICE_ASK="0"
   MCS_POSITION_STATUS="><"
 fi
-if [[ -z "$REFERENCE_MCS_PRICE_LAST" ]] &>/dev/null; then
+if [[ -z "$REFERENCE_MCS_PRICE_LAST" ]] 2>>"${LOG_ERROR:?}"; then
   REFERENCE_MCS_PRICE_LAST="0"
   MCS_POSITION_STATUS="><"
 fi
-if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
+if [[ -z "$TX_ID_LAST" ]] 2>>"${LOG_ERROR:?}"; then
   TX_ID_LAST="null"
 fi
 
@@ -173,9 +173,9 @@ MARKET_MCS_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_OPE
 ################################################################################
 
 # skip if data is null
-if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] 2>>"${LOG_ERROR:?}"; then
   # last is less than ask, continue
-  if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
+  if [[ "$REFERENCE_MCS_PRICE_LAST" -lt "$REFERENCE_MCS_PRICE_ASK" ]] 2>>"${LOG_ERROR:?}"; then
 
     # random order amount
     RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))

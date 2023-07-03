@@ -86,15 +86,15 @@ RSI_TIMER="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"$
 RSI_COOLDOWN_HOURS="$(echo "$RSI_COOLDOWN*86400" | bc 2>>"${LOG_ERROR:?}" | awk -F. '{ print $1 }')"
 RSI_COOLDOWN_NOW="$(echo "$RSI_TIMER/3600" | bc 2>>"${LOG_ERROR:?}")"
 
-if [[ -z "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
+if [[ -z "$RSI_COOLDOWN_HOURS" ]] 2>>"${LOG_ERROR:?}"; then
   RSI_COOLDOWN_HOURS="0"
 fi
 
-if [[ -z "$RSI_COOLDOWN_NOW" ]] &>/dev/null; then
+if [[ -z "$RSI_COOLDOWN_NOW" ]] 2>>"${LOG_ERROR:?}"; then
   RSI_COOLDOWN_NOW="0"
 fi
 
-if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] 2>>"${LOG_ERROR:?}"; then
   RSI_COOLDOWN_HOURS="0"
 fi
 
@@ -105,7 +105,7 @@ STATUS_RSI_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENC
 ################################################################################
 
 function rsi_timer_check() {
-  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] 2>>"${LOG_ERROR:?}"; then
     echo "IDLE @ $LISTING_PRICE / $REFERENCE_PRICE :: $(date | xargs)" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"${LOG_ERROR:?}"
   fi
 }
@@ -121,16 +121,16 @@ function rsi_sell_order() {
 
 ################################################################################
 
-if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
-  if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"${LOG_ERROR:?}" | grep -c "SOLD")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
-    if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -gt "$RSI_OVERBOUGHT" ]] &>/dev/null; then
+if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] 2>>"${LOG_ERROR:?}"; then
+  if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"${LOG_ERROR:?}" | grep -c "SOLD")" -lt "$RSI_MAX_DAY" ]] 2>>"${LOG_ERROR:?}"; then
+    if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -gt "$RSI_OVERBOUGHT" ]] 2>>"${LOG_ERROR:?}"; then
       # overbought, sell
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
         PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
         rsi_sell_order
         cost_price
-      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
         PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
         rsi_sell_order
@@ -142,16 +142,16 @@ fi
 
 ################################################################################
 
-if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
-  if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$RSI_MAX_DAY" ]] &>/dev/null; then
-    if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -lt "$RSI_OVERSOLD" ]] &>/dev/null; then
+if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] 2>>"${LOG_ERROR:?}"; then
+  if [[ "$(tail -"$RSI_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$RSI_MAX_DAY" ]] 2>>"${LOG_ERROR:?}"; then
+    if [[ "$(echo "$RSI_VALUE_NOW" | awk -F. '{ print $1 }')" -lt "$RSI_OVERSOLD" ]] 2>>"${LOG_ERROR:?}"; then
       # oversold, buy
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
         PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
         rsi_buy_order
         cost_price
-      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
         PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
         rsi_buy_order

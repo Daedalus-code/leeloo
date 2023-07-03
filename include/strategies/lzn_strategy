@@ -70,7 +70,7 @@ last_tx               # last tx
 
 ################################################################################
 
-if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position ]] &>/dev/null; then
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position ]] 2>>"${LOG_ERROR:?}"; then
   LZN_POSITION="LONG"
   echo "$LZN_POSITION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".position 2>>"${LOG_ERROR:?}"
 else
@@ -78,7 +78,7 @@ else
   LZN_POSITION_VALUE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>>"${LOG_ERROR:?}")
 fi
 
-if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
+if [[ -z "$TX_ID_LAST" ]] 2>>"${LOG_ERROR:?}"; then
   TX_ID_LAST="null"
 fi
 
@@ -147,7 +147,7 @@ function lorentzian_classification {
 # retrieve last trade
 TRADE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>>"${LOG_ERROR:?}")
 # not zero, continue
-if [[ ! -z "$TRADE" ]] &>/dev/null; then
+if [[ ! -z "$TRADE" ]] 2>>"${LOG_ERROR:?}"; then
   NEW_PRICE=$(echo "${TRADE}" | jq '.Price')
   NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 
@@ -157,7 +157,7 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
     LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.10f\n", $1 }')
     LC_OUTPUT="$(echo "$LC" | awk '{ printf "%.9f\n", $1 }')"
 
-    if [[ -z "$LC_OUTPUT" ]] &>/dev/null; then
+    if [[ -z "$LC_OUTPUT" ]] 2>>"${LOG_ERROR:?}"; then
       LC_OUTPUT="$(echo "0" | awk '{ printf "%.9f\n", $1 }')"
     fi
 
@@ -184,12 +184,12 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
     # buy order ################################################################
 
     # amount must be greater than zero
-    if [[ "$(echo "$REFERENCE_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+    if [[ "$(echo "$REFERENCE_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
       TYPE="buy"
       AMOUNT_IN_REFERENCE_CURRENCY="true"
 
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
 
         # placeOrder market ####################################################
         PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
@@ -204,7 +204,7 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
         # remove duplicates
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
-      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
 
         # placeOrder limit #####################################################
         PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
@@ -239,12 +239,12 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
     # sell order ###############################################################
 
     # amount must be greater than zero
-    if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+    if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
       TYPE="sell"
       AMOUNT_IN_REFERENCE_CURRENCY="false"
 
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
 
         # placeOrder market ####################################################
         PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
@@ -259,7 +259,7 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
         # remove duplicates
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
-      elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
 
         # placeOrder limit #####################################################
         PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
