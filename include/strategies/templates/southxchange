@@ -76,13 +76,13 @@ function listing_data() {
   # get available listing data
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_UNCONFIRMED_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
-  LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>>"$ERROR_LOG")*$LISTING_AVAILABLE_BALANCE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
   LISTING_PRICE_ASK="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $3 }')"
   LISTING_PRICE_LAST="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
-  LISTING_AMOUNT_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
-  LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
-  LISTING_UNCONFIRMED_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_AMOUNT_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_UNCONFIRMED_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   if [[ -z "$LISTING_AVAILABLE_BALANCE" ]] &>/dev/null; then
     LISTING_AVAILABLE_BALANCE="0.00000000"
@@ -118,13 +118,13 @@ function reference_data() {
   # get available reference data
   REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_UNCONFIRMED_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
-  REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>>"$ERROR_LOG")*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
   REFERENCE_PRICE_ASK="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $3 }')"
   REFERENCE_PRICE_LAST="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
-  REFERENCE_AMOUNT_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
-  REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
-  REFERENCE_UNCONFIRMED_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_AMOUNT_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_UNCONFIRMED_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   if [[ -z "$REFERENCE_AVAILABLE_BALANCE" ]] &>/dev/null; then
     REFERENCE_AVAILABLE_BALANCE="0.00000000"
@@ -153,23 +153,23 @@ function reference_data() {
 
 function listing_total_value() {
   # calculate total values
-  LISTING_TOTAL="$(echo "$LISTING_AVAILABLE_BALANCE+$LISTING_UNCONFIRMED_BALANCE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
-  LISTING_TOTAL_VALUED="$(echo "$LISTING_AVAILABLE_VALUED+$LISTING_UNCONFIRMED_VALUED" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_TOTAL="$(echo "$LISTING_AVAILABLE_BALANCE+$LISTING_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_TOTAL_VALUED="$(echo "$LISTING_AVAILABLE_VALUED+$LISTING_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 }
 
 ################################################################################
 
 function reference_total_value() {
   # calculate total values
-  REFERENCE_TOTAL="$(echo "$REFERENCE_AVAILABLE_BALANCE+$REFERENCE_UNCONFIRMED_BALANCE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
-  REFERENCE_TOTAL_VALUED="$(echo "$REFERENCE_AVAILABLE_VALUED+$REFERENCE_UNCONFIRMED_VALUED" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_TOTAL="$(echo "$REFERENCE_AVAILABLE_BALANCE+$REFERENCE_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_TOTAL_VALUED="$(echo "$REFERENCE_AVAILABLE_VALUED+$REFERENCE_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 }
 
 ################################################################################
 
 function listing_allocated() {
   # total listing allocated
-  LISTING_ALLOCATED_REAL="$(echo "100/$REFERENCE_TOTAL*$LISTING_TOTAL_VALUED" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+  LISTING_ALLOCATED_REAL="$(echo "100/$REFERENCE_TOTAL*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   if [[ "$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
     LISTING_ALLOCATED_REAL="100"
@@ -183,7 +183,7 @@ function listing_allocated() {
 
 function reference_allocated() {
   # total reference allocated
-  REFERENCE_ALLOCATED_REAL="$(echo "100/$LISTING_TOTAL*$REFERENCE_TOTAL_VALUED" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+  REFERENCE_ALLOCATED_REAL="$(echo "100/$LISTING_TOTAL*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   if [[ "$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
     REFERENCE_ALLOCATED_REAL="100"
@@ -216,7 +216,7 @@ function cost_price() {
 
   LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
-  LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
     # listing
@@ -273,7 +273,7 @@ function incoming_listing() {
 
       LISTING_AVAILABLE_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
       LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
-      LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+      LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
       if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
         # listing
@@ -332,7 +332,7 @@ function incoming_reference() {
 
       REFERENCE_AVAILABLE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
       REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
-      REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+      REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
       if [[ ! -z "$REFERENCE_PRICE" ]] &>/dev/null; then
         # reference
@@ -356,7 +356,7 @@ function incoming_reference() {
 
 function signal_age() {
   # hours into seconds
-  SIGNAL_AGE_SECONDS="$(echo "$SIGNAL_AGE*3600" | bc 2>>"$ERROR_LOG")"
+  SIGNAL_AGE_SECONDS="$(echo "$SIGNAL_AGE*3600" | bc 2>/dev/null)"
 
   # signal age file
   if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order ]] &>/dev/null; then
@@ -393,7 +393,7 @@ function open_positions() {
   LISTING_OPEN_CURRENCY="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
   LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
-  LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
 
   if [[ -z "$LISTING_OPEN_AMOUNT" ]] &>/dev/null; then
@@ -405,7 +405,7 @@ function open_positions() {
   REFERENCE_OPEN_CURRENCY="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
   REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
   REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
-  REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_OPEN_AMOUNT="$REFERENCE_AVAILABLE_BALANCE"
 
   if [[ -z "$REFERENCE_OPEN_AMOUNT" ]] &>/dev/null; then
@@ -454,7 +454,7 @@ function open_positions() {
 
   ##############################################################################
 
-  LISTING_OPEN_RESULT="$(echo "$(echo "100/$LISTING_OPEN_PRICE*$LISTING_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')-100" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+  LISTING_OPEN_RESULT="$(echo "$(echo "100/$LISTING_OPEN_PRICE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   if [[ -z "$LISTING_OPEN_RESULT" ]] &>/dev/null; then
     LISTING_OPEN_RESULT="0.00"
@@ -556,7 +556,7 @@ function rogue_profit() {
 
   function rogue_buying() {
     # n% amount
-    REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AMOUNT" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+    REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $REFERENCE_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"$ERROR_LOG"
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
       PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
@@ -571,8 +571,8 @@ function rogue_profit() {
 
   function rogue_selling() {
     # n% amount
-    REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AMOUNT" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
-    LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AMOUNT" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+    REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $LISTING_AMOUNT @ $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"$ERROR_LOG"
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
       PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
@@ -587,7 +587,7 @@ function rogue_profit() {
 
   function rogue_clean_lines() {
     # keep n lines
-    echo "$(tail -"$(echo "$ROGUE_HOURS*2" | bc -l 2>>"$ERROR_LOG")" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>>"$ERROR_LOG")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>>"$ERROR_LOG"
+    echo "$(tail -"$(echo "$ROGUE_HOURS*2" | bc -l 2>/dev/null)" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>>"$ERROR_LOG")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>>"$ERROR_LOG"
   }
 
   ##############################################################################
@@ -615,8 +615,8 @@ function rogue_profit() {
 
     # line count
     ROGUE_LINES="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>>"$ERROR_LOG" | awk '{ print $1 }')"
-    ROGUE_COUNT="$(echo "$ROGUE_LINES/2" | bc 2>>"$ERROR_LOG")"
-    ROGUE_DAYS="$(echo "$ROGUE_COUNT/24" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_COUNT="$(echo "$ROGUE_LINES/2" | bc 2>/dev/null)"
+    ROGUE_DAYS="$(echo "$ROGUE_COUNT/24" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     # backup prices
     sxc_backup_prices
@@ -630,7 +630,7 @@ function rogue_profit() {
       ROGUE_LISTING_PRICE_OLD="0"
     fi
 
-    ROGUE_LISTING_PRICE_DIFF="$(echo "100/$ROGUE_LISTING_PRICE_OLD*$ROGUE_LISTING_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_LISTING_PRICE_DIFF="$(echo "100/$ROGUE_LISTING_PRICE_OLD*$ROGUE_LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     if [[ -z "$ROGUE_LISTING_PRICE_DIFF" ]] &>/dev/null; then
       ROGUE_LISTING_PRICE_DIFF="0"
@@ -651,9 +651,9 @@ function rogue_profit() {
       ROGUE_LISTING_LOW="50.1111"
     fi
 
-    ROGUE_LISTING_DIFF="$(echo "$ROGUE_LISTING_HIGH-$ROGUE_LISTING_LOW" | bc -l 2>>"$ERROR_LOG" | tr -d '-' | awk '{ printf "%.2f\n", $1 }')"
-    ROGUE_LISTING_TOTAL="$(echo "$ROGUE_LISTING_NOW+$ROGUE_LISTING_HIGH+$ROGUE_LISTING_LOW" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.34f\n", $1 }')"
-    ROGUE_LISTING_AVERAGE="$(echo "$ROGUE_LISTING_TOTAL/3" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+    ROGUE_LISTING_DIFF="$(echo "$ROGUE_LISTING_HIGH-$ROGUE_LISTING_LOW" | bc -l 2>/dev/null | tr -d '-' | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_LISTING_TOTAL="$(echo "$ROGUE_LISTING_NOW+$ROGUE_LISTING_HIGH+$ROGUE_LISTING_LOW" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+    ROGUE_LISTING_AVERAGE="$(echo "$ROGUE_LISTING_TOTAL/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
     ############################################################################
 
@@ -663,13 +663,13 @@ function rogue_profit() {
     # overbought, greater than n
     if [[ "$(echo "$ROGUE_LISTING_NOW" | awk -F. '{ print $1 }')" -gt "50" ]] &>/dev/null; then
       # positive
-      ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_AVERAGE+$ROGUE_LISTING_DIFF" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_AVERAGE+$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
     # oversold, less than n
     if [[ "$(echo "$ROGUE_LISTING_NOW" | awk -F. '{ print $1 }')" -lt "50" ]] &>/dev/null; then
       # negative
-      ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_AVERAGE-$ROGUE_LISTING_DIFF" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_AVERAGE-$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
     ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_RPI" | awk '{ printf "%.9f\n", $1 }')"
@@ -681,7 +681,7 @@ function rogue_profit() {
 
     ############################################################################
 
-    ROGUE_LISTING_DIFF_PERCENTAGE="$(echo "100/$ROGUE_LISTING_AVERAGE*$ROGUE_LISTING_DIFF" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_LISTING_DIFF_PERCENTAGE="$(echo "100/$ROGUE_LISTING_AVERAGE*$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     if [[ -z "$ROGUE_LISTING_DIFF_PERCENTAGE" ]] &>/dev/null; then
       ROGUE_LISTING_DIFF_PERCENTAGE="0"
@@ -696,7 +696,7 @@ function rogue_profit() {
       ROGUE_REFERENCE_PRICE_OLD="0"
     fi
 
-    ROGUE_REFERENCE_PRICE_DIFF="$(echo "100/$ROGUE_REFERENCE_PRICE_OLD*$ROGUE_REFERENCE_PRICE" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_REFERENCE_PRICE_DIFF="$(echo "100/$ROGUE_REFERENCE_PRICE_OLD*$ROGUE_REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     if [[ -z "$ROGUE_REFERENCE_PRICE_DIFF" ]] &>/dev/null; then
       ROGUE_REFERENCE_PRICE_DIFF="0"
@@ -717,9 +717,9 @@ function rogue_profit() {
       ROGUE_REFERENCE_LOW="50.1111"
     fi
 
-    ROGUE_REFERENCE_DIFF="$(echo "$ROGUE_REFERENCE_HIGH-$ROGUE_REFERENCE_LOW" | bc -l 2>>"$ERROR_LOG" | tr -d '-' | awk '{ printf "%.2f\n", $1 }')"
-    ROGUE_REFERENCE_TOTAL="$(echo "$ROGUE_REFERENCE_NOW+$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_LOW" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.34f\n", $1 }')"
-    ROGUE_REFERENCE_AVERAGE="$(echo "$ROGUE_REFERENCE_TOTAL/3" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.9f\n", $1 }')"
+    ROGUE_REFERENCE_DIFF="$(echo "$ROGUE_REFERENCE_HIGH-$ROGUE_REFERENCE_LOW" | bc -l 2>/dev/null | tr -d '-' | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_REFERENCE_TOTAL="$(echo "$ROGUE_REFERENCE_NOW+$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_LOW" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+    ROGUE_REFERENCE_AVERAGE="$(echo "$ROGUE_REFERENCE_TOTAL/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
     ############################################################################
 
@@ -729,13 +729,13 @@ function rogue_profit() {
     # overbought, greater than n
     if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -gt "50" ]] &>/dev/null; then
       # positive
-      ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_AVERAGE+$ROGUE_REFERENCE_DIFF" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_AVERAGE+$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
     # oversold, greater than n
     if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -lt "50" ]] &>/dev/null; then
       # negative
-      ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_AVERAGE-$ROGUE_REFERENCE_DIFF" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.34f\n", $1 }')"
+      ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_AVERAGE-$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
     fi
 
     ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_RPI" | awk '{ printf "%.9f\n", $1 }')"
@@ -747,7 +747,7 @@ function rogue_profit() {
 
     ############################################################################
 
-    ROGUE_REFERENCE_DIFF_PERCENTAGE="$(echo "100/$ROGUE_REFERENCE_AVERAGE*$ROGUE_REFERENCE_DIFF" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_REFERENCE_DIFF_PERCENTAGE="$(echo "100/$ROGUE_REFERENCE_AVERAGE*$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     if [[ -z "$ROGUE_REFERENCE_DIFF_PERCENTAGE" ]] &>/dev/null; then
       ROGUE_REFERENCE_DIFF_PERCENTAGE="0"
@@ -755,14 +755,14 @@ function rogue_profit() {
 
     ############################################################################
 
-    ROGUE_SYNCED_PERCENTAGE="$(echo "100/$ROGUE_HOURS*$ROGUE_COUNT" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_SYNCED_PERCENTAGE="$(echo "100/$ROGUE_HOURS*$ROGUE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     if [[ -z "$ROGUE_SYNCED_PERCENTAGE" ]] &>/dev/null; then
       ROGUE_SYNCED_PERCENTAGE="0"
     fi
 
     ############################################################################
 
-    ROGUE_UPDATE_PERCENTAGE="$(echo "100/$ROGUE_TIMER*$ROGUE_TIMER_NOW" | bc -l 2>>"$ERROR_LOG" | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_UPDATE_PERCENTAGE="$(echo "100/$ROGUE_TIMER*$ROGUE_TIMER_NOW" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     if [[ -z "$ROGUE_UPDATE_PERCENTAGE" ]] &>/dev/null; then
       ROGUE_UPDATE_PERCENTAGE="0"
     fi
@@ -914,14 +914,14 @@ function save_orders() {
 function last_orders {
   # keep n lines
   if [[ "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
-    echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>>"$ERROR_LOG")" "${SYS_DIR:?}"/robot/orders 2>>"$ERROR_LOG")" >"${SYS_DIR:?}"/robot/orders 2>>"$ERROR_LOG"
+    echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>/dev/null)" "${SYS_DIR:?}"/robot/orders 2>>"$ERROR_LOG")" >"${SYS_DIR:?}"/robot/orders 2>>"$ERROR_LOG"
   fi
 }
 
 ################################################################################
 
 function robot_Log_cleanup() {
-  NEW_LOG="$(echo "$MAX_LOG/3" | bc 2>>"$ERROR_LOG")"
+  NEW_LOG="$(echo "$MAX_LOG/3" | bc 2>/dev/null)"
   # keep n lines
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
     echo "$(tail -"$NEW_LOG" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"$ERROR_LOG")" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"$ERROR_LOG"
