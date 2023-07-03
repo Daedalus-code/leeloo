@@ -1193,41 +1193,50 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # system uptime
   function system_uptime() {
     if [[ -f /proc/uptime ]] &>/dev/null; then
+
+      # get uptime, idletime
+      echo "$(cat /proc/uptime 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/system
+      CAT_SYSTEM="$(cat "${LOG_DIR:?}"/leeloo/system 2>/dev/null)"
+
+      # system files
+      FILE_SYSTEM_UPTIME="${LOG_DIR:?}/leeloo/system.uptime"
+      FILE_SYSTEM_IDLE="${LOG_DIR:?}/leeloo/system.idle"
+
       # get uptime
-      echo "$(cat /proc/uptime 2>/dev/null | awk '{ print $1 }')" >"${LOG_DIR:?}"/leeloo/system
+      echo "$(echo "$CAT_SYSTEM" | awk '{ print $1 }')" >"$FILE_SYSTEM_UPTIME"
       # get idletime
-      echo "$(cat /proc/uptime 2>/dev/null | awk '{ print $2 }')" >"${LOG_DIR:?}"/leeloo/system.idle
+      echo "$(echo "$CAT_SYSTEM" | awk '{ print $2 }')" >"$FILE_SYSTEM_IDLE"
     else
       # set uptime
-      echo "0.0" >"${LOG_DIR:?}"/leeloo/system
+      echo "0.0" >"$FILE_SYSTEM_UPTIME"
       # set idletime
-      echo "0.0" >"${LOG_DIR:?}"/leeloo/system.idle
+      echo "0.0" >"$FILE_SYSTEM_IDLE"
     fi
   }
 
   # not found, continue
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/system || ! -f "${LOG_DIR:?}"/leeloo/system.idle ]] &>/dev/null; then
+  if [[ ! -f "$FILE_SYSTEM_UPTIME" || ! -f "$FILE_SYSTEM_IDLE" ]] &>/dev/null; then
     system_uptime
   fi
 
   # both found, continue
-  if [[ -f "${LOG_DIR:?}"/leeloo/system && -f "${LOG_DIR:?}"/leeloo/system.idle ]] &>/dev/null; then
+  if [[ -f "$FILE_SYSTEM_UPTIME" && -f "$FILE_SYSTEM_IDLE" ]] &>/dev/null; then
     # greater than n seconds, continue
-    SYSTEM_FILE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/system 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    SYSTEM_FILE_SECONDS="$(stat -c '%Y' "$FILE_SYSTEM_UPTIME" 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
     if [[ "$SYSTEM_FILE_SECONDS" -gt "60" ]] &>/dev/null; then
       system_uptime
     fi
   fi
 
   # system uptime, in seconds
-  SYSTEM_UPTIME_SECONDS="$(cat "${LOG_DIR:?}"/leeloo/system 2>/dev/null | awk -F. '{ print $1 }')"
+  SYSTEM_UPTIME_SECONDS="$(cat "$FILE_SYSTEM_UPTIME" 2>/dev/null | awk -F. '{ print $1 }')"
   # time format (uptime)
   SYSTEM_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%60")))
   # uptime in days
   SYSTEM_UPTIME_DAYS="$(echo "$SYSTEM_UPTIME_SECONDS/86400" | bc 2>/dev/null)"
 
   # system idle, in seconds
-  SYSTEM_IDLE_SECONDS="$(cat "${LOG_DIR:?}"/leeloo/system.idle 2>/dev/null | awk -F. '{ print $1 }')"
+  SYSTEM_IDLE_SECONDS="$(cat "$FILE_SYSTEM_IDLE" 2>/dev/null | awk -F. '{ print $1 }')"
   # time format (idle)
   SYSTEM_IDLE_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%60")))
   # idle in days
