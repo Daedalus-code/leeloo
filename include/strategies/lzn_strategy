@@ -140,7 +140,7 @@ TIMESTAMP=0
 function lorentzian_classification {
   PRICE=$1
   LZN_LAMBDA=$2
-  CLASSIFICATION=$(echo "scale=10; 1/(1 + (${PRICE}-${PRICE}*${PRICE})/(${LZN_LAMBDA}*${LZN_LAMBDA}))" | bc -l 2>>"${LOG_ERROR:?}")
+  CLASSIFICATION=$(echo "scale=10; 1/(1 + (${PRICE}-${PRICE}*${PRICE})/(${LZN_LAMBDA}*${LZN_LAMBDA}))" | bc -l 2>/dev/null)
   echo ${CLASSIFICATION}
 }
 
@@ -152,7 +152,7 @@ if [[ ! -z "$TRADE" ]] 2>>"${LOG_ERROR:?}"; then
   NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 
   # check if new trade has been executed
-  if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>>"${LOG_ERROR:?}"))); then
+  if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
     # calculate lorentzian classification indicator
     LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.10f\n", $1 }')
     LC_OUTPUT="$(echo "$LC" | awk '{ printf "%.9f\n", $1 }')"
@@ -175,7 +175,7 @@ if [[ ! -z "$TRADE" ]] 2>>"${LOG_ERROR:?}"; then
   ##############################################################################
 
   # determine trading action
-  if [[ "$(echo "${LC} > ${LZN_BUY_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "NONE" ]]; then
+  if [[ "$(echo "${LC} > ${LZN_BUY_THRESHOLD}" | bc -l 2>/dev/null)" -eq 1 && "${POSITION}" == "NONE" ]]; then
 
     # hodl position
     POSITION="LONG"
@@ -230,7 +230,7 @@ if [[ ! -z "$TRADE" ]] 2>>"${LOG_ERROR:?}"; then
     PRICE=${NEW_PRICE}
     TIMESTAMP=${NEW_TIMESTAMP}
     # determine trading action
-  elif [[ "$(echo "${LC} < ${LZN_SELL_THRESHOLD}" | bc -l)" -eq 1 && "${POSITION}" == "LONG" ]]; then
+  elif [[ "$(echo "${LC} < ${LZN_SELL_THRESHOLD}" | bc -l 2>/dev/null)" -eq 1 && "${POSITION}" == "LONG" ]]; then
 
     # hodl position
     POSITION="NONE"

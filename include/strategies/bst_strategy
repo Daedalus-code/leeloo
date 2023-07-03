@@ -119,7 +119,7 @@ fi
 ################################################################################
 
 # get total trigger
-TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>>"${LOG_ERROR:?}")"
+TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
 if [[ -z "$TOTAL_TRIGGER" ]] 2>>"${LOG_ERROR:?}"; then
   TOTAL_TRIGGER="0"
 fi
@@ -127,7 +127,7 @@ fi
 ################################################################################
 
 # calculate days into seconds
-COOLDOWN_SECONDS="$(echo "$BST_COOLDOWN*86400" | bc 2>>"${LOG_ERROR:?}" | awk -F. '{ print $1 }')"
+COOLDOWN_SECONDS="$(echo "$BST_COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 CONFIG_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$COOLDOWN_SECONDS/3600")) $(("$COOLDOWN_SECONDS%3600/60")) $(("$COOLDOWN_SECONDS%60")))
 
 # calculate seconds minus tx_time
@@ -138,7 +138,7 @@ fi
 
 TX_TIME="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>>"${LOG_ERROR:?}" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>>"${LOG_ERROR:?}")"
+CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>/dev/null)"
 if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] 2>>"${LOG_ERROR:?}"; then
   CALCULATE_SECONDS="0"
 fi
@@ -221,9 +221,9 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] 2>>"${LOG_ERROR:?}"; then
   # high (ask)
   BST_SPREAD_HIGH="$LISTING_PRICE_ASK"
   # get difference
-  BST_SPREAD_DIFF="$(echo "$BST_SPREAD_HIGH-$BST_SPREAD_LOW" | bc -l 2>>"${LOG_ERROR:?}")"
+  BST_SPREAD_DIFF="$(echo "$BST_SPREAD_HIGH-$BST_SPREAD_LOW" | bc -l 2>/dev/null)"
   # calculate percentage
-  BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>>"${LOG_ERROR:?}" | awk '{ printf "%.2f\n", $1 }')"
+  BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   # bst spread without decimal (n%)
   BST_SPREAD="$(echo "$BST_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')"
