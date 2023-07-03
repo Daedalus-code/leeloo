@@ -84,16 +84,16 @@ LISTING_AVAILABLE_BALANCE_NR="$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | 
 LISTING_TRIGGER_NR="$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')"
 
 # listing trigger
-if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
+if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
-  if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "$LISTING_TRIGGER_NR" ]] &>/dev/null; then
+  if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "$LISTING_TRIGGER_NR" ]] 2>>"${LOG_ERROR:?}"; then
     TRIGGER_L="1"
   else
     TRIGGER_L="0"
   fi
 fi
 
-if [[ -z "$TRIGGER_L" ]] &>/dev/null; then
+if [[ -z "$TRIGGER_L" ]] 2>>"${LOG_ERROR:?}"; then
   TRIGGER_L="0"
 fi
 
@@ -103,16 +103,16 @@ REFERENCE_AVAILABLE_BALANCE_NR="$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.
 REFERENCE_TRIGGER_NR="$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')"
 
 # reference trigger
-if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] &>/dev/null; then
+if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
-  if [[ "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "$REFERENCE_TRIGGER_NR" ]] &>/dev/null; then
+  if [[ "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "$REFERENCE_TRIGGER_NR" ]] 2>>"${LOG_ERROR:?}"; then
     TRIGGER_R="1"
   else
     TRIGGER_R="0"
   fi
 fi
 
-if [[ -z "$TRIGGER_R" ]] &>/dev/null; then
+if [[ -z "$TRIGGER_R" ]] 2>>"${LOG_ERROR:?}"; then
   TRIGGER_R="0"
 fi
 
@@ -120,7 +120,7 @@ fi
 
 # get total trigger
 TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>>"${LOG_ERROR:?}")"
-if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
+if [[ -z "$TOTAL_TRIGGER" ]] 2>>"${LOG_ERROR:?}"; then
   TOTAL_TRIGGER="0"
 fi
 
@@ -131,20 +131,20 @@ COOLDOWN_SECONDS="$(echo "$BST_COOLDOWN*86400" | bc 2>>"${LOG_ERROR:?}" | awk -F
 CONFIG_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$COOLDOWN_SECONDS/3600")) $(("$COOLDOWN_SECONDS%3600/60")) $(("$COOLDOWN_SECONDS%60")))
 
 # calculate seconds minus tx_time
-if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
-  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid &>/dev/null
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] 2>>"${LOG_ERROR:?}"; then
+  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>>"${LOG_ERROR:?}"
   COOLDOWN_SECONDS="0"
 fi
 
 TX_TIME="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>>"${LOG_ERROR:?}" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 CALCULATE_SECONDS="$(echo "$COOLDOWN_SECONDS-$TX_TIME" | bc 2>>"${LOG_ERROR:?}")"
-if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] &>/dev/null; then
+if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] 2>>"${LOG_ERROR:?}"; then
   CALCULATE_SECONDS="0"
 fi
 ORDER_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$CALCULATE_SECONDS/3600")) $(("$CALCULATE_SECONDS%3600/60")) $(("$CALCULATE_SECONDS%60")))
 
-if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
+if [[ -z "$TX_ID_LAST" ]] 2>>"${LOG_ERROR:?}"; then
   TX_ID_LAST="null"
 fi
 
@@ -181,10 +181,10 @@ incoming_reference
 
 ################################################################################
 
-if [[ "$REFERENCE_STATUS" == "false" ]] &>/dev/null; then
+if [[ "$REFERENCE_STATUS" == "false" ]] 2>>"${LOG_ERROR:?}"; then
   MARKET_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market $LISTING_AMOUNT"
   LIMIT_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT"
-elif [[ "$REFERENCE_STATUS" == "true" ]] &>/dev/null; then
+elif [[ "$REFERENCE_STATUS" == "true" ]] 2>>"${LOG_ERROR:?}"; then
   MARKET_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market $LISTING_AMOUNT"
   LIMIT_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT"
 fi
@@ -196,22 +196,22 @@ COOLDOWN_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRE
 
 ################################################################################
 
-if [[ -z "$COOLDOWN_SECONDS" ]] &>/dev/null; then
+if [[ -z "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
   COOLDOWN_SECONDS="0"
 fi
 
-if [[ -z "$TX_TIME" ]] &>/dev/null; then
+if [[ -z "$TX_TIME" ]] 2>>"${LOG_ERROR:?}"; then
   TX_TIME="0"
 fi
 
-if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -l)" -eq "0" ]] &>/dev/null; then
+if [[ "$(egrep "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -l)" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
   COOLDOWN_SECONDS="0"
 fi
 
 ################################################################################
 
 # take profit enabled, continue
-if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
+if [[ "$BST_TAKE_PROFIT" == "1" ]] 2>>"${LOG_ERROR:?}"; then
 
   # disable normal trigger
   TX_TIME="0"
@@ -230,10 +230,10 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   # profit without decimal (n%)
   LISTING_OPEN_RESULT_OK="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }')"
 
-  if [[ -z "$BST_SPREAD" ]] &>/dev/null; then
+  if [[ -z "$BST_SPREAD" ]] 2>>"${LOG_ERROR:?}"; then
     BST_SPREAD="0"
   fi
-  if [[ -z "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
+  if [[ -z "$BST_PROFIT_AMOUNT" ]] 2>>"${LOG_ERROR:?}"; then
     BST_PROFIT_AMOUNT="0"
   fi
 
@@ -241,11 +241,11 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] &>/dev/null; then
   PROFIT_OK="NO"
 
   # profit greater or equal than n%
-  if [[ "$LISTING_OPEN_RESULT_OK" -ge "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
+  if [[ "$LISTING_OPEN_RESULT_OK" -ge "$BST_PROFIT_AMOUNT" ]] 2>>"${LOG_ERROR:?}"; then
     PROFIT_OK="OK"
   fi
   # spread less than n%
-  if [[ "$BST_SPREAD" -lt "$BST_SPREAD_LIMIT" ]] &>/dev/null; then
+  if [[ "$BST_SPREAD" -lt "$BST_SPREAD_LIMIT" ]] 2>>"${LOG_ERROR:?}"; then
     SPREAD_OK="OK"
   fi
 
@@ -264,11 +264,11 @@ PROFIT_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENC
 
 ALLOCATED_REAL="0"
 
-if [[ "$REFERENCE_STATUS" == "false" ]] &>/dev/null; then
+if [[ "$REFERENCE_STATUS" == "false" ]] 2>>"${LOG_ERROR:?}"; then
   AMOUNT_IN_REFERENCE_CURRENCY="false"
   # skip if allocated is less than n%
   ALLOCATED_REAL="$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')"
-elif [[ "$REFERENCE_STATUS" == "true" ]] &>/dev/null; then
+elif [[ "$REFERENCE_STATUS" == "true" ]] 2>>"${LOG_ERROR:?}"; then
   AMOUNT_IN_REFERENCE_CURRENCY="true"
   # skip if allocated is less than n%
   ALLOCATED_REAL="$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')"
@@ -276,16 +276,16 @@ fi
 
 ################################################################################
 
-if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
+if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
   # trigger greater than zero, continue
-  if [[ "$TOTAL_TRIGGER" -gt "0" ]] &>/dev/null; then
+  if [[ "$TOTAL_TRIGGER" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
     # reference false
-    if [[ "$REFERENCE_STATUS" == "false" ]] &>/dev/null; then
+    if [[ "$REFERENCE_STATUS" == "false" ]] 2>>"${LOG_ERROR:?}"; then
       # market
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
         # allocated limit
-        if [[ "$ALLOCATED_REAL" -gt "1" ]] &>/dev/null; then
+        if [[ "$ALLOCATED_REAL" -gt "1" ]] 2>>"${LOG_ERROR:?}"; then
 
           # placeOrder market ##################################################
           PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
@@ -299,7 +299,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
           # limit
-        elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+        elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
 
           # placeOrder limit ###################################################
           PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
@@ -315,11 +315,11 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
       fi
 
       # reference true
-    elif [[ "$REFERENCE_STATUS" == "true" ]] &>/dev/null; then
+    elif [[ "$REFERENCE_STATUS" == "true" ]] 2>>"${LOG_ERROR:?}"; then
       # market
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
         # allocated limit
-        if [[ "$ALLOCATED_REAL" -gt "1" ]] &>/dev/null; then
+        if [[ "$ALLOCATED_REAL" -gt "1" ]] 2>>"${LOG_ERROR:?}"; then
 
           # placeOrder market ##################################################
           PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
@@ -333,7 +333,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] &>/dev/null; then
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
           # limit
-        elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+        elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
 
           # placeOrder limit ###################################################
           PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
@@ -353,8 +353,8 @@ fi
 
 ################################################################################
 
-if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log 2>>"${LOG_ERROR:?}" | egrep "Cooldown| :: Result " | wc -l)" -gt "0" ]] &>/dev/null; then
-  if [[ "$BST_TAKE_PROFIT" == "0" ]] &>/dev/null; then
+if [[ ! "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log 2>>"${LOG_ERROR:?}" | egrep "Cooldown| :: Result " | wc -l)" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
+  if [[ "$BST_TAKE_PROFIT" == "0" ]] 2>>"${LOG_ERROR:?}"; then
     # cooldown output
     echo "$COOLDOWN_BST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   else
