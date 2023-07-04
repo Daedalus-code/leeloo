@@ -33,14 +33,16 @@ STRATEGY_TYPE="DIP"
 
 # exchange template
 EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# minimum dip percentage (default 15%)
+# minimum dip percentage (default 5%)
 MIN_DIP_PERCENTAGE="$(egrep "MIN_DIP_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# minimum spread percentage (default 30%)
+# minimum spread percentage (default 15%)
 MIN_SPREAD_PERCENTAGE="$(egrep "MIN_SPREAD_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# define the markets to consider ("BTC" "ETH" "LTC")
-DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | awk '{ print $1 }')"
+# define the markets to consider
+DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # max open orders (default 10)
 DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# dip max age (default 600 seconds)
+DIP_MAX_AGE="$(egrep "DIP_MAX_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
 # define the file path to read the market data (southxchange)
 if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
@@ -94,7 +96,7 @@ if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
   DIP_MARKET_FILE_AGE="0"
 fi
 
-if [[ "$DIP_MARKET_FILE_AGE" -gt "0" ]] &>/dev/null; then
+if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   DIP_STATUS_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching market!"
 
@@ -115,7 +117,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "0" ]] &>/dev/null; then
       PERCENTAGE_CHANGE=$(echo "$line" | awk '{print $5}' | tr -d '%')
     fi
 
-    MARKETS=("$DIP_MARKETS")
+    MARKETS=("${DIP_MARKETS:?}")
 
     # check if the market pair is in the list of desired markets
     for market in "${MARKETS[@]}"; do
