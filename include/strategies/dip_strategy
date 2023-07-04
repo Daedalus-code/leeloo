@@ -89,46 +89,55 @@ echo "$DIP_STATUS_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
 
 ################################################################################
 
-# read the market data file line by line
-while IFS= read -r line; do
+DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY" 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-  # extract the relevant fields from the line (southxchange)
-  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-    MARKET_PAIR=$(echo "$line" | awk '{print $1}')
-    BUY_PRICE=$(echo "$line" | awk '{print $2}')
-    SELL_PRICE=$(echo "$line" | awk '{print $3}')
-    PERCENTAGE_CHANGE=$(echo "$line" | awk '{print $5}' | tr -d '%')
-  fi
+if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
+  DIP_MARKET_FILE_AGE="0"
+fi
 
-  # check if the market pair is in the list of desired markets
-  for market in "${MARKETS[@]}"; do
-    if [[ $MARKET_PAIR == *"$market"* ]]; then
+if [[ "$DIP_MARKET_FILE_AGE" -gt "600" ]] &>/dev/null; then
 
-      # calculate the dip threshold and spread threshold based on the percentages
-      DIP_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_DIP_PERCENTAGE / 100" | bc)
-      SPREAD_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_SPREAD_PERCENTAGE / 100" | bc)
+  # read the market data file line by line
+  while IFS= read -r line; do
 
-      if (($(echo "$PERCENTAGE_CHANGE < 0" | bc -l))) && (($(echo "$PERCENTAGE_CHANGE <= -$MIN_DIP_PERCENTAGE" | bc -l))); then
-        if [[ $SELL_PRICE != "N/A" ]] && (($(echo "$BUY_PRICE != 0" | bc -l))); then
+    # extract the relevant fields from the line (southxchange)
+    if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+      MARKET_PAIR=$(echo "$line" | awk '{print $1}')
+      BUY_PRICE=$(echo "$line" | awk '{print $2}')
+      SELL_PRICE=$(echo "$line" | awk '{print $3}')
+      PERCENTAGE_CHANGE=$(echo "$line" | awk '{print $5}' | tr -d '%')
+    fi
 
-          # calculate the spread and spread percentage
-          SPREAD=$(echo "scale=2; $SELL_PRICE - $BUY_PRICE" | bc)
-          SPREAD_PERCENT=$(echo "scale=2; ($SPREAD / $BUY_PRICE) * 100" | bc)
+    # check if the market pair is in the list of desired markets
+    for market in "${MARKETS[@]}"; do
+      if [[ $MARKET_PAIR == *"$market"* ]]; then
 
-          if (($(echo "$SPREAD_PERCENT >= $MIN_SPREAD_PERCENTAGE" | bc -l))); then
-            # create order list
-            echo "$MARKET_PAIR Buy: $BUY_PRICE Sell: $SELL_PRICE Dip: $PERCENTAGE_CHANGE% Spread: $SPREAD ($SPREAD_PERCENT%)" >"${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY"
-            # column file
-            echo "$(cat "${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY" | column -t)" >"${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY"
+        # calculate the dip threshold and spread threshold based on the percentages
+        DIP_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_DIP_PERCENTAGE / 100" | bc)
+        SPREAD_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_SPREAD_PERCENTAGE / 100" | bc)
+
+        if (($(echo "$PERCENTAGE_CHANGE < 0" | bc -l))) && (($(echo "$PERCENTAGE_CHANGE <= -$MIN_DIP_PERCENTAGE" | bc -l))); then
+          if [[ $SELL_PRICE != "N/A" ]] && (($(echo "$BUY_PRICE != 0" | bc -l))); then
+
+            # calculate the spread and spread percentage
+            SPREAD=$(echo "scale=2; $SELL_PRICE - $BUY_PRICE" | bc)
+            SPREAD_PERCENT=$(echo "scale=2; ($SPREAD / $BUY_PRICE) * 100" | bc)
+
+            if (($(echo "$SPREAD_PERCENT >= $MIN_SPREAD_PERCENTAGE" | bc -l))); then
+              # create order list
+              echo "$MARKET_PAIR Buy: $BUY_PRICE Sell: $SELL_PRICE Dip: $PERCENTAGE_CHANGE% Spread: $SPREAD ($SPREAD_PERCENT%)" >"${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY"
+              # column file
+              echo "$(cat "${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY" | column -t)" >"${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY"
+            fi
           fi
         fi
+
+        break # exit the loop if the market pair is found in the list
       fi
+    done
 
-      break # exit the loop if the market pair is found in the list
-    fi
-  done
-
-done <"$MARKET_FILE"
+  done <"$MARKET_FILE"
+fi
 
 ################################################################################
 
