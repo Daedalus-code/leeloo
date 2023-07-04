@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+################################################################################
+
+# configuration
+source /usr/local/bin/include/leeloo/broker.conf
+
+################################################################################
+# dip strategy configuration
+################################################################################
+
+# POL poloniex template - SXC southxchange template - SCE stakecube template
+
+################################################################################
+
+EXCHANGE_API=""            # exchange api (template)
+MIN_DIP_PERCENTAGE="15"    # minimum dip percentage
+MIN_SPREAD_PERCENTAGE="30" # minimum spread percentage
+DIP_MARKETS=("BTC")        # define the markets to consider ("BTC" "ETH" "LTC")
+DIP_MAX_ORDERS="10"        # max open orders
+
+################################################################################
+# strategy
+################################################################################
+
+# get strategy id.config, run strategy
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
+bash "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".strategy
+
+# END

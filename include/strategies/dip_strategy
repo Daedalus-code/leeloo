@@ -1,0 +1,158 @@
+#!/bin/bash
+
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+################################################################################
+
+# exit strategy if any error
+set -e
+
+################################################################################
+
+# configuration
+source /usr/local/bin/include/leeloo/broker.conf
+# s & k
+source /usr/local/bin/include/leeloo/sMcD
+# exchanges, includes functions
+source /usr/local/bin/include/leeloo/strategies/templates/exchanges
+
+################################################################################
+
+# get strategy id.config, run strategy
+BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
+
+################################################################################
+
+log_date
+
+################################################################################
+# dip strategy configuration (static)
+################################################################################
+
+STRATEGY_TYPE="DIP"
+
+# exchange template
+EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# minimum dip percentage (default 15%)
+MIN_DIP_PERCENTAGE="$(egrep "MIN_DIP_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# minimum spread percentage (default 30%)
+MIN_SPREAD_PERCENTAGE="$(egrep "MIN_SPREAD_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# define the markets to consider ("BTC" "ETH" "LTC")
+DIP_MARKETS=("$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')")
+# max open orders (default 10)
+DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+
+# define the file path to read the market data (southxchange)
+if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+  MARKET_FILE="/tmp/leeloo/southxchange/prices"
+fi
+
+################################################################################
+# exchange template
+################################################################################
+
+exchange_template
+
+################################################################################
+# data
+################################################################################
+
+listing_data          # get available listing data
+reference_data        # get available reference data
+listing_total_value   # calculate total listing values
+reference_total_value # calculate total reference values
+listing_allocated     # total listing allocated
+reference_allocated   # total reference allocated
+last_tx               # last tx
+
+################################################################################
+
+DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY" | awk '{ print $1 }')"
+
+# get data
+echo "Market(s).............: $DIP_TARGET_COUNT
+
+Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_ERROR:?}"
+
+################################################################################
+
+open_positions
+
+################################################################################
+
+DIP_STATUS_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching market!"
+DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_TARGET_COUNT target(s)!"
+
+################################################################################
+
+echo "$DIP_STATUS_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+################################################################################
+
+# read the market data file line by line
+while IFS= read -r line; do
+
+  # extract the relevant fields from the line (southxchange)
+  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+    MARKET_PAIR=$(echo "$line" | awk '{print $1}')
+    BUY_PRICE=$(echo "$line" | awk '{print $2}')
+    SELL_PRICE=$(echo "$line" | awk '{print $3}')
+    PERCENTAGE_CHANGE=$(echo "$line" | awk '{print $5}' | tr -d '%')
+  fi
+
+  # check if the market pair is in the list of desired markets
+  for market in "${MARKETS[@]}"; do
+    if [[ $MARKET_PAIR == *"$market"* ]]; then
+
+      # calculate the dip threshold and spread threshold based on the percentages
+      DIP_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_DIP_PERCENTAGE / 100" | bc)
+      SPREAD_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_SPREAD_PERCENTAGE / 100" | bc)
+
+      if (($(echo "$PERCENTAGE_CHANGE < 0" | bc -l))) && (($(echo "$PERCENTAGE_CHANGE <= -$MIN_DIP_PERCENTAGE" | bc -l))); then
+        if [[ $SELL_PRICE != "N/A" ]] && (($(echo "$BUY_PRICE != 0" | bc -l))); then
+
+          # calculate the spread and spread percentage
+          SPREAD=$(echo "scale=2; $SELL_PRICE - $BUY_PRICE" | bc)
+          SPREAD_PERCENT=$(echo "scale=2; ($SPREAD / $BUY_PRICE) * 100" | bc)
+
+          if (($(echo "$SPREAD_PERCENT >= $MIN_SPREAD_PERCENTAGE" | bc -l))); then
+            # create order list
+            echo "$MARKET_PAIR Buy: $BUY_PRICE Sell: $SELL_PRICE Dip: $PERCENTAGE_CHANGE% Spread: $SPREAD ($SPREAD_PERCENT%)" >"${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY"
+            # column file
+            echo "$(cat "${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY" | column -t)" >"${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY"
+          fi
+        fi
+      fi
+
+      break # exit the loop if the market pair is found in the list
+    fi
+  done
+
+done <"$MARKET_FILE"
+
+################################################################################
+
+DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/target."$BASENAME_STRATEGY" | awk '{ print $1 }')"
+
+################################################################################
+
+echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+################################################################################
+
+incoming_listing
+incoming_reference
+
+################################################################################
+
+save_orders
+last_orders
+sxc_backup_orders
+
+################################################################################
+
+robot_Log_cleanup
+
+################################################################################
+
+# END

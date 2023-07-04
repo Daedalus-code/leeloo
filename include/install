@@ -250,4 +250,14 @@ if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | grep "MCS" | grep ".config" | wc -l
   done
 fi
 
+################################################################################
+
+# if configuration exist, continue
+if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | grep "DIP" | grep ".config" | wc -l)" -gt "0" ]] &>/dev/null; then
+  # update DIP strategy
+  for DIP_UPDATES in "$SYS_DIR"/robot/DIP*.strategy; do
+    cat "${HOME_DIR:?}"/leeloo/include/strategies/dip_strategy >"$DIP_UPDATES" 2>/dev/null
+  done
+fi
+
 # END
