@@ -132,9 +132,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             SPREAD=$(echo "scale=2; $SELL_PRICE - $BUY_PRICE" | bc)
             SPREAD_PERCENT=$(echo "scale=2; ($SPREAD / $BUY_PRICE) * 100" | bc)
 
-            if (($(echo "$SPREAD_PERCENT >= $MIN_SPREAD_PERCENTAGE" | bc -l))); then
+            if (($(echo "$SPREAD_PERCENT >= $MIN_SPREAD_PERCENTAGE" | bc -l))) && (($(echo "$DIP_THRESHOLD <= $PERCENTAGE_CHANGE" | bc -l))) && (($(echo "$SPREAD_THRESHOLD <= $SPREAD" | bc -l))); then
               # create order list
-              echo "$MARKET_PAIR Buy: $BUY_PRICE Sell: $SELL_PRICE Dip: $PERCENTAGE_CHANGE% Spread: $SPREAD ($SPREAD_PERCENT%)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+              echo "$MARKET_PAIR Buy: $BUY_PRICE Sell: $SELL_PRICE Dip: $PERCENTAGE_CHANGE% Spread: $SPREAD ($SPREAD_PERCENT%)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
               # column file
               echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
             fi
