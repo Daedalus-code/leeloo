@@ -69,6 +69,16 @@ last_tx               # last tx
 
 DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
 
+if [[ -z "$DIP_TARGET_COUNT" ]] &>/dev/null; then
+  DIP_TARGET_COUNT="0"
+fi
+
+if [[ -z "$TX_ID_LAST" ]] 2>>"${LOG_ERROR:?}"; then
+  TX_ID_LAST="null"
+fi
+
+################################################################################
+
 # get data
 echo "Market(s).............: $DIP_TARGET_COUNT
 
