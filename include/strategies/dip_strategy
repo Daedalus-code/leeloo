@@ -94,21 +94,21 @@ open_positions
 
 ################################################################################
 
-DIP_STATUS_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching market!"
-
-################################################################################
-
-echo "$DIP_STATUS_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-################################################################################
-
-DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
-  DIP_MARKET_FILE_AGE="0"
-fi
-
 if [[ "$DIP_MARKET_FILE_AGE" -gt "600" ]] &>/dev/null; then
+
+  DIP_STATUS_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching market!"
+
+  ##############################################################################
+
+  echo "$DIP_STATUS_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+  ##############################################################################
+
+  DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
+    DIP_MARKET_FILE_AGE="0"
+  fi
 
   # read the market data file line by line
   while IFS= read -r line; do
@@ -150,21 +150,21 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "600" ]] &>/dev/null; then
     done
 
   done <"$MARKET_FILE"
+
+  DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
+
+  if [[ -z "$DIP_TARGET_COUNT" ]] &>/dev/null; then
+    DIP_TARGET_COUNT="0"
+  fi
+
+  ##############################################################################
+
+  DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_TARGET_COUNT target(s)!"
+
+  ##############################################################################
+
+  echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
-
-DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
-
-if [[ -z "$DIP_TARGET_COUNT" ]] &>/dev/null; then
-  DIP_TARGET_COUNT="0"
-fi
-
-################################################################################
-
-DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_TARGET_COUNT target(s)!"
-
-################################################################################
-
-echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
 
