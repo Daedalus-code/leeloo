@@ -105,21 +105,20 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   ##############################################################################
 
   if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-    MARKET_FILE="${LOG_DIR:?}/leeloo/southxchange/prices"
+    # extract the relevant fields from the line (southxchange)
+    MARKET_FILE="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
+    MARKET_PAIR=$(echo "$MARKET_FILE" | awk '{print $1}')
+    BUY_PRICE=$(echo "$MARKET_FILE" | awk '{print $2}')
+    SELL_PRICE=$(echo "$MARKET_FILE" | awk '{print $3}')
+    PERCENTAGE_CHANGE=$(echo "$MARKET_FILE" | awk '{print $5}' | tr -d '%')
   fi
 
   # read the market data file line by line
-  while IFS= read -r line; do
-
-    # extract the relevant fields from the line (southxchange)
-    MARKET_PAIR=$(echo "$line" | awk '{print $1}')
-    BUY_PRICE=$(echo "$line" | awk '{print $2}')
-    SELL_PRICE=$(echo "$line" | awk '{print $3}')
-    PERCENTAGE_CHANGE=$(echo "$line" | awk '{print $5}' | tr -d '%')
+  while IFS= read -r MARKET_FILE; do
 
     # check if the market pair is in the list of desired markets
-    for market in "${DIP_MARKETS[@]}"; do
-      if [[ $MARKET_PAIR == *"$market"* ]]; then
+    for MARKET_FILE in "${DIP_MARKETS[@]}"; do
+      if [[ $MARKET_PAIR == *"$MARKET_FILE"* ]]; then
 
         # calculate the dip threshold and spread threshold based on the percentages
         DIP_THRESHOLD=$(echo "scale=9; $BUY_PRICE * $MIN_DIP_PERCENTAGE" | bc)
