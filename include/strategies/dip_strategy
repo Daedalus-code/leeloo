@@ -112,12 +112,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   while IFS= read -r line; do
 
     # extract the relevant fields from the line (southxchange)
-    if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-      MARKET_PAIR=$(echo "$line" | awk '{print $1}')
-      BUY_PRICE=$(echo "$line" | awk '{print $2}')
-      SELL_PRICE=$(echo "$line" | awk '{print $3}')
-      PERCENTAGE_CHANGE=$(echo "$line" | awk '{print $5}' | tr -d '%')
-    fi
+    MARKET_PAIR=$(echo "$line" | awk '{print $1}')
+    BUY_PRICE=$(echo "$line" | awk '{print $2}')
+    SELL_PRICE=$(echo "$line" | awk '{print $3}')
+    PERCENTAGE_CHANGE=$(echo "$line" | awk '{print $5}' | tr -d '%')
 
     # check if the market pair is in the list of desired markets
     for market in "${DIP_MARKETS[@]}"; do
