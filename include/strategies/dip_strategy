@@ -106,15 +106,21 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
     # extract the relevant fields from the line (southxchange)
-    MARKET_FILE="${LOG_DIR:?}"/leeloo/southxchange/prices
-    MARKET_PAIR=$(echo "$MARKET_FILE" | awk '{print $1}')
-    BUY_PRICE=$(echo "$MARKET_FILE" | awk '{print $2}')
-    SELL_PRICE=$(echo "$MARKET_FILE" | awk '{print $3}')
-    PERCENTAGE_CHANGE=$(echo "$MARKET_FILE" | awk '{print $5}' | tr -d '%')
+    MARKET_FILE="${LOG_DIR:?}/leeloo/southxchange/prices"
   fi
 
   # read the market data file line by line
-  while IFS= read -r MARKET_FILE; do
+  while IFS= read -r LINE; do
+
+    EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+
+    if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+      # extract the relevant fields from the line (southxchange)
+      MARKET_PAIR=$(echo "$LINE" | awk '{print $1}')
+      BUY_PRICE=$(echo "$LINE" | awk '{print $2}')
+      SELL_PRICE=$(echo "$LINE" | awk '{print $3}')
+      PERCENTAGE_CHANGE=$(echo "$LINE" | awk '{print $5}' | tr -d '%')
+    fi
 
     # check if the market pair is in the list of desired markets
     for MARKET_FILE in "${DIP_MARKETS[@]}"; do
