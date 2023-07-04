@@ -44,11 +44,6 @@ DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATE
 # dip max age (default 600 seconds)
 DIP_MAX_AGE="$(egrep "DIP_MAX_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
-# define the file path to read the market data (southxchange)
-if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-  MARKET_FILE="${LOG_DIR:?}/leeloo/southxchange/prices"
-fi
-
 ################################################################################
 # exchange template
 ################################################################################
@@ -114,6 +109,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # extract the relevant fields from the line (southxchange)
     if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+      MARKET_FILE="${LOG_DIR:?}/leeloo/southxchange/prices"
       MARKET_PAIR=$(echo "$line" | awk '{print $1}')
       BUY_PRICE=$(echo "$line" | awk '{print $2}')
       SELL_PRICE=$(echo "$line" | awk '{print $3}')
