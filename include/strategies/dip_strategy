@@ -94,6 +94,12 @@ open_positions
 
 ################################################################################
 
+DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
+  DIP_MARKET_FILE_AGE="0"
+fi
+
 if [[ "$DIP_MARKET_FILE_AGE" -gt "600" ]] &>/dev/null; then
 
   DIP_STATUS_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching market!"
@@ -103,12 +109,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "600" ]] &>/dev/null; then
   echo "$DIP_STATUS_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   ##############################################################################
-
-  DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-  if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
-    DIP_MARKET_FILE_AGE="0"
-  fi
 
   # read the market data file line by line
   while IFS= read -r line; do
