@@ -157,11 +157,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   ##############################################################################
 
-  DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_TARGET_COUNT target(s)!"
-
-  ##############################################################################
-
-  echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  if [[ "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -c "Searching market!")" -eq "1" ]] &>/dev/null; then
+    DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_TARGET_COUNT target(s)!"
+    echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  fi
 fi
 
 ################################################################################
