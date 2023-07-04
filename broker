@@ -2032,7 +2032,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
           fi
 
           # create strategy.robot_id
-          ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|MIN_DIP_PERCENTAGE|MIN_SPREAD_PERCENTAGE|DIP_MARKETS|DIP_MAX_ORDERS" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
+          ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|MIN_DIP_PERCENTAGE|MIN_SPREAD_PERCENTAGE|DIP_MARKETS|DIP_MAX_ORDERS" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".()' | xargs | tr -d ' ')"
           # install new strategy.robot_id
           mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
           mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
