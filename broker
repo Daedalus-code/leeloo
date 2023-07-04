@@ -1298,20 +1298,17 @@ error.log.....: $STRATEGY_ERROR"
     if dialog --stdout --title "Check data?" \
       --backtitle "Check data?" \
       --yesno "Yes: Check!, No:  Go back!" 5 32; then
-
       # strategy data exist, edit
-      if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
-        nano "$LOG_DIR"/leeloo/error.log
-        clear
-      fi
+      nano "$LOG_DIR"/leeloo/error.log
+      clear
+    fi
 
-      # strategy data exist, keep, delete
-      if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
-        if ! dialog --stdout --title "Keep data (error.log)?" \
-          --backtitle "Keep data (error.log)?" \
-          --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
-          truncate -s 0 "$LOG_DIR"/leeloo/error.log &>/dev/null
-        fi
+    # strategy data exist, keep, delete
+    if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
+      if ! dialog --stdout --title "Keep data (error.log)?" \
+        --backtitle "Keep data (error.log)?" \
+        --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
+        truncate -s 0 "$LOG_DIR"/leeloo/error.log &>/dev/null
       fi
     fi
   fi
