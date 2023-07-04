@@ -118,8 +118,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # check if the market pair is in the list of desired markets
     for market in "${DIP_MARKETS[@]}"; do
-      case "$MARKET_PAIR" in
-      *"$market"*)
+      if [[ $MARKET_PAIR == *"$market"* ]]; then
+
         # calculate the dip threshold and spread threshold based on the percentages
         DIP_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_DIP_PERCENTAGE" | bc)
         SPREAD_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_SPREAD_PERCENTAGE" | bc)
@@ -141,8 +141,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         fi
 
         break # exit the loop if the market pair is found in the list
-        ;;
-      esac
+      fi
     done
 
   done <"$MARKET_FILE"
