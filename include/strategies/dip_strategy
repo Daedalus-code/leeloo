@@ -91,7 +91,6 @@ open_positions
 ################################################################################
 
 DIP_STATUS_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching market!"
-DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_TARGET_COUNT target(s)!"
 
 ################################################################################
 
@@ -149,9 +148,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "600" ]] &>/dev/null; then
   done <"$MARKET_FILE"
 fi
 
+DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
+
 ################################################################################
 
-DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
+DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_TARGET_COUNT target(s)!"
 
 ################################################################################
 
