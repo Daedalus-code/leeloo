@@ -93,7 +93,7 @@ if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | 
   fi
 fi
 
-if [[ -z "$TRIGGER_L" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ -z "$TRIGGER_L" ]] &>/dev/null; then
   TRIGGER_L="0"
 fi
 
@@ -112,7 +112,7 @@ if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' 
   fi
 fi
 
-if [[ -z "$TRIGGER_R" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ -z "$TRIGGER_R" ]] &>/dev/null; then
   TRIGGER_R="0"
 fi
 
@@ -120,7 +120,7 @@ fi
 
 # get total trigger
 TOTAL_TRIGGER="$(echo "$TRIGGER_L+$TRIGGER_R" | bc 2>/dev/null)"
-if [[ -z "$TOTAL_TRIGGER" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ -z "$TOTAL_TRIGGER" ]] &>/dev/null; then
   TOTAL_TRIGGER="0"
 fi
 
@@ -144,7 +144,7 @@ if [[ "$(echo "$CALCULATE_SECONDS" | grep "-" | wc -l)" -eq "1" ]] 2>>"${LOG_ERR
 fi
 ORDER_COOLDOWN=$(printf '%dh:%dm:%ds\n' $(("$CALCULATE_SECONDS/3600")) $(("$CALCULATE_SECONDS%3600/60")) $(("$CALCULATE_SECONDS%60")))
 
-if [[ -z "$TX_ID_LAST" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
   TX_ID_LAST="null"
 fi
 
@@ -196,11 +196,11 @@ COOLDOWN_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRE
 
 ################################################################################
 
-if [[ -z "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ -z "$COOLDOWN_SECONDS" ]] &>/dev/null; then
   COOLDOWN_SECONDS="0"
 fi
 
-if [[ -z "$TX_TIME" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ -z "$TX_TIME" ]] &>/dev/null; then
   TX_TIME="0"
 fi
 
@@ -230,10 +230,10 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] 2>>"${LOG_ERROR:?}"; then
   # profit without decimal (n%)
   LISTING_OPEN_RESULT_OK="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }')"
 
-  if [[ -z "$BST_SPREAD" ]] 2>>"${LOG_ERROR:?}"; then
+  if [[ -z "$BST_SPREAD" ]] &>/dev/null; then
     BST_SPREAD="0"
   fi
-  if [[ -z "$BST_PROFIT_AMOUNT" ]] 2>>"${LOG_ERROR:?}"; then
+  if [[ -z "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
     BST_PROFIT_AMOUNT="0"
   fi
 

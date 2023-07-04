@@ -86,11 +86,11 @@ RSI_TIMER="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>>"$
 RSI_COOLDOWN_HOURS="$(echo "$RSI_COOLDOWN*86400" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 RSI_COOLDOWN_NOW="$(echo "$RSI_TIMER/3600" | bc 2>/dev/null)"
 
-if [[ -z "$RSI_COOLDOWN_HOURS" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ -z "$RSI_COOLDOWN_HOURS" ]] &>/dev/null; then
   RSI_COOLDOWN_HOURS="0"
 fi
 
-if [[ -z "$RSI_COOLDOWN_NOW" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ -z "$RSI_COOLDOWN_NOW" ]] &>/dev/null; then
   RSI_COOLDOWN_NOW="0"
 fi
 

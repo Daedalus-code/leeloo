@@ -78,7 +78,7 @@ else
   LZN_POSITION_VALUE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".lc 2>>"${LOG_ERROR:?}")
 fi
 
-if [[ -z "$TX_ID_LAST" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
   TX_ID_LAST="null"
 fi
 
@@ -147,7 +147,7 @@ function lorentzian_classification {
 # retrieve last trade
 TRADE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>>"${LOG_ERROR:?}")
 # not zero, continue
-if [[ ! -z "$TRADE" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ ! -z "$TRADE" ]] &>/dev/null; then
   NEW_PRICE=$(echo "${TRADE}" | jq '.Price')
   NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
 
@@ -157,7 +157,7 @@ if [[ ! -z "$TRADE" ]] 2>>"${LOG_ERROR:?}"; then
     LC=$(lorentzian_classification "${NEW_PRICE}" "${LZN_LAMBDA}" | awk '{ printf "%.10f\n", $1 }')
     LC_OUTPUT="$(echo "$LC" | awk '{ printf "%.9f\n", $1 }')"
 
-    if [[ -z "$LC_OUTPUT" ]] 2>>"${LOG_ERROR:?}"; then
+    if [[ -z "$LC_OUTPUT" ]] &>/dev/null; then
       LC_OUTPUT="$(echo "0" | awk '{ printf "%.9f\n", $1 }')"
     fi
 
