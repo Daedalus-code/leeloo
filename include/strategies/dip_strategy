@@ -124,15 +124,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       if [[ $MARKET_PAIR == *"$market"* ]]; then
 
         # calculate the dip threshold and spread threshold based on the percentages
-        DIP_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_DIP_PERCENTAGE" | bc)
-        SPREAD_THRESHOLD=$(echo "scale=2; $BUY_PRICE * $MIN_SPREAD_PERCENTAGE" | bc)
+        DIP_THRESHOLD=$(echo "scale=9; $BUY_PRICE * $MIN_DIP_PERCENTAGE" | bc)
+        SPREAD_THRESHOLD=$(echo "scale=9; $BUY_PRICE * $MIN_SPREAD_PERCENTAGE" | bc)
 
         if (($(echo "$PERCENTAGE_CHANGE < 0" | bc -l))) && (($(echo "$PERCENTAGE_CHANGE <= -$MIN_DIP_PERCENTAGE" | bc -l))); then
           if [[ $SELL_PRICE != "N/A" ]] && (($(echo "$BUY_PRICE != 0" | bc -l))); then
 
             # calculate the spread and spread percentage
-            SPREAD=$(echo "scale=2; $SELL_PRICE - $BUY_PRICE" | bc)
-            SPREAD_PERCENT=$(echo "scale=2; ($SPREAD / $BUY_PRICE) * 100" | bc)
+            SPREAD=$(echo "scale=9; $SELL_PRICE - $BUY_PRICE" | bc)
+            SPREAD_PERCENT=$(echo "scale=9; ($SPREAD / $BUY_PRICE) * 100" | bc)
 
             if (($(echo "$SPREAD_PERCENT >= $MIN_SPREAD_PERCENTAGE" | bc -l))) && (($(echo "$DIP_THRESHOLD <= $PERCENTAGE_CHANGE * 100" | bc -l))) && (($(echo "$SPREAD_THRESHOLD <= $SPREAD * 100" | bc -l))); then
               # create order list
