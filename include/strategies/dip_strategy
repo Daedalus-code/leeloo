@@ -242,7 +242,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         if (($(echo "$SPREAD > $MIN_SPREAD_PERCENTAGE" | bc -l))); then
           PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100")
           VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
-          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" | sed '/^$/d' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+
+          # correct market, continue
+          if [[ "$(echo "$SYMBOL" | egrep -c "$DIP_MARKETS")" -gt "0" ]] &>/dev/null; then
+            # create potential market
+            echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" | sed '/^$/d' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+          fi
 
           # check if the symbol meets the potential buy criteria
           if (($(echo "$PRICE_MOVEMENT > 0" | bc -l))); then
