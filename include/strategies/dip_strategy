@@ -109,7 +109,7 @@ fi
 
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
-  # reset market
+  # reset markets, target
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC &>/dev/null
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ETH &>/dev/null
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".LTC &>/dev/null
@@ -118,23 +118,20 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 
   if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-    DIP_MARKETS="auto"
-  fi
-
-  if [[ "$DIP_MARKETS" == "auto" ]] &>/dev/null; then
 
     # set by configuration (default)
     DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
     DIP_MARKETS="BTC"
 
-    # get big markets
+    # get big markets (BTC, ETH, LTC, BNB, USDT)
     grep "BTC" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC
     grep "ETH" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ETH
     grep "LTC" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".LTC
+    grep "BNB" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BNB
     grep "USDT" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".USDT
 
     # random market
-    RANDOM_MARKET=$((((RANDOM % 4) + 1)))
+    RANDOM_MARKET=$((((RANDOM % 5) + 1)))
 
     # set by random_market
     if [[ "$RANDOM_MARKET" == "1" ]] &>/dev/null; then
@@ -150,6 +147,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.LTC"
       DIP_MARKETS="LTC"
     elif [[ "$RANDOM_MARKET" == "4" ]] &>/dev/null; then
+      DIP_MARKET_LIST="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BNB | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
+      DIP_FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.BNB"
+      DIP_MARKETS="BNB"
+    elif [[ "$RANDOM_MARKET" == "5" ]] &>/dev/null; then
       DIP_MARKET_LIST="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".USDT | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
       DIP_FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.USDT"
       DIP_MARKETS="USDT"
@@ -160,8 +161,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   fi
 
+  # error output
   if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : exiting strategy, error no market!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Exiting strategy! No market available!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     exit
   fi
 
