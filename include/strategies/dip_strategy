@@ -128,6 +128,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # random market
     RANDOM_MARKET=$((((RANDOM % 4) + 1)))
 
+    # set by random_market
     if [[ "$RANDOM_MARKET" == "1" ]] &>/dev/null; then
       DIP_MARKET_LIST="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
       DIP_FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.BTC"
@@ -146,9 +147,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_MARKETS="USDT"
     fi
   else
-    # default
-    DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
-    DIP_MARKET_LIST="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+    if [[ ! -z "$DIP_MARKETS" ]] &>/dev/null; then
+      # set by configuration
+      DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
+      DIP_MARKET_LIST="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+    fi
   fi
 
   ##############################################################################
@@ -202,7 +205,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # provide potential buy recommendation if any
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]]; then
-    echo "Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+    DIP_TARGET_OUTPUT="Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+    echo "$DIP_TARGET_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
     # clean up file for duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
   fi
@@ -221,8 +225,10 @@ if [[ -z "$DIP_TARGET_COUNT" ]] &>/dev/null; then
 fi
 
 if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
+  DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
   DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_MARKET_COUNT $DIP_MARKETS Market(s) - $DIP_TARGET_COUNT Target(s)!"
   echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
