@@ -111,7 +111,7 @@ fi
 
 ################################################################################
 
-DIP_MARKET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | wc -l)"
+DIP_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
 DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
 
 if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
@@ -223,7 +223,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         if (($(echo "$SPREAD > $MIN_SPREAD_PERCENTAGE" | bc -l))); then
           PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100")
           VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
-          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" | sed '/^$/d' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
           # check if the symbol meets the potential buy criteria
           if (($(echo "$PRICE_MOVEMENT > 0" | bc -l))); then
@@ -238,7 +238,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   done <"$DIP_FILE_PATH"
 
   # clean up file for duplicates
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
   ##############################################################################
 
@@ -255,9 +255,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # provide potential buy recommendation if any
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
-    echo "$DIP_TARGET_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+    echo "$DIP_TARGET_OUTPUT" | sed '/^$/d' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
     # clean up file for duplicates
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
   fi
 fi
 
