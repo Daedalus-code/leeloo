@@ -206,6 +206,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
               POTENTIAL_BUY_SYMBOL=$SYMBOL
               POTENTIAL_BUY_BID=$BID
+              echo "$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload
             fi
           fi
         fi
@@ -218,8 +219,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   ##############################################################################
 
-  POTENTIAL_BUY_SYMBOL="$(awk '{ print $1 }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
-  POTENTIAL_BUY_BID="$(awk '{ print $2 }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+  POTENTIAL_BUY_SYMBOL="$(awk '{ print $1 }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload)"
+  POTENTIAL_BUY_BID="$(awk '{ print $2 }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload)"
 
   if [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
     POTENTIAL_BUY_SYMBOL="N/A"
