@@ -157,18 +157,19 @@ fi
 
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
+  # get market (config)
+  egrep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"."${DIP_MARKETS:?}"
   # set by configuration (default)
-  grep "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"."${DIP_MARKETS:?}"
   DIP_FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.${DIP_MARKETS:?}"
 
   if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
 
     # get big markets (BTC, ETH, LTC, BNB, USDT)
-    grep "BTC" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC
-    grep "ETH" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ETH
-    grep "LTC" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".LTC
-    grep "BNB" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BNB
-    grep "USDT" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".USDT
+    egrep -w "BTC" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC
+    egrep -w "ETH" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ETH
+    egrep -w "LTC" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".LTC
+    egrep -w "BNB" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BNB
+    egrep -w "USDT" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".USDT
 
     # random market
     RANDOM_MARKET=$((((RANDOM % 5) + 1)))
