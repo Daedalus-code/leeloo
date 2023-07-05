@@ -167,11 +167,15 @@ fi
 ################################################################################
 
 if [[ "$(tail -"${DIP_MAX_AGE:?}" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -c "Searching market!")" -eq "1" ]] &>/dev/null; then
+  DIP_MARKET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | wc -l)"
   DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
+  if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
+    DIP_MARKET_COUNT="0"
+  fi
   if [[ -z "$DIP_TARGET_COUNT" ]] &>/dev/null; then
     DIP_TARGET_COUNT="0"
   fi
-  DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_TARGET_COUNT target(s)!"
+  DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_MARKET_COUNT Market(s) - $DIP_TARGET_COUNT Target(s)!"
   echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
