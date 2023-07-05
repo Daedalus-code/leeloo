@@ -111,10 +111,6 @@ fi
 
 ################################################################################
 
-# data after the fact
-POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload 2>/dev/null | awk '{ print $1 }')"
-POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload 2>/dev/null | awk '{ print $2 }')"
-
 # zero, continue
 if [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
   POTENTIAL_BUY_SYMBOL="N/A"
@@ -245,7 +241,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
               POTENTIAL_BUY_SYMBOL=$SYMBOL
               POTENTIAL_BUY_BID=$BID
-              echo "$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload
             fi
           fi
         fi
