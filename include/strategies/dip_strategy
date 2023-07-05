@@ -164,6 +164,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # get market (config)
     egrep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"."${DIP_MARKETS:?}"
     DIP_FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.${DIP_MARKETS:?}"
+    DIP_MARKET_LIST="$(wc -l "$DIP_FILE_PATH" 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
   fi
 
   # zero, continue
@@ -200,10 +201,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_MARKET_LIST="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".USDT | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
       DIP_FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.USDT"
       DIP_MARKETS="USDT"
-    fi
-  else
-    if [[ ! -z "$DIP_MARKETS" ]] &>/dev/null; then
-      DIP_MARKET_LIST="$(wc -l "$DIP_FILE_PATH" 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
     fi
   fi
 
