@@ -103,20 +103,19 @@ DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ta
 
 ################################################################################
 
+# reset markets, target
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC &>/dev/null
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ETH &>/dev/null
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".LTC &>/dev/null
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".USDT &>/dev/null
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+
 if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
   DIP_MARKET_FILE_AGE="0"
 fi
 
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
-
-  # reset markets, target
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC &>/dev/null
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ETH &>/dev/null
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".LTC &>/dev/null
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".USDT &>/dev/null
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
-
   if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
 
     # set by configuration (default)
