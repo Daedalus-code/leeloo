@@ -111,9 +111,6 @@ fi
 
 ################################################################################
 
-truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
-truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
-
 # data after the fact
 POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload 2>/dev/null | awk '{ print $1 }')"
 POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload 2>/dev/null | awk '{ print $2 }')"
@@ -129,6 +126,9 @@ fi
 # get market, target count
 DIP_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
 DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
+
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
 
 # zero, continue
 if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
