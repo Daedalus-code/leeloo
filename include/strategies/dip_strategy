@@ -113,6 +113,7 @@ fi
 
 POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $1 }')"
 POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $2 }')"
+POTENTIAL_DIP_MARKETS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $3 }')"
 
 # zero, continue
 if [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
@@ -148,7 +149,7 @@ if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential &>/dev/null
 
-  DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Markets: $DIP_MARKET_COUNT Targets: $DIP_TARGET_COUNT"
+  DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $POTENTIAL_DIP_MARKETS Markets: $DIP_MARKET_COUNT Targets: $DIP_TARGET_COUNT"
   DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
 
   echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -256,7 +257,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
               POTENTIAL_BUY_SYMBOL=$SYMBOL
               POTENTIAL_BUY_BID=$BID
-              echo "$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential
+              echo "$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID $DIP_MARKETS" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential
             fi
           fi
         fi
