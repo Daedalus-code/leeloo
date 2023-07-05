@@ -26,7 +26,7 @@ BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
 log_date
 
 ################################################################################
-# dip strategy configuration (static)
+# dip strategy configuration (static) BETA
 ################################################################################
 
 STRATEGY_TYPE="DIP"
@@ -35,8 +35,10 @@ STRATEGY_TYPE="DIP"
 EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # minimum dip percentage (default 5%)
 MIN_DIP_PERCENTAGE="$(egrep "MIN_DIP_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# minimum spread percentage (default 15%)
+# minimum spread percentage (default 10%)
 MIN_SPREAD_PERCENTAGE="$(egrep "MIN_SPREAD_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# minimum volume percentage (default 0.5)
+MIN_VOLUME_PERCENTAGE="$(egrep "MIN_VOLUME_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # define the markets to consider
 DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # max open orders (default 10)
@@ -104,21 +106,16 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   ##############################################################################
 
-  # configurable variables
-  MARKET="BTC"
-  MINIMUM_SPREAD="5"
-  MINIMUM_DIP="5"
-  MINIMUM_VOLUME_PERCENTAGE="0.5"
-
-  # file path
+  # market file path
   DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
 
-  # variables for potential buy recommendation
+  # variables for potential buy recommendation (default)
   POTENTIAL_BUY_SYMBOL=""
-  POTENTIAL_BUY_BID=0
+  POTENTIAL_BUY_BID="0"
 
   # read the file line by line
   while IFS= read -r line; do
+
     # extract relevant information from the line
     SYMBOL=$(echo "$line" | awk '{print $1}')
     BID=$(echo "$line" | awk '{print $2}')
@@ -128,10 +125,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     VOLUME_PERCENTAGE=$(echo "$line" | awk '{print $6}' | sed 's/%//')
 
     # check if the symbol matches the specified market and if the spread, dip, and volume meet the criteria
-    if [[ "$SYMBOL" == *"$MARKET"* ]] && (($(echo "$DIP < -$MINIMUM_DIP" | bc -l))) && (($(echo "$VOLUME_PERCENTAGE > $MINIMUM_VOLUME_PERCENTAGE" | bc -l))); then
+    if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] && (($(echo "$DIP < -$MIN_DIP_PERCENTAGE" | bc -l))) && (($(echo "$VOLUME_PERCENTAGE > $MIN_VOLUME_PERCENTAGE" | bc -l))); then
       if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]]; then
         SPREAD=$(bc <<<"scale=2; ($ASK - $BID) / $BID * 100")
-        if (($(echo "$SPREAD > $MINIMUM_SPREAD" | bc -l))); then
+        if (($(echo "$SPREAD > $MIN_SPREAD_PERCENTAGE" | bc -l))); then
           PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100")
           echo "$SYMBOL | Bid: $BID | Ask: $ASK | Last: $LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%"
 
@@ -149,7 +146,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # provide potential buy recommendation if any
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]]; then
-    echo "Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+    echo "Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
   fi
 fi
 
