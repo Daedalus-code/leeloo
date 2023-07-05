@@ -125,6 +125,11 @@ fi
 
 # get market, target count
 DIP_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
+
+if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')" == "N/A" ]]; then
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+fi
+
 DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
 
 # zero, continue
