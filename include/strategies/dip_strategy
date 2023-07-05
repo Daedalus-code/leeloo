@@ -111,6 +111,9 @@ fi
 
 ################################################################################
 
+POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $1 }')"
+POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $2 }')"
+
 # zero, continue
 if [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
   POTENTIAL_BUY_SYMBOL="N/A"
@@ -122,7 +125,7 @@ fi
 # get market, target count
 DIP_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
 
-if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')" == "N/A" ]]; then
+if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')" == "N/A" ]] &>/dev/null; then
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
 fi
 
@@ -141,6 +144,7 @@ if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
 
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential
 
   DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
   DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_MARKET_COUNT $DIP_MARKETS Market(s) - $DIP_TARGET_COUNT Target(s)!"
@@ -156,7 +160,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # set by configuration (default)
     DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
-    DIP_MARKETS="BTC"
 
     # get big markets (BTC, ETH, LTC, BNB, USDT)
     grep "BTC" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC
@@ -241,6 +244,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
               POTENTIAL_BUY_SYMBOL=$SYMBOL
               POTENTIAL_BUY_BID=$BID
+              echo "$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential
             fi
           fi
         fi
