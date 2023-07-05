@@ -69,6 +69,7 @@ fi
 
 DIP_MARKET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | wc -l)"
 DIP_TARGET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | wc -l)"
+DIP_TARGET_MARKET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
 
 if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
   DIP_MARKET_COUNT="0"
@@ -85,6 +86,7 @@ fi
 # get data
 echo "Market(s).............: $DIP_MARKET_COUNT
 Target(s).............: $DIP_TARGET_COUNT
+Target Market.........: $DIP_TARGET_MARKET
 
 Last_Order.txid.......: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_ERROR:?}"
 
@@ -139,7 +141,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         SPREAD=$(bc <<<"scale=2; ($ASK - $BID) / $BID * 100")
         if (($(echo "$SPREAD > $MIN_SPREAD_PERCENTAGE" | bc -l))); then
           PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100")
-          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Last: $LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+          VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
+          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
           # check if the symbol meets the potential buy criteria
           if (($(echo "$PRICE_MOVEMENT > 0" | bc -l))); then
