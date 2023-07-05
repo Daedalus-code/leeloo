@@ -142,9 +142,9 @@ fi
 # target count greater than n, continue
 if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
 
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential &>/dev/null
 
   DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
   DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_MARKET_COUNT $DIP_MARKETS Market(s) - $DIP_TARGET_COUNT Target(s)!"
@@ -156,10 +156,12 @@ fi
 ################################################################################
 
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
-  if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
 
-    # set by configuration (default)
-    DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
+  # set by configuration (default)
+  grep "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"."${DIP_MARKETS:?}"
+  DIP_FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.${DIP_MARKETS:?}"
+
+  if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
 
     # get big markets (BTC, ETH, LTC, BNB, USDT)
     grep "BTC" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC
