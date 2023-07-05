@@ -245,6 +245,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   function dip_output() {
     DIP_TARGET_OUTPUT="Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+    echo "$DIP_TARGET_OUTPUT" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
   }
 
   if [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
@@ -262,7 +263,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # provide potential buy recommendation if any
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
-    echo "$DIP_TARGET_OUTPUT" | sed '/^$/d' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+    dip_output
     # clean up file for duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
   fi
