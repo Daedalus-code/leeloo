@@ -109,6 +109,14 @@ fi
 
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
+  # reset market
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ETH &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".LTC &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".USDT &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+
   # default
   DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
   DIP_MARKET_LIST="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
@@ -141,21 +149,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.USDT"
       DIP_MARKETS="USDT"
     fi
-
-    # reset market
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC &>/dev/null
-    # reset market
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ETH &>/dev/null
-    # reset market
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".LTC &>/dev/null
-    # reset market
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".USDT &>/dev/null
   fi
-
-  # reset market
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
-  # reset target
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 
   ##############################################################################
 
