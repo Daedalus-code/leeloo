@@ -117,7 +117,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 
-  if [[ "$DIP_MARKETS" == "auto" || "$DIP_MARKETS" == "AUTO" || "$DIP_MARKETS" == "Auto" ]] &>/dev/null; then
+  if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+    DIP_MARKETS="auto"
+  fi
+
+  if [[ "$DIP_MARKETS" == "auto" ]] &>/dev/null; then
+
+    # set by configuration (default)
+    DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
+    DIP_MARKETS="BTC"
 
     # get big markets
     grep "BTC" "${LOG_DIR:?}"/leeloo/southxchange/prices >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".BTC
@@ -148,10 +156,13 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   else
     if [[ ! -z "$DIP_MARKETS" ]] &>/dev/null; then
-      # set by configuration
-      DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
-      DIP_MARKET_LIST="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+      DIP_MARKET_LIST="$(grep -c "$DIP_MARKETS" "$DIP_FILE_PATH" 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
     fi
+  fi
+
+  if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : exiting strategy, error no market!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    exit
   fi
 
   ##############################################################################
