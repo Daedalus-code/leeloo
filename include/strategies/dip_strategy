@@ -67,8 +67,8 @@ if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]] &>/dev/null; then
   touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 fi
 
-DIP_MARKET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | wc -l)"
-DIP_TARGET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | wc -l)"
+DIP_MARKET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | wc -l)"
+DIP_TARGET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | wc -l)"
 DIP_MARKET_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':()' | head -1)"
 DIP_TARGET_MARKET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk -FBuy: '{ print $2 }' | xargs)"
 
@@ -111,8 +111,8 @@ fi
 
 ################################################################################
 
-DIP_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
-DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
+DIP_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
+DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
 
 if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
   DIP_MARKET_COUNT="0"
