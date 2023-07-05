@@ -69,6 +69,7 @@ fi
 
 DIP_MARKET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | wc -l)"
 DIP_TARGET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | wc -l)"
+DIP_MARKET_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':')"
 DIP_TARGET_MARKET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk -FBuy: '{ print $2 }' | xargs)"
 
 if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
@@ -76,6 +77,9 @@ if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
 fi
 if [[ -z "$DIP_TARGET_COUNT" ]] &>/dev/null; then
   DIP_TARGET_COUNT="0"
+fi
+if [[ -z "$DIP_MARKET_SYMBOL" ]] &>/dev/null; then
+  DIP_MARKET_SYMBOL="N/A"
 fi
 if [[ -z "$DIP_TARGET_MARKET" ]] &>/dev/null; then
   DIP_TARGET_MARKET="N/A"
@@ -87,7 +91,7 @@ fi
 ################################################################################
 
 # get data
-echo "Market(s).............: $DIP_MARKET_COUNT
+echo "Market(s).............: $DIP_MARKET_COUNT ($DIP_MARKET_SYMBOL)
 Target(s).............: $DIP_TARGET_COUNT
 Target.Market.........: $DIP_TARGET_MARKET
 
