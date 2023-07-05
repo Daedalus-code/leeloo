@@ -104,9 +104,53 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   ##############################################################################
 
-  # CODE #
+  # configurable variables
+  MARKET="BTC"
+  MINIMUM_SPREAD="5"
+  MINIMUM_DIP="5"
+  MINIMUM_VOLUME_PERCENTAGE="0.5"
 
-  ##############################################################################
+  # file path
+  DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices"
+
+  # variables for potential buy recommendation
+  POTENTIAL_BUY_SYMBOL=""
+  POTENTIAL_BUY_BID=0
+
+  # read the file line by line
+  while IFS= read -r line; do
+    # extract relevant information from the line
+    SYMBOL=$(echo "$line" | awk '{print $1}')
+    BID=$(echo "$line" | awk '{print $2}')
+    ASK=$(echo "$line" | awk '{print $3}')
+    LAST=$(echo "$line" | awk '{print $4}')
+    DIP=$(echo "$line" | awk '{print $5}' | sed 's/%//')
+    VOLUME_PERCENTAGE=$(echo "$line" | awk '{print $6}' | sed 's/%//')
+
+    # check if the symbol matches the specified market and if the spread, dip, and volume meet the criteria
+    if [[ "$SYMBOL" == *"$MARKET"* ]] && (($(echo "$DIP < -$MINIMUM_DIP" | bc -l))) && (($(echo "$VOLUME_PERCENTAGE > $MINIMUM_VOLUME_PERCENTAGE" | bc -l))); then
+      if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]]; then
+        SPREAD=$(bc <<<"scale=2; ($ASK - $BID) / $BID * 100")
+        if (($(echo "$SPREAD > $MINIMUM_SPREAD" | bc -l))); then
+          PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100")
+          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Last: $LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%"
+
+          # check if the symbol meets the potential buy criteria
+          if (($(echo "$PRICE_MOVEMENT > 0" | bc -l))); then
+            if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
+              POTENTIAL_BUY_SYMBOL=$SYMBOL
+              POTENTIAL_BUY_BID=$BID
+            fi
+          fi
+        fi
+      fi
+    fi
+  done <"$DIP_FILE_PATH"
+
+  # provide potential buy recommendation if any
+  if [[ -n "$POTENTIAL_BUY_SYMBOL" ]]; then
+    echo "Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+  fi
 fi
 
 ################################################################################
