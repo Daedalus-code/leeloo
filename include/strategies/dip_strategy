@@ -216,9 +216,24 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # clean up file for duplicates
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
+  ##############################################################################
+
+  POTENTIAL_BUY_SYMBOL="$(awk '{ print $1 }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+  POTENTIAL_BUY_BID="$(awk '{ print $2 }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+
+  if [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+    POTENTIAL_BUY_SYMBOL="N/A"
+  fi
+  if [[ -z "$POTENTIAL_BUY_BID" ]] &>/dev/null; then
+    POTENTIAL_BUY_BID="N/A"
+  fi
+
+  DIP_TARGET_OUTPUT="Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+
+  ##############################################################################
+
   # provide potential buy recommendation if any
-  if [[ -n "$POTENTIAL_BUY_SYMBOL" ]]; then
-    DIP_TARGET_OUTPUT="Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+  if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
     echo "$DIP_TARGET_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
     # clean up file for duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
