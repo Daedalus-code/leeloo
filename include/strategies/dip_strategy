@@ -111,9 +111,16 @@ fi
 
 ################################################################################
 
+# data after the fact
+POTENTIAL_BUY_SYMBOL="$(awk '{ print $1 }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload 2>/dev/null)"
+POTENTIAL_BUY_BID="$(awk '{ print $2 }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload 2>/dev/null)"
+
 # get market, target count
 DIP_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
 DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
+
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
 
 # zero, continue
 if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
@@ -126,7 +133,7 @@ fi
 # target count greater than n, continue
 if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
 
-  DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+  DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
   DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_MARKET_COUNT $DIP_MARKETS Market(s) - $DIP_TARGET_COUNT Target(s)!"
 
   echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -225,6 +232,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
               POTENTIAL_BUY_SYMBOL=$SYMBOL
               POTENTIAL_BUY_BID=$BID
+              echo "$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".reload
             fi
           fi
         fi
@@ -237,8 +245,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   ##############################################################################
 
-  function dip_output() {
-    DIP_TARGET_OUTPUT="Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+  function dip_target_output() {
+    DIP_TARGET_OUTPUT="Potential :: Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
     echo "$DIP_TARGET_OUTPUT" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
   }
 
@@ -253,7 +261,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # provide potential buy recommendation if any
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
-    dip_output
+    dip_target_output
     # clean up file for duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
   fi
