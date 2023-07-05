@@ -105,11 +105,32 @@ open_positions
 
 DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-################################################################################
-
 if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
   DIP_MARKET_FILE_AGE="0"
 fi
+
+################################################################################
+
+DIP_MARKET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | wc -l)"
+DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
+
+if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
+  DIP_MARKET_COUNT="0"
+fi
+if [[ -z "$DIP_TARGET_COUNT" ]] &>/dev/null; then
+  DIP_TARGET_COUNT="0"
+fi
+
+if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
+  # reset target
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+  DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+  DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_MARKET_COUNT $DIP_MARKETS Market(s) - $DIP_TARGET_COUNT Target(s)!"
+  echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+fi
+
+################################################################################
 
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
@@ -239,27 +260,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # clean up file for duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
   fi
-fi
-
-################################################################################
-
-DIP_MARKET_COUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | wc -l)"
-DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')"
-
-if [[ -z "$DIP_MARKET_COUNT" ]] &>/dev/null; then
-  DIP_MARKET_COUNT="0"
-fi
-if [[ -z "$DIP_TARGET_COUNT" ]] &>/dev/null; then
-  DIP_TARGET_COUNT="0"
-fi
-
-if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
-  # reset target
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
-  DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
-  DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Found $DIP_MARKET_COUNT $DIP_MARKETS Market(s) - $DIP_TARGET_COUNT Target(s)!"
-  echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
