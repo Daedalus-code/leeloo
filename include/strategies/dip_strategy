@@ -345,6 +345,7 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   ##############################################################################
 
   MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Market $DIP_AMOUNT_LISTING"
+  MARKET_DIP_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Buy :: $LISTING_OPEN_CURRENCY :: $DIP_AMOUNT_LISTING $DIP_MARKET_BALANCE_LISTING ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
 
   ##############################################################################
   # BUY ORDER
@@ -354,12 +355,14 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   echo "$MARKET_DIP_OUTPUT :: Buy" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   # tx_id BETA
   cost_price
+  echo "$MARKET_DIP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
   # remove duplicates
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
   ##############################################################################
 
   MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Limit $DIP_AMOUNT_LISTING"
+  MARKET_DIP_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Sell :: $LISTING_OPEN_CURRENCY :: $DIP_AMOUNT_LISTING $DIP_MARKET_BALANCE_LISTING ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
 
   ##############################################################################
 
@@ -377,6 +380,7 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
     echo "$MARKET_DIP_OUTPUT :: Sell" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     # tx_id BETA
     cost_price
+    echo "$MARKET_DIP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
     # remove duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
   fi
