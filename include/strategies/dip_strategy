@@ -299,9 +299,10 @@ fi
 
 # create active order
 echo "$POTENTIAL_BUY_SYMBOL" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-
 # clean up file for duplicates, remove empty lines
-echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "N/A" | tr -d ':' | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+
+################################################################################
 
 # calculate dip allocated
 DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/100" | bc -l 2>/dev/null)"
