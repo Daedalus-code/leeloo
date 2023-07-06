@@ -162,8 +162,12 @@ fi
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # disregard markets w active orders
-  DIP_LIST="$(egrep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
-  echo "$DIP_LIST" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
+  if [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
+    DIP_LIST="$(egrep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
+    echo "$DIP_LIST" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
+  else
+    cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.dip &>/dev/null
+  fi
 
   # set by configuration (default)
   DIP_FILE_PATH="${LOG_DIR:?}/leeloo/southxchange/prices.dip"
