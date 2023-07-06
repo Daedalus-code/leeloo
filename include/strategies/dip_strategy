@@ -308,8 +308,6 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   DIP_TARGET_BID="$POTENTIAL_BUY_BID"
   DIP_TARGET_ASK="$POTENTIAL_BUY_ASK"
 
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential &>/dev/null
-
   # get listing, reference
   DIP_TARGET_LISTING="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $1 }')"
   DIP_TARGET_REFERENCE="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $2 }')"
@@ -372,6 +370,7 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
     # remove duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
   fi
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential &>/dev/null
 fi
 
 ################################################################################
