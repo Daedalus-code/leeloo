@@ -41,6 +41,8 @@ MIN_SPREAD_PERCENTAGE="$(egrep "MIN_SPREAD_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$B
 MIN_VOLUME_PERCENTAGE="$(egrep "MIN_VOLUME_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # define the markets to consider
 DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk '{ print $1 }' | awk -F= '{ print $2 }' | tr -d '"#')"
+# dip allocated (1% of balance)
+DIP_ALLOCATED="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # max open orders (default 10)
 DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # dip max age (default 600 seconds)
@@ -111,9 +113,9 @@ fi
 
 ################################################################################
 
+# potential data
 POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $1 }')"
 POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $2 }')"
-POTENTIAL_DIP_MARKETS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $3 }')"
 
 # zero, continue
 if [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
@@ -145,11 +147,11 @@ fi
 # target count greater than n, continue
 if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
 
+  # clean up old data
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential &>/dev/null
 
-  DIP_STATUS_RESULT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Market $POTENTIAL_DIP_MARKETS: +$DIP_MARKET_COUNT Targets: +$DIP_TARGET_COUNT"
   DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Buy: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
 
   echo "$DIP_STATUS_RESULT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -255,9 +257,13 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # check if the symbol meets the potential buy criteria
           if (($(echo "$PRICE_MOVEMENT > 0" | bc -l))); then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
+
+              # potential symbol, bid
               POTENTIAL_BUY_SYMBOL=$SYMBOL
               POTENTIAL_BUY_BID=$BID
-              echo "$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID $DIP_MARKETS" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential
+
+              # create potential file
+              echo "$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential
             fi
           fi
         fi
@@ -265,15 +271,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   done <"$DIP_FILE_PATH"
 
-  # clean up file for duplicates
+  # clean up file for duplicates, remove empty lines
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
   ##############################################################################
-
-  function dip_target_output() {
-    DIP_TARGET_OUTPUT="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID"
-    echo "$DIP_TARGET_OUTPUT" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
-  }
 
   if [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
     POTENTIAL_BUY_SYMBOL="N/A"
@@ -286,11 +287,26 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # provide potential buy recommendation if any
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
-    dip_target_output
-    # clean up file for duplicates
+
+    # target output
+    DIP_TARGET_OUTPUT="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID"
+    echo "$DIP_TARGET_OUTPUT" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+
+    # clean up file for duplicates, remove empty lines
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
   fi
 fi
+
+################################################################################
+
+# create active order
+echo "$POTENTIAL_BUY_SYMBOL" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+
+# clean up file for duplicates, remove empty lines
+echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+
+# calculate dip allocated
+DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/100" | bc -l 2>/dev/null)"
 
 ################################################################################
 
