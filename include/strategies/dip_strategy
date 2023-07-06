@@ -333,9 +333,9 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   # get pair
   DIP_TARGET_PAIR="$DIP_TARGET_LISTING $DIP_TARGET_REFERENCE"
   # get market balance listing
-  DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')"
+  DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
   # get market balance reference
-  DIP_MARKET_BALANCE_REFERENCE="$(grep "$DIP_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')"
+  DIP_MARKET_BALANCE_REFERENCE="$(grep "$DIP_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 
   # calculate dip allocated
   DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/100" | bc -l 2>/dev/null)"
@@ -358,15 +358,28 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
   ##############################################################################
-  # SELL ORDER
-  # placeOrder limit ###########################################################
-  PLACE_ORDER="$(placeOrder_limit "sell" "$DIP_TARGET_PAIR" "$DIP_TARGET_ASK" "$DIP_MARKET_BALANCE_REFERENCE" "false")"
-  # output
-  echo "$MARKET_DIP_OUTPUT :: Sell" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  # tx_id BETA
-  cost_price
-  # remove duplicates
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Limit $DIP_AMOUNT_LISTING"
+
+  ##############################################################################
+
+  # update balances
+  echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+  DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
+
+  if [[ "$(echo "$DIP_MARKET_BALANCE_LISTING" | egrep "[0-9]+.[0-9]+" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+
+    ############################################################################
+    # SELL ORDER
+    # placeOrder limit #########################################################
+    PLACE_ORDER="$(placeOrder_limit "sell" "$DIP_TARGET_PAIR" "$DIP_TARGET_ASK" "$DIP_MARKET_BALANCE_LISTING" "false")"
+    # output
+    echo "$MARKET_DIP_OUTPUT :: Sell" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    # tx_id BETA
+    cost_price
+    # remove duplicates
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+  fi
 fi
 
 ################################################################################
