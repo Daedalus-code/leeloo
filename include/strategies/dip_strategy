@@ -281,9 +281,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # clean up file for duplicates, remove empty lines
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
-
     # create active order
-    echo "$POTENTIAL_BUY_SYMBOL" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+    echo "$DIP_TARGET_OUTPUT " >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
     # clean up file for not available, symbol, duplicates, remove empty lines, sort
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "N/A" | tr -d ':' | awk '!a[$0]++' | sort | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
   fi
