@@ -343,16 +343,16 @@ DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk
 
 ################################################################################
 
+MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE"
+MARKET_DIP_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: $DIP_TARGET_REFERENCE: No available balance!"
+
+################################################################################
+
 # buy, sell trigger
 if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
 
   # reference (market) has available balance
   if [[ "$(echo "$DIP_AMOUNT_REFERENCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-
-    ############################################################################
-
-    MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE"
-    MARKET_DIP_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: $DIP_TARGET_REFERENCE: No available balance!"
 
     ############################################################################
     # BUY ORDER
