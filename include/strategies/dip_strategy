@@ -277,12 +277,14 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # target output
     DIP_TARGET_OUTPUT="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID $POTENTIAL_BUY_ASK"
+
+    # create target
     echo "$DIP_TARGET_OUTPUT" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+    # create active orders
+    echo "$DIP_TARGET_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
     # clean up file for duplicates, remove empty lines
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
-    # create active order
-    echo "$DIP_TARGET_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
     # clean up file for not available, symbol, duplicates, remove empty lines, sort
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "N/A" | tr -d ':' | awk '!a[$0]++' | sort | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
   fi
@@ -291,17 +293,17 @@ fi
 ################################################################################
 
 # potential data
-POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $1 }')"
-POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $2 }')"
-POTENTIAL_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $3 }')"
+ACTIVE_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }')"
+ACTIVE_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $2 }')"
+ACTIVE_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $3 }')"
 
 # get listing, reference
-DIP_TARGET_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
+DIP_TARGET_NAME="$(echo "$ACTIVE_BUY_SYMBOL" | tr -d ':')"
 DIP_TARGET_LISTING="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $1 }')"
 DIP_TARGET_REFERENCE="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $2 }')"
 
-DIP_TARGET_BID="$POTENTIAL_BUY_BID"
-DIP_TARGET_ASK="$POTENTIAL_BUY_ASK"
+DIP_TARGET_BID="$ACTIVE_BUY_BID"
+DIP_TARGET_ASK="$ACTIVE_BUY_ASK"
 
 # variables for southxchange template
 LISTING_CURRENCY="$DIP_TARGET_LISTING"
@@ -346,7 +348,7 @@ DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk
 
 # buying order
 DIP_MARKET_BUYING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE"
-DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Targeting :: Order setup: $DIP_TARGET_LISTING at Bid: $POTENTIAL_BUY_BID $DIP_TARGET_REFERENCE"
+DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Targeting :: Order setup: $DIP_TARGET_LISTING at Bid: $DIP_TARGET_BID $DIP_TARGET_REFERENCE"
 DIP_MARKET_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: $DIP_TARGET_REFERENCE: No available balance!"
 
 # selling order
