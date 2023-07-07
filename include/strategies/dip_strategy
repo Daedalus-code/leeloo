@@ -314,22 +314,26 @@ ACTIVE_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev
 
 # get listing, reference
 DIP_TARGET_NAME="$(echo "$ACTIVE_BUY_SYMBOL" | tr -d ':')"
+# get listing (target)
 DIP_TARGET_LISTING="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $1 }')"
-DIP_TARGET_REFERENCE="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $2 }')"
+# get reference (market)
+DIP_MARKET_REFERENCE="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $2 }')"
 
+# get target bid
 DIP_TARGET_BID="$ACTIVE_BUY_BID"
+# get target ask
 DIP_TARGET_ASK="$ACTIVE_BUY_ASK"
 
 # variables for southxchange template
 LISTING_CURRENCY="$DIP_TARGET_LISTING"
-REFERENCE_CURRENCY="$DIP_TARGET_REFERENCE"
+REFERENCE_CURRENCY="$DIP_MARKET_REFERENCE"
 
 # get pair
-DIP_TARGET_PAIR="$DIP_TARGET_LISTING $DIP_TARGET_REFERENCE"
+DIP_TARGET_PAIR="$DIP_TARGET_LISTING $DIP_MARKET_REFERENCE"
 # get market balance listing (target)
 DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 # get market balance reference (market)
-DIP_MARKET_BALANCE_REFERENCE="$(grep "$DIP_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
+DIP_MARKET_BALANCE_REFERENCE="$(grep "$DIP_MARKET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 
 if [[ -z "$DIP_MARKET_BALANCE_LISTING" ]] &>/dev/null; then
   DIP_MARKET_BALANCE_LISTING="0.000000000"
@@ -362,9 +366,9 @@ DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk
 ################################################################################
 
 # buying order
-DIP_MARKET_BUYING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE"
-DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Targeting :: Order setup: $DIP_TARGET_LISTING at Bid: $DIP_TARGET_BID $DIP_TARGET_REFERENCE"
-DIP_MARKET_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: $DIP_TARGET_REFERENCE: No available balance!"
+DIP_MARKET_BUYING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_MARKET_REFERENCE"
+DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Targeting :: Order setup: $DIP_TARGET_LISTING at Bid: $DIP_TARGET_BID $DIP_MARKET_REFERENCE"
+DIP_MARKET_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: $DIP_MARKET_REFERENCE: No available balance!"
 
 # selling order
 DIP_TARGET_SELLING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Selling $DIP_MARKET_AMOUNT_CALCULATED for $DIP_AMOUNT_LISTING $DIP_TARGET_LISTING"
@@ -384,7 +388,7 @@ if [[ "$BUY_TRIGGER" == "OK" ]] &>/dev/null; then
     ############################################################################
 
     # placeOrder limit #########################################################
-    PLACE_ORDER="$(placeOrder_limit "buy" "$DIP_TARGET_LISTING" "$DIP_TARGET_REFERENCE" "$DIP_TARGET_BID" "$DIP_AMOUNT_REFERENCE" "false")"
+    PLACE_ORDER="$(placeOrder_limit "buy" "$DIP_TARGET_LISTING" "$DIP_MARKET_REFERENCE" "$DIP_TARGET_BID" "$DIP_AMOUNT_REFERENCE" "false")"
 
     # output
     echo "$DIP_MARKET_BUYING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -413,7 +417,7 @@ if [[ "$ACTIVE_HAS_BALANCE" -gt "0" ]] &>/dev/null; then
 
   # get specific market
   DIP_TARGET_LISTING="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | head -1)"
-  DIP_TARGET_ASK="$(grep "$DIP_TARGET_LISTING/$DIP_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $3 }')"
+  DIP_TARGET_ASK="$(grep "$DIP_TARGET_LISTING/$DIP_MARKET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $3 }')"
 
   # listing (target) has available balance
   if [[ "$(echo "$DIP_MARKET_BALANCE_LISTING" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
@@ -423,7 +427,7 @@ if [[ "$ACTIVE_HAS_BALANCE" -gt "0" ]] &>/dev/null; then
     ############################################################################
 
     # placeOrder limit #########################################################
-    PLACE_ORDER="$(placeOrder_limit "sell" "$DIP_TARGET_LISTING" "$DIP_TARGET_REFERENCE" "$DIP_TARGET_ASK" "$DIP_MARKET_BALANCE_LISTING" "false")"
+    PLACE_ORDER="$(placeOrder_limit "sell" "$DIP_TARGET_LISTING" "$DIP_MARKET_REFERENCE" "$DIP_TARGET_ASK" "$DIP_MARKET_BALANCE_LISTING" "false")"
 
     # output
     echo "$DIP_TARGET_SELLING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
