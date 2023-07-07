@@ -251,14 +251,14 @@ function incoming_listing() {
   # keep n lines
   echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null
 
-  # last lines are different, continue
+  # last lines are different
   LIST_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null)"
   # last n lines above
   LIST_INCOMING_ABOVE="$(echo "$LIST_INCOMING" | tail -2 | head -1 | tr -d '.' | sed 's/^0*//')"
   # last n lines below
   LIST_INCOMING_BELOW="$(echo "$LIST_INCOMING" | tail -2 | tail -1 | tr -d '.' | sed 's/^0*//')"
 
-  # lines are different, continue
+  # lines are different
   if [[ ! "$LIST_INCOMING_ABOVE" -eq "$LIST_INCOMING_BELOW" ]] &>/dev/null; then
     # make sure last change is a negative
     if [[ "$LIST_INCOMING_ABOVE" -gt "$LIST_INCOMING_BELOW" ]] &>/dev/null; then
@@ -310,14 +310,14 @@ function incoming_reference() {
   # keep n lines
   echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null
 
-  # last lines are different, continue
+  # last lines are different
   REF_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null)"
   # last n lines above
   REF_INCOMING_ABOVE="$(echo "$REF_INCOMING" | tail -2 | head -1 | tr -d '.' | sed 's/^0*//')"
   # last n lines below
   REF_INCOMING_BELOW="$(echo "$REF_INCOMING" | tail -2 | tail -1 | tr -d '.' | sed 's/^0*//')"
 
-  # lines are different, continue
+  # lines are different
   if [[ ! "$REF_INCOMING_ABOVE" -eq "$REF_INCOMING_BELOW" ]] &>/dev/null; then
     # make sure last change is a negative
     if [[ "$REF_INCOMING_ABOVE" -gt "$REF_INCOMING_BELOW" ]] &>/dev/null; then
@@ -414,26 +414,26 @@ function open_positions() {
 
   ##############################################################################
 
-  # make sure prices, balances exist, continue
+  # make sure prices, balances exist
   if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -gt "0" ]] &>/dev/null; then
     if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -gt "0" ]] &>/dev/null; then
 
-      # listing price null, continue
+      # listing price null
       if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null)" -eq "0" ]] &>/dev/null; then
         echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
       fi
-      # listing cost null, continue
+      # listing cost null
       if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null)" -eq "0" ]] &>/dev/null; then
         echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null
       fi
 
       ##########################################################################
 
-      # reference price null, continue
+      # reference price null
       if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null)" -eq "0" ]] &>/dev/null; then
         echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
       fi
-      # reference cost null, continue
+      # reference cost null
       if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null)" -eq "0" ]] &>/dev/null; then
         echo "$REFERENCE_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null
       fi
@@ -484,7 +484,7 @@ function open_positions() {
 
   ##############################################################################
 
-  # make sure prices, balances exist, continue
+  # make sure prices, balances exist
   if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -gt "0" ]] &>/dev/null; then
     if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -gt "0" ]] &>/dev/null; then
 
@@ -514,7 +514,7 @@ function rogue_profit() {
 
   ##############################################################################
 
-  # missing, continue
+  # missing
   if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
     touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue &>/dev/null
   fi
