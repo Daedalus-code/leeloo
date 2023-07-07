@@ -62,6 +62,14 @@ last_tx # last tx
 
 ################################################################################
 
+function reset_data() {
+  # reset data
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+}
+
+################################################################################
+
 if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market ]] &>/dev/null; then
   touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
 fi
@@ -126,14 +134,11 @@ fi
 
 ################################################################################
 
-# not available
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')" == "N/A" ]] &>/dev/null; then
   # reset data
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 fi
-
-################################################################################
 
 # file age greater than max age
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
@@ -216,6 +221,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # variables for potential buy recommendation (default)
   POTENTIAL_BUY_SYMBOL=""
   POTENTIAL_BUY_BID="0"
+  POTENTIAL_BUY_ASK="0"
 
   # read the file line by line
   while IFS= read -r line; do
@@ -275,6 +281,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # buy, sell trigger
     BUY_TRIGGER="OK"
 
+    # zero, not available
+    if [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+      POTENTIAL_BUY_SYMBOL="N/A"
+    fi
+
     # target output
     DIP_TARGET_OUTPUT="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID $POTENTIAL_BUY_ASK"
 
@@ -286,7 +297,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # clean up file for duplicates, remove empty lines
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
     # clean up file for not available, symbol, duplicates, remove empty lines, sort
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "N/A" | tr -d ':' | awk '!a[$0]++' | sort | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | tr -d ':' | awk '!a[$0]++' | sort | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
   fi
 fi
 
@@ -378,8 +389,7 @@ if [[ "$BUY_TRIGGER" == "OK" ]] &>/dev/null; then
     # tx_id
 
     # reset data
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+    reset_data
 
     echo "$DIP_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   else
@@ -418,8 +428,7 @@ if [[ "$ACTIVE_HAS_BALANCE" -gt "0" ]] &>/dev/null; then
     # tx_id
 
     # reset data
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+    reset_data
 
     echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     # else
