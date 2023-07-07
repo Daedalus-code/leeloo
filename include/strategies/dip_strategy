@@ -343,8 +343,15 @@ DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk
 
 ################################################################################
 
-MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE"
-MARKET_DIP_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: $DIP_TARGET_REFERENCE: No available balance!"
+# buying order
+DIP_MARKET_BUYING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE"
+DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Targeting :: Order setup: $DIP_TARGET_LISTING at Bid: $POTENTIAL_BUY_BID $DIP_TARGET_REFERENCE"
+DIP_MARKET_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: $DIP_TARGET_REFERENCE: No available balance!"
+
+# selling order
+DIP_TARGET_SELLING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Selling $DIP_MARKET_AMOUNT_CALCULATED with $DIP_AMOUNT_LISTING $DIP_TARGET_LISTING"
+DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Targeting :: Order setup: $DIP_MARKET_AMOUNT_CALCULATED at Bid: $DIP_AMOUNT_LISTING $DIP_TARGET_LISTING"
+DIP_TARGET_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: $DIP_TARGET_LISTING: No available balance!"
 
 ################################################################################
 
@@ -355,43 +362,56 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   if [[ "$(echo "$DIP_AMOUNT_REFERENCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
     ############################################################################
-    # BUY ORDER
+    # BUY LIMIT ORDER
+    ############################################################################
+
     # placeOrder limit #########################################################
     PLACE_ORDER="$(placeOrder_limit "buy" "$DIP_TARGET_PAIR" "$DIP_TARGET_BID" "$DIP_AMOUNT_REFERENCE" "false")"
+
     # output
-    echo "$MARKET_DIP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    # tx_id BETA
+    echo "$DIP_MARKET_BUYING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+    # execute placeOrder
+    # tx_id BETA <- DISABLED under BETA!
 
     # reset data
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 
-    # order setup output
-    DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Targeting :: Order setup: $DIP_TARGET_LISTING at Bid: $POTENTIAL_BUY_BID $DIP_TARGET_REFERENCE"
-    echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    echo "$DIP_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   else
-    echo "$MARKET_DIP_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    echo "$DIP_MARKET_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
   ##############################################################################
 
-  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Selling $DIP_MARKET_AMOUNT_CALCULATED with $DIP_AMOUNT_LISTING $DIP_TARGET_LISTING"
-
-  ##############################################################################
-
-  # update balances
+  # update balances (southxchange)
   echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
   DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 
-  if [[ "$(echo "$DIP_MARKET_BALANCE_LISTING" | egrep "[0-9]+.[0-9]+" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+  # listing (target) has available balance
+  if [[ "$(echo "$DIP_MARKET_BALANCE_LISTING" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
     ############################################################################
-    # SELL ORDER
+    # SELL LIMIT ORDER
+    ############################################################################
+
     # placeOrder limit #########################################################
     PLACE_ORDER="$(placeOrder_limit "sell" "$DIP_TARGET_PAIR" "$DIP_TARGET_ASK" "$DIP_MARKET_BALANCE_LISTING" "false")"
+
     # output
-    echo "$MARKET_DIP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    # tx_id BETA
+    echo "$DIP_TARGET_SELLING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+    # execute placeOrder
+    # tx_id BETA <- DISABLED under BETA!
+
+    # reset data
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+
+    echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  else
+    echo "$DIP_TARGET_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 fi
 
