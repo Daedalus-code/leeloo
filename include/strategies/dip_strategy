@@ -366,17 +366,24 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   # calculate dip allocated reference (market)
   DIP_AMOUNT_REFERENCE="$(echo "$DIP_ALLOCATED*$DIP_MARKET_BALANCE_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
-  ##############################################################################
+  # reference (market) has available balance
+  if [[ "$(echo "$DIP_AMOUNT_REFERENCE" | awk -F. '{ print $1 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
-  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE"
+    ############################################################################
 
-  ##############################################################################
-  # BUY ORDER
-  # placeOrder limit ###########################################################
-  PLACE_ORDER="$(placeOrder_limit "buy" "$DIP_TARGET_PAIR" "$DIP_TARGET_BID" "$DIP_AMOUNT_REFERENCE" "false")"
-  # output
-  echo "$MARKET_DIP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  # tx_id BETA
+    MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE"
+    MARKET_DIP_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: $DIP_TARGET_REFERENCE: No available balance!"
+
+    ############################################################################
+    # BUY ORDER
+    # placeOrder limit #########################################################
+    PLACE_ORDER="$(placeOrder_limit "buy" "$DIP_TARGET_PAIR" "$DIP_TARGET_BID" "$DIP_AMOUNT_REFERENCE" "false")"
+    # output
+    echo "$MARKET_DIP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    # tx_id BETA
+  else
+    echo "$MARKET_DIP_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  fi
 
   ##############################################################################
 
