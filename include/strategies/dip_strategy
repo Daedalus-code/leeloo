@@ -336,6 +336,11 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   # get market balance reference (market)
   DIP_MARKET_BALANCE_REFERENCE="$(grep "$DIP_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 
+  # calculate amount to get from target
+  DIP_TARGET_AMOUNT_CALCULATED="$(echo "$DIP_MARKET_BALANCE_REFERENCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # calculate amount to get from market
+  DIP_MARKET_AMOUNT_CALCULATED="$(echo "$DIP_MARKET_BALANCE_LISTING/$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
   if [[ -z "$DIP_MARKET_BALANCE_LISTING" ]] &>/dev/null; then
     DIP_MARKET_BALANCE_LISTING="0.000000000"
   fi
@@ -357,7 +362,7 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
 
   ##############################################################################
 
-  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Limit $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE :: Buy"
+  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Buying $DIP_TARGET_AMOUNT_CALCULATED with $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE"
 
   ##############################################################################
   # BUY ORDER
@@ -371,7 +376,7 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
 
   ##############################################################################
 
-  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Limit $DIP_AMOUNT_LISTING $DIP_TARGET_LISTING :: Sell"
+  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Selling $DIP_MARKET_AMOUNT_CALCULATED with $DIP_AMOUNT_LISTING $DIP_TARGET_LISTING"
 
   ##############################################################################
 
