@@ -384,13 +384,12 @@ if [[ "$BUY_TRIGGER" == "OK" ]] &>/dev/null; then
   else
     echo "$DIP_MARKET_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
+  # update balances (southxchange)
+  echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+  DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 fi
 
 ################################################################################
-
-# update balances (southxchange)
-echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
-DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 
 # listing (target) has available balance
 if [[ "$(echo "$DIP_MARKET_BALANCE_LISTING" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
