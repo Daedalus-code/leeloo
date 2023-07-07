@@ -336,6 +336,13 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   # get market balance reference (market)
   DIP_MARKET_BALANCE_REFERENCE="$(grep "$DIP_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 
+  if [[ -z "$DIP_MARKET_BALANCE_LISTING" ]] &>/dev/null; then
+    DIP_MARKET_BALANCE_LISTING="0.000000000"
+  fi
+  if [[ -z "$DIP_MARKET_BALANCE_REFERENCE" ]] &>/dev/null; then
+    DIP_MARKET_BALANCE_REFERENCE="0.000000000"
+  fi
+
   # calculate dip allocated
   DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/100" | bc -l 2>/dev/null)"
   # calculate dip allocated listing (target)
