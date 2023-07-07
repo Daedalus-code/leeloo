@@ -76,10 +76,14 @@ POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 
 POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $2 }')"
 POTENTIAL_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $3 }')"
 
-# get listing, reference
-DIP_TARGET_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
-DIP_TARGET_LISTING="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $1 }')"
-DIP_TARGET_REFERENCE="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $2 }')"
+function target_listing_reference() {
+  # get listing, reference
+  DIP_TARGET_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
+  DIP_TARGET_LISTING="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $1 }')"
+  DIP_TARGET_REFERENCE="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $2 }')"
+}
+
+target_listing_reference
 
 ################################################################################
 
@@ -321,6 +325,8 @@ echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep 
 
 # buy, sell trigger
 if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
+
+  target_listing_reference
 
   DIP_TARGET_BID="$POTENTIAL_BUY_BID"
   DIP_TARGET_ASK="$POTENTIAL_BUY_ASK"
