@@ -276,13 +276,13 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     BUY_TRIGGER="OK"
 
     # target output
-    DIP_TARGET_OUTPUT="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID"
+    DIP_TARGET_OUTPUT="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID $POTENTIAL_BUY_ASK"
     echo "$DIP_TARGET_OUTPUT" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
 
     # clean up file for duplicates, remove empty lines
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
     # create active order
-    echo "$DIP_TARGET_OUTPUT " >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+    echo "$DIP_TARGET_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
     # clean up file for not available, symbol, duplicates, remove empty lines, sort
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "N/A" | tr -d ':' | awk '!a[$0]++' | sort | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
   fi
@@ -294,9 +294,6 @@ fi
 POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $1 }')"
 POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $2 }')"
 POTENTIAL_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $3 }')"
-
-# reset potential
-truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential &>/dev/null
 
 # get listing, reference
 DIP_TARGET_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
@@ -392,29 +389,38 @@ DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/s
 
 ################################################################################
 
-# listing (target) has available balance
-if [[ "$(echo "$DIP_MARKET_BALANCE_LISTING" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+ACTIVE_HAS_BALANCE="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | wc -l)"
 
-  ##############################################################################
-  # SELL LIMIT ORDER
-  ##############################################################################
+if [[ "$ACTIVE_HAS_BALANCE" -gt "0" ]] &>/dev/null; then
 
-  # placeOrder limit ###########################################################
-  PLACE_ORDER="$(placeOrder_limit "sell" "$DIP_TARGET_LISTING" "$DIP_TARGET_REFERENCE" "$DIP_TARGET_ASK" "$DIP_MARKET_BALANCE_LISTING" "false")"
+  # get specific market
+  DIP_TARGET_LISTING="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | head -1)"
+  DIP_TARGET_ASK="$(grep "$DIP_TARGET_LISTING/$DIP_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $3 }')"
 
-  # output
-  echo "$DIP_TARGET_SELLING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  # listing (target) has available balance
+  if [[ "$(echo "$DIP_MARKET_BALANCE_LISTING" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
-  # execute placeOrder, BETA <- should be DISABLED under BETA!
-  tx_id
+    ############################################################################
+    # SELL LIMIT ORDER
+    ############################################################################
 
-  # reset data
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+    # placeOrder limit #########################################################
+    PLACE_ORDER="$(placeOrder_limit "sell" "$DIP_TARGET_LISTING" "$DIP_TARGET_REFERENCE" "$DIP_TARGET_ASK" "$DIP_MARKET_BALANCE_LISTING" "false")"
 
-  echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  # else
-  # echo "$DIP_TARGET_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    # output
+    echo "$DIP_TARGET_SELLING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+    # execute placeOrder, BETA <- should be DISABLED under BETA!
+    tx_id
+
+    # reset data
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+
+    echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    # else
+    # echo "$DIP_TARGET_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  fi
 fi
 
 ################################################################################
