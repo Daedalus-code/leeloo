@@ -268,12 +268,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   ##############################################################################
 
   # buy, sell trigger (default)
-  BUY_SELL_TRIGGER="NO"
+  BUY_TRIGGER="NO"
 
   # provide potential buy recommendation if any
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
     # buy, sell trigger
-    BUY_SELL_TRIGGER="OK"
+    BUY_TRIGGER="OK"
 
     # target output
     DIP_TARGET_OUTPUT="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID"
@@ -358,7 +358,7 @@ DIP_TARGET_OUTPUT_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_
 ################################################################################
 
 # buy, sell trigger
-if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
+if [[ "$BUY_TRIGGER" == "OK" ]] &>/dev/null; then
 
   # reference (market) has available balance
   if [[ "$(echo "$DIP_AMOUNT_REFERENCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
@@ -384,37 +384,37 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   else
     echo "$DIP_MARKET_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
+fi
+
+################################################################################
+
+# update balances (southxchange)
+echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
+
+# listing (target) has available balance
+if [[ "$(echo "$DIP_MARKET_BALANCE_LISTING" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
   ##############################################################################
+  # SELL LIMIT ORDER
+  ##############################################################################
 
-  # update balances (southxchange)
-  echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
-  DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
+  # placeOrder limit ###########################################################
+  PLACE_ORDER="$(placeOrder_limit "sell" "$DIP_TARGET_LISTING" "$DIP_TARGET_REFERENCE" "$DIP_TARGET_ASK" "$DIP_MARKET_BALANCE_LISTING" "false")"
 
-  # listing (target) has available balance
-  if [[ "$(echo "$DIP_MARKET_BALANCE_LISTING" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+  # output
+  echo "$DIP_TARGET_SELLING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-    ############################################################################
-    # SELL LIMIT ORDER
-    ############################################################################
+  # execute placeOrder, BETA <- should be DISABLED under BETA!
+  tx_id
 
-    # placeOrder limit #########################################################
-    PLACE_ORDER="$(placeOrder_limit "sell" "$DIP_TARGET_LISTING" "$DIP_TARGET_REFERENCE" "$DIP_TARGET_ASK" "$DIP_MARKET_BALANCE_LISTING" "false")"
+  # reset data
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 
-    # output
-    echo "$DIP_TARGET_SELLING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-    # execute placeOrder, BETA <- should be DISABLED under BETA!
-    tx_id
-
-    # reset data
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
-
-    echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    # else
-    # echo "$DIP_TARGET_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  fi
+  echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  # else
+  # echo "$DIP_TARGET_OUTPUT_NO_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
