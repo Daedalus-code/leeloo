@@ -314,11 +314,6 @@ DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/s
 # get market balance reference (market)
 DIP_MARKET_BALANCE_REFERENCE="$(grep "$DIP_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 
-# calculate amount to get from target
-DIP_TARGET_AMOUNT_CALCULATED="$(echo "$DIP_MARKET_BALANCE_REFERENCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-# calculate amount to get from market
-DIP_MARKET_AMOUNT_CALCULATED="$(echo "$DIP_MARKET_BALANCE_LISTING/$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
 if [[ -z "$DIP_MARKET_BALANCE_LISTING" ]] &>/dev/null; then
   DIP_MARKET_BALANCE_LISTING="0.000000000"
 fi
@@ -333,11 +328,18 @@ fi
 
 # calculate dip allocated
 DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/100" | bc -l 2>/dev/null)"
+
 # calculate dip allocated listing (target)
 DIP_AMOUNT_LISTING="$(echo "$DIP_ALLOCATED*$DIP_MARKET_BALANCE_LISTING" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # calculate dip allocated reference (market)
 DIP_AMOUNT_REFERENCE="$(echo "$DIP_ALLOCATED*$DIP_MARKET_BALANCE_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
+# calculate amount to get from target
+DIP_TARGET_AMOUNT_CALCULATED="$(echo "$DIP_AMOUNT_LISTING/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+# calculate amount to get from market
+DIP_MARKET_AMOUNT_CALCULATED="$(echo "$DIP_AMOUNT_REFERENCE/$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+# target count
 DIP_TARGET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
 
 ################################################################################
