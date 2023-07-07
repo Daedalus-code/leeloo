@@ -329,24 +329,26 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
 
   # get pair
   DIP_TARGET_PAIR="$DIP_TARGET_LISTING $DIP_TARGET_REFERENCE"
-  # get market balance listing
+  # get market balance listing (target)
   DIP_MARKET_BALANCE_LISTING="$(grep "$DIP_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
-  # get market balance reference
+  # get market balance reference (market)
   DIP_MARKET_BALANCE_REFERENCE="$(grep "$DIP_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $2 }')"
 
   # calculate dip allocated
   DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/100" | bc -l 2>/dev/null)"
-  # calculate dip allocated listing
+  # calculate dip allocated listing (target)
   DIP_AMOUNT_LISTING="$(echo "$DIP_ALLOCATED*$DIP_MARKET_BALANCE_LISTING" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  # calculate dip allocated reference (market)
+  DIP_AMOUNT_REFERENCE="$(echo "$DIP_ALLOCATED*$DIP_MARKET_BALANCE_REFERENCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
   ##############################################################################
 
-  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Limit $DIP_AMOUNT_LISTING :: Buy"
+  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Limit $DIP_AMOUNT_REFERENCE $DIP_TARGET_REFERENCE :: Buy"
 
   ##############################################################################
   # BUY ORDER
   # placeOrder limit ###########################################################
-  PLACE_ORDER="$(placeOrder_limit "buy" "$DIP_TARGET_PAIR" "$DIP_TARGET_BID" "$DIP_MARKET_BALANCE_LISTING" "false")"
+  PLACE_ORDER="$(placeOrder_limit "buy" "$DIP_TARGET_PAIR" "$DIP_TARGET_BID" "$DIP_AMOUNT_REFERENCE" "false")"
   # output
   echo "$MARKET_DIP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   # tx_id BETA
@@ -355,7 +357,7 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
 
   ##############################################################################
 
-  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Limit $DIP_AMOUNT_LISTING :: Sell"
+  MARKET_DIP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_TARGET_PAIR :: Limit $DIP_AMOUNT_LISTING $DIP_TARGET_LISTING :: Sell"
 
   ##############################################################################
 
