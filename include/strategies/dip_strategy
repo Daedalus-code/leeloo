@@ -142,6 +142,9 @@ fi
 # file age greater than max age
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
+  # reset data
+  reset_data
+
   # disregard markets w active orders
   if [[ "$(egrep -c "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
     DIP_LIST="$(egrep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
