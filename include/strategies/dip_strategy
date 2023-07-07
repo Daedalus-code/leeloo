@@ -76,6 +76,11 @@ POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 
 POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $2 }')"
 POTENTIAL_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $3 }')"
 
+# get listing, reference
+DIP_TARGET_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
+DIP_TARGET_LISTING="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $1 }')"
+DIP_TARGET_REFERENCE="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $2 }')"
+
 ################################################################################
 
 # market count
@@ -150,7 +155,7 @@ if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
   # target output
-  DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Buying: $POTENTIAL_BUY_SYMBOL at Bid: $POTENTIAL_BUY_BID"
+  DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Order setup: $DIP_TARGET_LISTING at Bid: $POTENTIAL_BUY_BID $DIP_TARGET_REFERENCE"
   echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
@@ -316,14 +321,9 @@ echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep 
 
 # buy, sell trigger
 if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
-  # check if target is active
-  DIP_TARGET_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
+
   DIP_TARGET_BID="$POTENTIAL_BUY_BID"
   DIP_TARGET_ASK="$POTENTIAL_BUY_ASK"
-
-  # get listing, reference
-  DIP_TARGET_LISTING="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $1 }')"
-  DIP_TARGET_REFERENCE="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $2 }')"
 
   # variables for southxchange template
   LISTING_CURRENCY="$DIP_TARGET_LISTING"
