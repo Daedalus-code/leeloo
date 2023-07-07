@@ -337,9 +337,9 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
   # calculate dip allocated
   DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/100" | bc -l 2>/dev/null)"
   # calculate dip allocated listing (target)
-  DIP_AMOUNT_LISTING="$(echo "$DIP_ALLOCATED*$DIP_MARKET_BALANCE_LISTING" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  DIP_AMOUNT_LISTING="$(echo "$DIP_ALLOCATED*$DIP_MARKET_BALANCE_LISTING" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # calculate dip allocated reference (market)
-  DIP_AMOUNT_REFERENCE="$(echo "$DIP_ALLOCATED*$DIP_MARKET_BALANCE_REFERENCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  DIP_AMOUNT_REFERENCE="$(echo "$DIP_ALLOCATED*$DIP_MARKET_BALANCE_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   ##############################################################################
 
@@ -377,6 +377,11 @@ if [[ "$BUY_SELL_TRIGGER" == "OK" ]] &>/dev/null; then
     # remove duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
   fi
+fi
+
+################################################################################
+
+if [[ "$(grep -c "$POTENTIAL_BUY_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential &>/dev/null
 fi
 
