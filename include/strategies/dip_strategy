@@ -296,6 +296,9 @@ POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 
 POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $2 }')"
 POTENTIAL_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential 2>/dev/null | awk '{ print $3 }')"
 
+# reset potential
+truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".potential &>/dev/null
+
 # get listing, reference
 DIP_TARGET_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
 DIP_TARGET_LISTING="$(echo "$DIP_TARGET_NAME" | awk -F/ '{ print $1 }')"
