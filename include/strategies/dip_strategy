@@ -158,9 +158,16 @@ fi
 
 ################################################################################
 
-DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_BUY_SYMBOL"
+POTENTIAL_SYMBOL="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+POTENTIAL_TARGETS="$(grep -c "[A-Z]+" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target)"
 
-################################################################################
+if [[ "$POTENTIAL_TARGETS" -gt "0" ]]; then
+  POTENTIAL_TARGETS="Success!"
+else
+  POTENTIAL_TARGETS="No dips found."
+fi
+
+DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_TARGETS - $POTENTIAL_SYMBOL"
 
 # stop search output
 if [[ "$(tail -"${LOG_TIMER:?}" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep -c "Start")" -gt "0" ]] &>/dev/null; then
