@@ -37,7 +37,7 @@ EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 MIN_DIP_PERCENTAGE="$(egrep "MIN_DIP_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # minimum spread percentage (default 10%)
 MIN_SPREAD_PERCENTAGE="$(egrep "MIN_SPREAD_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# minimum volume percentage (default 0.5)
+# minimum volume percentage (default 0.5%)
 MIN_VOLUME_PERCENTAGE="$(egrep "MIN_VOLUME_PERCENTAGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # define the markets to consider
 DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk '{ print $1 }' | awk -F= '{ print $2 }' | tr -d '"#')"
@@ -45,8 +45,8 @@ DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".co
 DIP_ALLOCATED="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # max open orders (default 10)
 DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# dip
-DIP_="$(egrep "DIP_=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# dip margine (define 1%)
+DIP_MARGIN="$(egrep "DIP_MARGIN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # dip max age (default 600 seconds)
 DIP_MAX_AGE="$(egrep "DIP_MAX_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
@@ -208,8 +208,37 @@ last_tx # last tx
 
 ################################################################################
 
-DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Buying $DIP_BUYING_AMOUNT_LISTING $LISTING_CURRENCY with $DIP_BUYING_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
-DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Selling $DIP_SELLING_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUYING_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+DIP_REFERENCE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+DIP_LISTING_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+
+if [[ "$(echo "$DIP_REFERENCE_BALANCE" | egrep -c "[1-9]+")" -gt "0" ]] &>/dev/null; then
+  DIP_BALANCE_REFERENCE="OK"
+else
+  DIP_BALANCE_REFERENCE="0"
+fi
+
+if [[ "$(echo "$DIP_LISTING_BALANCE" | egrep -c "[1-9]+")" -gt "0" ]] &>/dev/null; then
+  DIP_BALANCE_LISTING="OK"
+else
+  DIP_BALANCE_LISTING="0"
+fi
+
+################################################################################
+
+# amount for buy
+DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$DIP_REFERENCE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+# amount to buy
+DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$POTENTIAL_BUY_ASK" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+
+# amount to sell
+DIP_SELL_REFERENCE="$DIP_REFERENCE_BALANCE"
+# amount to sell
+DIP_SELL_LISTING="$DIP_LISTING_BALANCE"
+
+################################################################################
+
+DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY with $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Selling $DIP_SELL_LISTING $LISTING_CURRENCY for $DIP_SELL_REFERENCE $REFERENCE_CURRENCY"
 
 ################################################################################
 
@@ -227,58 +256,67 @@ open_positions
 
 # buy limit order
 
-# provide potential buy recommendation if any
-if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+# get balance reference
+if [[ "$DIP_BALANCE_REFERENCE" == "OK" ]] &>/dev/null; then
 
-  # active orders
-  DIP_ACTIVE_ORDERS="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID $POTENTIAL_BUY_ASK $POTENTIAL_BUY_LAST ($DIP_BUYING_AMOUNT_REFERENCE $REFERENCE_CURRENCY)"
-  # create active orders
-  echo "$DIP_ACTIVE_ORDERS" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+  # provide potential buy recommendation if any
+  if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
-  # setup potential buy order (limit)
-  # placeOrder limit ###########################################################
-  PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$POTENTIAL_BUY_BID" "$DIP_BUYING_AMOUNT_REFERENCE" "true")"
+    # active orders
+    DIP_ACTIVE_ORDERS="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID $POTENTIAL_BUY_ASK $POTENTIAL_BUY_LAST ($DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY)"
+    # create active orders
+    echo "$DIP_ACTIVE_ORDERS" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
-  # tx_id BETA ! (disabled)
+    # setup potential buy order (limit)
+    # placeOrder limit #########################################################
+    PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$POTENTIAL_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true")"
 
-  # buy output !
-  if [[ ! "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
-    echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    # tx_id BETA ! (disabled)
+
+    # buy output !
+    if [[ ! "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
+      echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
   fi
 fi
 
 ################################################################################
 
-if [[ "$(egrep -c "[A-Z]" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
+if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
+  if [[ "$(egrep -c "[A-Z]" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
 
-  # check for active markets with available balance
-  POTENTIAL_SELL="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }' | awk '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | sort -R | head -1)"
-  POTENTIAL_SELL_SYMBOL="$(grep "$POTENTIAL_SELL" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }' | bc -l | awk '{ printf "%.9f\n", $1 }')"
-  POTENTIAL_SELL_BID="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $2 }')"
-  POTENTIAL_SELL_ASK="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $3 }')"
-  POTENTIAL_SELL_LAST="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $4 }')"
+    # check for active markets with available balance
+    POTENTIAL_SELL="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }' | awk '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | sort -R | head -1)"
+    POTENTIAL_SELL_SYMBOL="$(grep "$POTENTIAL_SELL" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }' | bc -l | awk '{ printf "%.9f\n", $1 }')"
+    POTENTIAL_SELL_BID="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $2 }')"
+    POTENTIAL_SELL_ASK="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $3 }')"
+    POTENTIAL_SELL_LAST="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $4 }')"
+  fi
 fi
 
 ################################################################################
 
 # sell limit order
 
-# provide potential sell recommendation if any
-if [[ -n "$POTENTIAL_SELL_SYMBOL" ]] &>/dev/null; then
+# get balance reference
+if [[ "$DIP_BALANCE_LISTING" == "OK" ]] &>/dev/null; then
+  # provide potential sell recommendation if any
+  if [[ -n "$POTENTIAL_SELL_SYMBOL" ]] &>/dev/null; then
 
-  # setup potential sell order (limit)
-  # placeOrder limit ###########################################################
-  PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$POTENTIAL_SELL_ASK" "$LISTING_AVAILABLE_BALANCE" "true")"
+    # setup potential sell order (limit)
+    # placeOrder limit #########################################################
+    PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$POTENTIAL_SELL_ASK" "$DIP_SELL_LISTING" "true")"
 
-  # tx_id BETA ! (disabled)
+    # tx_id BETA ! (disabled)
 
-  # buy output !
-  if [[ ! "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
-    echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    # buy output !
+    if [[ ! "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
+      echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
+
+    # delete active order
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$POTENTIAL_SELL")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
   fi
-
-  # delete active order
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$POTENTIAL_SELL")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 fi
 
 ################################################################################
