@@ -127,7 +127,11 @@ for (( ; ; )); do
     STRATEGY_LOG_FILE="${LOG_DIR:?}/leeloo/error.log"
 
     # execute the script with bash -x, filter and log only the error lines
-    { bash -x "$f" 2>&1 >&3 | grep -i -E "error|exit status|command not found|syntax error|not found|is empty|permission denied|= ''|\${[A-Za-z0-9_]*}|unbound variable|\$()"; } 3>&1 | grep -v "+"
+    {
+      while IFS= read -r line; do
+        echo "$line" | grep -i -E "error|exit status|command not found|syntax error|not found|is empty|permission denied|= ''|\${[A-Za-z0-9_]*}|unbound variable|\$()"
+      done < <(bash -x "$f" 2>&1)
+    }
 
     # check the exit status of the script
     if [ $? -ne 0 ]; then
