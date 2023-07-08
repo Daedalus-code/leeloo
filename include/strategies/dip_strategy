@@ -90,9 +90,6 @@ POTENTIAL_BUY_ASK="0"
 ################################################################################
 
 DIP_START_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Market: $DIP_MARKETS Count: $DIP_MARKETS_COUNT"
-DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_BUY_SYMBOL"
-DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : placeOrder :: Buying $LISTING_AMOUNT $LISTING_CURRENCY with $REFERENCE_AMOUNT_VALUED $REFERENCE_CURRENCY"
-DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : placeOrder :: Selling $LISTING_AMOUNT $LISTING_CURRENCY for $REFERENCE_AMOUNT_VALUED $REFERENCE_CURRENCY"
 
 ################################################################################
 
@@ -159,6 +156,12 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep "$DIP_MARKETS" | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 fi
 
+################################################################################
+
+DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_BUY_SYMBOL"
+
+################################################################################
+
 # stop search output
 if [[ "$(tail -"${LOG_TIMER:?}" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep -c "Start")" -gt "0" ]] &>/dev/null; then
   echo "$DIP_STOP_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -200,6 +203,11 @@ reference_total_value # calculate total reference values
 listing_allocated     # total listing allocated
 reference_allocated   # total reference allocated
 last_tx               # last tx
+
+################################################################################
+
+DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : placeOrder :: Buying $LISTING_AMOUNT $LISTING_CURRENCY with $REFERENCE_AMOUNT_VALUED $REFERENCE_CURRENCY"
+DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : placeOrder :: Selling $LISTING_AMOUNT $LISTING_CURRENCY for $REFERENCE_AMOUNT_VALUED $REFERENCE_CURRENCY"
 
 ################################################################################
 
