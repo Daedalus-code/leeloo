@@ -158,10 +158,12 @@ fi
 
 ################################################################################
 
-POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
-POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
-POTENTIAL_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
-POTENTIAL_BUY_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+if [[ -n "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]] &>/dev/null; then
+  POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+  POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+  POTENTIAL_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+  POTENTIAL_BUY_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+fi
 
 # get symbol name
 SYMBOL_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
@@ -232,6 +234,8 @@ DIP_SELL_LISTING="$DIP_LISTING_BALANCE"
 
 DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY with $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
 DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Selling $DIP_SELL_LISTING $LISTING_CURRENCY for $DIP_SELL_REFERENCE $REFERENCE_CURRENCY"
+DIP_NO_BALANCE_LISTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $REFERENCE_LISTING has no balance!"
+DIP_NO_BALANCE_REFERENCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $REFERENCE_CURRENCY has no balance!"
 
 ################################################################################
 
@@ -279,6 +283,8 @@ if [[ "$DIP_BALANCE_REFERENCE" == "OK" ]] &>/dev/null; then
     fi
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
   fi
+else
+  echo "$DIP_NO_BALANCE_REFERENCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
@@ -320,6 +326,8 @@ if [[ "$DIP_BALANCE_LISTING" == "OK" ]] &>/dev/null; then
 
     # delete active order
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$POTENTIAL_SELL")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+  else
+    echo "$DIP_NO_BALANCE_LISTING" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 fi
