@@ -158,12 +158,14 @@ fi
 
 ################################################################################
 
-POTENTIAL_SYMBOL="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+POTENTIAL_SYMBOL="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
 POTENTIAL_TARGETS="$(grep -c "[A-Z]+" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target)"
 
-if [[ "$POTENTIAL_TARGETS" -gt "0" ]]; then
+if [[ "$POTENTIAL_TARGETS" -gt "0" ]] &>/dev/null; then
   POTENTIAL_TARGETS="Success!"
-else
+fi
+
+if [[ -z "$POTENTIAL_TARGETS" ]] &>/dev/null; then
   POTENTIAL_TARGETS="No dips found."
 fi
 
