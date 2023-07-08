@@ -176,7 +176,7 @@ REFERENCE_CURRENCY="$(echo "$SYMBOL_NAME" | awk -F/ '{ print $2 }')"
 
 DIP_MARKET_LIST="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '{ print $1 }')"
 
-if [[ "$(echo "$POTENTIAL_BUY_SYMBOL" | egrep -c "[A-Z]+")" -gt "0" ]] &>/dev/null; then
+if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
   DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Target: $DIP_MARKETS Count: $DIP_MARKET_LIST Found: $SYMBOL_NAME"
 else
   DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Target: $DIP_MARKETS Count: $DIP_MARKET_LIST Found: 0"
@@ -258,7 +258,7 @@ open_positions
 if [[ "$DIP_BALANCE_REFERENCE" == "OK" ]] &>/dev/null; then
 
   # provide potential buy recommendation if any
-  if [[ "$(echo "$POTENTIAL_BUY_SYMBOL" | egrep -c "[A-Z]+")" -gt "0" ]] &>/dev/null; then
+  if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
 
     # active orders
     DIP_ACTIVE_ORDERS="$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID $POTENTIAL_BUY_ASK $POTENTIAL_BUY_LAST ($DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY)"
