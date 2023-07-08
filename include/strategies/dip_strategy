@@ -107,6 +107,8 @@ DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>
 # file age greater than max age
 if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+
   # start search output
   echo "$DIP_START_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
@@ -169,10 +171,6 @@ SYMBOL_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
 LISTING_CURRENCY="$(echo "$SYMBOL_NAME" | awk -F/ '{ print $1 }')"
 # get reference (market)
 REFERENCE_CURRENCY="$(echo "$SYMBOL_NAME" | awk -F/ '{ print $2 }')"
-
-################################################################################
-
-truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 
 ################################################################################
 
