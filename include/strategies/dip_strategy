@@ -79,8 +79,11 @@ if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   DIP_MARKETS_COUNT="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
 fi
 
+# create dip_markets list
+echo "$(grep "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
+
 # set by configuration (default)
-DIP_MARKETS_COUNT="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
+DIP_MARKETS_COUNT="$(wc -l "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null | awk '{ print $1 }')"
 
 # set by strategy (default)
 DIP_MARKET_PATH="${LOG_DIR:?}/leeloo/southxchange/prices.dip"
