@@ -59,7 +59,7 @@ exchange_template
 ################################################################################
 
 # disregard markets with active orders
-if [[ "$(egrep -c '[A-Z]+' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)" -gt "0" ]]; then
+if [[ "$(egrep -c '[A-Z]+' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)" -gt "0" ]] &>/dev/null; then
   DIP_LIST="$(egrep -vf <(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }') "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
   echo "$DIP_LIST" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
 else
@@ -122,7 +122,7 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # check if the symbol matches the specified market and if the spread, dip, and volume meet the criteria
     if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] && (($(echo "$DIP < -$MIN_DIP_PERCENTAGE" | bc -l))) && (($(echo "$VOLUME_PERCENTAGE > $MIN_VOLUME_PERCENTAGE" | bc -l))); then
-      if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]]; then
+      if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]] &>/dev/null; then
         SPREAD=$(bc <<<"scale=2; ($ASK - $BID) / $BID * 100")
         if (($(echo "$SPREAD > $MIN_SPREAD_PERCENTAGE" | bc -l))); then
           PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100")
@@ -136,7 +136,7 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           # check if the symbol meets the potential buy criteria
           if (($(echo "$PRICE_MOVEMENT > 0" | bc -l))); then
-            if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
+            if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
               # potential symbol, bid, ask, last
               POTENTIAL_BUY_SYMBOL="$SYMBOL"
@@ -231,9 +231,6 @@ if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
   # tx_id BETA ! (disabled)
 
-  # clean up file, symbol, duplicates, remove empty lines, sort
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | tr -d ':' | awk '!a[$0]++' | sort | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-
   # buy output
   if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
     echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -259,7 +256,7 @@ fi
 if [[ -n "$POTENTIAL_SELL_SYMBOL" ]] &>/dev/null; then
 
   # delete active order
-  cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$POTENTIAL_SELL_SYMBOL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$POTENTIAL_SELL_SYMBOL")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
   # setup potential sell order (limit)
   # placeOrder limit ###########################################################
@@ -267,14 +264,16 @@ if [[ -n "$POTENTIAL_SELL_SYMBOL" ]] &>/dev/null; then
 
   # tx_id BETA ! (disabled)
 
-  # clean up file, symbol, duplicates, remove empty lines, sort
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | tr -d ':' | awk '!a[$0]++' | sort | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-
   # buy output
   if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
     echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 fi
+
+################################################################################
+
+# clean up file, symbol, duplicates, remove empty lines, sort
+echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | tr -d ':' | awk '!a[$0]++' | sort | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
 ################################################################################
 
