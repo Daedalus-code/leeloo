@@ -178,9 +178,7 @@ else
 fi
 
 # stop search output
-if [[ "$(tail -"${LOG_TIMER:?}" "${LOG_DIR:?}"/leeloo/robot.log | grep -c "Start")" -eq "1" ]] &>/dev/null; then
-  echo "$DIP_STOP_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-fi
+echo "$DIP_STOP_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
 
@@ -283,6 +281,9 @@ if [[ "$DIP_BALANCE_REFERENCE" == "OK" ]] &>/dev/null; then
 fi
 
 ################################################################################
+
+# sell symbol (default)
+POTENTIAL_SELL_SYMBOL=""
 
 if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
   if [[ "$(egrep -c "[A-Z]" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
