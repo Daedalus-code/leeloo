@@ -124,11 +124,11 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     VOLUME_PERCENTAGE=$(echo "$line" | awk '{print $6}' | sed 's/%//')
 
     # check if the symbol matches the specified market and if the spread, dip, and volume meet the criteria
-    if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] && (($(echo "$DIP < -$MIN_DIP_PERCENTAGE" | bc -l))) && (($(echo "$VOLUME_PERCENTAGE > $MIN_VOLUME_PERCENTAGE" | bc -l))); then
+    if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] && (($(echo "$DIP < -$MIN_DIP_PERCENTAGE" | bc -l 2>/dev/null))) && (($(echo "$VOLUME_PERCENTAGE > $MIN_VOLUME_PERCENTAGE" | bc -l 2>/dev/null))); then
       if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]]; then
-        SPREAD=$(bc <<<"scale=2; ($ASK - $BID) / $BID * 100")
+        SPREAD=$(bc <<<"scale=2; ($ASK - $BID) / $BID * 100" 2>/dev/null)
         if (($(echo "$SPREAD > $MIN_SPREAD_PERCENTAGE" | bc -l))); then
-          PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100")
+          PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100" 2>/dev/null)
           VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
 
           # correct market
@@ -138,8 +138,8 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           fi
 
           # check if the symbol meets the potential buy criteria
-          if (($(echo "$PRICE_MOVEMENT > 0" | bc -l))); then
-            if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
+          if (($(echo "$PRICE_MOVEMENT > 0" | bc -l 2>/dev/null))); then
+            if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
 
               # potential symbol, bid, ask, last
               POTENTIAL_BUY_SYMBOL="$SYMBOL"
@@ -220,9 +220,9 @@ fi
 ################################################################################
 
 # amount for buy
-DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$DIP_REFERENCE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$DIP_REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # amount to buy
-DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$POTENTIAL_BUY_ASK" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$POTENTIAL_BUY_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
 # amount to sell
 DIP_SELL_REFERENCE="$DIP_REFERENCE_BALANCE"
@@ -288,7 +288,7 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
 
     # check for active markets with available balance
     POTENTIAL_SELL="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }' | awk '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | sort -R | head -1)"
-    POTENTIAL_SELL_SYMBOL="$(grep "$POTENTIAL_SELL" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }' | bc -l | awk '{ printf "%.9f\n", $1 }')"
+    POTENTIAL_SELL_SYMBOL="$(grep "$POTENTIAL_SELL" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }' | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
     POTENTIAL_SELL_BID="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $2 }')"
     POTENTIAL_SELL_ASK="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $3 }')"
     POTENTIAL_SELL_LAST="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $4 }')"
