@@ -192,9 +192,8 @@ LISTING_ALLOCATED="1"
 
 ################################################################################
 
-DIP_BUYING_AMOUNT="$(echo "$REFERENCE_ALLOCATED*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l)"
-DIP_SELLING_AMOUNT_ASK="$(echo "$LISTING_CURRENCY*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')" | bc -l)"
-DIP_SELLING_AMOUNT_LAST="$(echo "$LISTING_CURRENCY*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }')" | bc -l)"
+DIP_BUYING_AMOUNT="$(echo "$REFERENCE_ALLOCATED*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+DIP_SELLING_AMOUNT="$(echo "$LISTING_CURRENCY*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
 ################################################################################
 # data
