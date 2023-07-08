@@ -154,23 +154,14 @@ fi
 
 ################################################################################
 
-POTENTIAL_SYMBOL="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
-POTENTIAL_TARGETS="$(grep -c "[A-Z]+" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target)"
-
-truncate -s 0 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target &>/dev/null
-
-if [[ "$POTENTIAL_TARGETS" -gt "0" ]] &>/dev/null; then
-  POTENTIAL_TARGETS="Success!"
+if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+  DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $DIP_MARKETS - $POTENTIAL_BUY_SYMBOL"
+else
+  DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: Nothing. - $POTENTIAL_BUY_SYMBOL"
 fi
-
-if [[ -z "$POTENTIAL_TARGETS" ]] &>/dev/null; then
-  POTENTIAL_TARGETS="No dips found."
-fi
-
-DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_TARGETS - $POTENTIAL_SYMBOL"
 
 # stop search output
-if [[ "$(tail -"${LOG_TIMER:?}" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep -c "Start")" -gt "0" ]] &>/dev/null; then
+if [[ "$(tail -"${LOG_TIMER:?}" "${LOG_DIR:?}"/leeloo/robot.log | grep -c "Start")" -eq "1" ]] &>/dev/null; then
   echo "$DIP_STOP_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
