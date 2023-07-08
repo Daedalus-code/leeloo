@@ -126,12 +126,12 @@ for (( ; ; )); do
     # define the log file path
     STRATEGY_LOG_FILE="${LOG_DIR:?}/leeloo/error.log"
 
-    # execute the script with bash -x and redirect the output to the log file
-    bash -x "$f" >>"$STRATEGY_LOG_FILE" 2>&1
+    # execute the script with bash -x, grep for error lines, and redirect them to the log file
+    bash -x "$f" 2>&1 | grep -i -E "error|exit status|command not found|syntax error|not found|is empty|permission denied|= ''|\${[A-Za-z0-9_]*}|unbound variable|\$()" >>"$STRATEGY_LOG_FILE"
 
     # check the exit status of the script
     if [ $? -ne 0 ]; then
-      echo "Error occurred while running $f. Check $STRATEGY_LOG_FILE for details."
+      echo "Error occurred while running $f. Check $STRATEGY_LOG_FILE for details." >>"$STRATEGY_LOG_FILE"
     fi
   done
 
