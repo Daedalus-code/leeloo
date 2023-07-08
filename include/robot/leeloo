@@ -123,7 +123,16 @@ for (( ; ; )); do
 
   # run all shell strategies installed
   for f in "${SYS_DIR:?}"/robot/*.strategy; do
-    bash "$f"
+    # define the log file path
+    STRATEGY_LOG_FILE="${LOG_DIR:?}/leeloo/error.log"
+
+    # execute the script with bash -x and redirect the output to the log file
+    bash -x "$f" >>"$STRATEGY_LOG_FILE" 2>&1
+
+    # check the exit status of the script
+    if [ $? -ne 0 ]; then
+      echo "Error occurred while running $f. Check $STRATEGY_LOG_FILE for details."
+    fi
   done
 
   ##############################################################################
