@@ -72,7 +72,7 @@ DIP_MARKETS_COUNT="$(wc -l "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/pri
 # config not set do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # get dip markets
-  DIP_MARKETS="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null | awk -F/ '{ print $2 }' | sort -R | head -1 | awk '{ print $1 }' | tr -d ':')"
+  DIP_MARKETS="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null | awk -F/ '{ print $2 }' | sort -R | head -1 | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++')"
   DIP_MARKETS_COUNT="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
 fi
 
