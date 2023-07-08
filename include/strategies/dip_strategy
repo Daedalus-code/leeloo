@@ -207,23 +207,22 @@ REFERENCE_CURRENCY_AMOUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/so
 
 # reference amount
 DIP_BUYING_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-DIP_SELLING_AMOUNT="$(echo "$LISTING_CURRENCY_AMOUNT*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+DIP_SELLING_AMOUNT_REFERENCE="$(echo "$LISTING_CURRENCY_AMOUNT*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
 # listing amount
 DIP_BUYING_AMOUNT_LISTING="$(echo "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')/$LISTING_CURRENCY" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-DIP_SELLING_AMOUNT="$(echo "$REFERENCE_CURRENCY_AMOUNT"/"$LISTING_CURRENCY_AMOUNT" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+DIP_SELLING_AMOUNT_LISTING="$(echo "$REFERENCE_CURRENCY_AMOUNT"/"$LISTING_CURRENCY_AMOUNT" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
 ################################################################################
 # data
 ################################################################################
 
-reference_data # get available reference data
-last_tx        # last tx
+last_tx # last tx
 
 ################################################################################
 
 DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Buying $DIP_BUYING_AMOUNT_LISTING $LISTING_CURRENCY with $DIP_BUYING_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
-DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Selling $DIP_SELLING_AMOUNT $LISTING_CURRENCY for $DIP_BUYING_AMOUNT_LISTING $REFERENCE_CURRENCY"
+DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Selling $DIP_SELLING_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUYING_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
 
 ################################################################################
 
