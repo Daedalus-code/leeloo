@@ -78,8 +78,8 @@ if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   DIP_MARKETS_COUNT="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
 fi
 
-# create dip_markets list
-echo "$(grep "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
+# create dip_markets list /reference
+echo "$(grep "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
 
 # set by strategy (default)
 DIP_MARKET_PATH="${LOG_DIR:?}/leeloo/southxchange/prices.dip"
@@ -199,19 +199,6 @@ fi
 REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
 # set dip allocated (100%)
 LISTING_ALLOCATED="1"
-
-################################################################################
-
-LISTING_CURRENCY_AMOUNT="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }' | bc -l | awk '{ printf "%.9f\n", $1 }')"
-REFERENCE_CURRENCY_AMOUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }' | bc -l | awk '{ printf "%.9f\n", $1 }')"
-
-# reference amount
-DIP_BUYING_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-DIP_SELLING_AMOUNT_REFERENCE="$(echo "$LISTING_CURRENCY_AMOUNT*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-
-# listing amount
-DIP_BUYING_AMOUNT_LISTING="$(echo "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')/$LISTING_CURRENCY" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-DIP_SELLING_AMOUNT_LISTING="$(echo "$REFERENCE_CURRENCY_AMOUNT"/"$LISTING_CURRENCY_AMOUNT" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
 ################################################################################
 # data
