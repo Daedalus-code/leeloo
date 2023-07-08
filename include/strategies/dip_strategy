@@ -75,7 +75,7 @@ DIP_MARKETS_COUNT="$(wc -l "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/pri
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # get dip markets
   DIP_MARKETS="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
-  DIP_MARKETS_COUNT="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
+  DIP_MARKETS_COUNT="$(grep -c "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
 fi
 
 # create dip_markets list /reference
@@ -169,8 +169,10 @@ truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 
 ################################################################################
 
+DIP_MARKET_LIST="$(grep -c "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null)"
+
 if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
-  DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $DIP_MARKETS - $POTENTIAL_BUY_SYMBOL"
+  DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $DIP_MARKETS Count: $DIP_MARKET_LIST $POTENTIAL_BUY_SYMBOL"
 else
   DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $DIP_MARKETS - Nothing"
 fi
