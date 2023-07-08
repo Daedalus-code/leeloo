@@ -129,11 +129,11 @@ for (( ; ; )); do
     # execute the script with bash -x, filter and log only the error lines
     {
       while IFS= read -r line; do
-        if echo "$line" | grep -i -E "error|exit status|command not found|syntax error|not found|is empty|permission denied|= ''|\${[A-Za-z0-9_]*}|unbound variable|\$()" >/dev/null && ! [[ "$line" =~ ^\+ ]] && ! [[ "$line" =~ \+\+ ]]; then
+        if echo "$line" | grep -Ei "error|exit status|command not found|syntax error|not found|is empty|permission denied|= ''|\${[A-Za-z0-9_]*}|unbound variable|\$()" >/dev/null && ! [[ "$line" =~ ^\+ ]] && ! [[ "$line" =~ \+\+ ]] && ! [[ "$line" =~ \+\+.*(egrep|tr|sed|wc|grep|tail)\ .*$ ]]; then
           echo "$line"
         fi
       done < <(bash -x "$f" 2>&1)
-    } | grep -vE "^\+ |^[[:blank:]]*\+\+ " >>"$STRATEGY_LOG_FILE"
+    } >>"$STRATEGY_LOG_FILE"
 
     # check the exit status of the script
     if [ $? -ne 0 ]; then
