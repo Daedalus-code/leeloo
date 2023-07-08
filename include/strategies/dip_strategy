@@ -97,9 +97,17 @@ POTENTIAL_BUY_ASK="0"
 
 ################################################################################
 
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market ]] &>/dev/null; then
+  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
+fi
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]] &>/dev/null; then
+  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+fi
 if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
   touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active &>/dev/null
 fi
+
+################################################################################
 
 # active file age
 DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
