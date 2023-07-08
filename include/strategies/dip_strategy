@@ -154,6 +154,8 @@ fi
 
 ################################################################################
 
+POTENTIAL_BUY_SYMBOL="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+
 if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
   DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $DIP_MARKETS - $POTENTIAL_BUY_SYMBOL"
 else
@@ -241,6 +243,10 @@ if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
     echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 fi
+
+################################################################################
+
+truncate -s 0 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target &>/dev/null
 
 ################################################################################
 
