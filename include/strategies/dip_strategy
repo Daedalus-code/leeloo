@@ -191,21 +191,21 @@ REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
 LISTING_ALLOCATED="1"
 
 ################################################################################
+
+DIP_BUYING_AMOUNT="$(echo "$REFERENCE_ALLOCATED*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l)"
+DIP_SELLING_AMOUNT_ASK="$(echo "$LISTING_CURRENCY*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')" | bc -l)"
+DIP_SELLING_AMOUNT_LAST="$(echo "$LISTING_CURRENCY*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $4 }')" | bc -l)"
+
+################################################################################
 # data
 ################################################################################
 
-listing_data          # get available listing data
-reference_data        # get available reference data
-listing_total_value   # calculate total listing values
-reference_total_value # calculate total reference values
-listing_allocated     # total listing allocated
-reference_allocated   # total reference allocated
-last_tx               # last tx
+last_tx # last tx
 
 ################################################################################
 
-DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : placeOrder :: Buying $LISTING_AMOUNT $LISTING_CURRENCY with $REFERENCE_AMOUNT_VALUED $REFERENCE_CURRENCY"
-DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : placeOrder :: Selling $LISTING_AMOUNT $LISTING_CURRENCY for $REFERENCE_AMOUNT_VALUED $REFERENCE_CURRENCY"
+DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : placeOrder :: Buying $LISTING_AMOUNT $LISTING_CURRENCY with $DIP_BUYING_AMOUNT $REFERENCE_CURRENCY"
+DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : placeOrder :: Selling $LISTING_AMOUNT $LISTING_CURRENCY for $DIP_SELLING_AMOUNT $REFERENCE_CURRENCY"
 
 ################################################################################
 
