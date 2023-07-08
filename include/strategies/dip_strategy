@@ -107,8 +107,6 @@ DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>
 # file age greater than max age
 if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
-
   # start search output
   echo "$DIP_START_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
@@ -281,6 +279,7 @@ if [[ "$DIP_BALANCE_REFERENCE" == "OK" ]] &>/dev/null; then
     if [[ ! "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
       echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
   fi
 fi
 
@@ -324,6 +323,7 @@ if [[ "$DIP_BALANCE_LISTING" == "OK" ]] &>/dev/null; then
     # delete active order
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$POTENTIAL_SELL")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
   fi
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 fi
 
 ################################################################################
