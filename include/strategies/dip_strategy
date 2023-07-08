@@ -87,9 +87,9 @@ POTENTIAL_BUY_ASK="0"
 ################################################################################
 
 DIP_START_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Market: $DIP_MARKETS Count: $DIP_MARKETS_COUNT"
-DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $DIP_POTENTIAL"
-DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : BuyOrder :: $DIP_POTENTIAL"
-DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : SellOrder :: $DIP_POTENTIAL"
+DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_BUY_SYMBOL"
+DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : BuyOrder :: $POTENTIAL_BUY_SYMBOL"
+DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : SellOrder :: $POTENTIAL_BUY_SYMBOL"
 
 ################################################################################
 
@@ -150,9 +150,6 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # get only specific market, clean up file for duplicates, remove empty lines
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep "$DIP_MARKETS" | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
-
-  # get potential symbol
-  DIP_POTENTIAL="$POTENTIAL_BUY_SYMBOL"
 fi
 
 # stop search output
