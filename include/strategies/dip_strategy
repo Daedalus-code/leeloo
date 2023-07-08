@@ -251,7 +251,7 @@ if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
   # tx_id BETA ! (disabled)
 
-  # buy output
+  # buy output !
   if [[ ! "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
     echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
@@ -266,10 +266,11 @@ truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 if [[ "$(egrep -c "[A-Z]" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
 
   # check for active markets with available balance
-  POTENTIAL_SELL_SYMBOL="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }' | awk '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | head -1)"
-  POTENTIAL_SELL_BID="$(grep "$POTENTIAL_SELL_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $2 }')"
-  POTENTIAL_SELL_ASK="$(grep "$POTENTIAL_SELL_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $3 }')"
-  POTENTIAL_SELL_LAST="$(grep "$POTENTIAL_SELL_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $4 }')"
+  POTENTIAL_SELL="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }' | awk '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | sort -R | head -1)"
+  POTENTIAL_BUY_SYMBOL="$(grep "$POTENTIAL_SELL" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }' | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  POTENTIAL_SELL_BID="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $2 }')"
+  POTENTIAL_SELL_ASK="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $3 }')"
+  POTENTIAL_SELL_LAST="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $4 }')"
 fi
 
 ################################################################################
@@ -277,10 +278,10 @@ fi
 # sell limit order
 
 # provide potential sell recommendation if any
-if [[ -n "$POTENTIAL_SELL_SYMBOL" ]] &>/dev/null; then
+if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
   # delete active order
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$POTENTIAL_SELL_SYMBOL")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$POTENTIAL_SELL")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
   # setup potential sell order (limit)
   # placeOrder limit ###########################################################
@@ -288,7 +289,7 @@ if [[ -n "$POTENTIAL_SELL_SYMBOL" ]] &>/dev/null; then
 
   # tx_id BETA ! (disabled)
 
-  # buy output
+  # buy output !
   if [[ ! "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
     echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
