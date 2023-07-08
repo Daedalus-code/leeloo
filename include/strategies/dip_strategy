@@ -221,11 +221,14 @@ fi
 
 ################################################################################
 
-# check for active markets with available balance
-POTENTIAL_SELL_SYMBOL="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }' | awk '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | head -1)"
-POTENTIAL_SELL_BID="$(grep "$POTENTIAL_SELL_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $2 }')"
-POTENTIAL_SELL_ASK="$(grep "$POTENTIAL_SELL_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $3 }')"
-POTENTIAL_SELL_LAST="$(grep "$POTENTIAL_SELL_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $4 }')"
+if [[ "$(egrep -c "[A-Z]" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" ]] &>/dev/null; then
+
+  # check for active markets with available balance
+  POTENTIAL_SELL_SYMBOL="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }' | awk '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | head -1)"
+  POTENTIAL_SELL_BID="$(grep "$POTENTIAL_SELL_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $2 }')"
+  POTENTIAL_SELL_ASK="$(grep "$POTENTIAL_SELL_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $3 }')"
+  POTENTIAL_SELL_LAST="$(grep "$POTENTIAL_SELL_SYMBOL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $4 }')"
+fi
 
 ################################################################################
 
