@@ -155,6 +155,11 @@ fi
 ################################################################################
 
 POTENTIAL_BUY_SYMBOL="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+POTENTIAL_BUY_BID="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+POTENTIAL_BUY_ASK="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+POTENTIAL_BUY_LAST="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+
+################################################################################
 
 if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
   DIP_STOP_SEARCH="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $DIP_MARKETS - $POTENTIAL_BUY_SYMBOL"
@@ -194,6 +199,9 @@ LISTING_ALLOCATED="1"
 
 ################################################################################
 
+LISTING_CURRENCY="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }' | bc -l | awk '{ printf "%.9f\n", $1 }')"
+
+# reference
 DIP_BUYING_AMOUNT="$(echo "$REFERENCE_ALLOCATED*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 DIP_SELLING_AMOUNT="$(echo "$LISTING_CURRENCY*$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
