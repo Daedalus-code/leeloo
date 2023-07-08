@@ -151,8 +151,10 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # get potential symbol
   DIP_POTENTIAL="$POTENTIAL_BUY_SYMBOL"
+fi
 
-  # stop search output
+# stop search output
+if [[ "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep -c "Start")" -gt "0" ]] &>/dev/null; then
   echo "$DIP_STOP_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
