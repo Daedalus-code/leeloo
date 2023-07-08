@@ -230,11 +230,11 @@ DIP_SELL_LISTING="$DIP_LISTING_BALANCE"
 
 ################################################################################
 
-DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY with $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
-DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_SELL_SYMBOL :: Selling $DIP_SELL_LISTING $LISTING_CURRENCY for $DIP_SELL_REFERENCE $REFERENCE_CURRENCY"
+DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $SYMBOL_NAME :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY with $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $SYMBOL_NAME :: Selling $DIP_SELL_LISTING $LISTING_CURRENCY for $DIP_SELL_REFERENCE $REFERENCE_CURRENCY"
 
-DIP_NO_BALANCE_LISTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $REFERENCE_LISTING has no balance!"
-DIP_NO_BALANCE_REFERENCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $REFERENCE_CURRENCY has no balance!"
+DIP_NO_BALANCE_LISTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $SYMBOL_NAME :: $REFERENCE_LISTING has no balance!"
+DIP_NO_BALANCE_REFERENCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $SYMBOL_NAME :: $REFERENCE_CURRENCY has no balance!"
 
 ################################################################################
 
@@ -296,7 +296,7 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
 
     # check for active markets with available balance
     POTENTIAL_SELL="$(grep "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk -F/ '{ print $1 }' | awk '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/balances | sort -R | head -1)"
-    POTENTIAL_SELL_SYMBOL="$(grep "$POTENTIAL_SELL" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $2 }' | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+    POTENTIAL_SELL_SYMBOL="$(grep "$POTENTIAL_SELL" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
     POTENTIAL_SELL_BID="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $2 }')"
     POTENTIAL_SELL_ASK="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $3 }')"
     POTENTIAL_SELL_LAST="$(grep "$POTENTIAL_SELL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $4 }')"
