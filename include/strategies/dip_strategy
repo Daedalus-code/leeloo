@@ -58,12 +58,6 @@ exchange_template
 # DIP LISTING
 ################################################################################
 
-function reset_data() {
-  # reset data
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
-}
-
 # disregard markets with active orders
 if [[ "$(egrep -c '[A-Z]+' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)" -gt "0" ]]; then
   DIP_LIST="$(egrep -vf <(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }') "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
@@ -114,8 +108,6 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # start search output
   echo "$DIP_START_SEARCH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-  reset_data
 
   # read the file line by line
   while IFS= read -r line; do
