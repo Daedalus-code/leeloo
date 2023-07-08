@@ -148,11 +148,6 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   done <"$DIP_MARKET_PATH"
 
-  # create potential target file
-  if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
-    echo "$POTENTIAL_BUY_SYMBOL $POTENTIAL_BUY_BID $POTENTIAL_BUY_ASK $POTENTIAL_BUY_LAST" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
-  fi
-
   # get only specific market, clean up file for duplicates, remove empty lines
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep "$DIP_MARKETS" | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 fi
@@ -161,6 +156,8 @@ fi
 
 POTENTIAL_SYMBOL="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
 POTENTIAL_TARGETS="$(grep -c "[A-Z]+" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target)"
+
+truncate -s 0 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".target &>/dev/null
 
 if [[ "$POTENTIAL_TARGETS" -gt "0" ]] &>/dev/null; then
   POTENTIAL_TARGETS="Success!"
