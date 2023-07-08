@@ -58,9 +58,9 @@ exchange_template
 # DIP LISTING
 ################################################################################
 
-# disregard markets w active orders
-if [[ "$(egrep -c "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
-  DIP_LIST="$(egrep -vf "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }')" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
+# disregard markets with active orders
+if [[ "$(egrep -c '[A-Z]+' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)" -gt "0" ]]; then
+  DIP_LIST="$(egrep -vf <(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }') "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
   echo "$DIP_LIST" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
 else
   cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.dip &>/dev/null
