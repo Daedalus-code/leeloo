@@ -92,7 +92,7 @@ echo "$(grep "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/nu
 DIP_MARKETS_PATH="${LOG_DIR:?}/leeloo/southxchange/prices.dip"
 
 # log prices output
-DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Market: $DIP_MARKETS List: $DIP_MARKETS_COUNT"
+DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Market: $DIP_MARKETS Count: $DIP_MARKETS_COUNT"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 # make output above appear first in logs
@@ -169,6 +169,11 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   done <"$DIP_MARKETS_PATH"
 fi
+
+# log market output
+DIP_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
+DIP_MARKET_COUNT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: List: $DIP_MARKET_COUNT"
+echo "$DIP_MARKET_COUNT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
 # DIP TARGET
