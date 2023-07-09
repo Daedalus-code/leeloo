@@ -334,7 +334,19 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   # amount for buy
   DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$DIP_REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # amount to buy
-  DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$ACTIVE_BUY_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$POTENTIAL_BUY_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to get
+  DIP_GET_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_LISTING*$POTENTIAL_BUY_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  if [[ "$(echo "$DIP_REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+    # log target output
+    DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Objective :: Order: Sell $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+    echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  else
+    # log target output
+    DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Objective :: Target: $LISTING_CURRENCY Balance: $DIP_BUY_AMOUNT_REFERENCE! $REFERENCE_CURRENCY"
+    echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  fi
 
   # calculate price margin
 
