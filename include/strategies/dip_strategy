@@ -151,29 +151,32 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
               POTENTIAL_BUY_ASK="$ASK"
               POTENTIAL_BUY_LAST="$LAST"
 
-              # create target file
-              echo "$SYMBOL $BID $ASK $LAST" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+              # a potential buy exists
+              if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+                # create target file
+                echo "$SYMBOL $BID $ASK $LAST" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+              fi
             fi
           fi
         fi
       fi
     fi
   done <"$DIP_MARKETS_PATH"
-
-  # get only specific market, clean up file for duplicates, remove empty lines
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep "$DIP_MARKETS" | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 fi
 
 ################################################################################
 # DIP TARGET
 ################################################################################
 
+# target file output
+DIP_TARGET_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+
 if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]]; then
 
-  POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
-  POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
-  POTENTIAL_BUY_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
-  POTENTIAL_BUY_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
+  POTENTIAL_BUY_SYMBOL="$(echo "$DIP_TARGET_FILE" | awk '{ print $1 }')"
+  POTENTIAL_BUY_BID="$(echo "$DIP_TARGET_FILE" | awk '{ print $2 }')"
+  POTENTIAL_BUY_ASK="$(echo "$DIP_TARGET_FILE" | awk '{ print $3 }')"
+  POTENTIAL_BUY_LAST="$(echo "$DIP_TARGET_FILE" | awk '{ print $4 }')"
 
   # get symbol name
   SYMBOL_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
@@ -260,8 +263,14 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
 fi
 
 ################################################################################
+# DIP BUY
+################################################################################
 
 DIP_BUY_OUTPUT="$LOG_DATE : $BASENAME_STRATEGY : No lines of code found!"
+
+################################################################################
+# DIP SELL
+################################################################################
 
 DIP_SELL_OUTPUT="$LOG_DATE : $BASENAME_STRATEGY : No lines of code found!"
 
