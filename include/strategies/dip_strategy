@@ -108,7 +108,7 @@ POTENTIAL_BUY_BID="0"
 POTENTIAL_BUY_ASK="0"
 
 # active file age
-DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # file age greater than max age
 if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
@@ -165,15 +165,15 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       fi
     fi
   done <"$DIP_MARKETS_PATH"
+
+  # log market output
+  DIP_STATUS_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
+  DIP_STATUS_COUNT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Status: $DIP_MARKETS Found: $DIP_STATUS_COUNT"
+  echo "$DIP_STATUS_COUNT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+  # reset market file
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 fi
-
-# log market output
-DIP_STATUS_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
-DIP_STATUS_COUNT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Status: $DIP_MARKETS Found: $DIP_STATUS_COUNT"
-echo "$DIP_STATUS_COUNT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-# reset market file
-truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
 ################################################################################
 # DIP TARGET
