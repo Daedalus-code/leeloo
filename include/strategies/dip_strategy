@@ -169,6 +169,15 @@ fi
 
 ################################################################################
 
+# active file age (update)
+DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+# file age greater than max age
+if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
+  # reset market file
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+fi
+
 # log market output if found
 DIP_STATUS_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
 
@@ -178,17 +187,6 @@ if [[ "$DIP_STATUS_COUNT" -gt "0" ]] &>/dev/null; then
 else
   DIP_STATUS_COUNT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Status: $DIP_MARKETS Found: Nothing."
   echo "$DIP_STATUS_COUNT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-fi
-
-################################################################################
-
-# active file age (update)
-DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-# file age greater than max age
-if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
-  # reset market file
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 fi
 
 ################################################################################
