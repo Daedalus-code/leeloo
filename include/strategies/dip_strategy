@@ -161,10 +161,6 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # get only specific market, clean up file for duplicates, remove empty lines
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep "$DIP_MARKETS" | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
-
-  # log market output
-  DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Market: $DIP_MARKETS Found: $SYMBOL"
-  echo "$DIP_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
@@ -172,6 +168,10 @@ fi
 ################################################################################
 
 if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]] &>/dev/null; then
+
+  # log market output
+  DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Market: $DIP_MARKETS Found: $SYMBOL"
+  echo "$DIP_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
   POTENTIAL_BUY_BID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
