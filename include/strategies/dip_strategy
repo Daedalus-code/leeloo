@@ -133,8 +133,9 @@ if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
         if (($(echo "$SPREAD > $MIN_SPREAD_PERCENTAGE" | bc -l))); then
 
-          # get price movement
+          # get price movement ("Thats a good potential! --80s broker, New York)
           PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100" 2>/dev/null)
+
           # get volume percentage
           VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
 
@@ -394,6 +395,12 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
     echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 fi
+
+##############################################################################
+
+# clean up duplicates, keep best prices
+awk 'BEGIN{FS=OFS=": "}{split($2, prices, " "); if (prices[3] > best_price[$1]) {best_price[$1] = prices[3]; best_line[$1] = $0}} END{for (market in best_line) print best_line[market]}' "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp"
+mv "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp" "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active"
 
 ##############################################################################
 
