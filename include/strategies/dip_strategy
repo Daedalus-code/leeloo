@@ -72,16 +72,18 @@ fi
 # DIP PRICES
 ################################################################################
 
-# config not set do random markets
+# config not set, do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # get dip markets
   DIP_MARKETS="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
   # set by configuration
   DIP_MARKETS_COUNT="$(grep -c "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
+else
+  # get dip markets
+  DIP_MARKETS="$DIP_MARKETS"
+  # set by configuration
+  DIP_MARKETS_COUNT="$(grep -c "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 fi
-
-# set by configuration
-DIP_MARKETS_COUNT="$(grep -c "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 
 # create dip_markets list /reference
 echo "$(grep "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
@@ -169,7 +171,7 @@ fi
 # DIP TARGET
 ################################################################################
 
-if [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]] &>/dev/null; then
+if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]]; then
 
   # log market output
   DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Market: $DIP_MARKETS Found: $POTENTIAL_BUY_SYMBOL"
@@ -248,7 +250,7 @@ open_positions
 # DIP ACTIVE
 ################################################################################
 
-if [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
+if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]]; then
 
   DIP_ACTIVE_OUTPUT="$LOG_DATE : $BASENAME_STRATEGY : No lines of code found!"
 
