@@ -366,7 +366,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   if [[ "$(grep -c "$LISTING_CURRENCY" "${LOG_DIR:?}"/southxchange/orders 2>/dev/null)" -eq "0" ]] &>/dev/null; then
 
     # setup limit buy order
-    # placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+    placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
     DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
     echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -379,7 +379,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   # order has selling power
   if [[ "$(echo "$DIP_LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
-    # placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_ASK" "$DIP_BUY_AMOUNT_LISTING" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+    # placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_ASK" "$DIP_LISTING_BALANCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
     DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Selling $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
     echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
