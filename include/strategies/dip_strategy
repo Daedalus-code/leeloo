@@ -167,10 +167,10 @@ fi
 # DIP TARGET
 ################################################################################
 
-if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]] &>/dev/null; then
+if [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]] &>/dev/null; then
 
   # log market output
-  DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Market: $DIP_MARKETS Found: $SYMBOL"
+  DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Market: $DIP_MARKETS Found: $POTENTIAL_BUY_SYMBOL"
   echo "$DIP_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | awk '{ print $1 }')"
@@ -246,7 +246,7 @@ open_positions
 # DIP ACTIVE
 ################################################################################
 
-if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
+if [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
 
   DIP_ACTIVE_OUTPUT="$LOG_DATE : $BASENAME_STRATEGY : No lines of code found!"
 
