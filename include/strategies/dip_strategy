@@ -271,7 +271,7 @@ fi
 BASENAME_LOG_FILE="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)"
 
 DIP_GAIN_LOSS_TOTAL="$(echo "$BASENAME_LOG_FILE" | grep "Order: Sell" | grep -o "......%." | tr -d '()%' | awk '!a[$0]++' | awk '{ SUM += $1} END { print SUM }')"
-DIP_GAIN_LOSS_COUNT="$(echo "$BASENAME_LOG_FILE" | wc -l)"
+DIP_GAIN_LOSS_COUNT="$(echo "$BASENAME_LOG_FILE" | grep "Order: Sell" | awk '!a[$0]++' | wc -l)"
 DIP_GAIN_LOSS_AVERAGE="$(echo "$DIP_GAIN_LOSS_TOTAL/$DIP_GAIN_LOSS_COUNT" | bc -l 2>/dev/null)"
 
 ################################################################################
