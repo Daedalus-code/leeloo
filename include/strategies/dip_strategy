@@ -72,14 +72,16 @@ fi
 # DIP PRICES
 ################################################################################
 
-# set by configuration (default)
-DIP_MARKETS_COUNT="$(grep -c "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
-
 # config not set do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # get dip markets
   DIP_MARKETS="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
+  # set by configuration
+  DIP_MARKETS_COUNT="$(grep -c "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 fi
+
+# set by configuration
+DIP_MARKETS_COUNT="$(grep -c "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 
 # create dip_markets list /reference
 echo "$(grep "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
