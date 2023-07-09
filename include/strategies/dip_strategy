@@ -282,21 +282,68 @@ open_positions
 
 if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]]; then
 
-  DIP_ACTIVE_OUTPUT="$LOG_DATE : $BASENAME_STRATEGY : No lines of code found!"
+  # log active output
+  DIP_ACTIVE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')"
+  DIP_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Active: $DIP_ACTIVE_COUNT"
 
+  # create limit order
+  DIP_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)"
+  ACTIVE_BUY_SYMBOL="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $1 }')"
+  ACTIVE_BUY_BID="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $2 }')"
+  ACTIVE_BUY_ASK="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $3 }')"
+  ACTIVE_BUY_LAST="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $4 }')"
+
+  # get symbol name
+  SYMBOL_NAME="$(echo "$ACTIVE_BUY_SYMBOL" | tr -d ':')"
+  # get listing (target)
+  LISTING_CURRENCY="$(echo "$SYMBOL_NAME" | awk -F/ '{ print $1 }')"
+  # get reference (market)
+  REFERENCE_CURRENCY="$(echo "$SYMBOL_NAME" | awk -F/ '{ print $2 }')"
+  # account allocated (n%)
+  REFERENCE_ALLOCATED="$DIP_ALLOCATED"
+
+  # configuration not set, use n%
+  if [[ -z "$REFERENCE_ALLOCATED" ]] &>/dev/null; then
+    REFERENCE_ALLOCATED="1" # n%
+  fi
+
+  # calculate dip allocated (configuration)
+  REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
+  # set dip allocated (100%)
+  LISTING_ALLOCATED="1"
+
+  # reference balance
+  DIP_REFERENCE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  # listing balance
+  DIP_LISTING_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+
+  # amount for buy
+  DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$DIP_REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to buy
+  DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$ACTIVE_BUY_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  ##############################################################################
+  # DIP BUY LIMIT
+  ##############################################################################
+
+  PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true")"
+
+  # tx_id BETA ! (disabled)
+
+  DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+  echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+  ##############################################################################
+  # DIP SELL LIMIT
+  ##############################################################################
+
+  PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_ASK" "$DIP_BUY_AMOUNT_LISTING" "true")"
+
+  # tx_id BETA ! (disabled)
+
+  DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Selling $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+  echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
-
-################################################################################
-# DIP BUY
-################################################################################
-
-DIP_BUY_OUTPUT="$LOG_DATE : $BASENAME_STRATEGY : No lines of code found!"
-
-################################################################################
-# DIP SELL
-################################################################################
-
-DIP_SELL_OUTPUT="$LOG_DATE : $BASENAME_STRATEGY : No lines of code found!"
 
 ################################################################################
 
