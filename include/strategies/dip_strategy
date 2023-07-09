@@ -208,6 +208,9 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/r
     POTENTIAL_GAINS_LOSSES="N/A"
   fi
 
+  # update target with gains
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) $POTENTIAL_GAINS_LOSSES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+
   # get symbol name
   SYMBOL_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
   # get listing (target)
@@ -306,6 +309,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   ACTIVE_BUY_BID="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $2 }')"
   ACTIVE_BUY_ASK="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $3 }')"
   ACTIVE_BUY_LAST="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $4 }')"
+  ACTIVE_BUY_GAINS_LOSSES="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $5 }')"
 
   # get symbol name
   SYMBOL_NAME="$(echo "$ACTIVE_BUY_SYMBOL" | tr -d ':')"
@@ -340,7 +344,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
 
   if [[ "$(echo "$DIP_REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     # log target output
-    DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Objective :: Order: Sell $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+    DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Objective :: Order: Sell (${ACTIVE_BUY_GAINS_LOSSES:?}%) $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
     echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   else
     # log target output
