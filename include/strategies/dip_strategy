@@ -177,8 +177,13 @@ if [[ "$DIP_STATUS_COUNT" -gt "0" ]] &>/dev/null; then
   echo "$DIP_STATUS_COUNT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
-# reset market file
-truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+################################################################################
+
+# file age greater than max age
+if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
+  # reset market file
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+fi
 
 ################################################################################
 # DIP TARGET
