@@ -178,6 +178,20 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/r
   POTENTIAL_BUY_ASK="$(echo "$DIP_TARGET_FILE" | awk '{ print $3 }')"
   POTENTIAL_BUY_LAST="$(echo "$DIP_TARGET_FILE" | awk '{ print $4 }')"
 
+  # calculate potential gains/losses based on target file data
+  if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+    if [[ -n "$POTENTIAL_BUY_BID" && -n "$POTENTIAL_BUY_ASK" && -n "$POTENTIAL_BUY_LAST" ]]; then
+      # perform calculations for gains/losses
+      POTENTIAL_GAINS_LOSSES=$(awk -v bid="$POTENTIAL_BUY_BID" -v ask="$POTENTIAL_BUY_ASK" -v last="$POTENTIAL_BUY_LAST" 'BEGIN { printf("%.2f", (ask - bid) / bid * 100) }')
+    else
+      # unable to calculate gains/losses due to missing data
+      POTENTIAL_GAINS_LOSSES="N/A"
+    fi
+  else
+    # symbol not available
+    POTENTIAL_GAINS_LOSSES="N/A"
+  fi
+
   # get symbol name
   SYMBOL_NAME="$(echo "$POTENTIAL_BUY_SYMBOL" | tr -d ':')"
   # get listing (target)
@@ -186,7 +200,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/r
   REFERENCE_CURRENCY="$(echo "$SYMBOL_NAME" | awk -F/ '{ print $2 }')"
 
   # log market output
-  DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_BUY_SYMBOL Bid: $POTENTIAL_BUY_BID Ask: $POTENTIAL_BUY_ASK Last: $POTENTIAL_BUY_LAST"
+  DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_BUY_SYMBOL Gains/Losses: ${POTENTIAL_GAINS_LOSSES:?}%"
   echo "$DIP_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   # account allocated (n%)
