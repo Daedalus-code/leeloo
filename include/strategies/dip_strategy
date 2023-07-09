@@ -45,7 +45,7 @@ DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".co
 DIP_ALLOCATED="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # max open orders (default 10)
 DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# dip margine (default 1%)
+# dip margin (default 1%)
 DIP_MARGIN="$(egrep "DIP_MARGIN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # dip max age (default 600 seconds)
 DIP_MAX_AGE="$(egrep "DIP_MAX_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
@@ -169,7 +169,7 @@ fi
 
 ################################################################################
 
-# log market output
+# log market output if found
 DIP_STATUS_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
 
 if [[ "$DIP_STATUS_COUNT" -gt "0" ]] &>/dev/null; then
@@ -286,7 +286,7 @@ Minimum_Spread..: ${MIN_SPREAD_PERCENTAGE:?}% (default 10%)
 Minimum_Volume..: ${MIN_VOLUME_PERCENTAGE:?}% (default 0.5%)
 Dip_Allocated...: ${DIP_ALLOCATED:?}% (% balance)
 Max_Open_Orders.: $DIP_MAX_ORDERS (default 10)
-Dip_Margine.....: $DIP_MARGIN (default 1%)
+Dip_Margin......: $DIP_MARGIN (default 1%)
 Dip_Max_Age.....: $DIP_MAX_AGE (default 600s)
 Last_Order.txid.: $TX_ID_LAST" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_ERROR:?}"
 
@@ -342,9 +342,14 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   # amount to buy
   DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$ACTIVE_BUY_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
+  # calculate price margin
+
   ##############################################################################
   # DIP BUY LIMIT
   ##############################################################################
+
+  # check if order already exist
+  # check if max orders are reached
 
   PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true")"
 
@@ -356,6 +361,9 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   ##############################################################################
   # DIP SELL LIMIT
   ##############################################################################
+
+  # check if order already exist
+  # check if max orders are reached
 
   PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_ASK" "$DIP_BUY_AMOUNT_LISTING" "true")"
 
