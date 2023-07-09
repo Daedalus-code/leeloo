@@ -301,8 +301,10 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   DIP_ACTIVE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')"
   DIP_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Active: $DIP_ACTIVE_COUNT"
 
-  # create limit order
-  DIP_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)"
+  # create limit order if it does not exist
+  DIP_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | sort -R | head -1)"
+
+  # get order data
   ACTIVE_BUY_SYMBOL="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $1 }')"
   ACTIVE_BUY_BID="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $2 }')"
   ACTIVE_BUY_ASK="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $3 }')"
