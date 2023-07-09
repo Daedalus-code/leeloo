@@ -268,6 +268,14 @@ fi
 
 ################################################################################
 
+BASENAME_LOG_FILE="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)"
+
+DIP_GAIN_LOSS_TOTAL="$(echo "$BASENAME_LOG_FILE" | grep "Order: Sell" | grep -o "......%." | tr -d '()%' | awk '!a[$0]++' | awk '{ SUM += $1} END { print SUM }')"
+DIP_GAIN_LOSS_COUNT="$(echo "$BASENAME_LOG_FILE" | wc -l)"
+DIP_GAIN_LOSS_AVERAGE="$(echo "$DIP_GAIN_LOSS_TOTAL/$DIP_GAIN_LOSS_COUNT" | bc -l 2>/dev/null)"
+
+################################################################################
+
 last_tx
 
 ################################################################################
@@ -276,6 +284,7 @@ last_tx
 echo "
 Market..........: ALL/$DIP_MARKETS
 Exchange........: $EXCHANGE_API
+Gains_Losses....: ${DIP_GAIN_LOSS_AVERAGE:?}% (Average)
 DIP_Data........: DIP Buy/Sell
 Minimum_Dip.....: ${MIN_DIP_PERCENTAGE:?}% (default 5%)
 Minimum_Spread..: ${MIN_SPREAD_PERCENTAGE:?}% (default 10%)
