@@ -292,6 +292,13 @@ DIP_TOTAL_FOUND_COUNT="$(echo "$DIP_LOG_FILE" | awk '{ print $NF }' | awk '!a[$0
 DIP_TOTAL_BUY_ORDERS="$(grep "$DIP_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$DIP_LISTING_CURRENCY" | grep -c "buy")"
 DIP_TOTAL_SELL_ORDERS="$(grep "$DIP_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$DIP_LISTING_CURRENCY" | grep -c "sell")"
 
+if [[ -z "$DIP_TOTAL_BUY_ORDERS" ]] &>/dev/null; then
+  DIP_TOTAL_BUY_ORDERS="0"
+fi
+if [[ -z "$DIP_TOTAL_SELL_ORDERS" ]] &>/dev/null; then
+  DIP_TOTAL_SELL_ORDERS="0"
+fi
+
 ################################################################################
 
 last_tx
