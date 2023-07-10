@@ -190,6 +190,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/r
   # target file output
   DIP_TARGET_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
 
+  # get target order data
   POTENTIAL_BUY_SYMBOL="$(echo "$DIP_TARGET_FILE" | awk '{ print $1 }')"
   POTENTIAL_BUY_BID="$(echo "$DIP_TARGET_FILE" | awk '{ print $2 }')"
   POTENTIAL_BUY_ASK="$(echo "$DIP_TARGET_FILE" | awk '{ print $3 }')"
@@ -233,8 +234,6 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/r
 
   # calculate dip allocated (configuration)
   REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
-  # set dip allocated (100%)
-  LISTING_ALLOCATED="1"
 
   # reference balance
   DIP_REFERENCE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
@@ -324,7 +323,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   # create limit order if it does not exist
   DIP_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | sort -R | head -1)"
 
-  # get order data
+  # get active order data
   ACTIVE_BUY_SYMBOL="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $1 }')"
   ACTIVE_BUY_BID="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $2 }')"
   ACTIVE_BUY_ASK="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $3 }')"
@@ -347,8 +346,6 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
 
   # calculate dip allocated (configuration)
   REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
-  # set dip allocated (100%)
-  LISTING_ALLOCATED="1"
 
   # reference balance
   DIP_REFERENCE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
@@ -361,6 +358,13 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$ACTIVE_BUY_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # amount to get
   DIP_GET_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_LISTING*$ACTIVE_BUY_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  if [[ -z "$DIP_BUY_AMOUNT_REFERENCE" ]] &>/dev/null; then
+    DIP_BUY_AMOUNT_REFERENCE="0.000000000"
+  fi
+  if [[ -z "$DIP_BUY_AMOUNT_LISTING" ]] &>/dev/null; then
+    DIP_BUY_AMOUNT_LISTING="0.000000000"
+  fi
 
   # order has selling power
   if [[ "$(echo "$DIP_LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
