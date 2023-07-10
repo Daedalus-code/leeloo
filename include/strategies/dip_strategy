@@ -359,13 +359,6 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   # amount to get
   DIP_GET_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_LISTING*$ACTIVE_BUY_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
-  if [[ -z "$DIP_BUY_AMOUNT_REFERENCE" ]] &>/dev/null; then
-    DIP_BUY_AMOUNT_REFERENCE="0.000000000"
-  fi
-  if [[ -z "$DIP_BUY_AMOUNT_LISTING" ]] &>/dev/null; then
-    DIP_BUY_AMOUNT_LISTING="0.000000000"
-  fi
-
   # order has selling power
   if [[ "$(echo "$DIP_LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     # log target output
@@ -376,9 +369,6 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
     DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Objective :: Order Sell: $LISTING_CURRENCY Waiting on balance. $LISTING_CURRENCY/$REFERENCE_CURRENCY"
     echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
-
-  # create open position
-  echo "DIP $LISTING_CURRENCY/$REFERENCE_CURRENCY $DIP_LISTING_BALANCE $DIP_BUY_AMOUNT_REFERENCE ${ACTIVE_GAINS_LOSSES:?}% 0h:0m:0s" >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
 
   # calculate price margin
   # check if max orders are reached (total)
@@ -400,14 +390,20 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   # DIP BUY LIMIT
   ##############################################################################
 
+  # active file age
+  DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
   # check if any orders with reference, listing currency does not exist
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
+    # dont overbuy if everything got sold, txid needs to be older
+    if [[ "$DIP_FILE_AGE" -gt "$(echo "$BOT_TIMER*2" | bc 2>/dev/null)" ]] &>/dev/null; then
 
-    # setup limit buy order
-    placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # setup limit buy order
+      placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
-    DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
-    echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+      echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
   fi
 fi
 
