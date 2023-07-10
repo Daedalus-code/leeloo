@@ -107,7 +107,7 @@ POTENTIAL_BUY_SYMBOL=""
 POTENTIAL_BUY_BID="0"
 POTENTIAL_BUY_ASK="0"
 
-# active file age
+# market file age
 DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # file age greater than max age
@@ -370,6 +370,15 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
     echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
+  # active file age
+  DIP_ACTIVE_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  if [[ -z "$DIP_ACTIVE_FILE_AGE" ]] &>/dev/null; then
+    DIP_ACTIVE_FILE_AGE="0"
+  fi
+
+  DIP_AMOUNT_AGE_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$DIP_ACTIVE_FILE_AGE/3600")) $(("$DIP_ACTIVE_FILE_AGE%3600/60")) $(("$DIP_ACTIVE_FILE_AGE%60")))
+
   # calculate price margin
   # check if max orders are reached (total)
 
@@ -382,6 +391,8 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
 
     placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_ASK" "$DIP_LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
+    LIMIT_DIP_POSITION="$LOG_DATE : $EXCHANGE_API : DIP : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_BUY_AMOUNT_REFERENCE $DIP_LISTING_BALANCE ${ACTIVE_GAINS_LOSSES:?}% $DIP_AMOUNT_AGE_FORMAT"
+    echo "$LIMIT_DIP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
     DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Selling $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
     echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
@@ -390,7 +401,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   # DIP BUY LIMIT
   ##############################################################################
 
-  # active file age
+  # txid file age
   DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
   # check if any orders with reference, listing currency does not exist
@@ -401,6 +412,8 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
       # setup limit buy order
       placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
+      LIMIT_DIP_POSITION="$LOG_DATE : $EXCHANGE_API : DIP : buy :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_BUY_AMOUNT_REFERENCE $DIP_LISTING_BALANCE ${ACTIVE_GAINS_LOSSES:?}% $DIP_AMOUNT_AGE_FORMAT"
+      echo "$LIMIT_DIP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
       DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
       echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
