@@ -285,11 +285,6 @@ DIP_TOTAL_FOUND_COUNT="$(echo "$DIP_LOG_FILE" | awk '{ print $NF }' | awk '!a[$0
 
 last_tx
 
-# remove double quotes
-if [[ "$(grep -c '"' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" -gt "0" ]] &>/dev/null; then
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-fi
-
 ################################################################################
 
 # get data
@@ -382,7 +377,6 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
 
   DIP_AMOUNT_AGE_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$DIP_ACTIVE_FILE_AGE/3600")) $(("$DIP_ACTIVE_FILE_AGE%3600/60")) $(("$DIP_ACTIVE_FILE_AGE%60")))
 
-  # calculate price margin
   # check if max orders are reached (total)
 
   ##############################################################################
@@ -391,6 +385,10 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
 
   # order has selling power
   if [[ "$(echo "$DIP_LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+
+    # sell with margin (negative)
+    DIP_MARGIN="$(echo "$DIP_MARGIN/1000000000" | bc -l)"
+    ACTIVE_BUY_ASK="$(echo "$ACTIVE_BUY_ASK-$DIP_MARGIN" | bc -l)"
 
     placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_ASK" "$DIP_LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
@@ -411,6 +409,10 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
     # dont overbuy if everything got sold, orders needs to be updated
     if [[ "$DIP_ORDERS_FILE_AGE" -lt "$BOT_TIMER" ]] &>/dev/null; then
+
+      # buy with margin (positive)
+      DIP_MARGIN="$(echo "$DIP_MARGIN/1000000000" | bc -l)"
+      ACTIVE_BUY_BID="$(echo "$ACTIVE_BUY_BID+$DIP_MARGIN" | bc -l)"
 
       # setup limit buy order
       placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid

@@ -205,6 +205,10 @@ function last_tx() {
     # last tx (default)
     TX_ID_LAST="null"
   fi
+  # remove possible double quotes
+  if [[ "$(grep -c '"' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  fi
 }
 
 ################################################################################
