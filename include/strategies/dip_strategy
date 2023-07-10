@@ -329,6 +329,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   ACTIVE_BUY_BID="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $2 }')"
   ACTIVE_BUY_ASK="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $3 }')"
   ACTIVE_BUY_LAST="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $4 }')"
+  ACTIVE_GAINS_LOSSES="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $NF }')"
   ACTIVE_BUY_GAINS_LOSSES="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $5 }')"
 
   # get symbol name
@@ -402,6 +403,8 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
     DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
     echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
+  # create open position
+  echo "DIP $LISTING_CURRENCY/$REFERENCE_CURRENCY $DIP_LISTING_BALANCE $DIP_BUY_AMOUNT_REFERENCE ${ACTIVE_GAINS_LOSSES:?}% 0h:0m:0s" >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
 fi
 
 ################################################################################
