@@ -108,10 +108,10 @@ POTENTIAL_BUY_BID="0"
 POTENTIAL_BUY_ASK="0"
 
 # market file age
-DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # file age greater than max age
-if [[ "$DIP_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
+if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # read the file line by line
   while IFS= read -r line; do
@@ -405,12 +405,12 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   ##############################################################################
 
   # txid file age
-  DIP_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  DIP_ORDERS_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
   # check if any orders with reference, listing currency does not exist
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
-    # dont overbuy if everything got sold, txid needs to be older
-    if [[ "$DIP_FILE_AGE" -gt "$(echo "$BOT_TIMER*2" | bc 2>/dev/null)" ]] &>/dev/null; then
+    # dont overbuy if everything got sold, orders needs to be updated
+    if [[ "$DIP_ORDERS_FILE_AGE" -lt "$BOT_TIMER" ]] &>/dev/null; then
 
       # setup limit buy order
       placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
