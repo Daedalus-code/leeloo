@@ -99,6 +99,19 @@ echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
 sleep 1
 
 ################################################################################
+# DIP FILES
+################################################################################
+
+# market file age
+DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+# orders file age
+DIP_ORDERS_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+if [[ -z "$DIP_ACTIVE_FILE_AGE" ]] &>/dev/null; then
+  DIP_ACTIVE_FILE_AGE="0"
+fi
+
+################################################################################
 # DIP MARKET
 ################################################################################
 
@@ -106,9 +119,6 @@ sleep 1
 POTENTIAL_BUY_SYMBOL=""
 POTENTIAL_BUY_BID="0"
 POTENTIAL_BUY_ASK="0"
-
-# market file age
-DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # file age greater than max age
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
@@ -371,13 +381,6 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
     echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
-  # active file age
-  DIP_ACTIVE_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-  if [[ -z "$DIP_ACTIVE_FILE_AGE" ]] &>/dev/null; then
-    DIP_ACTIVE_FILE_AGE="0"
-  fi
-
   DIP_AMOUNT_AGE_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$DIP_ACTIVE_FILE_AGE/3600")) $(("$DIP_ACTIVE_FILE_AGE%3600/60")) $(("$DIP_ACTIVE_FILE_AGE%60")))
 
   # check if max orders are reached (total)
@@ -416,9 +419,6 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   ##############################################################################
   # DIP BUY LIMIT
   ##############################################################################
-
-  # txid file age
-  DIP_ORDERS_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
   # check if any orders with reference, listing currency does not exist
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
