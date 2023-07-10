@@ -245,9 +245,11 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/r
   # get reference (market)
   REFERENCE_CURRENCY="$(echo "$SYMBOL_NAME" | awk -F/ '{ print $2 }')"
 
-  # log market output
-  DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_BUY_SYMBOL Gains/Losses: ${POTENTIAL_GAINS_LOSSES:?}%"
-  echo "$DIP_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  if [[ ! -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+    # log market output
+    DIP_MARKET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target: $POTENTIAL_BUY_SYMBOL Gains/Losses: ${POTENTIAL_GAINS_LOSSES:?}%"
+    echo "$DIP_MARKET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  fi
 
   # account allocated (n%)
   REFERENCE_ALLOCATED="$DIP_ALLOCATED"
@@ -281,14 +283,14 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/r
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
     # log target output
-    if [[ "$(egrep -c "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target)" -gt "0" ]] &>/dev/null; then
+    if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
       DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Limit_Buy :: (${POTENTIAL_GAINS_LOSSES:?}%) $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
       echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
 
   else
     # log target output
-    if [[ "$(egrep -c "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target)" -gt "0" ]] &>/dev/null; then
+    if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
       DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Limit_Buy :: $LISTING_CURRENCY Waiting on balance! $LISTING_CURRENCY/$REFERENCE_CURRENCY (${POTENTIAL_GAINS_LOSSES:?}%)"
       echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
