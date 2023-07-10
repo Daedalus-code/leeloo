@@ -269,10 +269,10 @@ fi
 
 ################################################################################
 
-DIP_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sort -R | head -1)"
+DIP_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 DIP_LOG_FILE="$(grep "Market" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)"
 
-DIP_POTENTIAL_SYMBOL="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $1 }')"
+DIP_POTENTIAL_SYMBOL="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $1 }' | sort -R | head -1)"
 
 # get symbol name
 SYMBOL_NAME="$(echo "$DIP_POTENTIAL_SYMBOL" | tr -d ':')"
