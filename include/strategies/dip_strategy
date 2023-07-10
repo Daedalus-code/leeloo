@@ -285,7 +285,10 @@ DIP_TOTAL_FOUND_COUNT="$(echo "$DIP_LOG_FILE" | awk '{ print $NF }' | awk '!a[$0
 
 last_tx
 
-echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+# remove double quotes
+if [[ "$(grep -c '"' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+fi
 
 ################################################################################
 
