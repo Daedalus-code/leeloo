@@ -480,13 +480,21 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
     echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
+  # get symbol name
+  DIP_TARGET_LIST="$(sort -R "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list)"
+  # get listing (target)
+  TARGET_LIST_LISTING_CURRENCY="$(echo "$DIP_TARGET_LIST" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $1 }')"
+  # get reference (market)
+  TARGET_LIST_REFERENCE_CURRENCY="$(echo "$DIP_TARGET_LIST" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $2 }')"
+  TARGET_LIST_ACTIVE_GAINS_LOSSES="$(echo "$DIP_TARGET_LIST" | awk '{ print $NF }')"
+
   # update active file if found but missing
-  if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
+  if [[ "$(grep "$TARGET_LIST_REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$TARGET_LIST_LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
     # get latest target back into the active pool
-    grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list | grep "$LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
+    grep "$TARGET_LIST_REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list | grep "$TARGET_LIST_LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
     # remove duplicates, empty lines
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-    DIP_FOUND_MISSING="$LOG_DATE : $EXCHANGE_API : DIP : Limit_Sell :: Missing target! ($LISTING_CURRENCY/$REFERENCE_CURRENCY) (${ACTIVE_GAINS_LOSSES:?}%)"
+    DIP_FOUND_MISSING="$LOG_DATE : $EXCHANGE_API : DIP : Limit_Sell :: Missing target! ($TARGET_LIST_LISTING_CURRENCY/$TARGET_LIST_REFERENCE_CURRENCY) (${TARGET_LIST_ACTIVE_GAINS_LOSSES:?}%)"
     echo "$DIP_FOUND_MISSING" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
   fi
 fi
