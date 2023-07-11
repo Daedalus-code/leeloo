@@ -472,6 +472,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
 
     # update active file if missing
     if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
+      # get latest target back into the active pool
       tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
       # remove duplicates, empty lines
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
