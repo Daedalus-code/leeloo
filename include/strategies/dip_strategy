@@ -306,8 +306,8 @@ DIP_GAIN_LOSS_AVERAGE="$(echo "$DIP_GAIN_LOSS_TOTAL/$DIP_GAIN_LOSS_COUNT" | bc -
 DIP_GAIN_LOSS_HIGH="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $NF }' | sort -n | tail -1)"
 DIP_GAIN_LOSS_LOW="$(echo "$DIP_ACTIVE_FILE" | awk '{ print $NF }' | sort -n | head -1)"
 
-DIP_TOTAL_MARKET_COUNT="$(echo "$DIP_LOG_FILE" | grep -o "Market: ........" | awk '{ print $2 }' | awk '!a[$0]++' | wc -l)"
-DIP_TOTAL_FOUND_COUNT="$(echo "$DIP_LOG_FILE" | awk '{ print $NF }' | awk '!a[$0]++' | wc -l)"
+DIP_TOTAL_MARKET_COUNT="$(echo "$DIP_LOG_FILE" | egrep -o "Market: [A-Z]+ Count: [0-9]+" | awk '!a[$0]++' | wc -l)"
+DIP_TOTAL_FOUND_COUNT="$(echo "$DIP_LOG_FILE" | egrep -o "Status: [A-Z]+ Found: [0-9]+" | awk '!a[$0]++' | wc -l)"
 DIP_TOTAL_MARKETS="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/prices.bkp | awk '{ print $1 }')"
 
 ################################################################################
