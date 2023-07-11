@@ -99,9 +99,6 @@ echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
 # prices file path
 DIP_PRICES_FILE="${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS"
 
-# orders file age
-DIP_ORDERS_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
 ################################################################################
 # DIP MARKET
 ################################################################################
@@ -450,10 +447,13 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
   # DIP BUY LIMIT
   ##############################################################################
 
+  # txid file age
+  DIP_TXID_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
   # check if any orders with reference, listing currency does not exist
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
-    # dont overbuy if everything got sold, orders needs to be updated
-    if [[ "$DIP_ORDERS_FILE_AGE" -lt "$BOT_TIMER" ]] &>/dev/null; then
+    # dont overbuy if everything got sold, txid needs to be updated
+    if [[ "$DIP_TXID_FILE_AGE" -lt "$BOT_TIMER" ]] &>/dev/null; then
 
       # setup limit buy order
       placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
