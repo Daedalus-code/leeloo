@@ -288,7 +288,7 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target && -f "${SYS_DIR:?}"/r
   # create target list
   cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list 2>/dev/null
   # keep n lines
-  echo "$(tail -100 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list 2>/dev/null
+  echo "$(tail -9 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list 2>/dev/null
   # reset target file
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
 fi
@@ -495,7 +495,8 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
     grep "$TARGET_LIST_REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list | grep "$TARGET_LIST_LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
     # remove duplicates, empty lines
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-    DIP_FOUND_MISSING="$LOG_DATE : $EXCHANGE_API : DIP : Limit_Sell :: Missing target! ($TARGET_LIST_LISTING_CURRENCY/$TARGET_LIST_REFERENCE_CURRENCY) (${TARGET_LIST_GAINS_LOSSES:?}%)"
+
+    DIP_FOUND_MISSING="$LOG_DATE : $EXCHANGE_API : DIP : Add_target :: Missing target! ($TARGET_LIST_LISTING_CURRENCY/$TARGET_LIST_REFERENCE_CURRENCY) (${TARGET_LIST_GAINS_LOSSES:?}%)"
     echo "$DIP_FOUND_MISSING" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 fi
