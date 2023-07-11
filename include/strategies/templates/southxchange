@@ -211,6 +211,7 @@ function last_tx() {
   if [[ "$(grep -c '"' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" -gt "0" ]] &>/dev/null; then
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
+  TXID_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 }
 
 ################################################################################
