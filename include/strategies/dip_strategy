@@ -439,8 +439,10 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
 
       placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$ACTIVE_BUY_ASK" "$DIP_LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
-      DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Selling $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
-      echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      if [[ ! -z "$DIP_BUY_AMOUNT_LISTING" ]] &>/dev/null; then
+        DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Limit: Selling $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+        echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      fi
     fi
 
     ############################################################################
