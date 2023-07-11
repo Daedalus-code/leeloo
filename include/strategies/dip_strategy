@@ -491,9 +491,13 @@ fi
 
 ################################################################################
 
-# clean up duplicates, keep best prices
+# clean up duplicates, keep best prices (active)
 awk 'BEGIN{FS=OFS=": "}{split($2, prices, " "); if (prices[3] > best_price[$1]) {best_price[$1] = prices[3]; best_line[$1] = $0}} END{for (market in best_line) print best_line[market]}' "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp"
 mv "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp" "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active"
+
+# clean up duplicates, keep best prices (target.list)
+awk 'BEGIN{FS=OFS=": "}{split($2, prices, " "); if (prices[3] > best_price[$1]) {best_price[$1] = prices[3]; best_line[$1] = $0}} END{for (market in best_line) print best_line[market]}' "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.target.list" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.target.list.tmp"
+mv "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.target.list.tmp" "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.target.list"
 
 ################################################################################
 
