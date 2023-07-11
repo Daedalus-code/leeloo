@@ -480,13 +480,14 @@ if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active && -f "${SYS_DIR:?}"/r
     echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
-  # get symbol name
+  # get random line from target.list
   DIP_TARGET_LIST="$(sort -R "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.list)"
   # get listing (target)
   TARGET_LIST_LISTING_CURRENCY="$(echo "$DIP_TARGET_LIST" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $1 }')"
   # get reference (market)
   TARGET_LIST_REFERENCE_CURRENCY="$(echo "$DIP_TARGET_LIST" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $2 }')"
-  TARGET_LIST_ACTIVE_GAINS_LOSSES="$(echo "$DIP_TARGET_LIST" | awk '{ print $NF }')"
+  # get gains losses
+  TARGET_LIST_GAINS_LOSSES="$(echo "$DIP_TARGET_LIST" | awk '{ print $NF }')"
 
   # update active file if found but missing
   if [[ "$(grep "$TARGET_LIST_REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$TARGET_LIST_LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
