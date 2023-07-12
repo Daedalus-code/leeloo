@@ -293,12 +293,16 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
     if [[ "$REFERENCE_BALANCE" == "0.000000000" ]] &>/dev/null; then
+      # update log date
+      LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $REFERENCE_CURRENCY Has no balance!"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       remove_update_active_order
     fi
     if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
+      # update log date
+      LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: "$LISTING_CURRENCY/$REFERENCE_CURRENCY" Already active!"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
