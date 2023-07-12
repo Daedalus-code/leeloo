@@ -75,7 +75,7 @@ DIP_MARKETS_COUNT="$(grep -c "/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/southxchange/
 ################################################################################
 
 # log prices output
-DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Prices: $DIP_MARKETS Count: $DIP_MARKETS_COUNT"
+DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Count: $DIP_MARKETS_COUNT ($DIP_MARKETS)"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
@@ -158,6 +158,14 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       fi
     fi
   done <"$DIP_PRICES_FILE"
+
+  DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+  # get target count
+  DIP_TARGET_COUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | wc -l)"
+
+  # log target output
+  DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: Found: $DIP_TARGET_COUNT ($DIP_MARKETS)"
+  echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
