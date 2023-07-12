@@ -171,16 +171,37 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # target found
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+
     # target file output
     DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
-    # target count
+    # target count (data)
     DIP_TARGET_COUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | wc -l)"
+    # target symbol
+    DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
+    # get listing (target from above)
+    LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" | awk -F/ '{ print $1 }')"
+    # get reference (market from above)
+    REFERENCE_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" | awk -F/ '{ print $2 }')"
+    # target bid
+    DIP_TARGET_BID="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $4 }')"
+    # target ask
+    DIP_TARGET_ASK="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $7 }')"
+    # target last
+    DIP_TARGET_LAST="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $10 }')"
+    # target dip
+    DIP_TARGET_DIP="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $13 }')"
+    # target spread
+    DIP_TARGET_SPREAD="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $16 }')"
+    # target price movement
+    DIP_TARGET_PRICE_MOVEMENT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $20 }')"
+    # target volume
+    DIP_TARGET_VOLUME="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $23 }')"
 
     if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
-      DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $DIP_MARKETS, found $DIP_TARGET_COUNT target!"
+      DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $DIP_MARKETS, found $DIP_TARGET_COUNT target! $LISTING_CURRENCY @ $DIP_TARGET_BID Bid!"
       echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
   fi
