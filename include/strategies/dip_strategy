@@ -249,12 +249,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # log target output
     DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Found $POTENTIAL_MARKET_COUNT! $LISTING_CURRENCY/$REFERENCE_CURRENCY Average Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}%"
     echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-    if [[ "$REFERENCE_BALANCE" == "0.000000000" ]] &>/dev/null; then
-      # log target output
-      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Balances :: $REFERENCE_CURRENCY Has no balance!"
-      echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    fi
   fi
 
   # target found
@@ -265,6 +259,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # log target output
       DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Target $DIP_TARGET_COUNT! $LISTING_CURRENCY/$REFERENCE_CURRENCY Spread: ${DIP_TARGET_SPREAD:?}%"
       echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
+    if [[ "$REFERENCE_BALANCE" == "0.000000000" ]] &>/dev/null; then
+      # log target output
+      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Balances :: $REFERENCE_CURRENCY Has no balance!"
+      echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
   fi
 
