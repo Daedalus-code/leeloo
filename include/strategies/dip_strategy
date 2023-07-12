@@ -248,7 +248,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     function remove_update_active_order() {
       cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
       # remove active order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      if [[ ! -z "$REFERENCE_CURRENCY" && ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      fi
       # remove duplicates, empty lines
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
     }
