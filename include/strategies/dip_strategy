@@ -245,6 +245,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     TARGET_ACTIVE="TARGET"
     target_data
 
+    function remove_active_order() {
+      # remove active order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+    }
+
     POTENTIAL_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
 
     POTENTIAL_MARKET_TOTAL_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
@@ -255,11 +260,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # log target output
     DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Found $POTENTIAL_MARKET_COUNT! $LISTING_CURRENCY/$REFERENCE_CURRENCY Average Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}%"
     echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-    function remove_active_order() {
-      # remove active order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-    }
 
     if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
       # update log date
