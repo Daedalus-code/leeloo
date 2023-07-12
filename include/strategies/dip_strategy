@@ -233,6 +233,16 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   done <"$DIP_PRICES_FILE"
 
+  POTENTIAL_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
+  POTENTIAL_MARKET_TOTAL_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
+  POTENTIAL_MARKET_AVERAGE_SPREAD="$(echo "$POTENTIAL_MARKET_TOTAL_SPREAD/$POTENTIAL_MARKET_COUNT" | bc -l)"
+
+  # update log date
+  LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+  # log target output
+  DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Found $POTENTIAL_MARKET_COUNT! $LISTING_CURRENCY/$REFERENCE_CURRENCY with ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}% spread!"
+  echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
   # target found
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
     if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
