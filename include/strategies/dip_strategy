@@ -313,10 +313,10 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     TARGET_ACTIVE="ACTIVE"
     target_data
 
-    # remove old active order
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-
     if [[ ! -z "$DIP_GET_AMOUNT_REFERENCE" ]] &>/dev/null; then
+      # remove old active order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+
       LIMIT_DIP_POSITION="$LOG_DATE : $EXCHANGE_API : DIP : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $DIP_GET_AMOUNT_REFERENCE ${DIP_TARGET_SPREAD:?}% $DIP_TARGET_FILE_AGE"
       echo "$LIMIT_DIP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
     fi
