@@ -65,7 +65,7 @@ DIP_RANDOM_SEARCH="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 # get random count
 DIP_RANDOM_COUNT="$(echo "$DIP_RANDOM_SEARCH" | wc -l)"
 # log target output (config set)
-DIP_MARKET_SEARCH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_RANDOM_SEARCH $DIP_RANDOM_COUNT Market"
+DIP_MARKET_SEARCH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_RANDOM_COUNT Market"
 
 # config not set, do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
@@ -73,6 +73,11 @@ if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   DIP_MARKETS="$(echo "$DIP_RANDOM_SEARCH" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
   # log target output
   DIP_MARKET_SEARCH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_RANDOM_COUNT Markets"
+fi
+
+# use good old bitcoin if still zero
+if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+  DIP_MARKETS="BTC"
 fi
 
 # log output
