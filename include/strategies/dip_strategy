@@ -269,8 +269,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         DIP_TARGET_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_TARGET_FILE_AGE_SECONDS/3600")) $(("$DIP_TARGET_FILE_AGE_SECONDS%3600/60")) $(("$DIP_TARGET_FILE_AGE_SECONDS%60")))
 
         # buy output (trade history)
-        LIMIT_DIP_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : buy :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $DIP_BUY_AMOUNT_REFERENCE ${DIP_TARGET_SPREAD:?}% $DIP_TARGET_FILE_AGE"
-        echo "$LIMIT_DIP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+        DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : buy :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $DIP_BUY_AMOUNT_REFERENCE ${DIP_TARGET_SPREAD:?}% $DIP_TARGET_FILE_AGE"
+        echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
         # buy output (placeOrder)
         DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
         echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -316,12 +316,16 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     TARGET_ACTIVE="ACTIVE"
     target_data
 
+    # make sure amount reference has n
     if [[ ! -z "$DIP_GET_AMOUNT_REFERENCE" ]] &>/dev/null; then
+
       # remove old active order
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : CleanOrder :: Removing old $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool (${DIP_TARGET_SPREAD:?}%)"
+      echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-      LIMIT_DIP_POSITION="$LOG_DATE : $EXCHANGE_API : DIP : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $DIP_GET_AMOUNT_REFERENCE ${DIP_TARGET_SPREAD:?}% $DIP_TARGET_FILE_AGE"
-      echo "$LIMIT_DIP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+      DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : DIP : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $DIP_GET_AMOUNT_REFERENCE ${DIP_TARGET_SPREAD:?}% $DIP_TARGET_FILE_AGE"
+      echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
     fi
   fi
 fi
