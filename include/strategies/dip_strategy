@@ -18,7 +18,7 @@ source /usr/local/bin/include/leeloo/strategies/templates/exchanges
 
 ################################################################################
 
-# get strategy id.config, run strategy
+# strategy id.config, run strategy
 BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
 
 ################################################################################
@@ -57,17 +57,17 @@ DIP_MAX_AGE="$(egrep "DIP_MAX_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".co
 exchange_template
 
 ################################################################################
-# get market prices
+# market prices
 ################################################################################
 
-# prices output
+# prices file output
 DIP_RANDOM_SEARCH="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
-# get total market count
+# total market count
 DIP_TOTAL_MARKET_COUNT="$(echo "$DIP_RANDOM_SEARCH" | wc -l)"
 
 # config not set, do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-  # get dip markets
+  # dip markets
   DIP_MARKETS="$(echo "$DIP_RANDOM_SEARCH" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
 fi
 
@@ -79,7 +79,7 @@ fi
 # create dip_markets list
 echo "$(echo "$DIP_RANDOM_SEARCH" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS"
 
-# get markets count
+# markets count
 DIP_MARKETS_COUNT="$(echo "$DIP_RANDOM_SEARCH" | grep -c "/$DIP_MARKETS" 2>/dev/null)"
 
 # log prices output
@@ -125,14 +125,14 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] && (($(echo "$DIP < -$DIP_MIN_DIP" | bc -l 2>/dev/null))) && (($(echo "$VOLUME_PERCENTAGE > $DIP_MIN_VOLUME" | bc -l 2>/dev/null))); then
       if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]]; then
 
-        # get spread
+        # spread
         SPREAD=$(bc <<<"scale=2; ($ASK - $BID) / $BID * 100" 2>/dev/null)
 
         if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l))); then
 
-          # get price movement ("Thats a good potential! --80s broker, New York)
+          # price movement ("Thats a good potential! --80s broker, New York)
           PRICE_MOVEMENT=$(bc <<<"scale=2; ($LAST - $BID) / $BID * 100" 2>/dev/null)
-          # get volume percentage (configuration)
+          # volume percentage (configuration)
           VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
 
           # correct market
@@ -163,13 +163,16 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   done <"$DIP_PRICES_FILE"
 
+  # target file output
   DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
-  # get target count
+  # target count
   DIP_TARGET_COUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | wc -l)"
 
-  # log target output
-  DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $DIP_MARKETS Found: $DIP_TARGET_COUNT"
-  echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
+    # log target output
+    DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $DIP_MARKETS Found: $DIP_TARGET_COUNT"
+    echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  fi
 fi
 
 ################################################################################
