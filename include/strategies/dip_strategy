@@ -277,15 +277,19 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # buy output (placeOrder)
         DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
         echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-        # create active file
-        cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
-        # remove duplicates, empty lines
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       fi
     fi
   fi
 fi
+
+################################################################################
+# create active list
+################################################################################
+
+# create active file
+cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
+# remove duplicates, empty lines
+echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
 ################################################################################
 # setup sell order (limit)
