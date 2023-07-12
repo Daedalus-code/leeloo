@@ -73,7 +73,7 @@ function target_data() {
   fi
 
   # target count (data)
-  DIP_TARGET_COUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | wc -l)"
+  DIP_TARGET_COUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | sed '/^$/d' | wc -l)"
 
   # target symbol
   DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
@@ -133,7 +133,7 @@ function target_data() {
 # prices file output
 DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 # total market count
-DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | wc -l)"
+DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | sed '/^$/d' | wc -l)"
 
 # create dip_markets list
 echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS"
@@ -150,7 +150,7 @@ echo "$OTHER_RUNNING_BOTS" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARK
 # prices file output
 DIP_ACTIVE_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 # total active count
-DIP_ACTIVE_FILE_COUNT="$(echo "$DIP_ACTIVE_FILE_OUTPUT" | wc -l)"
+DIP_ACTIVE_FILE_COUNT="$(echo "$DIP_ACTIVE_FILE_OUTPUT" | sed '/^$/d' | wc -l)"
 # total active spread
 DIP_ACTIVE_FILE_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
 # calculate average spread
