@@ -335,11 +335,14 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
       # make sure amount reference has n
       if [[ ! -z "$DIP_GET_AMOUNT_REFERENCE" ]] &>/dev/null; then
+        # if listing and reference had a recently sell
+        if [[ "$(tail -10 "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$REFERENCE_CURRENCY" 2>/dev/null | grep "$LISTING_CURRENCY" | grep "sell")" -eq "1" ]] &>/dev/null; then
 
-        # remove old active order
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-        DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : CleanOrder :: Removing old $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (${DIP_TARGET_SPREAD:?}%)"
-        echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+          # remove old active order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+          DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : CleanOrder :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (${DIP_TARGET_SPREAD:?}%)"
+          echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        fi
       fi
     fi
   fi
