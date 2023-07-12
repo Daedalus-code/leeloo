@@ -264,6 +264,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # log target output
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Balances :: $REFERENCE_CURRENCY Has no balance!"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      # remove active order with no reference balance
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
     fi
   fi
 
