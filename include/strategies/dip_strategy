@@ -176,12 +176,14 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
     # target count (data)
     DIP_TARGET_COUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | wc -l)"
+
     # target symbol
     DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
     # get listing (target from above)
     LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" | awk -F/ '{ print $1 }')"
     # get reference (market from above)
     REFERENCE_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" | awk -F/ '{ print $2 }')"
+
     # target bid
     DIP_TARGET_BID="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $4 }')"
     # target ask
@@ -201,7 +203,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
-      DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $DIP_MARKETS, found $DIP_TARGET_COUNT target! $LISTING_CURRENCY @ $DIP_TARGET_BID Bid!"
+      DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $DIP_MARKETS, found $DIP_TARGET_COUNT! $LISTING_CURRENCY @ ${DIP_TARGET_SPREAD:?}% Spread!"
       echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
   fi
