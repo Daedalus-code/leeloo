@@ -170,6 +170,7 @@ POTENTIAL_BUY_ASK="0"
 
 # market file age
 DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
 if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
   DIP_MARKET_FILE_AGE="0"
 fi
@@ -178,6 +179,9 @@ fi
 
 # file age greater than max age
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
+
+  # reset market file
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
   # read the file line by line
   while IFS= read -r line; do
@@ -204,11 +208,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # volume percentage (configuration)
           VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
 
-          # correct market
-          if [[ "$(echo "$SYMBOL" | egrep -c "$DIP_MARKETS")" -gt "0" ]] &>/dev/null; then
-            # create market file
-            echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
-          fi
+          # create market file
+          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
           # check if the symbol meets the potential buy criteria
           if (($(echo "$PRICE_MOVEMENT > 0" | bc -l 2>/dev/null))); then
