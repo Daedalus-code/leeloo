@@ -131,14 +131,30 @@ function target_data() {
 ################################################################################
 
 # prices file output
-DIP_RANDOM_SEARCH="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
+DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 # total market count
-DIP_TOTAL_MARKET_COUNT="$(echo "$DIP_RANDOM_SEARCH" | wc -l)"
+DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | wc -l)"
+
+# prices file output
+DIP_ACTIVE_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/active 2>/dev/null)"
+# total active count
+DIP_ACTIVE_FILE_COUNT="$(echo "$DIP_ACTIVE_FILE_OUTPUT" | wc -l)"
+# total active spread
+DIP_ACTIVE_FILE_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
+# calculate average spread
+DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+if [[ -z "$DIP_ACTIVE_FILE_COUNT" ]] &>/dev/null; then
+  DIP_ACTIVE_FILE_COUNT="0"
+fi
+if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" ]] &>/dev/null; then
+  DIP_ACTIVE_FILE_AVERAGE_SPREAD="0"
+fi
 
 # config not set, do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # dip markets
-  DIP_MARKETS="$(echo "$DIP_RANDOM_SEARCH" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
+  DIP_MARKETS="$(echo "$DIP_PRICES_FILE_OUTPUT" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
 fi
 
 # use good old bitcoin if still zero
@@ -147,13 +163,13 @@ if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
 fi
 
 # create dip_markets list
-echo "$(echo "$DIP_RANDOM_SEARCH" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS"
+echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS"
 
 # prices count
-DIP_PRICES_COUNT="$(echo "$DIP_RANDOM_SEARCH" | grep -c "/$DIP_MARKETS" 2>/dev/null)"
+DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" 2>/dev/null)"
 
 # log prices output
-DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_PRICES_COUNT $DIP_MARKETS Market(s)"
+DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_PRICES_FILE_COUNT $DIP_MARKETS Market(s) Active: $DIP_ACTIVE_FILE_COUNT Average Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}%"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 # prices file path
