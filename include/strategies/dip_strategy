@@ -279,8 +279,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       fi
 
-      # clean up duplicates, keep best prices (active)
-      awk 'BEGIN{FS=OFS=": "}{split($2, prices, " "); if (prices[3] > best_price[$1]) {best_price[$1] = prices[3]; best_line[$1] = $0}} END{for (market in best_line) print best_line[market]}' "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp"
+      awk 'BEGIN{FS=OFS=": "}{split($2, prices, " "); if (prices[3] > best_price[$1]) {best_price[$1] = prices[3]; best_line[$1] = $0}} END{for (market in best_line) print best_line[market]}' "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" | tee "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp" >/dev/null
       mv "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp" "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active"
 
       # log target output
