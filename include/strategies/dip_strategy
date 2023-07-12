@@ -167,15 +167,17 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   done <"$DIP_PRICES_FILE"
 
-  # target file output
-  DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
-  # target count
-  DIP_TARGET_COUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | wc -l)"
+  if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+    # target file output
+    DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+    # target count
+    DIP_TARGET_COUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | wc -l)"
 
-  if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
-    # log target output
-    DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $DIP_MARKETS, found $DIP_TARGET_COUNT!"
-    echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
+      # log target output
+      DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $DIP_MARKETS, found $DIP_TARGET_COUNT!"
+      echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
   fi
 fi
 
