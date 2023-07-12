@@ -64,15 +64,11 @@ exchange_template
 DIP_RANDOM_SEARCH="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 # get random count
 DIP_RANDOM_COUNT="$(echo "$DIP_RANDOM_SEARCH" | wc -l)"
-# log target output (config set)
-DIP_MARKET_SEARCH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_RANDOM_COUNT Market"
 
 # config not set, do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # get dip markets
   DIP_MARKETS="$(echo "$DIP_RANDOM_SEARCH" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
-  # log target output
-  DIP_MARKET_SEARCH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_RANDOM_COUNT Markets"
 fi
 
 # use good old bitcoin if still zero
@@ -89,13 +85,9 @@ echo "$(echo "$DIP_RANDOM_SEARCH" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_D
 # get markets count
 DIP_MARKETS_COUNT="$(echo "$DIP_RANDOM_SEARCH" | grep -c "/$DIP_MARKETS" 2>/dev/null)"
 
-################################################################################
-
 # log prices output
-DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_MARKETS Found: $DIP_MARKETS_COUNT"
+DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_RANDOM_COUNT Markets, found $DIP_MARKETS_COUNT ($DIP_MARKETS)"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-################################################################################
 
 # prices file path
 DIP_PRICES_FILE="${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS"
@@ -117,8 +109,6 @@ DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ma
 if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
   DIP_MARKET_FILE_AGE="0"
 fi
-
-################################################################################
 
 # file age greater than max age
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
