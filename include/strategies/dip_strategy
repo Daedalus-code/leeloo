@@ -149,7 +149,7 @@ echo "$(echo "$DIP_RANDOM_SEARCH" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_D
 DIP_PRICES_COUNT="$(echo "$DIP_RANDOM_SEARCH" | grep -c "/$DIP_MARKETS" 2>/dev/null)"
 
 # log prices output
-DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_PRICES_COUNT $DIP_MARKETS market(s)"
+DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_PRICES_COUNT $DIP_MARKETS Market(s)"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 # prices file path
@@ -181,7 +181,9 @@ fi
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # reset market file
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+  fi
 
   # read the file line by line
   while IFS= read -r line; do
