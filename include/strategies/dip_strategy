@@ -323,11 +323,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   fi
 
-  ##############################################################################
-
-  # remove duplicates, keep best price movement
-  awk 'BEGIN{FS=OFS=" | "}{split($7, movement, ": "); if (movement[2] > best_movement[$1]) {best_movement[$1] = movement[2]; best_line[$1] = $0}} END{for (market in best_line) print best_line[market]}' "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" | tee "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp" >/dev/null
-#  mv "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp" "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active"
+  if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+    # remove duplicates, empty lines
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+  fi
 
   ##############################################################################
   # setup buy order (limit)
