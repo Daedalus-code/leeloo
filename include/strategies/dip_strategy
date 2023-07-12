@@ -279,11 +279,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       fi
 
+      # remove duplicates, keep best price movement
       awk 'BEGIN{FS=OFS=" | "}{split($7, movement, ": "); if (movement[2] > best_movement[$1]) {best_movement[$1] = movement[2]; best_line[$1] = $0}} END{for (market in best_line) print best_line[market]}' "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" | tee "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp" >/dev/null
       mv "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active.tmp" "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active"
 
       # log target output
-      DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : CleanOrder :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (${DIP_TARGET_SPREAD:?}%)"
+      DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (${DIP_TARGET_SPREAD:?}%)"
       echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     }
 
