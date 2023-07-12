@@ -141,6 +141,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           # correct market
           if [[ "$(echo "$SYMBOL" | egrep -c "$DIP_MARKETS")" -gt "0" ]] &>/dev/null; then
+            # reset market file
+            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
             # potential market output
             POTENTIAL_MARKET_FOUND="$(echo "$SYMBOL | Bid: $BID | Ask: $ASK | Last: $LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%")"
             # create market file
