@@ -140,10 +140,12 @@ echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${
 
 ################################################################################
 
-# disregard already running strategies
-ALREADY_RUNNING_BOTS=$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | awk '{ print $7 }' | egrep -v "Searching|DIP" | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+")
-OTHER_RUNNING_BOTS="$(grep -vf <(echo "$ALREADY_RUNNING_BOTS") "${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS")"
-echo "$OTHER_RUNNING_BOTS" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS"
+if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
+  # disregard already running strategies
+  ALREADY_RUNNING_BOTS=$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | awk '{ print $7 }' | egrep -v "Searching|DIP" | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+")
+  OTHER_RUNNING_BOTS="$(grep -vf <(echo "$ALREADY_RUNNING_BOTS") "${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS")"
+  echo "$OTHER_RUNNING_BOTS" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS"
+fi
 
 ################################################################################
 
