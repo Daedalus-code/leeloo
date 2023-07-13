@@ -140,6 +140,17 @@ function target_data() {
 # market prices
 ################################################################################
 
+# config not set, do random markets
+if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+  # dip markets
+  DIP_MARKETS="$(echo "$DIP_PRICES_FILE_OUTPUT" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
+fi
+
+# use good old bitcoin if still zero
+if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+  DIP_MARKETS="BTC"
+fi
+
 # prices file output
 DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 # total market count
@@ -178,17 +189,6 @@ if [[ -z "$DIP_ACTIVE_FILE_COUNT" ]] &>/dev/null; then
 fi
 if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_AVERAGE_SPREAD="0"
-fi
-
-# config not set, do random markets
-if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-  # dip markets
-  DIP_MARKETS="$(echo "$DIP_PRICES_FILE_OUTPUT" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | sort -R | head -1)"
-fi
-
-# use good old bitcoin if still zero
-if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-  DIP_MARKETS="BTC"
 fi
 
 # prices count
