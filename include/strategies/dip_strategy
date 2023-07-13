@@ -159,6 +159,9 @@ if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   echo "$OTHER_RUNNING_BOTS" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS"
 fi
 
+# prices file path
+DIP_PRICES_FILE="${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS"
+
 ################################################################################
 
 # prices file output
@@ -194,9 +197,6 @@ DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS
 # log prices output
 DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_PRICES_FILE_COUNT $DIP_MARKETS Market(s) Active: $DIP_ACTIVE_FILE_COUNT Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}%"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-# prices file path
-DIP_PRICES_FILE="${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS"
 
 ################################################################################
 # search market for a target
@@ -274,7 +274,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         fi
       fi
     fi
-  done <"$DIP_PRICES_FILE"
+  done <"$DIP_PRICES_FILE" 2>/dev/null
 
   ##############################################################################
 
