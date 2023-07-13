@@ -127,6 +127,13 @@ function target_data() {
   if [[ -z "$LISTING_BALANCE" ]] &>/dev/null; then
     LISTING_BALANCE="0.000000000"
   fi
+
+  # calculate dip margin
+  DIP_MARGIN="$(echo "$DIP_MARGIN/1000000000" | bc -l 2>/dev/null)"
+  # price margin (default 1 = 0.000000001), buy with margin (positive)
+  DIP_TARGET_BID="$(echo "$DIP_TARGET_BID+$DIP_MARGIN" | bc -l 2>/dev/null)"
+  # price margin (default 1 = 0.000000001), sell with margin (negative)
+  DIP_TARGET_ASK="$(echo "$DIP_TARGET_ASK-$DIP_MARGIN" | bc -l 2>/dev/null)"
 }
 
 ################################################################################
