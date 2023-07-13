@@ -102,6 +102,8 @@ function amount_to_buy_sell() {
   DIP_GET_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_LISTING*$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 }
 
+################################################################################
+
 # target data
 function target_data() {
 
@@ -350,33 +352,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   fi
 
-  # active orders greater than n
-  if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
-    # orders greater than n
-    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
-      # remove duplicates, empty lines
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$1]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-
-      # remove non working orders
-      DIP_ACTIVE_LIST="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.active"
-      DIP_ORDERS_LIST="${LOG_DIR:?}/leeloo/southxchange/orders"
-
-      # extract markets from active list
-      MARKETS=$(awk -F'[/:]' '{print $1}' "$DIP_ACTIVE_LIST")
-
-      # loop through the markets and check if they exist in orders list
-      for MARKET in $MARKETS; do
-        grep -q "$MARKET" "$DIP_ORDERS_LIST"
-        if [ $? -ne 0 ]; then
-          # market does not exist in orders list, remove it from active list
-          sed -i "/^$MARKET/d" "$DIP_ACTIVE_LIST"
-        fi
-      done
-      # output the remaining lines in active list
-      echo "$(cat "$DIP_ACTIVE_LIST")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
-    fi
-  fi
-
   ##############################################################################
   # setup buy order (limit)
   ##############################################################################
@@ -416,6 +391,37 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   fi
 fi
+
+################################################################################
+
+# active orders greater than n
+if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+  # orders greater than n
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+    # remove duplicates, empty lines
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$1]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+
+    # remove non working orders
+    DIP_ACTIVE_LIST="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.active"
+    DIP_ORDERS_LIST="${LOG_DIR:?}/leeloo/southxchange/orders"
+
+    # extract markets from active list
+    MARKETS=$(awk -F'[/:]' '{print $1}' "$DIP_ACTIVE_LIST")
+
+    # loop through the markets and check if they exist in orders list
+    for MARKET in $MARKETS; do
+      grep -q "$MARKET" "$DIP_ORDERS_LIST"
+      if [ $? -ne 0 ]; then
+        # market does not exist in orders list, remove it from active list
+        sed -i "/^$MARKET/d" "$DIP_ACTIVE_LIST"
+      fi
+    done
+    # output the remaining lines in active list
+    echo "$(cat "$DIP_ACTIVE_LIST")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
+  fi
+fi
+
+################################################################################
 
 # reset target file
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
