@@ -100,13 +100,6 @@ function target_data() {
   # target volume
   DIP_TARGET_VOLUME="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $23 }')"
 
-  # amount for buy
-  DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-  # amount to buy
-  DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-  # amount to get
-  DIP_GET_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_LISTING*$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
   # account allocated (n%)
   REFERENCE_ALLOCATED="$DIP_ALLOCATED"
   # configuration not set, use n%
@@ -134,6 +127,13 @@ function target_data() {
   DIP_TARGET_BID="$(echo "$DIP_TARGET_BID+$DIP_MARGIN" | bc -l 2>/dev/null)"
   # price margin (default 1 = 0.000000001), sell with margin (negative)
   DIP_TARGET_ASK="$(echo "$DIP_TARGET_ASK-$DIP_MARGIN" | bc -l 2>/dev/null)"
+
+  # amount for buy
+  DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to buy
+  DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to get
+  DIP_GET_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_LISTING*$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 }
 
 ################################################################################
