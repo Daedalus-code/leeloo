@@ -140,6 +140,17 @@ function target_data() {
 # market prices
 ################################################################################
 
+# disregard already running strategies
+if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
+  # active markets from robot.log
+  ALREADY_RUNNING_BOTS=$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | awk '{ print $7 }' | egrep -v "Searching|DIP" | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+")
+  # disregard markets with found data
+  OTHER_RUNNING_BOTS="$(grep -vf <(echo "$ALREADY_RUNNING_BOTS") "${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS" 2>/dev/null)"
+  echo "$OTHER_RUNNING_BOTS" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS" 2>/dev/null
+fi
+
+################################################################################
+
 # prices file output
 DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
 # total market count
@@ -160,15 +171,6 @@ fi
 echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS" 2>/dev/null
 
 ################################################################################
-
-# disregard already running strategies
-if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
-  # active markets from robot.log
-  ALREADY_RUNNING_BOTS=$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | awk '{ print $7 }' | egrep -v "Searching|DIP" | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+")
-  # disregard markets with found data
-  OTHER_RUNNING_BOTS="$(grep -vf <(echo "$ALREADY_RUNNING_BOTS") "${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS" 2>/dev/null)"
-  echo "$OTHER_RUNNING_BOTS" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS" 2>/dev/null
-fi
 
 # prices file path
 DIP_PRICES_FILE="${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS"
