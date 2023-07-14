@@ -249,7 +249,7 @@ fi
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # reset market file
-  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market &>/dev/null
   fi
 
@@ -264,7 +264,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     DIP=$(echo "$line" | awk '{print $5}' | sed 's/%//')
     VOLUME_PERCENTAGE=$(echo "$line" | awk '{print $6}' | sed 's/%//')
 
-    # check if the symbol matches the specified market and if the spread, dip, and volume meet the criteria
+    # if the symbol matches the specified market and if the spread, dip, and volume meet the criteria
     if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] && (($(echo "$DIP < -$DIP_MIN_DIP" | bc -l 2>/dev/null))) && (($(echo "$VOLUME_PERCENTAGE > $DIP_MIN_VOLUME" | bc -l 2>/dev/null))); then
       if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]]; then
 
@@ -281,7 +281,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # create market file
           echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
-          # check if the symbol meets the potential buy criteria
+          # if the symbol meets the potential buy criteria
           if (($(echo "$PRICE_MOVEMENT > 0" | bc -l 2>/dev/null))); then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
 
@@ -366,7 +366,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # setup buy order (limit)
   ##############################################################################
 
-  # check if any orders with reference, listing currency does not exist
+  # if any orders with reference, listing currency does not exist
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
 
     # target data
@@ -420,18 +420,23 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   TARGET_ACTIVE="ACTIVE"
   target_data
 
+  # create strategy directory
+  if [[ ! -d "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" ]] &>/dev/null; then
+    mkdir "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" &>/dev/null
+  fi
+
   # max active orders, set by configuration
   if [[ "$DIP_ACTIVE_FILE_COUNT" -lt "$DIP_MAX_ORDERS" ]] &>/dev/null; then
     # order has selling power
     if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
       # dont exceed the original target amount
-      if [[ $(bc <<<"$DIP_BUY_AMOUNT_LISTING <= $DIP_TARGET_AMOUNT") -eq 1 ]] &>/dev/null; then
+      if [[ $(bc <<<"$LISTING_BALANCE <= $DIP_TARGET_AMOUNT") -eq 1 ]] &>/dev/null; then
         # original, use buy amount
-        DIP_BUY_AMOUNT_LISTING="$DIP_BUY_AMOUNT_LISTING"
+        LISTING_BALANCE="$DIP_BUY_AMOUNT_LISTING"
       else
         # exceeding, use target amount
-        DIP_BUY_AMOUNT_LISTING="$DIP_TARGET_AMOUNT"
+        LISTING_BALANCE="$DIP_TARGET_AMOUNT"
       fi
 
       # update log date
@@ -439,6 +444,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
       # setup limit sell order
       placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_ASK" "$LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+
+      # track amount being sold
+      echo "$LISTING_BALANCE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_BALANCE:?}"_"${LISTING_CURRENCY:?}"
 
       # sell output (placeOrder)
       DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Selling $LISTING_BALANCE $LISTING_CURRENCY for $DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
@@ -450,9 +458,11 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
-  # check if any orders with reference, listing currency does not exist
+  ##############################################################################
+
+  # if any orders with reference, listing currency does not exist (with target balance)
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
-    # check if listing balance is empty
+    # if listing balance is empty
     if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
 
       # target data
@@ -474,6 +484,33 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
         fi
       fi
+    fi
+  fi
+
+  ##############################################################################
+
+  # if any orders with reference, listing currency does not exist (with extra balance)
+  if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
+
+    # target data
+    TARGET_ACTIVE="ACTIVE"
+    target_data
+
+    # get total sum
+    DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_BALANCE:?}"_"${LISTING_CURRENCY:?}" 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+    # if sum greater than target
+    if [[ "$(echo "$DIP_TOTAL_SOLD_SUM" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$DIP_TARGET_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+      # update log date
+      LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+      # remove old active order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (sold)"
+      echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      # sell output (trade history)
+      DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $DIP_GET_AMOUNT_REFERENCE ${DIP_TARGET_SPREAD:?}% $DIP_TARGET_FILE_AGE"
+      echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+      # remove old file
+      rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_BALANCE:?}"_"${LISTING_CURRENCY:?}" &>/dev/null
     fi
   fi
 fi
