@@ -77,9 +77,9 @@ function amount_to_buy_sell() {
   REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
 
   # reference balance (available)
-  REFERENCE_BALANCE="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_BALANCE="$(grep "$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | tr -d ':' | awk '{ printf "%.9f\n", $1 }')"
   # listing balance (available)
-  LISTING_BALANCE="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_BALANCE="$(grep "$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | tr -d ':' | awk '{ printf "%.9f\n", $1 }')"
 
   if [[ -z "$REFERENCE_BALANCE" ]] &>/dev/null; then
     REFERENCE_BALANCE="0.000000000"
@@ -160,7 +160,7 @@ if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
   PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
   # extract the active markets from the robot.log file
-  ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/Searching|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+")
+  ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/Searching|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+")
   # filter out markets with found data
   grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
   # replace the original prices file with the filtered version
