@@ -105,7 +105,7 @@ function amount_to_buy_sell() {
 
 ################################################################################
 
-# target data
+# target data for both target and active
 function target_data() {
 
   if [[ "$TARGET_ACTIVE" == "TARGET" ]] &>/dev/null; then
@@ -140,6 +140,8 @@ function target_data() {
   DIP_TARGET_PRICE_MOVEMENT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $20 }')"
   # target volume
   DIP_TARGET_VOLUME="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $23 }')"
+  # target amount to buy and sell (listing)
+  DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $26 }')"
 
   amount_to_buy_sell
 }
@@ -302,8 +304,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     TARGET_ACTIVE="TARGET"
     target_data
 
-    # create active pool
-    cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
+    # create active file with amount to buy
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) | Amount: $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
 
     # market count
     POTENTIAL_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
@@ -352,8 +354,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: "$LISTING_CURRENCY/$REFERENCE_CURRENCY" Already active!"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-      # update active pool
-      cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
+      # update active file
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
     fi
   fi
 
