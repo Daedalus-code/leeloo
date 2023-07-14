@@ -429,7 +429,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       # order has selling power
       if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
         # dont exceed the original target amount
-        if (($(echo "$DIP_BUY_AMOUNT_LISTING > $DIP_TARGET_AMOUNT" | bc -l 2>/dev/null))) &>/dev/null; then
+        if [[ $(bc <<<"$DIP_BUY_AMOUNT_LISTING <= $DIP_TARGET_AMOUNT") -eq 1 ]] &>/dev/null; then
 
           # update log date
           LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
