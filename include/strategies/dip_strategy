@@ -150,11 +150,16 @@ function target_data() {
 
 # disregard already running strategies
 if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
-  # active markets from robot.log
-  ALREADY_RUNNING_BOTS=$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | awk '{ print $7 }' | egrep -v "Searching|DIP" | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+")
-  # disregard markets with found data
-  OTHER_RUNNING_BOTS="$(grep -vf <(echo "$ALREADY_RUNNING_BOTS") "${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS" 2>/dev/null)"
-  echo "$OTHER_RUNNING_BOTS" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS" 2>/dev/null
+  # set the paths for the files
+  LOG_DIR="${LOG_DIR:?}"
+  ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
+  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.${DIP_MARKETS}"
+  # extract the active markets from the robot.log file
+  ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/Searching|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+")
+  # filter out markets with found data
+  grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
+  # replace the original prices file with the filtered version
+  mv "${PRICES_FILE}.temp" "$PRICES_FILE"
 fi
 
 ################################################################################
