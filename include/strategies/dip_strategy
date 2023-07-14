@@ -148,11 +148,14 @@ function target_data() {
 # market prices
 ################################################################################
 
+# create price.dip file
+cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.dip
+
 # disregard already running strategies
 if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   # set the paths for the files
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
-  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices"
+  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
   # extract the active markets from the robot.log file
   ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/Searching|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+")
   # filter out markets with found data
@@ -164,7 +167,7 @@ fi
 ################################################################################
 
 # prices file output
-DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
+DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
 # total market count
 DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | sed '/^$/d' | wc -l)"
 
