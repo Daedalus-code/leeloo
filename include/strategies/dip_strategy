@@ -149,8 +149,8 @@ function target_data() {
 
 ################################################################################
 
-# remove active duplicates, empty lines
-echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$1]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+# remove active duplicates, empty lines, lines less than n
+echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$1]++' | sed '/^$/d' | sed -r '/^.{,100}$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
 ################################################################################
 # market prices
