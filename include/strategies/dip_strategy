@@ -396,18 +396,18 @@ echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '
 
 ################################################################################
 
-# remove non working orders
+# set the paths for active list and orders list
 DIP_ACTIVE_LIST="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.active"
 DIP_ORDERS_LIST="${LOG_DIR:?}/leeloo/southxchange/orders"
 
-# extract markets from active list
+# extract markets from the active list
 MARKETS=$(awk -F'[/:]' '{print $1}' "$DIP_ACTIVE_LIST")
 
-# loop through the markets and check if they exist in orders list
+# loop through the markets and check if they exist in the orders list
 for MARKET in $MARKETS; do
-  grep -q "$MARKET" "$DIP_ORDERS_LIST" 2>/dev/null
-  if [ $? -ne 0 ]; then
-    # market does not exist in orders list, remove it from active list
+  # check if the market exists in the orders list
+  if ! grep -q "$MARKET" "$DIP_ORDERS_LIST" 2>/dev/null; then
+    # market does not exist in orders list, remove it from the active list
     sed -i "/^$MARKET/d" "$DIP_ACTIVE_LIST" 2>/dev/null
   fi
 done
