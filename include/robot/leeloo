@@ -97,26 +97,6 @@ for (( ; ; )); do
     # get southxchange prices
     function result_prices() {
       echo "$(prices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
-
-      PRICES_FILE="${LOG_DIR:?}/leeloo/southxchange/prices"
-      DELISTED_FILE="${SYS_DIR:?}/delisted_southxchange"
-      PRICES_COPY_FILE="${PRICES_FILE}.copy"
-
-      # make a copy of the prices file
-      cp "$PRICES_FILE" "$PRICES_COPY_FILE"
-
-      # read the delisted markets from the file into an array
-      mapfile -t DELISTED_MARKETS <"$DELISTED_FILE"
-
-      # loop through the delisted markets and remove them from the prices copy file
-      for MARKET in "${DELISTED_MARKETS[@]}"; do
-        sed -i "/^${MARKET//\//\\/}/d" "$PRICES_COPY_FILE"
-      done
-
-      # use file if any data
-      if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/prices.copy | awk '{ print $1 }')" ]] &>/dev/null; then
-        mv "$PRICES_COPY_FILE" "$PRICES_FILE"
-      fi
     }
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
