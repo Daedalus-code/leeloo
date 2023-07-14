@@ -165,7 +165,7 @@ if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
   PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
   # extract the active markets from the robot.log file
-  ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/Searching|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+")
+  ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/All|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+")
   # filter out markets with found data
   grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
   # replace the original prices file with the filtered version
@@ -220,7 +220,7 @@ fi
 DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" 2>/dev/null)"
 
 # log prices output
-DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Searching :: $DIP_MARKETS: $DIP_PRICES_FILE_COUNT Active: $DIP_ACTIVE_FILE_COUNT Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}%"
+DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Search: $DIP_PRICES_FILE_COUNT Active: $DIP_ACTIVE_FILE_COUNT Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}%"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
