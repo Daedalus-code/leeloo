@@ -542,11 +542,10 @@ function rogue_profit() {
   # rogue profit using rsi
 
   ROGUE_TIMER_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  ROGUE_TIMER="3600"      # n seconds (default: 3600 seconds/1 hour cooldown)
-  ROGUE_HOURS="6"         # n hours of data (default: 6 hours)
-  ROGUE_AMOUNT="0.009225" # n % to be used (default: 0.009225)
-  ROGUE_MAX_DAY="5"       # n trades a day (default: 4)
-  ROGUE_RSI="14"          # relative strength index (default: 14)
+  ROGUE_TIMER="3600" # n seconds (default: 3600 seconds/1 hour cooldown)
+  ROGUE_HOURS="6"    # n hours of data (default: 6 hours)
+  ROGUE_MAX_DAY="5"  # n trades a day (default: 4)
+  ROGUE_RSI="14"     # relative strength index (default: 14)
 
   ##############################################################################
 
@@ -592,6 +591,7 @@ function rogue_profit() {
 
   function rogue_buying() {
     # n% amount
+    ROGUE_AMOUNT="0.009225" # n % to be used (default: 0.009225)
     LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
@@ -607,7 +607,8 @@ function rogue_profit() {
 
   function rogue_selling() {
     # n% amount
-    LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_AMOUNT="0.009225" # n % to be used (default: 0.009225)
+    LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
       placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
