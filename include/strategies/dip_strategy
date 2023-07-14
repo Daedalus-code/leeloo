@@ -442,7 +442,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
       # dont exceed the original target amount
-      if [[ $(bc <<<"$LISTING_BALANCE <= $DIP_TARGET_AMOUNT") -eq 1 ]] &>/dev/null; then
+      if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_TARGET_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
         # original, use buy amount
         LISTING_BALANCE="$DIP_BUY_AMOUNT_LISTING"
       else
