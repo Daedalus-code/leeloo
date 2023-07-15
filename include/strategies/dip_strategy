@@ -507,6 +507,9 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     DIP_TOTAL_SOLD_SUM="0"
   fi
 
+  DIP_TOTAL_SOLD_SUM="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+
   # get rid of old orders
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
     # if not found with no active orders, it is probably old
@@ -515,9 +518,6 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
       echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
     fi
   fi
-
-  DIP_TOTAL_SOLD_SUM="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-  DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   # if total sum greater or equal than target
   if [[ "$DIP_TOTAL_SOLD_SUM" -ge "$DIP_TARGET_AMOUNT" ]] &>/dev/null; then
