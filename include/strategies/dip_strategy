@@ -492,25 +492,17 @@ fi
 
 ################################################################################
 
-# paths for files
 ACTIVE_FILE="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.active"
 ORDERS_FILE="${LOG_DIR:?}/leeloo/southxchange/orders"
 
-# read the active markets from the file into an array
-mapfile -t ACTIVE_MARKETS <"$ACTIVE_FILE"
+while IFS= read -r MARKET; do
+  LISTING_MARKET=$(awk -F/ '{ print $1 }' <<<"$MARKET")
+  grep -q "$LISTING_MARKET" "$ORDERS_FILE" >/dev/null 2>&1
 
-# loop through the active markets and check if they exist in the orders file
-for MARKET in "${ACTIVE_MARKETS[@]}"; do
-
-  # market symbol (listing)
-  LISTING_MARKET=$(echo "$MARKET" | awk -F/ '{ print $1 }')
-  grep -q "$LISTING_MARKET" "$ORDERS_FILE" 2>/dev/null
-
-  if [ $? -ne 0 ]; then
-    # market has no orders in the orders file
-    echo "$MARKET" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".success
+  if [[ $? -ne 0 ]]; then
+    echo "$MARKET" >"${SYS_DIR:?}/robot/$BASENAME_STRATEGY.success"
   fi
-done
+done <"$ACTIVE_FILE"
 
 if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".success | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
 
