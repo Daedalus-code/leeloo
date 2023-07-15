@@ -32,6 +32,17 @@ function log_date() {
   LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 }
 
+# erro status ##################################################################
+
+# error status (default)
+ERROR_STATUS="0"
+
+ERROR_STATUS="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
+
+if [[ -z "$ERROR_STATUS" ]] &>/dev/null; then
+  ERROR_STATUS="0"
+fi
+
 # system #######################################################################
 
 function system_load() {
