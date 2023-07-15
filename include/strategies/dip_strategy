@@ -177,21 +177,21 @@ DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | wc -l)"
 # config not set, do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
 
-  DIP_RANDOM_MARKET_0=$((((RANDOM % 256) + 1)))
+  DIP_RANDOM_MARKET_0=$((((RANDOM % 101) + 1)))
   DIP_RANDOM_MARKET_1=$((((RANDOM % 64) + 1)))
 
-  DIP_HEAD_RANDOM="$(echo "$DIP_RANDOM_MARKET_0+$DIP_RANDOM_MARKET_1" | bc -l | tr -d '-')"
-  DIP_TAIL_RANDOM="$(echo "$DIP_RANDOM_MARKET_1-$DIP_RANDOM_MARKET_0" | bc -l | tr -d '-')"
+  DIP_HEAD_RANDOM="$(echo "$DIP_RANDOM_MARKET_0+$DIP_RANDOM_MARKET_1-1" | bc -l | tr -d '-')"
+  DIP_TAIL_RANDOM="$(echo "$DIP_RANDOM_MARKET_1-$DIP_RANDOM_MARKET_0/$DIP_HEAD_RANDOM+1" | bc -l | tr -d '-' | awk -F. '{ print $1 }')"
 
   if [[ -z "$DIP_HEAD_RANDOM" || "$DIP_HEAD_RANDOM" -eq "0" ]] &>/dev/null; then
-    DIP_HEAD_RANDOM="32"
+    DIP_HEAD_RANDOM="64"
   fi
   if [[ -z "$DIP_TAIL_RANDOM" || "$DIP_TAIL_RANDOM" -eq "0" ]] &>/dev/null; then
-    DIP_TAIL_RANDOM="4"
+    DIP_TAIL_RANDOM="32"
   fi
 
   # dip markets (random, random reversed)
-  DIP_MARKETS="$(echo "$DIP_PRICES_FILE_OUTPUT" | sort -R | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | head -"$(echo "$DIP_HEAD_RANDOM" | sed 's/^0*//')" | tail -"$(echo "$DIP_TAIL_RANDOM" | sed 's/^0*//')" | sort -R | head -1)"
+  DIP_MARKETS="$(echo "$DIP_PRICES_FILE_OUTPUT" | sort -R | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | awk '!a[$0]++' | head -"$(echo "$DIP_HEAD_RANDOM" | sed 's/^0*//')" | tail -"$(echo "$DIP_TAIL_RANDOM" | sed 's/^0*//')" | sort -R | head -2 | tail -1)"
 fi
 
 # use good old bitcoin if still zero
