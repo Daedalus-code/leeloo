@@ -176,15 +176,18 @@ DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | wc -l)"
 
 # config not set, do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-  DIP_RANDOM_MARKET=$((((RANDOM % 123) + 1)))
-  DIP_HEAD_RANDOM="$(echo "$DIP_RANDOM_MARKET+11" | bc -l | tr -d '-')"
-  DIP_TAIL_RANDOM="$(echo "$(echo "$DIP_HEAD_RANDOM" | rev)-1" | bc -l | rev | tr -d '-')"
+
+  DIP_RANDOM_MARKET_0=$((((RANDOM % 256) + 1)))
+  DIP_RANDOM_MARKET_1=$((((RANDOM % 64) + 1)))
+
+  DIP_HEAD_RANDOM="$(echo "$DIP_RANDOM_MARKET_0+$DIP_RANDOM_MARKET_1" | bc -l | tr -d '-')"
+  DIP_TAIL_RANDOM="$(echo "$DIP_RANDOM_MARKET_1-$DIP_RANDOM_MARKET_0" | bc -l | tr -d '-')"
 
   if [[ -z "$DIP_HEAD_RANDOM" || "$DIP_HEAD_RANDOM" -eq "0" ]] &>/dev/null; then
-    DIP_HEAD_RANDOM="11"
+    DIP_HEAD_RANDOM="32"
   fi
   if [[ -z "$DIP_TAIL_RANDOM" || "$DIP_TAIL_RANDOM" -eq "0" ]] &>/dev/null; then
-    DIP_TAIL_RANDOM="1"
+    DIP_TAIL_RANDOM="4"
   fi
 
   # dip markets (random, random reversed)
