@@ -37,7 +37,9 @@ function log_date() {
 # error status (default)
 ERROR_STATUS="0"
 
-ERROR_STATUS="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
+if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/error.log | awk '{ print $1 }')" -gt "0" ]]; then
+  ERROR_STATUS="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
+fi
 
 if [[ -z "$ERROR_STATUS" ]] &>/dev/null; then
   ERROR_STATUS="0"
