@@ -423,16 +423,16 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     mkdir "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" &>/dev/null
   fi
 
-  LISTING_BALANCE="$(echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-  DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  DIP_LISTING_BALANCE="$(echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  DIP_TARGET_BALANCE="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   # max active orders, set by configuration
   if [[ "$DIP_ACTIVE_FILE_COUNT" -lt "$DIP_MAX_ORDERS" ]] &>/dev/null; then
     # order has selling power
-    if [[ "$LISTING_BALANCE" -gt "0" ]] &>/dev/null; then
+    if [[ "$DIP_LISTING_BALANCE" -gt "0" ]] &>/dev/null; then
 
       # dont exceed the original target amount
-      if [[ "$LISTING_BALANCE" -lt "$(echo "$DIP_TARGET_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+      if [[ "$DIP_LISTING_BALANCE" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
         # original, use available balance
         LISTING_BALANCE="$LISTING_BALANCE"
       else
@@ -508,19 +508,19 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
   fi
 
   DIP_TOTAL_SOLD_SUM="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-  DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  DIP_TARGET_BALANCE="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   # get rid of old orders
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
     # if not found with no active orders, it is probably old
     if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold ]] &>/dev/null; then
       # add target value until it triggers and removes itself
-      echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+      echo "$DIP_TARGET_BALANCE" | awk '{ printf "%.9f\n", $1 }' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
     fi
   fi
 
   # if total sum greater or equal than target
-  if [[ "$DIP_TOTAL_SOLD_SUM" -ge "$DIP_TARGET_AMOUNT" ]] &>/dev/null; then
+  if [[ "$DIP_TOTAL_SOLD_SUM" -ge "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
     # update log date
     LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
