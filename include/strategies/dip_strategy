@@ -115,10 +115,6 @@ function target_data() {
   elif [[ "$TARGET_ACTIVE" == "ACTIVE" ]] &>/dev/null; then
     # use active list
     DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sort -R | head -1)"
-
-  elif [[ "$TARGET_ACTIVE" == "SUCCESS" ]] &>/dev/null; then
-    # use sell list
-    DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".success 2>/dev/null | sort -R | head -1)"
   fi
 
   # target count (data)
@@ -479,7 +475,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
           # remove old active order
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-          DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (sold)"
+          DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Fulfilled :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (sold)"
           echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           # sell output (trade history)
           DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $DIP_GET_AMOUNT_REFERENCE ${DIP_TARGET_SPREAD:?}% $DIP_TARGET_FILE_AGE"
@@ -492,51 +488,30 @@ fi
 
 ################################################################################
 
-ACTIVE_FILE="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.active"
-ORDERS_FILE="${LOG_DIR:?}/leeloo/southxchange/orders"
+# target data
+TARGET_ACTIVE="ACTIVE"
+target_data
 
-# remove carriage return (CR) characters
-sed -i 's/\r$//' "$ACTIVE_FILE"
+if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
 
-while IFS= read -r MARKET; do
-  LISTING_MARKET=$(awk -F/ '{ print $1 }' <<<"$MARKET")
-  grep -q "$LISTING_MARKET" "$ORDERS_FILE" >/dev/null 2>&1
+  # get total sum
+  DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_BALANCE:?}"_"${LISTING_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
 
-  if [[ $? -ne 0 ]]; then
-    echo "$MARKET" >"${SYS_DIR:?}/robot/$BASENAME_STRATEGY.success"
-  fi
-done <"$ACTIVE_FILE"
+  # if sum greater than target
+  if [[ "$(echo "$DIP_TOTAL_SOLD_SUM" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$DIP_TARGET_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+    # update log date
+    LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
-if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".success ]] &>/dev/null; then
+    # remove old sold order
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
-  # target data
-  TARGET_ACTIVE="SUCCESS"
-  target_data
-
-  if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
-    if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".success | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
-
-      # get total sum
-      DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_BALANCE:?}"_"${LISTING_CURRENCY:?}" 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
-
-      # if sum greater than target
-      if [[ "$(echo "$DIP_TOTAL_SOLD_SUM" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$DIP_TARGET_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-        # update log date
-        LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
-
-        # remove old sold order
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".success 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".success
-
-        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Fulfilled :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (sold)"
-        echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-        # sell output (trade history)
-        DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $DIP_GET_AMOUNT_REFERENCE ${DIP_TARGET_SPREAD:?}% $DIP_TARGET_FILE_AGE"
-        echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-        # remove old file
-        rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
-      fi
-    fi
+    DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Fulfilled :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (sold)"
+    echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    # sell output (trade history)
+    DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $DIP_GET_AMOUNT_REFERENCE ${DIP_TARGET_SPREAD:?}% $DIP_TARGET_FILE_AGE"
+    echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+    # remove old file
+    rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
   fi
 fi
 
