@@ -495,6 +495,9 @@ fi
 ACTIVE_FILE="${SYS_DIR:?}/robot/$BASENAME_STRATEGY.active"
 ORDERS_FILE="${LOG_DIR:?}/leeloo/southxchange/orders"
 
+# remove carriage return (CR) characters
+sed -i 's/\r$//' "$ACTIVE_FILE"
+
 while IFS= read -r MARKET; do
   LISTING_MARKET=$(awk -F/ '{ print $1 }' <<<"$MARKET")
   grep -q "$LISTING_MARKET" "$ORDERS_FILE" >/dev/null 2>&1
