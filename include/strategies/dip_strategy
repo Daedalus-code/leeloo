@@ -171,14 +171,14 @@ fi
 ################################################################################
 
 # prices file output
-DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
+DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}/leeloo/southxchange/prices.dip" 2>/dev/null)"
 # total market count
 DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | wc -l)"
 
 # config not set, do random markets
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # dip markets (random)
-  DIP_MARKETS="$(echo "$DIP_PRICES_FILE_OUTPUT" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | tr -d ':' | sort -R | tail -1)"
+  DIP_MARKETS="$(echo "$DIP_PRICES_FILE_OUTPUT" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | awk '!a[$1]++' | tr -d ':' | shuf | head -11 | shuf | tail -1)"
 fi
 
 # use good old bitcoin if still zero
@@ -187,7 +187,7 @@ if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
 fi
 
 # create specific dip_markets list
-echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/southxchange/prices."$DIP_MARKETS" 2>/dev/null
+echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS" 2>/dev/null
 
 ################################################################################
 
@@ -494,7 +494,7 @@ target_data
 
 if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
 
-  # get total sum
+  # get total sum (confirmed sell)
   DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${LISTING_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
 
   if [[ -z "$DIP_TOTAL_SOLD_SUM" ]] &>/dev/null; then
