@@ -1604,10 +1604,24 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         sleep 1
       done
 
-      OPEN_AGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $NF }' | egrep -o "[0-9]+h:" | tr -d 'h:' | awk '{ SUM += $1} END { print SUM }')"
+      ##########################################################################
+
+      DURATIONS_FILE="durations.txt"
+      TOTAL_SECONDS=0
+
+      # fetch the list of time durations
+      cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $NF }' | egrep -v "N/A|Age" >"$DURATIONS_FILE"
+      while IFS=: read -r HOURS MINUTES SECONDS; do
+        HOURS=$(echo "$HOURS" | tr -d 'h')
+        MINUTES=$(echo "$MINUTES" | tr -d 'm')
+        SECONDS=$(echo "$SECONDS" | tr -d 's')
+        TOTAL_SECONDS=$((TOTAL_SECONDS + (HOURS * 3600) + (MINUTES * 60) + SECONDS))
+      done <"$DURATIONS_FILE"
+
+      OPEN_TOTAL_AGE=$(printf '%dh:%dm:%ds\n' $(("$(echo "${TOTAL_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${TOTAL_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${TOTAL_SECONDS:?}" 2>&1)%60")))
+      OPEN_TOTAL_AGE_DAYS="$(echo "$TOTAL_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
       OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
-      OPEN_AGE_AVERAGE_HOUR="$(echo "$OPEN_AGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-      OPEN_AGE_AVERAGE_DAYS="$(echo "$OPEN_AGE_AVERAGE_HOUR/24" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 
       if [[ "$(echo "$OPEN_COUNT" | grep '[-]' 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
         OPEN_COUNT="0"
@@ -1634,7 +1648,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       fi
 
       display_result() {
-        dialog --title "Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: ${OPEN_AGE_AVERAGE_DAYS:?}d (${OPEN_AGE_AVERAGE_HOUR:?}h)" \
+        dialog --title "Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: ${OPEN_TOTAL_AGE:?} (${OPEN_TOTAL_AGE_DAYS:?}d)" \
           --no-collapse \
           --keep-window \
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
