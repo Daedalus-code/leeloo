@@ -423,7 +423,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
         # track amount being bought
-        echo "$DIP_BUY_AMOUNT_REFERENCE @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }')" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought
+        echo "Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought
 
         DIP_TARGET_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
         DIP_TARGET_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_TARGET_FILE_AGE_SECONDS/3600")) $(("$DIP_TARGET_FILE_AGE_SECONDS%3600/60")) $(("$DIP_TARGET_FILE_AGE_SECONDS%60")))
