@@ -1591,6 +1591,11 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
+      FILE_TIME="$(ls -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $8 }')"
+      if [[ -z "$FILE_TIME" ]] &>/dev/null; then
+        FILE_TIME="00:00"
+      fi
+
       # pool age in seconds
       until [[ "$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]] &>/dev/null; do
         clear
@@ -1626,7 +1631,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
       OPEN_TOTAL_SECONDS="$(echo "$TOTAL_SECONDS/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
       OPEN_TOTAL_AGE=$(printf '%dh:%dm:%ds\n' $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%60")))
-      OPEN_TOTAL_AGE_DAYS="$(echo "$OPEN_TOTAL_SECONDS/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+      OPEN_TOTAL_AGE_DAYS="$(echo "$OPEN_TOTAL_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
       OPEN_PERCENTAGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $5 }' | grep -v "Result" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
       OPEN_PERCENTAGE_AVERAGE="$(echo "$OPEN_PERCENTAGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
@@ -1649,7 +1654,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       fi
 
       display_result() {
-        dialog --title "Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
+        dialog --title "$FILE_TIME :: Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
           --no-collapse \
           --keep-window \
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
