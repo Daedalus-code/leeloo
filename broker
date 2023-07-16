@@ -1592,7 +1592,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       # pool age in seconds
       until [[ "$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]] &>/dev/null; do
         clear
-        echo "Updating positions, please wait."
+        echo "Updating positions, please wait. $(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')"
         echo "CTRL+C for exit"
         sleep 1
       done
