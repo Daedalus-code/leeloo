@@ -571,15 +571,10 @@ fi
 
 ################################################################################
 
-# pool (open positions)
 DIP_OUTPUT_FILE="${SYS_DIR:?}/robot/pool"
 
-# active list
-DIP_ACTIVE_LIST=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)
-
-# reference currency and listing currency from the active list
-REFERENCE_CURRENCY=$(grep -oP '^[^/]+(?=/)' <<<"$DIP_ACTIVE_LIST")
-LISTING_CURRENCY=$(grep -oP '(?<=/)[^:]+(?=[:])' <<<"$DIP_ACTIVE_LIST")
+# read the active list from the file
+DIP_ACTIVE_LIST=$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" 2>/dev/null)
 
 # function to extract values from the active list
 extract_values() {
@@ -591,7 +586,8 @@ extract_values() {
 
 # function to calculate the age of the sold file
 calculate_sold_file_age() {
-  FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
+  CURRENCY=$1
+  FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.sold"
   if [[ -f "$FILE_PATH" ]]; then
     LAST_EDIT=$(stat -c '%Y' "$FILE_PATH")
     AGE_SECONDS=$(($(date +%s) - $LAST_EDIT))
@@ -601,19 +597,19 @@ calculate_sold_file_age() {
   fi
 }
 
-# extract values for each currency
+# values for each currency
 while IFS= read -r line; do
   CURRENCY=$(echo "$line" | awk -F ": " '{print $1}')
   AMOUNT=$(extract_values "$CURRENCY" "Amount")
   COST=$(extract_values "$CURRENCY" "Ask")
   RESULT=$(extract_values "$CURRENCY" "Dip")
-  AGE=$(calculate_sold_file_age)
+  AGE=$(calculate_sold_file_age "$CURRENCY")
 
   # result output
   echo "$STRATEGY_TYPE $CURRENCY $AMOUNT $COST $RESULT $AGE" >>"$DIP_OUTPUT_FILE"
 done < <(grep -oE '^[^:]*' <<<"$DIP_ACTIVE_LIST")
 
-# format the output
+# format output
 column -t <"$DIP_OUTPUT_FILE" >"${DIP_OUTPUT_FILE}.tmp"
 mv "${DIP_OUTPUT_FILE}.tmp" "$DIP_OUTPUT_FILE"
 
