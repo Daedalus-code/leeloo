@@ -591,9 +591,12 @@ extract_values() {
 # function to calculate the age of the sold file
 calculate_sold_file_age() {
   CURRENCY=$1
+  # default
+  FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
   if [[ -f "$FILE_PATH" ]] &>/dev/null; then
     FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
-  elif [[ -z "$FILE_PATH" ]] &>/dev/null; then
+    FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.sold"
+  elif [[ -f "$FILE_PATH" ]] &>/dev/null; then
     FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.sold"
   fi
   if [[ -f "$FILE_PATH" ]] &>/dev/null; then
