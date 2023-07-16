@@ -152,16 +152,37 @@ function target_data() {
 # market prices
 ################################################################################
 
-# create price.dip file
-cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.dip
+# create price.strat file
+cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.strat
 
 # disregard already running strategies
 if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   # set the paths for the files
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
-  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
+  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.strat"
   # extract the active markets from the robot.log file
   ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/All|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+")
+  # filter out markets with found data
+  grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
+  # replace the original prices file with the filtered version
+  mv "${PRICES_FILE}.temp" "$PRICES_FILE"
+fi
+
+################################################################################
+
+# create price.dip file
+cp "${LOG_DIR:?}"/leeloo/southxchange/prices.strat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip
+
+# already active file
+DIP_ALREADY_ACTIVE="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active | awk '{ print $ }')"
+
+# disregard already running markets
+if [[ "$DIP_ALREADY_ACTIVE" == "1" ]] &>/dev/null; then
+  # set the paths for the files
+  MARKET_LOG="${SYS_DIR}/robot/$BASENAME_STRATEGY/already_active"
+  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
+  # extract the active markets from the already_active file
+  ALREADY_RUNNING_BOTS=$(cat "$MARKET_LOG" 2>/dev/null | awk '!a[$0]++')
   # filter out markets with found data
   grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
   # replace the original prices file with the filtered version
@@ -361,8 +382,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
-      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: "$LISTING_CURRENCY/$REFERENCE_CURRENCY" Already active!"
+      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $LISTING_CURRENCY/$REFERENCE_CURRENCY Already active!"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      # disregard this market next round
+      echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
     fi
   fi
 
