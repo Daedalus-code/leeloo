@@ -393,6 +393,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   fi
 
+  # remove old already active order
+  if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
+  fi
+
   ##############################################################################
   # setup buy order (limit)
   ##############################################################################
