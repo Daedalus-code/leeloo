@@ -571,6 +571,54 @@ fi
 
 ################################################################################
 
+# pool (open positions)
+DIP_OUTPUT_FILE="${SYS_DIR:?}/robot/pool"
+
+# active list
+DIP_ACTIVE_LIST=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)
+
+# reference currency and listing currency from the active list
+REFERENCE_CURRENCY=$(grep -oP '^[^/]+(?=/)' <<<"$DIP_ACTIVE_LIST")
+LISTING_CURRENCY=$(grep -oP '(?<=/)[^:]+(?=[:])' <<<"$DIP_ACTIVE_LIST")
+
+# function to extract values from the active list
+extract_values() {
+  CURRENCY=$1
+  FIELD=$2
+  VALUE=$(grep "$CURRENCY" <<<"$DIP_ACTIVE_LIST" | awk -F "| $FIELD: " '{print $2}' | awk '{print $1}')
+  echo "$VALUE"
+}
+
+# function to calculate the age of the sold file
+calculate_sold_file_age() {
+  FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
+  if [[ -f "$FILE_PATH" ]]; then
+    LAST_EDIT=$(stat -c '%Y' "$FILE_PATH")
+    AGE_SECONDS=$(($(date +%s) - $LAST_EDIT))
+    printf '%dh:%dm:%ds\n' $((AGE_SECONDS / 3600)) $((AGE_SECONDS % 3600 / 60)) $((AGE_SECONDS % 60))
+  else
+    echo "N/A"
+  fi
+}
+
+# extract values for each currency
+while IFS= read -r line; do
+  CURRENCY=$(echo "$line" | awk -F ": " '{print $1}')
+  AMOUNT=$(extract_values "$CURRENCY" "Amount")
+  COST=$(extract_values "$CURRENCY" "Ask")
+  RESULT=$(extract_values "$CURRENCY" "Dip")
+  AGE=$(calculate_sold_file_age)
+
+  # result output
+  echo "$STRATEGY_TYPE $CURRENCY $AMOUNT $COST $RESULT $AGE" >>"$DIP_OUTPUT_FILE"
+done < <(grep -oE '^[^:]*' <<<"$DIP_ACTIVE_LIST")
+
+# format the output
+column -t <"$DIP_OUTPUT_FILE" >"${DIP_OUTPUT_FILE}.tmp"
+mv "${DIP_OUTPUT_FILE}.tmp" "$DIP_OUTPUT_FILE"
+
+################################################################################
+
 save_orders
 last_orders
 sxc_backup_orders
