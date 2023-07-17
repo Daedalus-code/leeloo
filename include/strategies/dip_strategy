@@ -449,10 +449,10 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active ]] &>/dev/null
   ACTIVE_LISTING_CURRENCY="$(echo "$ACTIVE_CURRENCY_SYMBOL" | awk -F/ '{ print $1 }')"
   ACTIVE_REFERENCE_CURRENCY="$(echo "$ACTIVE_CURRENCY_SYMBOL" | awk -F/ '{ print $2 }')"
 
-  # if no orders active
+  # if already active orders are being sold
   if [[ "$(grep "$ACTIVE_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "sell" | grep -c "$ACTIVE_LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
     # remove old already active order
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | grep -v "$ACTIVE_LISTING_CURRENCY/$ACTIVE_REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
   fi
 fi
 
