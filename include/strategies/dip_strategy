@@ -226,6 +226,10 @@ DIP_ACTIVE_FILE_DIP="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/d
 # calculate average dip
 DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_DIP" ]] &>/dev/null; then
+  DIP_ACTIVE_FILE_AVERAGE_DIP="0"
+fi
+
 # total active spread
 DIP_ACTIVE_FILE_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
 # calculate average spread
