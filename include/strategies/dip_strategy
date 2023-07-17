@@ -176,6 +176,10 @@ cp "${LOG_DIR:?}"/leeloo/southxchange/prices.strat "${LOG_DIR:?}"/leeloo/southxc
 # already active file
 DIP_ALREADY_ACTIVE="$(egrep -c "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null)"
 
+if [[ "$DIP_ALREADY_ACTIVE" -eq "0" ]] &>/dev/null; then
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active &>/dev/null
+fi
+
 if [[ -z "$DIP_ALREADY_ACTIVE" ]] &>/dev/null; then
   DIP_ALREADY_ACTIVE="0"
 fi
