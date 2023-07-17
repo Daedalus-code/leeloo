@@ -153,13 +153,13 @@ function target_data() {
 ################################################################################
 
 # create price.strat file
-cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.strat
+cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.dip
 
 # disregard already running strategies
 if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   # set the paths for the files
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
-  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.strat"
+  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
   # extract the active markets from the robot.log file
   ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/All|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+")
   # filter out markets with found data
@@ -167,11 +167,6 @@ if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   # replace the original prices file with the filtered version
   mv "${PRICES_FILE}.temp" "$PRICES_FILE"
 fi
-
-################################################################################
-
-# create price.dip file
-cp "${LOG_DIR:?}"/leeloo/southxchange/prices.strat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip
 
 ################################################################################
 
