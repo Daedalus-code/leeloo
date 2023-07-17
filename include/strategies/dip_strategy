@@ -473,10 +473,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # get total sum (confirmed sell)
   DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
-
-  # calculate whats left of order
-  DIP_SOLD_LEFTOVERS="$(echo "$DIP_TARGET_AMOUNT-$DIP_TOTAL_SOLD_SUM" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
   DIP_TOTAL_SOLD_SUM="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   if [[ -z "$DIP_TOTAL_SOLD_SUM" ]] &>/dev/null; then
@@ -484,7 +480,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   fi
 
   # listing balance
-  DIP_LISTING_BALANCE="$(echo "$DIP_SOLD_LEFTOVERS" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  DIP_LISTING_BALANCE="$(echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
   # target amount
   DIP_TARGET_BALANCE="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
