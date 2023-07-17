@@ -173,27 +173,6 @@ fi
 # create price.dip file
 cp "${LOG_DIR:?}"/leeloo/southxchange/prices.strat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip
 
-# disregard already running markets
-if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active ]] &>/dev/null; then
-  # already active file
-  DIP_ALREADY_ACTIVE="$(egrep -c "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null)"
-  if [[ "$DIP_ALREADY_ACTIVE" -eq "0" ]] &>/dev/null; then
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active &>/dev/null
-  fi
-  if [[ -z "$DIP_ALREADY_ACTIVE" ]] &>/dev/null; then
-    DIP_ALREADY_ACTIVE="0"
-  fi
-  # set the paths for the files
-  MARKET_LOG="${SYS_DIR}/robot/$BASENAME_STRATEGY/already_active"
-  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
-  # extract the active markets from the already_active file
-  ALREADY_RUNNING_BOTS=$(cat "$MARKET_LOG" 2>/dev/null | awk '!a[$0]++')
-  # filter out markets with found data
-  grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
-  # replace the original prices file with the filtered version
-  mv "${PRICES_FILE}.temp" "$PRICES_FILE"
-fi
-
 ################################################################################
 
 # prices file output
@@ -389,9 +368,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # log target output
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $LISTING_CURRENCY/$REFERENCE_CURRENCY Already active!"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-      # disregard this market next round
-      echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
     fi
   fi
 
@@ -440,20 +416,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : MaxOrders :: Reached max open orders! ($DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS)"
       echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
-  fi
-fi
-
-################################################################################
-
-if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active ]] &>/dev/null; then
-  ACTIVE_CURRENCY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | sort -R | head -1)"
-  ACTIVE_LISTING_CURRENCY="$(echo "$ACTIVE_CURRENCY_SYMBOL" | awk -F/ '{ print $1 }')"
-  ACTIVE_REFERENCE_CURRENCY="$(echo "$ACTIVE_CURRENCY_SYMBOL" | awk -F/ '{ print $2 }')"
-
-  # if already active orders are being sold
-  if [[ "$(grep "$ACTIVE_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "sell" | grep -c "$ACTIVE_LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
-    # remove old already active order
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | grep -v "$ACTIVE_LISTING_CURRENCY/$ACTIVE_REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
   fi
 fi
 
