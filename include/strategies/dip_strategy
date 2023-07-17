@@ -395,20 +395,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   fi
 
   ##############################################################################
-
-  if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active ]] &>/dev/null; then
-    ACTIVE_CURRENCY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | sort -R | head -1)"
-    ACTIVE_LISTING_CURRENCY="$(echo "$ACTIVE_CURRENCY_SYMBOL" | awk -F/ '{ print $1 }')"
-    ACTIVE_REFERENCE_CURRENCY="$(echo "$ACTIVE_CURRENCY_SYMBOL" | awk -F/ '{ print $2 }')"
-
-    # if no orders active
-    if [[ "$(grep "$ACTIVE_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "sell" | grep -c "$ACTIVE_LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
-      # remove old already active order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
-    fi
-  fi
-
-  ##############################################################################
   # setup buy order (limit)
   ##############################################################################
 
@@ -453,6 +439,20 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : MaxOrders :: Reached max open orders! ($DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS)"
       echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
+  fi
+fi
+
+################################################################################
+
+if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active ]] &>/dev/null; then
+  ACTIVE_CURRENCY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | sort -R | head -1)"
+  ACTIVE_LISTING_CURRENCY="$(echo "$ACTIVE_CURRENCY_SYMBOL" | awk -F/ '{ print $1 }')"
+  ACTIVE_REFERENCE_CURRENCY="$(echo "$ACTIVE_CURRENCY_SYMBOL" | awk -F/ '{ print $2 }')"
+
+  # if no orders active
+  if [[ "$(grep "$ACTIVE_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "sell" | grep -c "$ACTIVE_LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
+    # remove old already active order
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/already_active
   fi
 fi
 
