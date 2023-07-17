@@ -274,7 +274,7 @@ fi
 DIP_SOLD_BOUGHT_LIST="$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/ 2>/dev/null)"
 
 if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
-  if [[ "$(echo "$DIP_SOLD_BOUGHT_LIST" | grep -v "total" | wc -l)" ]] &>/dev/null; then
+  if [[ "$(echo "$DIP_SOLD_BOUGHT_LIST" | grep -v "total" | wc -l)" -gt "0" ]] &>/dev/null; then
 
     DIP_SOLD_BOUGHT="$(echo "$DIP_SOLD_BOUGHT_LIST" | grep -v "total" | awk '{ print $NF }' | awk -F. '{ print $1 }' | awk '!a[$0]++' | shuf | head -1)"
     LISTING_CURRENCY_CLEANUP="$(echo "$DIP_SOLD_BOUGHT" | awk -F_ '{ print $1 }')"
