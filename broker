@@ -1056,9 +1056,11 @@ $MARKET_RESULT"
         fi
 
         ORDER_TOTAL="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }')"
+        ORDER_TOTAL_BUY="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
+        ORDER_TOTAL_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
 
         display_result() {
-          dialog --title "Open Orders: +$ORDER_TOTAL" \
+          dialog --title "Open Orders: +$ORDER_TOTAL :: Buy: $ORDER_TOTAL_BUY Sell: $ORDER_TOTAL_SELL" \
             --no-collapse \
             --msgbox "$(echo "$RESULT" | column -t)" 0 0
         }
