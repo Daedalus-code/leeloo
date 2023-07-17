@@ -271,6 +271,29 @@ fi
 
 ################################################################################
 
+DIP_SOLD_BOUGHT_LIST="$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/ 2>/dev/null)"
+
+if [[ -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
+  if [[ "$(echo "$DIP_SOLD_BOUGHT_LIST" | grep -v "total" | wc -l)" ]] &>/dev/null; then
+
+    DIP_SOLD_BOUGHT="$(echo "$DIP_SOLD_BOUGHT_LIST" | grep -v "total" | awk '{ print $NF }' | awk -F. '{ print $1 }' | awk '!a[$0]++' | shuf | head -1)"
+    LISTING_CURRENCY_CLEANUP="$(echo "$DIP_SOLD_BOUGHT" | awk -F_ '{ print $1 }')"
+    REFERENCE_CURRENCY_CLEANUP="$(echo "$DIP_SOLD_BOUGHT" | awk -F_ '{ print $2 }')"
+
+    # remove non existing orders
+    if [[ "$(grep "$REFERENCE_CURRENCY_CLEANUP" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY_CLEANUP")" -eq "0" ]] &>/dev/null; then
+      # remove old files
+      rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY_CLEANUP:?}"_"${REFERENCE_CURRENCY_CLEANUP:?}".bought &>/dev/null
+      rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY_CLEANUP:?}"_"${REFERENCE_CURRENCY_CLEANUP:?}".sold &>/dev/null
+      # log target output
+      DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : LeftOvers :: Removing old order $LISTING_CURRENCY_CLEANUP/$REFERENCE_CURRENCY_CLEANUP"
+      echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
+  fi
+fi
+
+################################################################################
+
 # file age greater than max age
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
@@ -553,9 +576,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
           # remove old active order
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-          # remove old files
-          rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought &>/dev/null
-          rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
 
           DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Fulfilled :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (sold)"
           echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -620,9 +640,6 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
     # remove old sold order
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-    # remove old files
-    rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought &>/dev/null
-    rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
 
     DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Fulfilled :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (sold)"
     echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
