@@ -488,61 +488,58 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
-  # max active orders, set by configuration
-  if [[ "$DIP_ACTIVE_FILE_COUNT" -lt "$DIP_MAX_ORDERS" ]] &>/dev/null; then
-    # has selling power (balance)
-    if [[ "$DIP_LISTING_BALANCE" -gt "0" ]] &>/dev/null; then
-      # order are selling
-      if [[ "$DIP_TOTAL_SOLD_SUM" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+  # has selling power (balance)
+  if [[ "$DIP_LISTING_BALANCE" -gt "0" ]] &>/dev/null; then
+    # order are selling
+    if [[ "$DIP_TOTAL_SOLD_SUM" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
 
-        # dont exceed the original target amount
-        if [[ "$DIP_LISTING_BALANCE" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
-          # original, use available balance
-          LISTING_BALANCE="$LISTING_BALANCE"
-        else
-          # exceeding, use target amount
+      # dont exceed the original target amount
+      if [[ "$DIP_LISTING_BALANCE" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+        # original, use available balance
+        LISTING_BALANCE="$LISTING_BALANCE"
+      else
+        # exceeding, use target amount
+        LISTING_BALANCE="$DIP_TARGET_AMOUNT"
+      fi
+
+      # if nothing has been sold yet
+      if [[ "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
+        # if balance (available) are greater or equal to target
+        if [[ "$DIP_LISTING_BALANCE" -ge "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+          # sell target 100%
           LISTING_BALANCE="$DIP_TARGET_AMOUNT"
         fi
-
-        # if nothing has been sold yet
-        if [[ "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
-          # if balance (available) are greater or equal to target
-          if [[ "$DIP_LISTING_BALANCE" -ge "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
-            # sell target 100%
-            LISTING_BALANCE="$DIP_TARGET_AMOUNT"
-          fi
-        fi
-
-        # if balance (available) exceeds the original target amount
-        if [[ "$DIP_LISTING_BALANCE" -gt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
-          # sell leftovers
-          LISTING_BALANCE="$DIP_LEFTOVER_SOLD"
-        fi
-
-        # update log date
-        LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
-
-        # setup limit sell order ###############################################
-        placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_ASK" "$LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-        ########################################################################
-
-        # track amount being sold
-        echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
-
-        # sell output (placeOrder)
-        DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Selling $LISTING_BALANCE $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
-        echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-        # earning output (log)
-        DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Profit: $DIP_DIFF_AMOUNT $REFERENCE_CURRENCY -> $DIP_TARGET_SPREAD"
-        echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
+
+      # if balance (available) exceeds the original target amount
+      if [[ "$DIP_LISTING_BALANCE" -gt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+        # sell leftovers
+        LISTING_BALANCE="$DIP_LEFTOVER_SOLD"
+      fi
+
+      # update log date
+      LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+
+      # setup limit sell order #################################################
+      placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_ASK" "$LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      ##########################################################################
+
+      # track amount being sold
+      echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+
+      # sell output (placeOrder)
+      DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Selling $LISTING_BALANCE $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+      echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+      # earning output (log)
+      DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Profit: $DIP_DIFF_AMOUNT $REFERENCE_CURRENCY -> $DIP_TARGET_SPREAD"
+      echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
-  else
-    # max orders output
-    DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : MaxOrders :: Reached max open orders! ($DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS)"
-    echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
+else
+  # max orders output
+  DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : MaxOrders :: Reached max open orders! ($DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS)"
+  echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
