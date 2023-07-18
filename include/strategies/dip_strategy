@@ -504,19 +504,19 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           LISTING_BALANCE="$DIP_TARGET_AMOUNT"
         fi
 
-        # dont exceed the original target amount
-        if [[ "$DIP_LISTING_BALANCE" -gt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
-          # sell leftovers
-          LISTING_BALANCE="$DIP_LEFTOVER_SOLD"
-        fi
-
-        # if nothing has been sold
+        # if nothing has been sold yet
         if [[ "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
           # if balance (available) are greater or equal to target
           if [[ "$DIP_LISTING_BALANCE" -ge "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
             # sell target 100%
             LISTING_BALANCE="$DIP_TARGET_AMOUNT"
           fi
+        fi
+
+        # if balance (available) exceeds the original target amount
+        if [[ "$DIP_LISTING_BALANCE" -gt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+          # sell leftovers
+          LISTING_BALANCE="$DIP_LEFTOVER_SOLD"
         fi
 
         # update log date
