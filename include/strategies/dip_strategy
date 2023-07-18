@@ -609,6 +609,8 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 fi
 
 ################################################################################
+# open positions
+################################################################################
 
 DIP_OUTPUT_FILE="${SYS_DIR:?}/robot/pool"
 
@@ -655,7 +657,7 @@ while IFS= read -r line; do
   RESULT=$(extract_values "$CURRENCY" "Spread")
   AGE=$(calculate_sold_file_age "$CURRENCY")
 
-  # result output
+  # result output (positions)
   echo "$STRATEGY_TYPE $CURRENCY $AMOUNT $COST $RESULT $AGE" >>"$DIP_OUTPUT_FILE"
 done < <(grep -oE '^[^:]*' <<<"$DIP_ACTIVE_LIST")
 
