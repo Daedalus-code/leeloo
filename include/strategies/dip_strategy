@@ -359,7 +359,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
 
-    # balance check without decimal
+    # balance check (without decimal)
     REFERENCE_BALANCE_CHECK="$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')"
 
     # no buying power (no balance)
@@ -472,15 +472,18 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # get total sum (confirmed sell)
   DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
-  DIP_TOTAL_SOLD_SUM="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   if [[ -z "$DIP_TOTAL_SOLD_SUM" ]] &>/dev/null; then
     DIP_TOTAL_SOLD_SUM="0"
   fi
 
-  # listing balance
+  # leftover sell amount
+  DIP_LEFTOVER_SOLD="$(echo "$DIP_TARGET_AMOUNT-$DIP_TOTAL_SOLD_SUM" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # total sum (without decimal)
+  DIP_TOTAL_SOLD_SUM="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  # listing balance (without decimal)
   DIP_LISTING_BALANCE="$(echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-  # target amount
+  # target amount (without decimal)
   DIP_TARGET_BALANCE="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   ##############################################################################
@@ -489,7 +492,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   if [[ "$DIP_ACTIVE_FILE_COUNT" -lt "$DIP_MAX_ORDERS" ]] &>/dev/null; then
     # has selling power (balance)
     if [[ "$DIP_LISTING_BALANCE" -gt "0" ]] &>/dev/null; then
-      # order has sold
+      # order are selling
       if [[ "$DIP_TOTAL_SOLD_SUM" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
 
         # dont exceed the original target amount
@@ -499,6 +502,21 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         else
           # exceeding, use target amount
           LISTING_BALANCE="$DIP_TARGET_AMOUNT"
+        fi
+
+        # dont exceed the original target amount
+        if [[ "$DIP_LISTING_BALANCE" -gt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+          # sell leftovers
+          LISTING_BALANCE="$DIP_LEFTOVER_SOLD"
+        fi
+
+        # if nothing has been sold
+        if [[ "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
+          # if balance (available) are greater or equal to target
+          if [[ "$DIP_LISTING_BALANCE" -ge "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+            # sell target 100%
+            LISTING_BALANCE="$DIP_TARGET_AMOUNT"
+          fi
         fi
 
         # update log date
