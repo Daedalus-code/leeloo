@@ -563,7 +563,7 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${RE
   # if sold seconds are greater than n
   if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
     if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "1" ]] &>/dev/null; then
-      if [[ "$(head -5 "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$REFERENCE_CURRENCY" 2>/dev/null | grep "$LISTING_CURRENCY" | egrep -c "sell|buy")" -eq "0" ]] &>/dev/null; then
+      if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" | egrep -c "sell|buy")" -eq "0" ]] &>/dev/null; then
         # remove old order from active pool
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
         DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : LeftOvers :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (old)"
