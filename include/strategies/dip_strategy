@@ -513,56 +513,22 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : MaxOrders :: Reached max open orders! ($DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS)"
     echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
-
-  ##############################################################################
-
-  # if no specific orders exists
-  if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
-    # if listing balance is empty
-    if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
-
-      DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-      if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
-        DIP_BOUGHT_FILE_AGE_SECONDS="0"
-      fi
-
-      DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
-
-      # make sure amount reference has n
-      if [[ ! -z "$DIP_GET_AMOUNT_REFERENCE" ]] &>/dev/null; then
-        # if listing and reference had a recently sell
-        if [[ "$(head -5 "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$REFERENCE_CURRENCY" 2>/dev/null | grep "$LISTING_CURRENCY" | grep -c "sell")" -eq "1" ]] &>/dev/null; then
-          # update log date
-          LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
-
-          # remove old order from active pool
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-
-          DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Fulfilled :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (sold)"
-          echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-          # sell output (trade history)
-          DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_TARGET_SPREAD:?} $DIP_BOUGHT_FILE_AGE"
-          echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-          # reset sold file
-          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold &>/dev/null
-        fi
-      fi
-    fi
-  fi
 fi
 
 ################################################################################
 
 # if active exist, but no orders
 if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold ]] &>/dev/null; then
+  # file age (seconds)
   DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
     DIP_SOLD_FILE_AGE_SECONDS="0"
   fi
-  # if sold seconds are greater than n
+  # if sold age (seconds) are greater than n
   if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
+    # if specific market exist in active file
     if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "1" ]] &>/dev/null; then
+      # if specific market dont exist in orders file
       if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" | egrep -c "sell|buy")" -eq "0" ]] &>/dev/null; then
         # remove old order from active pool
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
