@@ -434,7 +434,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
         # buy output (log)
-        DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+        DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
         echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
         # earning output (log)
@@ -549,7 +549,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
 
       # sell output (placeOrder)
-      DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Selling $LISTING_BALANCE $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+      DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Selling $LISTING_BALANCE $LISTING_CURRENCY for $DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
       echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
       # earning output (log)
