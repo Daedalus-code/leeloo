@@ -498,7 +498,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
       ##########################################################################
 
-      # if nothing has been sold yet
+      # if total sold is zero (first sell)
       if [[ "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
         # if balance (available) are greater or equal to leftover
         if [[ "$DIP_LISTING_BALANCE" -ge "$DIP_TARGET_AMOUNT" ]] &>/dev/null; then
@@ -509,14 +509,18 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
       ##########################################################################
 
-      # if balance is less than target amount
+      # if balance is less than leftover of target
       if [[ "$DIP_LISTING_BALANCE" -lt "$DIP_LEFTOVER_SOLD_CHECK" ]] &>/dev/null; then
         # sell balance (available)
         LISTING_BALANCE="$LISTING_BALANCE"
-        # if balance is greater than target amount
+        # if balance is greater than leftover of target
       else
-        # sell leftovers (available)
+        # sell leftover (available)
         LISTING_BALANCE="$DIP_LEFTOVER_SOLD"
+
+        # sell leftover output (log)
+        DIP_SELL_LEFTOVER_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : LeftOvers :: Selling some $LISTING_BALANCE $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+        echo "$DIP_SELL_LEFTOVER_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
 
       ##########################################################################
