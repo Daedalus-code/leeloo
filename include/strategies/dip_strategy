@@ -493,14 +493,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     # order are selling
     if [[ "$DIP_TOTAL_SOLD_SUM" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
 
-      # dont exceed the original target amount
-      if [[ "$DIP_LISTING_BALANCE" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
-        # original, use available balance
-        LISTING_BALANCE="$LISTING_BALANCE"
-      else
-        # exceeding, use target amount
-        LISTING_BALANCE="$DIP_TARGET_AMOUNT"
-      fi
+      ##########################################################################
 
       # if nothing has been sold yet
       if [[ "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
@@ -510,6 +503,19 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           LISTING_BALANCE="$DIP_TARGET_AMOUNT"
         fi
       fi
+
+      ##########################################################################
+
+      # dont exceed the original target amount
+      if [[ "$DIP_LISTING_BALANCE" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+        # original, use available balance
+        LISTING_BALANCE="$LISTING_BALANCE"
+      else
+        # exceeding, use target amount
+        LISTING_BALANCE="$DIP_TARGET_AMOUNT"
+      fi
+
+      ##########################################################################
 
       # if balance (available) exceeds the original target amount
       if [[ "$DIP_LISTING_BALANCE" -gt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
