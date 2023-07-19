@@ -1058,8 +1058,8 @@ $MARKET_RESULT"
         ORDER_TOTAL="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | awk '{ print $1 }')"
         ORDER_TOTAL_BUY="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
         ORDER_TOTAL_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
-        ORDER_PERCENTAGE_BUY="$(echo "100/$ORDER_TOTAL*$ORDER_TOTAL_BUY" | bc 2>/dev/null)"
-        ORDER_PERCENTAGE_SELL="$(echo "100/$ORDER_TOTAL*$ORDER_TOTAL_SELL" | bc 2>/dev/null)"
+        ORDER_PERCENTAGE_BUY="$(echo "100/$ORDER_TOTAL*$ORDER_TOTAL_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+        ORDER_PERCENTAGE_SELL="$(echo "100/$ORDER_TOTAL*$ORDER_TOTAL_SELL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
         display_result() {
           dialog --title "Open Orders: +$ORDER_TOTAL :: Buy: $ORDER_TOTAL_BUY ${ORDER_PERCENTAGE_BUY:?}% :: Sell: $ORDER_TOTAL_SELL ${ORDER_PERCENTAGE_SELL:?}%" \
