@@ -479,6 +479,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # leftover sell amount
   DIP_LEFTOVER_SOLD="$(echo "$DIP_TARGET_AMOUNT-$DIP_TOTAL_SOLD_SUM" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  # leftover sell amount (without decimal)
+  DIP_LEFTOVER_SOLD_CHECK="$(echo "$DIP_LEFTOVER_SOLD" | tr -d '.' | sed 's/^0*//')"
   # total sum (without decimal)
   DIP_TOTAL_SOLD_SUM="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
   # listing balance (without decimal)
@@ -497,8 +500,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
       # if nothing has been sold yet
       if [[ "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
-        # if balance (available) are greater or equal to target
-        if [[ "$DIP_LISTING_BALANCE" -ge "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+        # if balance (available) are greater or equal to leftover
+        if [[ "$DIP_LISTING_BALANCE" -ge "$DIP_TARGET_AMOUNT" ]] &>/dev/null; then
           # sell target amount (available)
           LISTING_BALANCE="$DIP_TARGET_AMOUNT"
         fi
@@ -507,9 +510,10 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       ##########################################################################
 
       # if balance is less than target amount
-      if [[ "$DIP_LISTING_BALANCE" -lt "$DIP_TARGET_BALANCE" ]] &>/dev/null; then
+      if [[ "$DIP_LISTING_BALANCE" -lt "$DIP_LEFTOVER_SOLD_CHECK" ]] &>/dev/null; then
         # sell balance (available)
         LISTING_BALANCE="$LISTING_BALANCE"
+        # if balance is greater than target amount
       else
         # sell leftovers (available)
         LISTING_BALANCE="$DIP_LEFTOVER_SOLD"
@@ -536,10 +540,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
   fi
-else
-  # max orders output
-  DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : MaxOrders :: Reached max open orders! ($DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS)"
-  echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
