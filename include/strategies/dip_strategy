@@ -306,7 +306,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # volume percentage (configuration)
           VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
           # create market file
-          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
           # if the symbol meets the potential buy criteria
           if (($(echo "$PRICE_MOVEMENT > 0" | bc -l 2>/dev/null))); then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
@@ -316,7 +316,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
               POTENTIAL_BUY_ASK="$ASK"
               POTENTIAL_BUY_LAST="$LAST"
               # create target file
-              POTENTIAL_TARGET_FOUND="$POTENTIAL_BUY_SYMBOL | Bid: $POTENTIAL_BUY_BID | Ask: $POTENTIAL_BUY_ASK | Last: $POTENTIAL_BUY_LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE%"
+              POTENTIAL_TARGET_FOUND="$POTENTIAL_BUY_SYMBOL | Bid: $POTENTIAL_BUY_BID | Ask: $POTENTIAL_BUY_ASK | Last: $POTENTIAL_BUY_LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE"
               echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
             fi
           fi
