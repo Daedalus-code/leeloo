@@ -101,13 +101,6 @@ function amount_to_buy_sell() {
   DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # amount to get
   DIP_GET_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_LISTING*$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-  # amount difference (profit)
-  DIP_DIFF_PROFIT="$(echo "100/$DIP_TARGET_SPREAD" | bc -l 2>/dev/null)"
-  DIP_DIFF_AMOUNT="$(echo "$DIP_DIFF_PROFIT*$DIP_BUY_AMOUNT_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
-  if [[ -z "$DIP_DIFF_AMOUNT" ]] &>/dev/null; then
-    DIP_DIFF_AMOUNT="0.000000000"
-  fi
 }
 
 ################################################################################
@@ -153,8 +146,17 @@ function target_data() {
 
   amount_to_buy_sell
 
+  # amount difference (profit)
+  DIP_DIFF_PROFIT="$(echo "100/$DIP_TARGET_SPREAD" | bc -l 2>/dev/null)"
+  DIP_DIFF_AMOUNT="$(echo "$DIP_DIFF_PROFIT*$DIP_BUY_AMOUNT_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  if [[ -z "$DIP_DIFF_AMOUNT" ]] &>/dev/null; then
+    DIP_DIFF_AMOUNT="0.000000000"
+  fi
+
   # target amount to buy and sell (listing)
   DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
+
 }
 
 ################################################################################
