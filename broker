@@ -1192,7 +1192,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   display_result() {
     dialog --title "Leeloo/Strategy Debug" \
       --no-collapse \
-      --msgbox "$RESULT" 15 "$WIDTH"
+      --msgbox "$RESULT" 16 "$WIDTH"
   }
 
   ##############################################################################
@@ -1259,7 +1259,13 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # idle in days
   SYSTEM_IDLE_DAYS="$(echo "$SYSTEM_IDLE_SECONDS/86400" | bc 2>/dev/null)"
 
-  # zero
+  # restarts
+  STRATEGY_RESTART_COUNT="$(wc -l "${SYS_DIR:?}"/robot/restart 2>/dev/null | awk '{ print $1 }')"
+
+  if [[ -z "$STRATEGY_RESTART_COUNT" ]] &>/dev/null; then
+    STRATEGY_RESTART_COUNT="0"
+  fi
+
   if [[ -z "$SYSTEM_UPTIME" ]] &>/dev/null; then
     SYSTEM_UPTIME="0h:00m:00s"
   fi
@@ -1269,7 +1275,6 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # error log age in seconds
   STRATEGY_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-  # zero
   if [[ -z "$STRATEGY_SECONDS" ]] &>/dev/null; then
     STRATEGY_SECONDS="0"
   fi
@@ -1301,6 +1306,7 @@ System Uptime.: (${SYSTEM_UPTIME_DAYS:?}d) $SYSTEM_UPTIME
 System Idle...: (${SYSTEM_IDLE_DAYS:?}d) $SYSTEM_IDLE_TIME
 
 Strategy
+Robot Restart.: $STRATEGY_RESTART_COUNT
 Last Error....: (${STRATEGY_UPTIME_DAYS:?}d) $STRATEGY_LOG_TIME
 Error Count...: $STRATEGY_ERRORS
 Error Time....: $STRATEGY_CLOCK
@@ -1496,7 +1502,6 @@ error.log.....: $STRATEGY_ERROR"
     LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
     LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
 
-    # zero
     if [[ -z "$LEELOO_TIME" ]] &>/dev/null; then
       LEELOO_TIME="0"
     fi
