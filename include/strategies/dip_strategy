@@ -116,7 +116,7 @@ function target_data() {
 
     # use active list
   elif [[ "$TARGET_ACTIVE" == "ACTIVE" ]] &>/dev/null; then
-    DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | shuf | tail -2 | head -1)"
+    DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | shuf | head -1)"
   fi
 
   ##############################################################################
@@ -161,6 +161,7 @@ cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{if ($2 != $3) 
 
 ################################################################################
 
+# disregard already active bots (orders)
 if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
 
   RANDOM_CLEARED_MARKET=$((((RANDOM % 2) + 1)))
@@ -177,6 +178,7 @@ if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -g
   fi
 fi
 
+# disregard already running bots (strategies)
 if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   # set the paths for the files
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
@@ -334,9 +336,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # target found
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
-    # create active file with amount to buy
+    # create active file and add amount to buy at end
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) | Amount: $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
-    # remove active duplicates, empty lines, lines less than n
+    # remove active duplicates (markets), empty lines, lines less than n
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$1]++' | sed '/^$/d' | sed -r '/^.{,100}$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
     # market count
@@ -498,15 +500,10 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   fi
 
   # calculate percentage of order size
-  DIP_LEFTOVER_SIZE="$(echo "100/$DIP_TARGET_AMOUNT*$DIP_LEFTOVER_SOLD" | bc -l 2>/dev/null)"
+  DIP_LEFTOVER_SIZE="$(echo "100/$DIP_TARGET_AMOUNT*$DIP_LEFTOVER_SOLD" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   if [[ -z "$DIP_LEFTOVER_SIZE" ]] &>/dev/null; then
     DIP_LEFTOVER_SIZE="0"
-  fi
-  if [[ "$DIP_LEFTOVER_SIZE" -ge "100" ]] &>/dev/null; then
-    DIP_LEFTOVER_SIZE="$(echo "$DIP_LEFTOVER_SIZE" | awk '{ printf "%.0f\n", $1 }')"
-  elif [[ "$DIP_LEFTOVER_SIZE" -lt "100" ]] &>/dev/null; then
-    DIP_LEFTOVER_SIZE="$(echo "$DIP_LEFTOVER_SIZE" | awk '{ printf "%.5f\n", $1 }')"
   fi
 
   # leftover sell amount (without decimal)
