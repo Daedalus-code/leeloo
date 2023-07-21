@@ -156,8 +156,8 @@ function target_data() {
 # market prices
 ################################################################################
 
-# create price.dip file
-cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.dip
+# create price.dip file, disregard markets with equal bid & ask
+cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{if ($2 != $3) print}' >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
 
 ################################################################################
 
