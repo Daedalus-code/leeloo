@@ -32,6 +32,10 @@ function log_date() {
   LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 }
 
+# log timer ####################################################################
+
+LOG_TIMER="23" # log schedule, in lines
+
 # erro status ##################################################################
 
 # error status (default)
@@ -128,13 +132,15 @@ function broker_conf_update() {
   fi
 }
 
-################################################################################
+# AGREED #######################################################################
 
 function AGREED() {
   echo "All trading activities and any resulting losses are solely the user's responsibility.
 This software is provided without warranties or guarantees, use it at your own risk.
 Embrace the chaos, adapt to the shadows, may the odds ever be in your favor."
 }
+
+################################################################################
 
 # create if not found
 if [[ ! -f "${LOG_DIR:?}"/leeloo/AGREED ]] &>/dev/null; then
@@ -162,6 +168,8 @@ function parasite_check() {
   sudo shutdown -h now &>/dev/null # C
   exit                             # K
 }
+
+################################################################################
 
 if [[ -f /usr/local/bin/broker ]] &>/dev/null; then
   if [[ "$(egrep -c "bc1.*.c2" /usr/local/bin/broker)" -eq "0" ]] &>/dev/null; then
@@ -299,15 +307,19 @@ function last_log {
   WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/broker.log | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
   LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')+5" | bc 2>/dev/null)"
 
+  if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+    LOG_LENGTH="7"
+  fi
+  if [[ -z "$LENGTH" ]] &>/dev/null; then
+    LENGTH="7"
+  elif [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+    LENGTH="$LOG_LENGTH"
+  fi
+
   if [[ -z "$WIDTH" ]] &>/dev/null; then
     WIDTH="77"
   elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
     WIDTH="77"
-  fi
-  if [[ -z "$LENGTH" ]] &>/dev/null; then
-    LENGTH="7"
-  elif [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
-    LENGTH="25"
   fi
 
   display_result() {

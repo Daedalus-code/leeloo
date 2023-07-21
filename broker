@@ -609,8 +609,11 @@ $MARKET_RESULT"
       LENGTH="$(echo "$MARKET_COUNT+5" | bc 2>/dev/null)"
       WIDTH="$(echo "$(echo "$MARKET_RESULT" | column -t | wc -L)+5" | bc 2>/dev/null)"
 
-      if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
-        LENGTH="25"
+      if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+        LOG_LENGTH="7"
+      fi
+      if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+        LENGTH="$LOG_LENGTH"
       fi
 
       if [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
@@ -678,8 +681,11 @@ $MARKET_RESULT"
       LENGTH="$(echo "$MARKET_COUNT+5" | bc 2>/dev/null)"
       WIDTH="$(echo "$(echo "$MARKET_RESULT" | column -t | wc -L)+5" | bc 2>/dev/null)"
 
-      if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
-        LENGTH="25"
+      if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+        LOG_LENGTH="7"
+      fi
+      if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+        LENGTH="$LOG_LENGTH"
       fi
 
       if [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
@@ -747,8 +753,11 @@ $MARKET_RESULT"
       LENGTH="$(echo "$MARKET_COUNT+5" | bc 2>/dev/null)"
       WIDTH="$(echo "$(echo "$MARKET_RESULT" | column -t | wc -L)+8" | bc 2>/dev/null)"
 
-      if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
-        LENGTH="25"
+      if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+        LOG_LENGTH="7"
+      fi
+      if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+        LENGTH="$LOG_LENGTH"
       fi
 
       if [[ "$WIDTH" -lt "80" ]] &>/dev/null; then
@@ -1727,15 +1736,19 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
       LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')+5" | bc 2>/dev/null)"
 
+      if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+        LOG_LENGTH="7"
+      fi
+      if [[ -z "$LENGTH" ]] &>/dev/null; then
+        LENGTH="7"
+      elif [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+        LENGTH="$LOG_LENGTH"
+      fi
+
       if [[ -z "$WIDTH" ]] &>/dev/null; then
         WIDTH="77"
       elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
         WIDTH="77"
-      fi
-      if [[ -z "$LENGTH" ]] &>/dev/null; then
-        LENGTH="7"
-      elif [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
-        LENGTH="25"
       fi
 
       RESULT="${SYS_DIR:?}"/robot/orders
