@@ -336,6 +336,13 @@ function last_log {
 function last_log_robot {
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
   WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+  LENGTH="$(echo "$LOG_COUNT+5" | bc 2>/dev/null)"
+  if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+    LOG_LENGTH="7"
+  fi
+  if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+    LENGTH="$LOG_LENGTH"
+  fi
   if [[ -z "$WIDTH" ]] &>/dev/null; then
     WIDTH="89"
   elif [[ "$WIDTH" -lt "89" ]] &>/dev/null; then
@@ -344,7 +351,7 @@ function last_log_robot {
   display_result() {
     dialog --title "Robot Log: $LOG_COUNT" \
       --no-collapse \
-      --tailbox "$RESULT" 25 "$WIDTH"
+      --tailbox "$RESULT" "$LENGTH" "$WIDTH"
   }
   RESULT="${LOG_DIR:?}/leeloo/robot.log"
   display_result 2>/dev/null
