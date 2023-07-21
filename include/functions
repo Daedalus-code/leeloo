@@ -336,11 +336,9 @@ function last_log {
 function last_log_robot {
   LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
   WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
-  LENGTH="$(echo "$LOG_COUNT+5" | bc 2>/dev/null)"
   if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
     LOG_LENGTH="21"
-  fi
-  if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+  else
     LENGTH="$LOG_LENGTH"
   fi
   if [[ -z "$LENGTH" ]] &>/dev/null; then
