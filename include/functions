@@ -12,11 +12,6 @@
 
 # shellcheck disable=SC2034  # Unused variables left for readability
 
-################################################################################
-
-# configuration
-source /usr/local/bin/include/leeloo/broker.conf
-
 # system directory #############################################################
 
 SYS_DIR="/usr/local/bin/include/leeloo" # system folder
@@ -343,10 +338,15 @@ function last_log_robot {
   WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
   LENGTH="$(echo "$LOG_COUNT+5" | bc 2>/dev/null)"
   if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
-    LOG_LENGTH="7"
+    LOG_LENGTH="21"
   fi
   if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
     LENGTH="$LOG_LENGTH"
+  fi
+  if [[ -z "$LENGTH" ]] &>/dev/null; then
+    LENGTH="21"
+  elif [[ "$LENGTH" -lt "21" ]] &>/dev/null; then
+    LENGTH="21"
   fi
   if [[ -z "$WIDTH" ]] &>/dev/null; then
     WIDTH="89"
