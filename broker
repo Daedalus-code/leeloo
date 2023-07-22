@@ -1649,6 +1649,9 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       fi
 
       OPEN_TOTAL_SECONDS="$(echo "$TOTAL_SECONDS/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+      if [[ -z "$OPEN_TOTAL_SECONDS" ]] &>/dev/null; then
+        OPEN_TOTAL_SECONDS="0"
+      fi
       OPEN_TOTAL_AGE=$(printf '%dh:%dm:%ds\n' $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%60")))
       OPEN_TOTAL_AGE_DAYS="$(echo "$OPEN_TOTAL_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
