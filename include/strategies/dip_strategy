@@ -715,8 +715,8 @@ while IFS= read -r line; do
   COST_BUY="$(echo "$AMOUNT*$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   COST_ASK=$(extract_values "$CURRENCY" "Ask")
   RESULT_GET="$(echo "$AMOUNT*$COST_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-  RESULT_PROFIT="$(echo "$RESULT_GET-$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-  RESULT_PROFIT="$(echo "100/$RESULT_GET*$RESULT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  RESULT_DIFF="$(echo "$RESULT_GET-$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  RESULT_PROFIT="$(echo "100/$RESULT_GET*$RESULT_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
   AGE=$(calculate_sold_file_age "$CURRENCY")
 
   # result output (positions)
