@@ -252,6 +252,10 @@ DIP_POOL_FILE_PROFIT="$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool 2>/dev/n
 # calculate average pool profit (dip strategy)
 DIP_POOL_FILE_AVERAGE_PROFIT="$(echo "$DIP_POOL_FILE_PROFIT/$DIP_POOL_FILE_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+if [[ -z "$DIP_POOL_FILE_AVERAGE_PROFIT" ]] &>/dev/null; then
+  DIP_POOL_FILE_AVERAGE_PROFIT="0"
+fi
+
 # log prices output
 DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Search: $DIP_PRICES_FILE_COUNT Active: $DIP_ACTIVE_FILE_COUNT Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% Result: ${DIP_POOL_FILE_AVERAGE_PROFIT:?}%"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
