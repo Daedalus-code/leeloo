@@ -711,8 +711,8 @@ calculate_sold_file_age() {
 while IFS= read -r line; do
   CURRENCY=$(echo "$line" | awk -F ": " '{print $1}')
   AMOUNT=$(extract_values "$CURRENCY" "Amount")
-  COST_BUY=$(extract_values "$CURRENCY" "Bid")
-  COST_BUY="$(echo "$AMOUNT*$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  COST_BID=$(extract_values "$CURRENCY" "Bid")
+  COST_BUY="$(echo "$AMOUNT*$COST_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   COST_ASK=$(extract_values "$CURRENCY" "Ask")
   RESULT_GET="$(echo "$AMOUNT*$COST_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   RESULT_DIFF="$(echo "$RESULT_GET-$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
