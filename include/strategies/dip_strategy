@@ -340,8 +340,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # update target
     if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target)" -gt "0" ]] &>/dev/null; then
-      # remove old (active) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+
+      # if active order already exists
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]]; then
+        # keep old amount (listing)
+        DIP_BUY_AMOUNT_LISTING="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
+        # remove old (active) order
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      fi
+
       # create active file and add amount to buy at end
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) | Amount: $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
     fi
