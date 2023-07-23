@@ -399,6 +399,14 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
       DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+      # update target
+      if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target)" -gt "0" ]] &>/dev/null; then
+        # remove old (active) order
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+        # update active order
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      fi
+
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
