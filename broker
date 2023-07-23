@@ -2266,6 +2266,8 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         ROBOT_LOG_AVERAGE="$(cat "${LOG_DIR:?}"/leeloo/robot_average 2>/dev/null)"
         ROBOT_LOG_MAX_AGE="$(cat "${LOG_DIR:?}"/leeloo/robot_max_age 2>/dev/null)"
 
+        # calculate log average age into minutes
+        ROBOT_LOG_AVERAGE_AGE_MINUTES="$(echo "$ROBOT_LOG_AVERAGE/60" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
         # calculate log max age into minutes
         ROBOT_LOG_MAX_AGE_MINUTES="$(echo "$ROBOT_LOG_MAX_AGE/60" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
@@ -2285,7 +2287,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         RESULT="Strategies Seconds
 $(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done)
 Average/Limit
-$ROBOT_LOG_AVERAGE/$ROBOT_LOG_MAX_AGE Seconds ($ROBOT_LOG_MAX_AGE_MINUTES Minutes)
+$ROBOT_LOG_AVERAGE/$ROBOT_LOG_MAX_AGE Seconds ($ROBOT_LOG_AVERAGE_AGE_MINUTES/$ROBOT_LOG_MAX_AGE_MINUTES Minutes)
 Screen status
 $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)"
