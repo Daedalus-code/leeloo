@@ -552,10 +552,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       ##########################################################################
 
       # calculate percentage of order size
-      DIP_LEFTOVER_SIZE="$(echo "100/$DIP_TARGET_AMOUNT*$LISTING_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-      DIP_LEFTOVER_SIZE_CHECK="$(echo "$DIP_LEFTOVER_SIZE" | awk '{ printf "%.4f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+      DIP_LEFTOVER_SIZE=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $LISTING_BALANCE; printf \"%.9f\", (result > 100 ? 100 : result) }")
 
-      if [[ "$DIP_LEFTOVER_SIZE_CHECK" -eq "9999" || "$DIP_LEFTOVER_SIZE" -ge "99" ]] &>/dev/null; then
+      if (($(echo "$DIP_LEFTOVER_SIZE > 99.999999" | bc -l))) &>/dev/null; then
         DIP_LEFTOVER_SIZE="100"
       fi
       if [[ -z "$DIP_LEFTOVER_SIZE" ]] &>/dev/null; then
