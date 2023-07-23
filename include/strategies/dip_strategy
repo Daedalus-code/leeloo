@@ -338,8 +338,16 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # target found
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
-    # create active file and add amount to buy at end
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) | Amount: $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
+    # update target
+    if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target)" -gt "0" ]] &>/dev/null; then
+      # create active file and add amount to buy at end
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) | Amount: $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
+      # remove old (active) order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      # update active order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+    fi
+
     # remove active duplicates (markets), empty lines, lines less than n
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$1]++' | sed '/^$/d' | sed -r '/^.{,100}$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
@@ -398,14 +406,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       fi
       DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
       DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-      # update target
-      if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target)" -gt "0" ]] &>/dev/null; then
-        # remove old (active) order
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-        # update active order
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-      fi
 
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
