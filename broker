@@ -1195,8 +1195,6 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
       --msgbox "$RESULT" 16 "$WIDTH"
   }
 
-  ##############################################################################
-
   # check for strategy error duplicates
   if [[ -f "${LOG_DIR:?}"/leeloo/error.log ]] &>/dev/null; then
     if [[ "$(sort "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | uniq --count | head -1 | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
@@ -1334,6 +1332,15 @@ error.log.....: $STRATEGY_ERROR"
         --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
         truncate -s 0 "$LOG_DIR"/leeloo/error.log &>/dev/null
       fi
+    fi
+  fi
+
+  # restart data exist, keep, delete
+  if [[ "$STRATEGY_RESTART_COUNT" -gt "0" ]] &>/dev/null; then
+    if ! dialog --stdout --title "Keep restart data?" \
+      --backtitle "Keep restart data?" \
+      --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
+      truncate -s 0 "$SYS_DIR"/robot/restart &>/dev/null
     fi
   fi
 
