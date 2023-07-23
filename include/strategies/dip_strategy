@@ -709,14 +709,23 @@ calculate_sold_file_age() {
 
 # values for each currency
 while IFS= read -r line; do
+  # currency
   CURRENCY=$(echo "$line" | awk -F ": " '{print $1}')
+  # amount for buy
   AMOUNT=$(extract_values "$CURRENCY" "Amount")
+  # order bid
   COST_BID=$(extract_values "$CURRENCY" "Bid")
-  COST_BUY="$(echo "$AMOUNT*$COST_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to buy
+  COST_BUY="$(echo "$AMOUNT/$COST_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # order ask
   COST_ASK=$(extract_values "$CURRENCY" "Ask")
+  # amount to get
   RESULT_GET="$(echo "$AMOUNT*$COST_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to profit
   RESULT_DIFF="$(echo "$RESULT_GET-$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to profit (percentage)
   RESULT_PROFIT="$(echo "100/$RESULT_GET*$RESULT_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # order age
   AGE=$(calculate_sold_file_age "$CURRENCY")
 
   # result output (positions)
