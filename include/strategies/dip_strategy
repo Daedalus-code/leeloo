@@ -438,6 +438,17 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $LISTING_CURRENCY/$REFERENCE_CURRENCY Active: $DIP_BOUGHT_FILE_AGE $DIP_BOUGHT_FILE_AGE_DAYS days"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
+
+    # if profit is zero
+    if [[ "$DIP_GET_PERCENTAGE_PROFIT" == "0.00" ]] &>/dev/null; then
+      # order id
+      DIP_ORDER_ID="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" | awk '{ print $1 }' | tr -d ':')"
+      # cancel order
+      cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+      # log target output
+      DIP_ORDER_CANCEL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $LISTING_CURRENCY/$REFERENCE_CURRENCY ($DIP_ORDER_ID) Removed, no profit. ${DIP_GET_PERCENTAGE_PROFIT:?}%"
+      echo "$DIP_ORDER_CANCEL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
   fi
 
   ##############################################################################
