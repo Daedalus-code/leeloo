@@ -156,15 +156,19 @@ function target_data() {
 
 ################################################################################
 
-# remove dead positions
-DIP_DEAD_POSITION="$(egrep "Amount: 0.000000000" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }' | tr -d ':' | shuf | head -1)"
+# remove zero positions
+DIP_ZERO_POSITION="$(egrep "Amount: 0.000000000" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }' | tr -d ':' | shuf | head -1)"
 
-if [[ -n "$DIP_DEAD_POSITION" ]] &>/dev/null; then
+if [[ -n "$DIP_ZERO_POSITION" ]] &>/dev/null; then
   # remove old (active) order
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$DIP_DEAD_POSITION")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$DIP_ZERO_POSITION")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
   # log target output
-  DIP_DEAD_POSITION_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Removing :: Zero order (no amount) $DIP_DEAD_POSITION"
-  echo "$DIP_DEAD_POSITION_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  DIP_ZERO_POSITION_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Removing :: Zero order (no amount) $DIP_ZERO_POSITION"
+  echo "$DIP_ZERO_POSITION_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  # auto delist market
+  echo "$DIP_ZERO_POSITION" >>"${SYS_DIR:?}"/delisted_southxchange
+  # remove duplicates
+  echo "$(cat "${SYS_DIR:?}"/delisted_southxchange 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/delisted_southxchange
 fi
 
 ################################################################################
