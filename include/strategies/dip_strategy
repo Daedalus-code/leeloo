@@ -155,6 +155,19 @@ function target_data() {
 }
 
 ################################################################################
+
+# remove dead positions
+DIP_DEAD_POSITION="$(egrep "Amount: 0.000000000" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }' | tr -d ':')"
+
+if [[ -n "$DIP_DEAD_POSITION" ]] &>/dev/null; then
+  # remove old (active) order
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$DIP_DEAD_POSITION")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+  # log target output
+  DIP_DEAD_POSITION_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Removing :: Zero order (no amount)"
+  echo "$DIP_DEAD_POSITION_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+fi
+
+################################################################################
 # market prices
 ################################################################################
 
