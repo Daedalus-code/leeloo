@@ -156,7 +156,7 @@ function target_data() {
 
 ################################################################################
 
-# remove zero positions
+# remove zero positions (amount to buy is zero)
 DIP_ZERO_POSITION="$(egrep "Amount: 0.000000000" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }' | tr -d ':' | shuf | head -1)"
 
 if [[ -n "$DIP_ZERO_POSITION" ]] &>/dev/null; then
@@ -168,7 +168,7 @@ if [[ -n "$DIP_ZERO_POSITION" ]] &>/dev/null; then
   # auto delist market
   echo "$DIP_ZERO_POSITION" >>"${SYS_DIR:?}"/delisted_southxchange
   # remove duplicates
-  echo "$(cat "${SYS_DIR:?}"/delisted_southxchange 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/delisted_southxchange
+  echo "$(cat "${SYS_DIR:?}"/delisted_southxchange 2>/dev/null | awk '!a[$0]++')" | sort >"${SYS_DIR:?}"/delisted_southxchange
 fi
 
 ################################################################################
