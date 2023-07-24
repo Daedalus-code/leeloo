@@ -163,7 +163,7 @@ cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{if ($2 != $3) 
 
 ################################################################################
 
-# disregard already active bots (orders)
+# disregard already active bots from market (orders)
 if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
 
   RANDOM_CLEARED_MARKET=$((((RANDOM % 2) + 1)))
@@ -180,7 +180,7 @@ if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -g
   fi
 fi
 
-# disregard already running bots (strategies)
+# disregard already running bots from market (strategies)
 if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   # set the paths for the files
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
@@ -342,6 +342,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
   fi
 
+  ##############################################################################
+
   # target found
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
@@ -354,6 +356,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         DIP_BUY_AMOUNT_LISTING="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
       fi
 
+      ##########################################################################
+
       # if active order already exist
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -gt "0" ]] &>/dev/null; then
         # remove old (active) order
@@ -361,7 +365,18 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       fi
       # create active file and add amount to buy at end
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) | Amount: $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
+      # old order id
+      DIP_ORDER_ID="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
+      # cancel old order
+      cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+      # update orders
+      result_orders 2>>"${LOG_ERROR:?}"
+      # log target output
+      DIP_OLD_ORDER_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Rebuy: $LISTING_CURRENCY/$REFERENCE_CURRENCY"
+      echo "$DIP_OLD_ORDER_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
+
+    ############################################################################
 
     # remove active duplicates (markets), empty lines, lines less than n
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '!a[$1]++' | sed '/^$/d' | sed -r '/^.{,100}$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
