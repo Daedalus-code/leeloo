@@ -72,20 +72,23 @@ function delisted() {
   DELISTED_FILE="${SYS_DIR:?}/delisted_southxchange"
   PRICES_COPY_FILE="${PRICES_FILE}.copy"
 
-  # make a copy of the prices file
-  cp "$PRICES_FILE" "$PRICES_COPY_FILE"
+  if [[ -n "$DELISTED_FILE" ]] &>/dev/null; then
 
-  # read the delisted markets from the file into an array
-  mapfile -t DELISTED_MARKETS <"$DELISTED_FILE"
+    # make a copy of the prices file
+    cp "$PRICES_FILE" "$PRICES_COPY_FILE"
 
-  # loop through the delisted markets and remove them from the prices copy file
-  for MARKET in "${DELISTED_MARKETS[@]}"; do
-    sed -i "/^${MARKET//\//\\/}/d" "$PRICES_COPY_FILE"
-  done
+    # read the delisted markets from the file into an array
+    mapfile -t DELISTED_MARKETS <"$DELISTED_FILE"
 
-  # use file if any data
-  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/prices.copy | awk '{ print $1 }')" ]] &>/dev/null; then
-    mv "$PRICES_COPY_FILE" "$PRICES_FILE"
+    # loop through the delisted markets and remove them from the prices copy file
+    for MARKET in "${DELISTED_MARKETS[@]}"; do
+      sed -i "/^${MARKET//\//\\/}/d" "$PRICES_COPY_FILE"
+    done
+
+    # use file if any data
+    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/prices.copy | awk '{ print $1 }')" ]] &>/dev/null; then
+      mv "$PRICES_COPY_FILE" "$PRICES_FILE"
+    fi
   fi
 }
 
