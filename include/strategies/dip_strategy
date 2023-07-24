@@ -103,6 +103,8 @@ function amount_to_buy_sell() {
   DIP_GET_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_LISTING*$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # amount to profit (reference)
   DIP_GET_AMOUNT_PROFIT="$(echo "$DIP_GET_AMOUNT_REFERENCE-$DIP_BUY_AMOUNT_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to profit (reference percentage)
+  DIP_GET_PERCENTAGE_PROFIT="$(echo "100/$DIP_GET_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 }
 
 ################################################################################
@@ -150,8 +152,6 @@ function target_data() {
 
   # target amount to buy and sell (listing)
   DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
-  # amount to profit (reference percentage)
-  DIP_GET_PERCENTAGE_PROFIT="$(echo "100/$DIP_GET_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 }
 
 ################################################################################
@@ -742,10 +742,6 @@ while IFS= read -r line; do
   RESULT_PROFIT="$(echo "100/$RESULT_GET*$RESULT_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
   # order age
   AGE=$(calculate_sold_file_age "$CURRENCY")
-
-  if [[ -z "$RESULT_PROFIT" ]] &>/dev/null; then
-    RESULT_PROFIT="0"
-  fi
 
   # result output (positions)
   echo "$STRATEGY_TYPE $CURRENCY $AMOUNT $COST_BUY ${RESULT_PROFIT:?}% $AGE" >>"$DIP_OUTPUT_FILE"
