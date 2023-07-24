@@ -365,12 +365,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       fi
       # update active file and add amount to buy at end
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) | Amount: $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
-      # old order id
-      DIP_ORDER_ID="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
+      # old order id (buy)
+      DIP_ORDER_ID="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "buy" | awk '{ print $1 }' | tr -d ':')"
 
       # order id found
       if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
-        # cancel old order
+        # cancel old order (buy)
         cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
         # remove old order
         echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
