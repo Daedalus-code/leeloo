@@ -150,7 +150,11 @@ function target_data() {
   DIP_TARGET_VOLUME="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $23 }')"
 
   amount_to_buy_sell
+}
 
+################################################################################
+
+function bought_sold_age() {
   # target amount to buy and sell (listing)
   DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
   # bought file age (seconds)
@@ -357,6 +361,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # target data
   TARGET_ACTIVE="TARGET"
   target_data
+  bought_sold_age
 
   # if no profit
   if [[ "$(echo "$DIP_GET_PERCENTAGE_PROFIT" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
@@ -536,6 +541,7 @@ fi
 # target data
 TARGET_ACTIVE="ACTIVE"
 target_data
+bought_sold_age
 
 # has active file any orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
