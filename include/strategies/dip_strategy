@@ -69,7 +69,7 @@ delisted
 function amount_to_buy_sell() {
   # account allocated (n%)
   REFERENCE_ALLOCATED="$DIP_ALLOCATED"
-  # configuration not set, use n%
+  # if zero, use n%
   if [[ -z "$REFERENCE_ALLOCATED" ]] &>/dev/null; then
     REFERENCE_ALLOCATED="1" # n%
   fi
@@ -81,6 +81,7 @@ function amount_to_buy_sell() {
   # listing balance (available)
   LISTING_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
 
+  # if zero
   if [[ -z "$REFERENCE_BALANCE" ]] &>/dev/null; then
     REFERENCE_BALANCE="0.000000000"
   fi
@@ -152,6 +153,25 @@ function target_data() {
 
   # target amount to buy and sell (listing)
   DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
+  # bought file age (seconds)
+  DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
+    DIP_BOUGHT_FILE_AGE_SECONDS="0"
+  fi
+
+  # bought file age output
+  DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
+  DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  # sold file age (seconds)
+  DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
+    DIP_SOLD_FILE_AGE_SECONDS="0"
+  fi
 }
 
 ################################################################################
@@ -200,13 +220,13 @@ DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}/leeloo/southxchange/prices.dip" 2>/d
 # total market count
 DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | wc -l)"
 
-# config not set, do random markets (all reference markets)
+# if zero, do random markets (all reference markets)
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # dip markets (random)
   DIP_MARKETS="$(echo "$DIP_PRICES_FILE_OUTPUT" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | awk '!a[$1]++' | tr -d ':' | shuf | head -1)"
 fi
 
-# use good old bitcoin if still zero
+# if zerp, use good old bitcoin
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   DIP_MARKETS="BTC"
 fi
@@ -226,6 +246,7 @@ DIP_ACTIVE_FILE_DIP="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/d
 # calculate average dip
 DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+# if zero
 if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_DIP" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_AVERAGE_DIP="0"
 fi
@@ -235,6 +256,7 @@ DIP_ACTIVE_FILE_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2
 # calculate average spread
 DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+# if zero
 if [[ -z "$DIP_ACTIVE_FILE_COUNT" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_COUNT="0"
 fi
@@ -274,6 +296,7 @@ POTENTIAL_BUY_ASK="0"
 # market file age
 DIP_MARKET_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
+# if zero
 if [[ -z "$DIP_MARKET_FILE_AGE" ]] &>/dev/null; then
   DIP_MARKET_FILE_AGE="0"
 fi
@@ -421,7 +444,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: $REFERENCE_CURRENCY Has no balance!"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-      # remove active order
+      # # if not zero, remove active order
       if [[ ! -z "$REFERENCE_CURRENCY" && ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       fi
@@ -435,15 +458,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # order status
     if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
-
-      # dip bought age
-      DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-      if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
-        DIP_BOUGHT_FILE_AGE_SECONDS="0"
-      fi
-      DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
-      DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
@@ -480,6 +494,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           DIP_TARGET_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
+          # if zero
           if [[ -z "$DIP_TARGET_FILE_AGE_SECONDS" ]] &>/dev/null; then
             DIP_TARGET_FILE_AGE_SECONDS="0"
           fi
@@ -535,6 +550,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # total sum (confirmed sell)
   DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
 
+  # if zero
   if [[ -z "$DIP_TOTAL_SOLD_SUM" ]] &>/dev/null; then
     DIP_TOTAL_SOLD_SUM="0"
   fi
@@ -542,6 +558,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # leftover sell amount
   DIP_LEFTOVER_SOLD="$(echo "$DIP_TARGET_AMOUNT-$DIP_TOTAL_SOLD_SUM" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
+  # if zero
   if [[ -z "$DIP_LEFTOVER_SOLD" ]] &>/dev/null; then
     DIP_LEFTOVER_SOLD="0"
   fi
@@ -551,6 +568,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # total sum (without decimal)
   DIP_TOTAL_SOLD_SUM_CHECK="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
+  # if zero
   if [[ -z "$DIP_TOTAL_SOLD_SUM_CHECK" ]] &>/dev/null; then
     DIP_TOTAL_SOLD_SUM_CHECK="0"
   fi
@@ -560,6 +578,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # target amount (without decimal)
   DIP_TARGET_BALANCE_CHECK="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
+  # if zero
   if [[ -z "$DIP_LISTING_BALANCE_CHECK" ]] &>/dev/null; then
     DIP_LISTING_BALANCE_CHECK="0"
   fi
@@ -602,6 +621,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       if (($(echo "$DIP_LEFTOVER_SIZE > 99.999999" | bc -l))) &>/dev/null; then
         DIP_LEFTOVER_SIZE="100"
       fi
+
+      # if zero
       if [[ -z "$DIP_LEFTOVER_SIZE" ]] &>/dev/null; then
         DIP_LEFTOVER_SIZE="0"
       fi
@@ -648,6 +669,7 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
   DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
   DIP_TOTAL_SOLD_SUM="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
+  # if zero
   if [[ -z "$DIP_TOTAL_SOLD_SUM" ]] &>/dev/null; then
     DIP_TOTAL_SOLD_SUM="0"
   fi
@@ -659,14 +681,6 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
   if [[ "$DIP_TOTAL_SOLD_SUM_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
     # update log date
     LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
-
-    # dip bought age
-    DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-    if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
-      DIP_BOUGHT_FILE_AGE_SECONDS="0"
-    fi
-    DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
-    DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     # remove old (sold) order
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
@@ -693,13 +707,6 @@ fi
 
 # if active exist, but no orders
 if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold ]] &>/dev/null; then
-
-  # file age (seconds)
-  DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
-    DIP_SOLD_FILE_AGE_SECONDS="0"
-  fi
-
   # if sold age (seconds) are greater than n
   if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
     # if specific market exist in active file
@@ -749,9 +756,12 @@ calculate_sold_file_age() {
   if [[ -f "$FILE_PATH" ]] &>/dev/null; then
     LAST_EDIT=$(stat -c '%Y' "$FILE_PATH")
     AGE_SECONDS=$(($(date +%s) - $LAST_EDIT))
+
+    # if zero
     if [[ -z "$AGE_SECONDS" ]] &>/dev/null; then
       AGE_SECONDS="0"
     fi
+
     printf '%dh:%dm:%ds\n' $((AGE_SECONDS / 3600)) $((AGE_SECONDS % 3600 / 60)) $((AGE_SECONDS % 60))
   else
     echo "N/A"
