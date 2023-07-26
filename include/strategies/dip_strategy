@@ -507,51 +507,54 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # if any orders with reference, listing currency does not exist
     if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
 
-      # max active orders, set by configuration
-      if [[ "$DIP_ACTIVE_FILE_COUNT" -lt "$DIP_MAX_ORDERS" ]] &>/dev/null; then
-        # has buying power (balance)
-        if [[ "$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+      # if positive profit
+      if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -gt "0" ]] &>/dev/null; then
+        # max active orders, set by configuration
+        if [[ "$DIP_ACTIVE_FILE_COUNT" -lt "$DIP_MAX_ORDERS" ]] &>/dev/null; then
+          # has buying power (balance)
+          if [[ "$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
-          # update log date
-          LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+            # update log date
+            LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
 
-          # reset sold file
-          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold &>/dev/null
+            # reset sold file
+            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold &>/dev/null
 
-          # setup limit buy order ##############################################
-          placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-          ######################################################################
+            # setup limit buy order ############################################
+            placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+            ####################################################################
 
-          # track amount being bought
-          echo "Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for ($DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY) @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }') Price -> Quest: Selling @ $(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }') Price for ($DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY) Earning: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought
-          # keep n lines
-          echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought
+            # track amount being bought
+            echo "Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for ($DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY) @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }') Price -> Quest: Selling @ $(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }') Price for ($DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY) Earning: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought
+            # keep n lines
+            echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought
 
-          DIP_TARGET_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+            DIP_TARGET_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-          # if zero
-          if [[ -z "$DIP_TARGET_FILE_AGE_SECONDS" ]] &>/dev/null; then
-            DIP_TARGET_FILE_AGE_SECONDS="0"
+            # if zero
+            if [[ -z "$DIP_TARGET_FILE_AGE_SECONDS" ]] &>/dev/null; then
+              DIP_TARGET_FILE_AGE_SECONDS="0"
+            fi
+
+            DIP_TARGET_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_TARGET_FILE_AGE_SECONDS/3600")) $(("$DIP_TARGET_FILE_AGE_SECONDS%3600/60")) $(("$DIP_TARGET_FILE_AGE_SECONDS%60")))
+
+            # buy output (trade history)
+            DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : buy :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?}% $DIP_TARGET_FILE_AGE"
+            echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+            # profit output (log)
+            DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Profit: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY -> ${DIP_GET_RATIO_PROFIT:?}%"
+            echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+            # buy output (log)
+            DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+            echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           fi
-
-          DIP_TARGET_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_TARGET_FILE_AGE_SECONDS/3600")) $(("$DIP_TARGET_FILE_AGE_SECONDS%3600/60")) $(("$DIP_TARGET_FILE_AGE_SECONDS%60")))
-
-          # buy output (trade history)
-          DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : buy :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?}% $DIP_TARGET_FILE_AGE"
-          echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-
-          # profit output (log)
-          DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Potential :: Profit: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY -> ${DIP_GET_RATIO_PROFIT:?}%"
-          echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-          # buy output (log)
-          DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : PlaceOrder :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
-          echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        else
+          # max orders output
+          DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : MaxOrders :: Reached max open orders! ($DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS)"
+          echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         fi
-      else
-        # max orders output
-        DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : MaxOrders :: Reached max open orders! ($DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS)"
-        echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
     fi
   fi
