@@ -122,6 +122,10 @@ function target_data() {
     # use active list
   elif [[ "$TARGET_ACTIVE" == "ACTIVE" ]] &>/dev/null; then
     DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | shuf | head -1)"
+    # disregard with already searched markets
+    if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
+      DIP_TARGET_FILE_OUTPUT="$(grep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)"
+    fi
   fi
 
   ##############################################################################
@@ -254,7 +258,7 @@ echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search 2>/dev/null | awk '
 
 # if search has lines
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
-  # disregard already searched markets
+  # disregard with already searched markets
   echo "$(grep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search "${LOG_DIR:?}"/leeloo/southxchange/prices.dip)" >"${LOG_DIR:?}"/leeloo/southxchange/prices.dip
   # if prices.dip files is less than n lines
   if [[ "$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null | sed '/^$/d' | wc -l)" -lt "50" ]] &>/dev/null; then
@@ -771,15 +775,15 @@ fi
 
 # if active exist, but no orders
 if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold ]] &>/dev/null; then
-  # if sold age (seconds) are greater than n
+  # if sold age (seconds) are greater than n seconds
   if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
     # if specific market exist in active file
     if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "1" ]] &>/dev/null; then
       # if specific market dont exist in orders file
-      if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" | egrep -c "sell|buy")" -eq "0" ]] &>/dev/null; then
+      if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
         # remove old order from active pool
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : LeftOvers :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (old)"
+        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : LeftOvers :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (old) $DIP_BOUGHT_FILE_AGE"
         echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         # reset sold file
         truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold &>/dev/null
