@@ -1711,7 +1711,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       display_result() {
         dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT Profit: High $PROFIT_HIGH Low $PROFIT_LOW Average $PROFIT_AVERAGE" \
           --no-collapse \
-          --tailbox "$RESULT" "$LENGTH" "$WIDTH"
+          --msgbox "$(tac "$RESULT" 2>/dev/null | column -t)" "$LENGTH" "$WIDTH"
       }
 
       CAT_ORDERS="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null)"
@@ -1749,7 +1749,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       fi
 
       ORDERS_COUNT="$(echo "$CAT_ORDERS" | sed -r '/^\s*$/d' | wc -l)"
-      WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
+      WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+21" | bc 2>/dev/null)"
       LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')+5" | bc 2>/dev/null)"
 
       if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
