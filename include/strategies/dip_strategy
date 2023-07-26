@@ -710,8 +710,10 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     DIP_TOTAL_SOLD_SUM="0"
   fi
 
-  # target amount
-  DIP_TARGET_BALANCE_CHECK="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  # include fees (0.004% taker, maker fees)
+  DIP_TARGET_BALANCE_FEES="$(echo "0.004*$DIP_TARGET_AMOUNT" | bc -l 2>/dev/null)"
+  # target amount with fees (without decimal)
+  DIP_TARGET_BALANCE_CHECK="$(echo "$DIP_TARGET_AMOUNT-$DIP_TARGET_BALANCE_FEES" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   # if total sum greater or equal than target
   if [[ "$DIP_TOTAL_SOLD_SUM_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
