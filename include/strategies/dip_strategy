@@ -259,6 +259,11 @@ DIP_ACTIVE_FILE_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2
 # calculate average spread
 DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+# total active profit
+DIP_ACTIVE_FILE_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+# calculate average profit
+DIP_ACTIVE_FILE_AVERAGE_PROFIT="$(echo "$DIP_ACTIVE_FILE_PROFIT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
 # if zero
 if [[ -z "$DIP_ACTIVE_FILE_COUNT" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_COUNT="0"
@@ -277,7 +282,7 @@ fi
 DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" 2>/dev/null)"
 
 # log prices output
-DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Search: $DIP_PRICES_FILE_COUNT Active: $DIP_ACTIVE_FILE_COUNT Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}%"
+DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Search: $DIP_PRICES_FILE_COUNT Active: $DIP_ACTIVE_FILE_COUNT Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% Profit: ${DIP_ACTIVE_FILE_AVERAGE_PROFIT:?}%"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
@@ -836,6 +841,9 @@ done < <(grep -oE '^[^:]*' <<<"$DIP_ACTIVE_LIST")
 # format output
 column -t <"$DIP_OUTPUT_FILE" >"${DIP_OUTPUT_FILE}.tmp"
 mv "${DIP_OUTPUT_FILE}.tmp" "$DIP_OUTPUT_FILE"
+
+# keep data
+cp "${SYS_DIR:?}"/robot/pool "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
 
 ################################################################################
 
