@@ -45,7 +45,7 @@ LOG_TIMER="$(echo "$LOG_LENGTH+1" | bc 2>/dev/null)" # log schedule, in lines
 # error status (default)
 ERROR_STATUS="0"
 
-if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/error.log | awk '{ print $1 }')" -gt "0" ]]; then
+if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }')" -gt "0" ]]; then
   ERROR_STATUS="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
 fi
 
