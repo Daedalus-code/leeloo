@@ -198,6 +198,7 @@ if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)" -g
 
   RANDOM_CLEARED_MARKET=$((((RANDOM % 2) + 1)))
 
+  # disregard already active markets (positions)
   if [[ "$RANDOM_CLEARED_MARKET" == "1" ]] &>/dev/null; then
     # set the paths for the files
     PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
@@ -246,6 +247,13 @@ echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${
 
 ################################################################################
 
+# log dip_markets searches
+echo "$DIP_MARKETS" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search
+# remove duplicates
+echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search
+
+################################################################################
+
 # total active count
 DIP_ACTIVE_FILE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }')"
 
@@ -284,9 +292,6 @@ DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS
 # log prices output
 DIP_PRICES_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Search: $DIP_PRICES_FILE_COUNT Active: $DIP_ACTIVE_FILE_COUNT Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% Profit: ${DIP_ACTIVE_FILE_AVERAGE_PROFIT:?}%"
 echo "$DIP_PRICES_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-# log dip_markets
-echo "$DIP_MARKETS" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search
 
 ################################################################################
 # search market for a target
