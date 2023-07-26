@@ -256,15 +256,11 @@ DIP_ACTIVE_FILE_DIP="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/d
 # calculate average dip
 DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-# if zero
-if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_DIP" ]] &>/dev/null; then
-  DIP_ACTIVE_FILE_AVERAGE_DIP="0"
-fi
-
 # total active spread
 DIP_ACTIVE_FILE_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
 # calculate average spread
 DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
 # total active profit
 DIP_ACTIVE_FILE_PROFIT="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
 # calculate average profit
@@ -273,6 +269,9 @@ DIP_ACTIVE_FILE_AVERAGE_PROFIT="$(echo "$DIP_ACTIVE_FILE_PROFIT/$DIP_ACTIVE_FILE
 # if zero
 if [[ -z "$DIP_ACTIVE_FILE_COUNT" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_COUNT="0"
+fi
+if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_DIP" ]] &>/dev/null; then
+  DIP_ACTIVE_FILE_AVERAGE_DIP="0"
 fi
 if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_AVERAGE_SPREAD="0"
