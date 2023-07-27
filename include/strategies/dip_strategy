@@ -875,6 +875,35 @@ mv "${DIP_OUTPUT_FILE}.tmp" "$DIP_OUTPUT_FILE"
 echo "$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
 
 ################################################################################
+# removing old positions
+################################################################################
+
+# if zero
+if [[ -z "$DIP_OLD_ORDER_MAX" ]] &>/dev/null; then
+  # use default week
+  DIP_OLD_ORDER_MAX="604800"
+fi
+
+# if older than n seconds
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX" ]] &>/dev/null; then
+  # if specific market exist in orders file
+  if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
+    # old order id (buy)
+    DIP_ORDER_ID="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':')"
+    # order id found
+    if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
+      # cancel old order (buy)
+      cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+      # remove old order
+      echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
+      # ancient output (log)
+      DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing old buy order ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE"
+      echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
+  fi
+fi
+
+################################################################################
 
 save_orders
 last_orders
