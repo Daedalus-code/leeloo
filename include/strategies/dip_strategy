@@ -875,14 +875,17 @@ mv "${DIP_OUTPUT_FILE}.tmp" "$DIP_OUTPUT_FILE"
 echo "$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
 
 ################################################################################
-# removing old positions
+# removing old positions (single buys)
 ################################################################################
 
 # if zero
 if [[ -z "$DIP_OLD_ORDER_MAX" ]] &>/dev/null; then
-  # use default week
-  DIP_OLD_ORDER_MAX="604800"
+  # use default n days
+  DIP_OLD_ORDER_MAX="7"
 fi
+
+# calculate days into seconds
+DIP_OLD_ORDER_MAX="$(echo "$DIP_OLD_ORDER_MAX*86400" | bc 2>/dev/null)"
 
 # if older than n seconds
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX" ]] &>/dev/null; then
