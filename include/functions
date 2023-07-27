@@ -45,12 +45,18 @@ LOG_TIMER="$(echo "$LOG_LENGTH+1" | bc 2>/dev/null)" # log schedule, in lines
 # error status (default)
 ERROR_STATUS="0"
 
-if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }')" -gt "0" ]]; then
+if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
   ERROR_STATUS="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
 fi
 
 if [[ -z "$ERROR_STATUS" ]] &>/dev/null; then
   ERROR_STATUS="0"
+fi
+
+# possible update error (interference)
+if [[ "$(grep "syntax error near unexpected token" "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | tr -d '`' | grep -c "(")" -gt "0" ]] &>/dev/null; then
+  truncate -s 0 "${LOG_DIR:?}"/leeloo/error.log &>/dev/null
+  ERROR_STATUS="!"
 fi
 
 # system #######################################################################
