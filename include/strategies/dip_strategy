@@ -886,8 +886,8 @@ fi
 
 # if older than n seconds
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX" ]] &>/dev/null; then
-  # if specific market exist in orders file
-  if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
+  # if specific market exist in orders file (buy)
+  if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" | grep -c "buy")" -eq "1" ]] &>/dev/null; then
     # old order id (buy)
     DIP_ORDER_ID="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':')"
     # order id found
