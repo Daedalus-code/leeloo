@@ -1714,35 +1714,35 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
 
-      CAT_ORDERS="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null)"
-      ORDERS_COUNT="$(echo "$CAT_ORDERS" | sed -r '/^\s*$/d' | wc -l)"
-      WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+28" | bc 2>/dev/null)"
+      ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null)"
+      ORDERS_COUNT="$(echo "$ORDERS_TAC" | sed -r '/^\s*$/d' | wc -l)"
+
+      WIDTH="$(echo "$(tail -"${LOG_LENGTH:?}" "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+28" | bc 2>/dev/null)"
       LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')+5" | bc 2>/dev/null)"
-      RESULT="$(tac "$RESULT" 2>/dev/null | column -t)"
+      RESULT="$(echo "$ORDERS_TAC" 2>/dev/null | column -t)"
 
       # sell count
-      SELL_COUNT="$(echo "$CAT_ORDERS" | grep -c "sell")"
+      SELL_COUNT="$(echo "$ORDERS_TAC" | grep -c "sell")"
       if [[ -z "$SELL_COUNT" ]] &>/dev/null; then
         SELL_COUNT="0"
       fi
       # buy count
-      BUY_COUNT="$(echo "$CAT_ORDERS" | grep -c "buy")"
+      BUY_COUNT="$(echo "$ORDERS_TAC" | grep -c "buy")"
       if [[ -z "$BUY_COUNT" ]] &>/dev/null; then
         BUY_COUNT="0"
       fi
-
       # profit high
-      PROFIT_HIGH="$(echo "$CAT_ORDERS" | grep "sell" | egrep -o ".[0-9]+.[0-9]+%" | tr -d ' %' | sort -n 2>/dev/null | tail -1)"
+      PROFIT_HIGH="$(echo "$ORDERS_TAC" | grep "sell" | egrep -o ".[0-9]+.[0-9]+%" | tr -d ' %' | sort -n 2>/dev/null | tail -1)"
       if [[ -z "$PROFIT_HIGH" ]] &>/dev/null; then
         PROFIT_HIGH="0"
       fi
       # profit low
-      PROFIT_LOW="$(echo "$CAT_ORDERS" | grep "sell" | egrep -o ".[0-9]+.[0-9]+%" | tr -d ' %' | sort -n 2>/dev/null | head -1)"
+      PROFIT_LOW="$(echo "$ORDERS_TAC" | grep "sell" | egrep -o ".[0-9]+.[0-9]+%" | tr -d ' %' | sort -n 2>/dev/null | head -1)"
       if [[ -z "$PROFIT_LOW" ]] &>/dev/null; then
         PROFIT_LOW="0"
       fi
       # profit sum
-      PROFIT_SUM="$(echo "$CAT_ORDERS" | grep "sell" | egrep -o ".[0-9]+.[0-9]+%" | tr -d ' %' | awk '{ SUM += $1} END { print SUM }')"
+      PROFIT_SUM="$(echo "$ORDERS_TAC" | grep "sell" | egrep -o ".[0-9]+.[0-9]+%" | tr -d ' %' | awk '{ SUM += $1} END { print SUM }')"
       if [[ -z "$PROFIT_SUM" ]] &>/dev/null; then
         PROFIT_SUM="0"
       fi
