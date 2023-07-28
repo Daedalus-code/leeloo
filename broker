@@ -1711,10 +1711,14 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       display_result() {
         dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT Profit: High $PROFIT_HIGH Low $PROFIT_LOW Average $PROFIT_AVERAGE" \
           --no-collapse \
-          --msgbox "$(tac "$RESULT" 2>/dev/null | column -t)" "$LENGTH" "$WIDTH"
+          --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
 
       CAT_ORDERS="$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null)"
+      ORDERS_COUNT="$(echo "$CAT_ORDERS" | sed -r '/^\s*$/d' | wc -l)"
+      WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+28" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')+5" | bc 2>/dev/null)"
+      RESULT="$(tac "$RESULT" 2>/dev/null | column -t)"
 
       # sell count
       SELL_COUNT="$(echo "$CAT_ORDERS" | grep -c "sell")"
@@ -1748,13 +1752,10 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         PROFIT_AVERAGE="0%"
       fi
 
-      ORDERS_COUNT="$(echo "$CAT_ORDERS" | sed -r '/^\s*$/d' | wc -l)"
-      WIDTH="$(echo "$(tail -19 "${SYS_DIR:?}"/robot/orders | wc -L | awk '{ print $1 }')+26" | bc 2>/dev/null)"
-      LENGTH="$(echo "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')+5" | bc 2>/dev/null)"
-
       if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
         LOG_LENGTH="7"
       fi
+
       if [[ -z "$LENGTH" ]] &>/dev/null; then
         LENGTH="7"
       elif [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
@@ -1766,8 +1767,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
         WIDTH="77"
       fi
-
-      RESULT="${SYS_DIR:?}"/robot/orders
 
       display_result 2>/dev/null
 
