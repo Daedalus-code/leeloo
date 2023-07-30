@@ -799,11 +799,11 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFEREN
   if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
     # if specific market exist in active file
     if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "1" ]] &>/dev/null; then
-      # if specific market dont exist in orders file
+      # if specific market dont exist in orders file (ghost in the shell)
       if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY")" -eq "0" ]] &>/dev/null; then
         # remove old order from active pool
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : LeftOvers :: Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. (old) ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE"
+        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : GhostShell :: No order was found! Removing $LISTING_CURRENCY/$REFERENCE_CURRENCY order from pool. ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE"
         echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         # reset sold file
         truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold &>/dev/null
