@@ -665,12 +665,12 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   fi
 
   if [[ "$DIP_BUY_PERCENTAGE" > "$DIP_SELL_PERCENTAGE" ]] &>/dev/null; then
-    DIP_BS_STATUS="Buying ${DIP_BUY_PERCENTAGE:?}%"
+    DIP_BS_STATUS="Buy ${DIP_BUY_PERCENTAGE:?}%"
   elif [[ "$DIP_SELL_PERCENTAGE" > "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
-    DIP_BS_STATUS="Selling ${DIP_SELL_PERCENTAGE:?}%"
+    DIP_BS_STATUS="Sell ${DIP_SELL_PERCENTAGE:?}%"
   elif [[ "$DIP_SELL_PERCENTAGE" == "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
-    DIP_BS_STATUS="Balanced ${DIP_SELL_PERCENTAGE:?}%"
-  else
+    DIP_BS_STATUS="Idle ${DIP_SELL_PERCENTAGE:?}%"
+  elif [[ "$DIP_TOTAL_ORDER_COUNT" -eq "0" ]] &>/dev/null; then
     DIP_BS_STATUS="Ghost in the shell?"
   fi
 
