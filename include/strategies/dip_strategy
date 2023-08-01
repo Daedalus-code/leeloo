@@ -161,6 +161,15 @@ function target_data() {
 
   # target amount to buy and sell (listing)
   DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
+
+  # disregard duplicates, empty lines
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold
+  # calculate percentage of order filled
+  DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+  if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
+    DIP_LEFTOVER_FILLED_AMOUNT="0"
+  fi
+  DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.4f\n", $1 }')
 }
 
 ################################################################################
@@ -514,7 +523,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Main market ($REFERENCE_CURRENCY) has no balance!"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-      # # if not zero, remove active order
+      # if not zero, remove active order
       if [[ ! -z "$REFERENCE_CURRENCY" && ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       fi
@@ -531,7 +540,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
-      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Active: ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE"
+      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Active: ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE Filled ${DIP_LEFTOVER_FILLED:?}%"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
 
