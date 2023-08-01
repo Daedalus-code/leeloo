@@ -628,6 +628,10 @@ bought_sold_age
 # has active file any orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
 
+  # check output (log)
+  DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Checking active order"
+  echo "$DIP_ACTIVE_CHECK_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
   # create strategy directory
   if [[ ! -d "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" ]] &>/dev/null; then
     mkdir "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" &>/dev/null
