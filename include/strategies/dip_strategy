@@ -110,6 +110,27 @@ function amount_to_buy_sell() {
   DIP_GET_RATIO_PROFIT="$(echo "100/$DIP_GET_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
   # amount to profit (reference percentage, no decimal)
   DIP_GET_RATIO_PROFIT_CHECK="$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')"
+
+  # buy order count
+  DIP_BUY_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep -c "buy")"
+  # Sell order count
+  DIP_SELL_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep -c "sell")"
+  # total orders
+  DIP_TOTAL_ORDER_COUNT="$(echo "$DIP_BUY_ORDER_COUNT+$DIP_SELL_ORDER_COUNT" | bc 2>/dev/null)"
+  # percentage of buy
+  DIP_BUY_PERCENTAGE="$(echo "100/$DIP_BUY_ORDER_COUNT*$DIP_SELL_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # percentage of sell
+  DIP_SELL_PERCENTAGE="$(echo "100/$DIP_SELL_ORDER_COUNT*$DIP_BUY_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  if [[ -z "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
+    DIP_BUY_PERCENTAGE="0"
+  fi
+  if [[ -z "$DIP_SELL_PERCENTAGE" ]] &>/dev/null; then
+    DIP_SELL_PERCENTAGE="0"
+  fi
+
+  # order buy, sell status output
+  DIP_BS_STATUS="Buy ${DIP_BUY_PERCENTAGE:?}% Sell ${DIP_SELL_PERCENTAGE:?}%"
 }
 
 ################################################################################
@@ -543,7 +564,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
-      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Active: ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE Filled ${DIP_LEFTOVER_FILLED:?}%"
+      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Active: ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE Filled ${DIP_LEFTOVER_FILLED:?}% $DIP_BS_STATUS"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
 
