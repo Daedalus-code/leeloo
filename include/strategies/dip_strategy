@@ -723,9 +723,13 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # if any ghost in the shell
   if [[ "$DIP_TOTAL_ORDER_CHECK" -eq "0" ]] &>/dev/null; then
     DIP_BS_STATUS="Ghost"
+    # if balance is empty (listing)
     if [[ "$DIP_LISTING_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
-      # remove ghost (active) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      # if buying order is older than n seconds
+      if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*10" | bc 2>/dev/null)" ]] &>/dev/null; then
+        # remove ghost (active) order
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      fi
     fi
   fi
 
