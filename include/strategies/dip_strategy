@@ -859,83 +859,77 @@ fi
 # open positions
 ################################################################################
 
-DIP_POOL_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+# pool file (positions)
+DIP_OUTPUT_FILE="${SYS_DIR:?}/robot/pool"
 
-# if age greater than n seconds
-if [[ "$DIP_POOL_AGE_SECONDS" -gt "$(echo "$BOT_TIMER/3.69" | bc 2>/dev/null)" ]] &>/dev/null; then
+# read the active list from the file
+DIP_ACTIVE_LIST=$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" 2>/dev/null)
 
-  # pool file (positions)
-  DIP_OUTPUT_FILE="${SYS_DIR:?}/robot/pool"
+# function to extract values from the active list
+extract_values() {
+  CURRENCY=$1
+  FIELD=$2
+  VALUE=$(grep "$CURRENCY" <<<"$DIP_ACTIVE_LIST" | awk -F "| $FIELD: " '{print $2}' | awk '{print $1}')
+  echo "$VALUE"
+}
 
-  # read the active list from the file
-  DIP_ACTIVE_LIST=$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" 2>/dev/null)
+# function to calculate the age of the sold file
+calculate_sold_file_age() {
+  CURRENCY=$1
+  FILE_PATH_BOUGHT="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
+  FILE_PATH_SOLD="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.sold"
+  if [[ -f "$FILE_PATH_BOUGHT" ]] &>/dev/null; then
+    FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
+  fi
+  if [[ -f "$FILE_PATH_SOLD" ]] &>/dev/null; then
+    FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.sold"
+  fi
+  if [[ -f "$FILE_PATH" ]] &>/dev/null; then
+    LAST_EDIT=$(stat -c '%Y' "$FILE_PATH")
+    AGE_SECONDS=$(($(date +%s) - $LAST_EDIT))
 
-  # function to extract values from the active list
-  extract_values() {
-    CURRENCY=$1
-    FIELD=$2
-    VALUE=$(grep "$CURRENCY" <<<"$DIP_ACTIVE_LIST" | awk -F "| $FIELD: " '{print $2}' | awk '{print $1}')
-    echo "$VALUE"
-  }
-
-  # function to calculate the age of the sold file
-  calculate_sold_file_age() {
-    CURRENCY=$1
-    FILE_PATH_BOUGHT="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
-    FILE_PATH_SOLD="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.sold"
-    if [[ -f "$FILE_PATH_BOUGHT" ]] &>/dev/null; then
-      FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
+    # if zero
+    if [[ -z "$AGE_SECONDS" ]] &>/dev/null; then
+      AGE_SECONDS="0"
     fi
-    if [[ -f "$FILE_PATH_SOLD" ]] &>/dev/null; then
-      FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.sold"
-    fi
-    if [[ -f "$FILE_PATH" ]] &>/dev/null; then
-      LAST_EDIT=$(stat -c '%Y' "$FILE_PATH")
-      AGE_SECONDS=$(($(date +%s) - $LAST_EDIT))
 
-      # if zero
-      if [[ -z "$AGE_SECONDS" ]] &>/dev/null; then
-        AGE_SECONDS="0"
-      fi
+    printf '%dh:%dm:%ds\n' $((AGE_SECONDS / 3600)) $((AGE_SECONDS % 3600 / 60)) $((AGE_SECONDS % 60))
+  else
+    echo "N/A"
+  fi
+}
 
-      printf '%dh:%dm:%ds\n' $((AGE_SECONDS / 3600)) $((AGE_SECONDS % 3600 / 60)) $((AGE_SECONDS % 60))
-    else
-      echo "N/A"
-    fi
-  }
+# values for each currency
+while IFS= read -r line; do
+  # currency
+  CURRENCY=$(echo "$line" 2>/dev/null | awk -F ": " '{print $1}' 2>/dev/null)
+  # amount to buy (listing)
+  AMOUNT=$(extract_values "$CURRENCY" "Amount" 2>/dev/null)
+  # order bid (reference)
+  COST_BID=$(extract_values "$CURRENCY" "Bid" 2>/dev/null)
+  # order ask (reference)
+  COST_ASK=$(extract_values "$CURRENCY" "Ask" 2>/dev/null)
+  # amount for buy (reference)
+  COST_BUY=$(echo "$AMOUNT*$COST_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+  # amount to get (reference)
+  RESULT_GET="$(echo "$AMOUNT*$COST_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to profit (reference)
+  RESULT_DIFF="$(echo "$RESULT_GET-$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # amount to profit (reference percentage)
+  RESULT_PROFIT="$(echo "100/$RESULT_GET*$RESULT_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # order age
+  RESULT_AGE=$(calculate_sold_file_age "$CURRENCY")
 
-  # values for each currency
-  while IFS= read -r line; do
-    # currency
-    CURRENCY=$(echo "$line" 2>/dev/null | awk -F ": " '{print $1}' 2>/dev/null)
-    # amount to buy (listing)
-    AMOUNT=$(extract_values "$CURRENCY" "Amount" 2>/dev/null)
-    # order bid (reference)
-    COST_BID=$(extract_values "$CURRENCY" "Bid" 2>/dev/null)
-    # order ask (reference)
-    COST_ASK=$(extract_values "$CURRENCY" "Ask" 2>/dev/null)
-    # amount for buy (reference)
-    COST_BUY=$(echo "$AMOUNT*$COST_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-    # amount to get (reference)
-    RESULT_GET="$(echo "$AMOUNT*$COST_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-    # amount to profit (reference)
-    RESULT_DIFF="$(echo "$RESULT_GET-$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-    # amount to profit (reference percentage)
-    RESULT_PROFIT="$(echo "100/$RESULT_GET*$RESULT_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-    # order age
-    RESULT_AGE=$(calculate_sold_file_age "$CURRENCY")
+  # result output (positions)
+  echo "$STRATEGY_TYPE $CURRENCY $AMOUNT $COST_BUY ${RESULT_PROFIT:?}% $RESULT_AGE" >>"$DIP_OUTPUT_FILE"
+done < <(grep -oE '^[^:]*' <<<"$DIP_ACTIVE_LIST")
 
-    # result output (positions)
-    echo "$STRATEGY_TYPE $CURRENCY $AMOUNT $COST_BUY ${RESULT_PROFIT:?}% $RESULT_AGE" >>"$DIP_OUTPUT_FILE"
-  done < <(grep -oE '^[^:]*' <<<"$DIP_ACTIVE_LIST")
+# format output
+column -t <"$DIP_OUTPUT_FILE" >"${DIP_OUTPUT_FILE}.tmp"
+mv "${DIP_OUTPUT_FILE}.tmp" "$DIP_OUTPUT_FILE"
 
-  # format output
-  column -t <"$DIP_OUTPUT_FILE" >"${DIP_OUTPUT_FILE}.tmp"
-  mv "${DIP_OUTPUT_FILE}.tmp" "$DIP_OUTPUT_FILE"
-
-  # keep position data
-  echo "$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
-fi
+# keep position data
+echo "$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
 
 ################################################################################
 # removing old positions (single buys)
