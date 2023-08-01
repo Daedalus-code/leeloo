@@ -534,6 +534,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       DIP_LEFTOVER_FILLED_AMOUNT="0"
     fi
     DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
+    if [[ -z "$DIP_LEFTOVER_FILLED" ]] &>/dev/null; then
+      DIP_LEFTOVER_FILLED="0"
+    fi
 
     # order status
     if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
