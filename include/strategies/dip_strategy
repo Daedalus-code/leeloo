@@ -628,8 +628,42 @@ bought_sold_age
 # has active file any orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
 
-  # check output (log)
-  DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Checking active order"
+  ##############################################################################
+
+  # buy order count
+  DIP_BUY_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep -c "buy")"
+  # Sell order count
+  DIP_SELL_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep -c "sell")"
+  # if zero
+  if [[ -z "$DIP_BUY_ORDER_COUNT" ]] &>/dev/null; then
+    DIP_BUY_ORDER_COUNT="0"
+  fi
+  if [[ -z "$DIP_SELL_ORDER_COUNT" ]] &>/dev/null; then
+    DIP_SELL_ORDER_COUNT="0"
+  fi
+  # total orders
+  DIP_TOTAL_ORDER_COUNT="$(echo "$DIP_BUY_ORDER_COUNT+$DIP_SELL_ORDER_COUNT" | bc 2>/dev/null)"
+  if [[ -z "$DIP_TOTAL_ORDER_COUNT" ]] &>/dev/null; then
+    DIP_TOTAL_ORDER_COUNT="0"
+  fi
+  # percentage of buy
+  DIP_BUY_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_BUY_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # percentage of sell
+  DIP_SELL_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_SELL_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # if zero
+  if [[ -z "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
+    DIP_BUY_PERCENTAGE="0"
+  fi
+  if [[ -z "$DIP_SELL_PERCENTAGE" ]] &>/dev/null; then
+    DIP_SELL_PERCENTAGE="0"
+  fi
+  # order buy, sell status output
+  DIP_BS_STATUS="Buy ${DIP_BUY_PERCENTAGE:?}% Sell ${DIP_SELL_PERCENTAGE:?}%"
+
+  ##############################################################################
+
+  # watch output (log)
+  DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Active: $DIP_BS_STATUS Spread: $DIP_TARGET_SPREAD Profit: $DIP_GET_RATIO_PROFIT"
   echo "$DIP_ACTIVE_CHECK_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   # create strategy directory
