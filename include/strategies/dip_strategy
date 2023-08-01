@@ -632,8 +632,11 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # buy order count
   DIP_BUY_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" 2>/dev/null | grep -c "buy" || true)"
-  # Sell order count
+  # sell order count
   DIP_SELL_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
+
+  # total order check
+  DIP_TOTAL_ORDER_CHECK="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY" 2>/dev/null)"
 
   # if zero
   if [[ -z "$DIP_BUY_ORDER_COUNT" ]] &>/dev/null; then
@@ -670,7 +673,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_BS_STATUS="Sell ${DIP_SELL_PERCENTAGE:?}%"
   elif [[ "$DIP_SELL_PERCENTAGE" == "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
     DIP_BS_STATUS="Idle ${DIP_SELL_PERCENTAGE:?}%"
-  elif [[ "$DIP_TOTAL_ORDER_COUNT" -eq "0" ]] &>/dev/null; then
+  elif [[ "$DIP_TOTAL_ORDER_CHECK" -eq "0" ]] &>/dev/null; then
     DIP_BS_STATUS="Ghost in the shell?"
   fi
 
