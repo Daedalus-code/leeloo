@@ -652,9 +652,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   fi
 
   # percentage of buy
-  DIP_BUY_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_BUY_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  DIP_BUY_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_BUY_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
   # percentage of sell
-  DIP_SELL_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_SELL_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  DIP_SELL_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_SELL_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 
   # if zero
   if [[ -z "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
@@ -668,8 +668,10 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_BS_STATUS="Buying ${DIP_BUY_PERCENTAGE:?}%"
   elif [[ "$DIP_SELL_PERCENTAGE" > "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
     DIP_BS_STATUS="Selling ${DIP_SELL_PERCENTAGE:?}%"
+  elif [[ "$DIP_SELL_PERCENTAGE" == "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
+    DIP_BS_STATUS="Balanced ${DIP_SELL_PERCENTAGE:?}%"
   else
-    DIP_BS_STATUS="Ghost? 0%"
+    DIP_BS_STATUS="Ghost in the shell?"
   fi
 
   ##############################################################################
