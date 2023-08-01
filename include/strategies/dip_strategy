@@ -556,9 +556,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     DIP_TOTAL_ORDER_COUNT="$(echo "$DIP_BUY_ORDER_COUNT+$DIP_SELL_ORDER_COUNT" | bc 2>/dev/null)"
 
     # percentage of buy
-    DIP_BUY_PERCENTAGE="$(echo "100/$DIP_BUY_ORDER_COUNT*$DIP_SELL_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    DIP_BUY_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_BUY_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # percentage of sell
-    DIP_SELL_PERCENTAGE="$(echo "100/$DIP_SELL_ORDER_COUNT*$DIP_BUY_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    DIP_SELL_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_SELL_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     if [[ -z "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
       DIP_BUY_PERCENTAGE="0"
