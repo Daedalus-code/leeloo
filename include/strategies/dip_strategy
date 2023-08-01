@@ -461,16 +461,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
           # remove old order
           echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
-
-          # if new order or old
-          if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "0" ]] &>/dev/null; then
-            DIP_UPDATE_CREATE="Update"
-          else
-            DIP_UPDATE_CREATE="Create"
-          fi
-
-          # log target output
-          DIP_OLD_ORDER_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_UPDATE_CREATE: Order: $DIP_ORDER_ID Age: ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE"
+          # log target update output
+          DIP_OLD_ORDER_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Update: Order: $DIP_ORDER_ID Age: ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE"
           echo "$DIP_OLD_ORDER_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         fi
       fi
