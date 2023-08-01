@@ -845,7 +845,7 @@ fi
 DIP_POOL_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # if age greater than n seconds
-if [[ "$DIP_POOL_AGE_SECONDS" -gt "10" ]] &>/dev/null; then
+if [[ "$DIP_POOL_AGE_SECONDS" -gt "$(echo "$BOT_TIMER/2" | bc 2>/dev/null)" ]] &>/dev/null; then
 
   # pool file (positions)
   DIP_OUTPUT_FILE="${SYS_DIR:?}/robot/pool"
