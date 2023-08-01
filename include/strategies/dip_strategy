@@ -151,7 +151,7 @@ function target_data() {
   # target dip
   DIP_TARGET_DIP="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $13 }')"
   # target spread
-  DIP_TARGET_SPREAD="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $16 }')"
+  DIP_TARGET_SPREAD="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $16 }' | awk '{ printf "%.0f\n", $1 }')"
   # target price movement
   DIP_TARGET_PRICE_MOVEMENT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $20 }')"
   # target volume
@@ -680,7 +680,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # watch output (log)
-  DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Status: $DIP_BS_STATUS Spread: $DIP_TARGET_SPREAD Profit: $DIP_GET_RATIO_PROFIT Age: $DIP_BOUGHT_FILE_AGE"
+  DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Status: $DIP_BS_STATUS Spread: ${DIP_TARGET_SPREAD:?}% Profit: ${DIP_GET_RATIO_PROFIT:?}% Age: $DIP_BOUGHT_FILE_AGE"
   echo "$DIP_ACTIVE_CHECK_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   # create strategy directory
