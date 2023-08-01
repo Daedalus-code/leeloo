@@ -169,6 +169,14 @@ function bought_sold_age() {
   # if not zero
   if [[ ! -z "$LISTING_CURRENCY" || ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
+    # if zero
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought ]] &>/dev/null; then
+      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought &>/dev/null
+    fi
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold ]] &>/dev/null; then
+      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
+    fi
+
     # bought file age (seconds)
     DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
     # sold file age (seconds)
