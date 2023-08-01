@@ -540,50 +540,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     ############################################################################
 
-    # buy order count
-    DIP_BUY_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep -c "buy")"
-    # Sell order count
-    DIP_SELL_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep -c "sell")"
-
-    # if zero
-    if [[ -z "$DIP_BUY_ORDER_COUNT" ]] &>/dev/null; then
-      DIP_BUY_ORDER_COUNT="0"
-    fi
-    if [[ -z "$DIP_SELL_ORDER_COUNT" ]] &>/dev/null; then
-      DIP_SELL_ORDER_COUNT="0"
-    fi
-
-    # total orders
-    DIP_TOTAL_ORDER_COUNT="$(echo "$DIP_BUY_ORDER_COUNT+$DIP_SELL_ORDER_COUNT" | bc 2>/dev/null)"
-
-    if [[ -z "$DIP_TOTAL_ORDER_COUNT" ]] &>/dev/null; then
-      DIP_TOTAL_ORDER_COUNT="0"
-    fi
-
-    # percentage of buy
-    DIP_BUY_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_BUY_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-    # percentage of sell
-    DIP_SELL_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_SELL_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-    # if zero
-    if [[ -z "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
-      DIP_BUY_PERCENTAGE="0"
-    fi
-    if [[ -z "$DIP_SELL_PERCENTAGE" ]] &>/dev/null; then
-      DIP_SELL_PERCENTAGE="0"
-    fi
-
-    # order buy, sell status output
-    DIP_BS_STATUS="Buy ${DIP_BUY_PERCENTAGE:?}% Sell ${DIP_SELL_PERCENTAGE:?}%"
-
-    ############################################################################
-
     # order status
     if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY")" -gt "0" ]] &>/dev/null; then
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
       # log target output
-      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Active: ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE Filled ${DIP_LEFTOVER_FILLED:?}% $DIP_BS_STATUS"
+      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Active: ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE Filled ${DIP_LEFTOVER_FILLED:?}%"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
 
