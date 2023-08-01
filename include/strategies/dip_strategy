@@ -544,22 +544,26 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     DIP_BUY_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep -c "buy")"
     # Sell order count
     DIP_SELL_ORDER_COUNT="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep -c "sell")"
+    # total orders
+    DIP_TOTAL_ORDER_COUNT="$(echo "$DIP_BUY_ORDER_COUNT+$DIP_SELL_ORDER_COUNT" | bc 2>/dev/null)"
 
+    # if zero
     if [[ -z "$DIP_BUY_ORDER_COUNT" ]] &>/dev/null; then
       DIP_BUY_ORDER_COUNT="0"
     fi
     if [[ -z "$DIP_SELL_ORDER_COUNT" ]] &>/dev/null; then
       DIP_SELL_ORDER_COUNT="0"
     fi
-
-    # total orders
-    DIP_TOTAL_ORDER_COUNT="$(echo "$DIP_BUY_ORDER_COUNT+$DIP_SELL_ORDER_COUNT" | bc 2>/dev/null)"
+    if [[ -z "$DIP_TOTAL_ORDER_COUNT" ]] &>/dev/null; then
+      DIP_TOTAL_ORDER_COUNT="0"
+    fi
 
     # percentage of buy
     DIP_BUY_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_BUY_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # percentage of sell
     DIP_SELL_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_SELL_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+    # if zero
     if [[ -z "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
       DIP_BUY_PERCENTAGE="0"
     fi
