@@ -878,6 +878,9 @@ if [[ "$DIP_TOTAL_ORDER_CHECK" -eq "0" ]] &>/dev/null; then
         if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*10" | bc 2>/dev/null)" ]] &>/dev/null; then
           # remove ghost (active) order
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+          # profit output (log)
+          DIP_GHOST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Ghost: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% ($DIP_BOUGHT_FILE_AGE_DAYS days) $DIP_BOUGHT_FILE_AGE"
+          echo "$DIP_GHOST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         fi
       fi
     fi
