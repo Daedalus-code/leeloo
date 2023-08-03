@@ -1319,7 +1319,7 @@ error.log.....: $STRATEGY_ERROR"
   if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
     if dialog --stdout --title "Check data?" \
       --backtitle "Check data?" \
-      --yesno "Yes: Check!, No:  Go back!" 5 32; then
+      --yesno "Yes: Check! No: Go back!" 5 32; then
       # strategy data exist, edit
       nano "$LOG_DIR"/leeloo/error.log
       clear
@@ -1329,7 +1329,7 @@ error.log.....: $STRATEGY_ERROR"
     if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
       if ! dialog --stdout --title "Keep data (error.log)?" \
         --backtitle "Keep data (error.log)?" \
-        --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
+        --yesno "Yes: Keep! No: Go Delete!" 5 32; then
         truncate -s 0 "$LOG_DIR"/leeloo/error.log &>/dev/null
       fi
     fi
@@ -1339,7 +1339,7 @@ error.log.....: $STRATEGY_ERROR"
   if [[ "$STRATEGY_RESTART_COUNT" -gt "0" ]] &>/dev/null; then
     if ! dialog --stdout --title "Keep restart data?" \
       --backtitle "Keep restart data?" \
-      --yesno "Yes: Keep!, No:  Go Delete!" 5 32; then
+      --yesno "Yes: Keep! No: Go Delete!" 5 32; then
       truncate -s 0 "$SYS_DIR"/robot/restart &>/dev/null
     fi
   fi
@@ -1403,7 +1403,7 @@ error.log.....: $STRATEGY_ERROR"
 
     if dialog --stdout --title "Reset all configurations?" \
       --backtitle "Reset all?" \
-      --yesno "Yes: Reset!, No: Go back!" 5 31; then
+      --yesno "Yes: Reset! No: Go back!" 5 31; then
       sudo rm "${SYS_DIR:?}"/*.conf &>/dev/null
       cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
       bash /usr/local/bin/include/leeloo/install
@@ -1418,7 +1418,7 @@ error.log.....: $STRATEGY_ERROR"
 
     if dialog --stdout --title "Reset broker configuration?" \
       --backtitle "Reset broker.conf?" \
-      --yesno "Yes: Reset!, No: Go back!" 5 33; then
+      --yesno "Yes: Reset! No: Go back!" 5 33; then
       sudo rm "${SYS_DIR:?}"/*.conf &>/dev/null
       bash /usr/local/bin/include/leeloo/install
       clear
@@ -1774,7 +1774,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         # keep history, delete history
         if ! dialog --stdout --title "Keep history? +$ORDERS_COUNT" \
           --backtitle "Keep history?" \
-          --yesno "Yes: Keep!, No: Delete!" 5 30; then
+          --yesno "Yes: Keep! No: Delete!" 5 30; then
           truncate -s 0 "${SYS_DIR:?}"/robot/orders &>/dev/null
           truncate -s 0 "${SYS_DIR:?}"/robot/*.orders &>/dev/null
         fi
@@ -2303,7 +2303,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
         if dialog --stdout --title "RESTART WARNING!" \
           --backtitle "RESTARTING" \
-          --yesno "Yes: Restart!, No:  Go back!" 5 32; then
+          --yesno "Yes: Restart! No: Go back!" 5 32; then
 
           # kill leeloo pid (shell)
           echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
@@ -2426,7 +2426,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
             # keep history, delete history
             if ! dialog --stdout --title "Keep history? +$LOG_COUNT" \
               --backtitle "Keep history?" \
-              --yesno "Yes: Keep!, No: Delete!" 5 30; then
+              --yesno "Yes: Keep! No: Delete!" 5 30; then
               truncate -s 0 "${SELECTED_FILE:?}" &>/dev/null
               truncate -s 0 "${SELECTED_FILE:?}" &>/dev/null
             fi
@@ -2450,7 +2450,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
       if dialog --stdout --title "DELETE WARNING!" \
         --backtitle "DELETING" \
-        --yesno "Yes: Delete!, No:  Go back!" 5 30; then
+        --yesno "Yes: Delete! No: Go back!" 5 30; then
 
         while true; do
           CONFIG_FILES=("${SYS_DIR:?}"/robot/*.config)
@@ -2487,7 +2487,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
             if dialog --stdout --title "DELETE WARNING!!" \
               --backtitle "DELETING $FILE_NAME Strategy!" \
-              --yesno "Yes: Delete!, No:  Go back!" 5 30; then
+              --yesno "Yes: Delete! No: Go back!" 5 30; then
               rm "$SELECTED_FILE" &>/dev/null
               rm "${SYS_DIR:?}"/robot/*"$FILE_NAME"* &>/dev/null
               rm "${LOG_DIR:?}"/leeloo/robot."$FILE_NAME"* &>/dev/null
