@@ -1622,18 +1622,39 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         FILE_TIME="00:00"
       fi
 
-      # pool age in seconds
-      until [[ "$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]] &>/dev/null; do
-        clear
-        BROKER_POSITIONS="$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')"
-        BROKER_POSITIONS="$(echo "$BROKER_POSITIONS-1" | bc 2>/dev/null)"
-        if [[ -z "$BROKER_POSITIONS" ]] &>/dev/null; then
-          BROKER_POSITIONS="0"
-        fi
-        printf '%b' "[${G1:?}OK${N0:?}] Updating ${CY:?}$BROKER_POSITIONS${N0:?} positions, please wait.\n"
-        printf '%b' "${GR:?}[!!] CTRL+C for exit${N0:?}\n"
-        sleep 1
-      done
+      # function to calculate time since last edit
+      get_time_since_last_edit() {
+        LASTEDIT=$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null)
+        CURRENT_TIME=$(date +%s)
+        echo "$((CURRENT_TIME - LASTEDIT))"
+      }
+
+      # read the expected number of positions from the pos_n file
+      EXPECTED_POSITIONS=$(cat "${SYS_DIR:?}"/robot/pos_n 2>/dev/null)
+
+      # initialize variables
+      MAX_AGE=5
+      PROGRESS=0
+      START_TIME=$(date +%s)
+
+      # create a background subshell to display the dialog progress bar
+      (
+        # loop until the pool file is old enough (more than 5 seconds)
+        until [[ $(get_time_since_last_edit) -gt $MAX_AGE ]]; do
+          BROKER_POSITIONS="$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')"
+          BROKER_POSITIONS=$((BROKER_POSITIONS - 1)) # subtract 1 for header
+          if [[ -z "$BROKER_POSITIONS" ]] &>/dev/null; then
+            BROKER_POSITIONS="0"
+          fi
+
+          # calculate progress based on the expected position count
+          PROGRESS=$((BROKER_POSITIONS * 100 / EXPECTED_POSITIONS))
+
+          # display the progress using dialog
+          echo "$PROGRESS" # print the progress value for the dialog to read
+          sleep 1
+        done
+      ) | dialog --title "Updating Positions" --gauge "Updating $BROKER_POSITIONS positions, please wait." 6 50
 
       ##########################################################################
 
@@ -1647,7 +1668,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         MINUTES=$(echo "$MINUTES" | tr -d 'm')
         SECONDS=$(echo "$SECONDS" | tr -d 's')
         TOTAL_SECONDS=$((TOTAL_SECONDS + (HOURS * 3600) + (MINUTES * 60) + SECONDS))
-      done <"$DURATIONS_FILE" 2>/dev/null
+      done <"$DURATIONS_FILE"
 
       OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
 
@@ -1659,7 +1680,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       if [[ -z "$OPEN_TOTAL_SECONDS" ]] &>/dev/null; then
         OPEN_TOTAL_SECONDS="0"
       fi
-
       OPEN_TOTAL_AGE=$(printf '%dh:%dm:%ds\n' $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%60")))
       OPEN_TOTAL_AGE_DAYS="$(echo "$OPEN_TOTAL_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
@@ -1694,7 +1714,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       if [[ -z "$RESULT" ]] &>/dev/null; then
         RESULT="No data"
       fi
-
       display_result 2>/dev/null
     else
       no_key_no_secret
