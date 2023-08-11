@@ -1617,6 +1617,12 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
+      # position n
+      POS_N_STATUS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+      if [[ "$POS_N_STATUS" -gt "5" ]] &>/dev/null; then
+        echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
+      fi
+
       FILE_TIME="$(ls -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $8 }')"
       if [[ -z "$FILE_TIME" ]] &>/dev/null; then
         FILE_TIME="00:00"
