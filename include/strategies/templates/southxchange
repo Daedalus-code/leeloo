@@ -524,7 +524,7 @@ function open_positions() {
   ##############################################################################
 
   # position n
-  POS_N_STATUS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  POS_N_STATUS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pos_n 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   if [[ "$POS_N_STATUS" -gt "5" ]] &>/dev/null; then
     echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
   fi
