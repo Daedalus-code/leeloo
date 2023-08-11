@@ -1647,7 +1647,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         MINUTES=$(echo "$MINUTES" | tr -d 'm')
         SECONDS=$(echo "$SECONDS" | tr -d 's')
         TOTAL_SECONDS=$((TOTAL_SECONDS + (HOURS * 3600) + (MINUTES * 60) + SECONDS))
-      done <"$DURATIONS_FILE"
+      done <"$DURATIONS_FILE" 2>/dev/null
 
       OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
 
@@ -1659,6 +1659,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       if [[ -z "$OPEN_TOTAL_SECONDS" ]] &>/dev/null; then
         OPEN_TOTAL_SECONDS="0"
       fi
+
       OPEN_TOTAL_AGE=$(printf '%dh:%dm:%ds\n' $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%60")))
       OPEN_TOTAL_AGE_DAYS="$(echo "$OPEN_TOTAL_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
@@ -1693,6 +1694,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       if [[ -z "$RESULT" ]] &>/dev/null; then
         RESULT="No data"
       fi
+
       display_result 2>/dev/null
     else
       no_key_no_secret
