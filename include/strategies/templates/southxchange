@@ -523,6 +523,14 @@ function open_positions() {
 
   ##############################################################################
 
+  # position n
+  POS_N_STATUS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  if [[ "$POS_N_STATUS" -gt "5" ]] &>/dev/null; then
+    echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
+  fi
+
+  ##############################################################################
+
   # make sure prices, balances exist
   if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -gt "0" ]] &>/dev/null; then
     if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -gt "0" ]] &>/dev/null; then
@@ -536,12 +544,6 @@ function open_positions() {
         rm "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".* &>/dev/null
       fi
     fi
-  fi
-
-  # position n
-  POS_N_STATUS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  if [[ "$POS_N_STATUS" -gt "5" ]] &>/dev/null; then
-    echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
   fi
 }
 
