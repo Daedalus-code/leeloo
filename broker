@@ -1632,20 +1632,25 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         echo "$((CURRENT_TIME - LASTEDIT))"
       }
 
+      output_pos_n() {
+        # output position count
+        echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
+      }
+
       # initialize variables
       MAX_AGE=5
       PROGRESS=0
       START_TIME=$(date +%s)
 
-      if [[ "$POS_N_STATUS" -gt "5" ]] &>/dev/null; then
+      if [[ "$POS_N_STATUS" -ge "$MAX_AGE" || ! -f "${SYS_DIR:?}"/robot/pos_n ]] &>/dev/null; then
         # output position count
-        echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
+        output_pos_n
       fi
 
       # read the expected number of positions from the pos_n file
       EXPECTED_POSITIONS=$(cat "${SYS_DIR:?}"/robot/pos_n 2>/dev/null)
 
-      if [[ "$POS_N_STATUS" -lt "5" ]] &>/dev/null; then
+      if [[ "$POS_N_STATUS" -lt "$MAX_AGE" ]] &>/dev/null; then
         # create a background subshell to display the dialog progress bar
         (
           # loop until the pool file is old enough (more than 5 seconds)
