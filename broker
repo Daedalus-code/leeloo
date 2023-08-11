@@ -1632,9 +1632,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         echo "$((CURRENT_TIME - LASTEDIT))"
       }
 
-      # read the expected number of positions from the pos_n file
-      EXPECTED_POSITIONS=$(cat "${SYS_DIR:?}"/robot/pos_n 2>/dev/null)
-
       # initialize variables
       MAX_AGE=5
       PROGRESS=0
@@ -1644,6 +1641,9 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         # output position count
         echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
       fi
+
+      # read the expected number of positions from the pos_n file
+      EXPECTED_POSITIONS=$(cat "${SYS_DIR:?}"/robot/pos_n 2>/dev/null)
 
       if [[ "$POS_N_STATUS" -lt "5" ]] &>/dev/null; then
         # create a background subshell to display the dialog progress bar
