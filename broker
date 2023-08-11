@@ -1619,9 +1619,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
       # position n
       POS_N_STATUS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-      if [[ "$POS_N_STATUS" -gt "5" ]] &>/dev/null; then
-        echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
-      fi
 
       FILE_TIME="$(ls -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $8 }')"
       if [[ -z "$FILE_TIME" ]] &>/dev/null; then
@@ -1643,24 +1640,34 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       PROGRESS=0
       START_TIME=$(date +%s)
 
-      # create a background subshell to display the dialog progress bar
-      (
-        # loop until the pool file is old enough (more than 5 seconds)
-        until [[ $(get_time_since_last_edit) -gt $MAX_AGE ]]; do
-          BROKER_POSITIONS="$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')"
-          BROKER_POSITIONS=$((BROKER_POSITIONS - 1)) # subtract 1 for header
-          if [[ -z "$BROKER_POSITIONS" ]] &>/dev/null; then
-            BROKER_POSITIONS="0"
-          fi
+      if [[ "$POS_N_STATUS" -gt "5" ]] &>/dev/null; then
+        # output position count
+        echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
+      fi
 
-          # calculate progress based on the expected position count
-          PROGRESS=$((BROKER_POSITIONS * 100 / EXPECTED_POSITIONS))
+      if [[ "$POS_N_STATUS" -lt "5" ]] &>/dev/null; then
+        # create a background subshell to display the dialog progress bar
+        (
+          # loop until the pool file is old enough (more than 5 seconds)
+          until [[ $(get_time_since_last_edit) -gt $MAX_AGE ]]; do
 
-          # display the progress using dialog
-          echo "$PROGRESS" # print the progress value for the dialog to read
-          sleep 1
-        done
-      ) | dialog --title "Updating Positions" --gauge "Updating $BROKER_POSITIONS positions, please wait." 6 50
+            BROKER_POSITIONS="$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')"
+            BROKER_POSITIONS=$((BROKER_POSITIONS - 1)) # subtract 1 for header
+
+            # if zero
+            if [[ -z "$BROKER_POSITIONS" ]] &>/dev/null; then
+              BROKER_POSITIONS="0"
+            fi
+
+            # calculate progress based on the expected position count
+            PROGRESS=$((BROKER_POSITIONS * 100 / EXPECTED_POSITIONS))
+
+            # display the progress using dialog
+            echo "$PROGRESS" # print the progress value for the dialog to read
+            sleep 1
+          done
+        ) | dialog --title "Strategy Positions" --gauge "Updating positions, please wait." 6 50
+      fi
 
       ##########################################################################
 
