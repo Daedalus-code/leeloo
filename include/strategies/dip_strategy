@@ -858,9 +858,9 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
   ##############################################################################
 
-  # if no orders, has sold data, skip below
+  # if no orders, has sold data, still active, skip below
   if [[ "$DIP_SOLD_OLD" -eq "1" ]] &>/dev/null; then
-    # include trigger (0.369%)
+    # include trigger
     DIP_TARGET_BALANCE_FEES="$(echo "0.999*$DIP_TARGET_AMOUNT" | bc -l 2>/dev/null)"
     # target amount with trigger (without decimal)
     DIP_TARGET_BALANCE_CHECK="$(echo "$DIP_TARGET_AMOUNT-$DIP_TARGET_BALANCE_FEES" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
