@@ -1667,6 +1667,11 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
             # calculate progress based on the expected position count
             PROGRESS=$((BROKER_POSITIONS * 100 / EXPECTED_POSITIONS))
 
+            # max progress
+            if [[ "$PROGRESS" -ge "99" ]] &>/dev/null; then
+              PROGRESS="100"
+            fi
+
             # display the progress using dialog
             echo "$PROGRESS" # print the progress value for the dialog to read
             sleep 1
