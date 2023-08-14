@@ -548,13 +548,17 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # calculate percentage of order filled
     DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+
     if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
       DIP_LEFTOVER_FILLED_AMOUNT="0"
     fi
+
     DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
+
     if [[ -z "$DIP_LEFTOVER_FILLED" ]] &>/dev/null; then
       DIP_LEFTOVER_FILLED="0"
     fi
+
     if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
       DIP_LEFTOVER_FILLED="100"
     fi
@@ -786,7 +790,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       # calculate percentage of order size
       DIP_LEFTOVER_SIZE=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $LISTING_BALANCE; printf \"%.9f\", (result > 100 ? 100 : result) }")
 
-      if (($(echo "$DIP_LEFTOVER_SIZE > 99.999999" | bc -l))) &>/dev/null; then
+      if [[ "$(echo "$DIP_LEFTOVER_SIZE" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
         DIP_LEFTOVER_SIZE="100"
       fi
 
@@ -797,12 +801,19 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
       # disregard duplicates, empty lines
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+
       # calculate percentage of order filled
       DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+
       if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
         DIP_LEFTOVER_FILLED_AMOUNT="0"
       fi
+
       DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
+
+      if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
+        DIP_LEFTOVER_FILLED="100"
+      fi
 
       # re calculate get amount based on order size
       DIP_SELL_AMOUNT_REFERENCE="$(echo "$(echo "$DIP_LEFTOVER_SIZE/100" | bc -l 2>/dev/null)*$DIP_GET_AMOUNT_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
