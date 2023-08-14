@@ -978,24 +978,31 @@ function setup_market_order {
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
-  REFERENCE_CURRENCY=$(
-    dialog --title "Reference Currency (USDT)" \
-      --inputbox "Enter name:" 8 40 \
-      3>&1 1>&2 2>&3 3>&-
-  )
 
-  LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
-  REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+  if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
 
-  LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-  REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+    REFERENCE_CURRENCY=$(
+      dialog --title "Reference Currency (USDT)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
 
-  AMOUNT=$(
-    dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
-      --inputbox "Enter amount:
+    if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+
+      LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+      REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+
+      LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+      REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+
+      AMOUNT=$(
+        dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+          --inputbox "Enter amount:
 $LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
-      3>&1 1>&2 2>&3 3>&-
-  )
+          3>&1 1>&2 2>&3 3>&-
+      )
+    fi
+  fi
 }
 
 # setup manual limit order #####################################################
@@ -1006,32 +1013,39 @@ function setup_limit_order {
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
-  REFERENCE_CURRENCY=$(
-    dialog --title "Reference Currency (USDT)" \
-      --inputbox "Enter name:" 8 40 \
-      3>&1 1>&2 2>&3 3>&-
-  )
 
-  LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
-  REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+  if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
 
-  LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-  REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-  LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }' | head -1)"
-  REFERENCE_CURRENCY_PRICE="$REFERENCE_CURRENCY: $(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }' | head -1)"
+    REFERENCE_CURRENCY=$(
+      dialog --title "Reference Currency (USDT)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
 
-  AMOUNT=$(
-    dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
-      --inputbox "Enter amount:
+    if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+
+      LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+      REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+
+      LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+      REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+      LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }' | head -1)"
+      REFERENCE_CURRENCY_PRICE="$REFERENCE_CURRENCY: $(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }' | head -1)"
+
+      AMOUNT=$(
+        dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+          --inputbox "Enter amount:
 $LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
-      3>&1 1>&2 2>&3 3>&-
-  )
-  PRICE=$(
-    dialog --title "Price $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
-      --inputbox "Enter price:
+          3>&1 1>&2 2>&3 3>&-
+      )
+      PRICE=$(
+        dialog --title "Price $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+          --inputbox "Enter price:
 $LISTING_CURRENCY_PRICE $REFERENCE_CURRENCY_PRICE" 8 40 \
-      3>&1 1>&2 2>&3 3>&-
-  )
+          3>&1 1>&2 2>&3 3>&-
+      )
+    fi
+  fi
 }
 
 ################################################################################
