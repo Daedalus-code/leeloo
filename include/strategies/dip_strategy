@@ -545,6 +545,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # disregard duplicates, empty lines
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+
     # calculate percentage of order filled
     DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
     if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
@@ -553,6 +554,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
     if [[ -z "$DIP_LEFTOVER_FILLED" ]] &>/dev/null; then
       DIP_LEFTOVER_FILLED="0"
+    fi
+    if [[ "$DIP_LEFTOVER_FILLED" -ge "99" ]] &>/dev/null; then
+      DIP_LEFTOVER_FILLED="100"
     fi
 
     ############################################################################
@@ -896,6 +900,8 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 fi
 
 ################################################################################
+# ghost order
+################################################################################
 
 # if any ghost in the shell
 if [[ "$DIP_TOTAL_ORDER_CHECK" -eq "0" ]] &>/dev/null; then
@@ -905,15 +911,18 @@ if [[ "$DIP_TOTAL_ORDER_CHECK" -eq "0" ]] &>/dev/null; then
     if [[ "$DIP_LISTING_BALANCE_D_CHECK" -eq "0" ]] &>/dev/null; then
       # if available balance is empty (listing)
       if [[ "$DIP_LISTING_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
-        # if buying order is older than n seconds
-        if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*10" | bc 2>/dev/null)" ]] &>/dev/null; then
-          # if target does not exist in orders
-          if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
-            # remove ghost (active) order
-            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-            # ghost output (log)
-            DIP_GHOST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Ghost: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_AGE_OUTPUT"
-            echo "$DIP_GHOST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        # if selling order is older than n seconds
+        if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*10" | bc 2>/dev/null)" ]] &>/dev/null; then
+          # if buying order is older than n seconds
+          if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*10" | bc 2>/dev/null)" ]] &>/dev/null; then
+            # if target does not exist in orders
+            if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+              # remove ghost (active) order
+              echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+              # ghost output (log)
+              DIP_GHOST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Ghost: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_AGE_OUTPUT"
+              echo "$DIP_GHOST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+            fi
           fi
         fi
       fi
