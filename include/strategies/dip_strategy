@@ -873,8 +873,10 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
   # if no orders, has sold data, still active
   if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
+    # order age divide
+    DIP_OLD_ORDER_MAX_DIVIDE="$(echo "$DIP_OLD_ORDER_MAX/$DIP_OLD_ORDER_MAX" | bc 2>/dev/null)"
     # if old age, ruled by configuration
-    if [[ "$DIP_SOLD_FILE_AGE_DAYS" -gt "$DIP_OLD_ORDER_MAX" ]] &>/dev/null; then
+    if [[ "$DIP_SOLD_FILE_AGE_DAYS" -gt "$DIP_OLD_ORDER_MAX_DIVIDE" ]] &>/dev/null; then
       # include trigger
       DIP_TARGET_BALANCE_FEES="$(echo "0.999*$DIP_TARGET_AMOUNT" | bc -l 2>/dev/null)"
       # target amount with trigger (without decimal)
@@ -1028,10 +1030,10 @@ if [[ -z "$DIP_OLD_ORDER_MAX" ]] &>/dev/null; then
 fi
 
 # calculate days into seconds
-DIP_OLD_ORDER_MAX="$(echo "$DIP_OLD_ORDER_MAX*86400" | bc 2>/dev/null)"
+DIP_OLD_ORDER_MAX_SECONDS="$(echo "$DIP_OLD_ORDER_MAX*86400" | bc 2>/dev/null)"
 
 # if older than n seconds
-if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX" ]] &>/dev/null; then
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/null; then
   # if specific market exist in orders file (buy)
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
     # old order id (buy)
