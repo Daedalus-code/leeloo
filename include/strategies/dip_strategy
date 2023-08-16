@@ -1061,7 +1061,7 @@ fi
 INPUT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 
 # extract relevant data fields
-TOTAL_PAIRS="$(echo "$INPUT_DATA" | wc -l)"
+ACTIVE_MARKETS="$(echo "$INPUT_DATA" | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | awk '!a[$0]++' | xargs)"
 PAIRS=$(echo "$INPUT_DATA" | awk '{print $1}')
 VOLUMES=$(echo "$INPUT_DATA" | awk -F 'Volume: ' '{print $2}' | awk '{print $1}')
 PRICE_MOVEMENTS=$(echo "$INPUT_DATA" | awk -F 'Price Movement: ' '{print $2}' | awk '{print $1}')
@@ -1069,51 +1069,30 @@ AMOUNTS=$(echo "$INPUT_DATA" | awk -F 'Amount: ' '{print $2}')
 DIPS=$(echo "$INPUT_DATA" | awk -F 'Dip: ' '{print $2}' | awk -F '%' '{print $1}')
 SPREADS=$(echo "$INPUT_DATA" | awk -F 'Spread: ' '{print $2}' | awk -F '%' '{print $1}')
 
-# calculate average dip as a decimal
-AVERAGE_DIP=$(echo "$DIPS" | awk '{total += $1} END {print total/NR}')
-
 # calculate average price movement
 AVERAGE_PRICE_MOVEMENT=$(echo "$PRICE_MOVEMENTS" | awk '{total += $1} END {print total/NR}')
 
-# calculate average volume
-AVERAGE_VOLUME=$(echo "$VOLUMES" | awk '{total += $1} END {print total/NR}')
-
-# calculate average amount
-AVERAGE_AMOUNT=$(echo "$AMOUNTS" | awk '{total += $1} END {print total/NR}')
-
 # find top values
-TOP_VOLUME_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$VOLUMES") | sort -k2 -nr | head -n 5)
-TOP_PRICE_MOVEMENT_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$PRICE_MOVEMENTS") | sort -k2 -nr | head -n 5)
-TOP_AMOUNT_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$AMOUNTS") | sort -k2 -nr | head -n 5)
-TOP_DIP_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$DIPS") | sort -k2 -n | head -n 5)
-TOP_SPREAD_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$SPREADS") | sort -k2 -nr | head -n 5)
+TOP_PRICE_MOVEMENT_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$PRICE_MOVEMENTS") | sort -k2 -nr | head -n 1)
+TOP_VOLUME_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$VOLUMES") | sort -k2 -nr | head -n 1)
+TOP_AMOUNT_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$AMOUNTS") | sort -k2 -nr | head -n 1)
+TOP_SPREAD_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$SPREADS") | sort -k2 -nr | head -n 1)
+TOP_DIP_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$DIPS") | sort -k2 -n | head -n 1)
 
 # format and display output
 {
-  echo "Total Number of Pairs: $TOTAL_PAIRS"
-  echo
-
-  # display top pairs with corresponding field
-  display_top_pairs() {
-    DATA="$1"
-    FIELD="$2"
-    SUFFIX="$3"
-    paste <(echo "$DATA" | awk '{print NR ". " $1}') \
-      <(echo "$DATA" | awk -v f="$FIELD" '{print f $2}') -d '   ' | sed "s/\s*$/ $SUFFIX/"
-    echo
-  }
-
-  display_top_pairs "$TOP_VOLUME_PAIRS" "Volume: " "" "Top 5 Highest Volume Pairs:"
-  display_top_pairs "$TOP_PRICE_MOVEMENT_PAIRS" "Price Movement: " "%" "Top 5 Biggest Price Movements:"
-  display_top_pairs "$TOP_AMOUNT_PAIRS" "Amount: " "" "Top 5 Pairs with Highest Amounts:"
-  display_top_pairs "$TOP_DIP_PAIRS" "Dip: " "%" "Top 5 Pairs with Lowest Dips:"
-  display_top_pairs "$TOP_SPREAD_PAIRS" "Spread: " "%" "Top 5 Pairs with Largest Bid-Ask Spreads:"
-
-  echo "Average Dip Percentage: $(printf "%.2f" $AVERAGE_DIP) %
-Average Price Movement Percentage: $(printf "%.2f" $AVERAGE_PRICE_MOVEMENT) %
-Average Volume: $(printf "%.2f" $AVERAGE_VOLUME)
-Average Amount: $(printf "%.2f" $AVERAGE_AMOUNT)"
-  echo
+  echo "Markets................: $ACTIVE_MARKETS
+Active.................: $DIP_ACTIVE_FILE_COUNT
+Average.Dip............: $DIP_ACTIVE_FILE_AVERAGE_DIP%
+Average.Spread.........: $DIP_ACTIVE_FILE_AVERAGE_SPREAD%
+Average.Price.Movement.: $AVERAGE_PRICE_MOVEMENT%
+Average.Profit.........: $DIP_ACTIVE_FILE_AVERAGE_PROFIT%
+Top.Price.Movement.....: $TOP_PRICE_MOVEMENT_PAIRS
+Top.Volume.............: $TOP_VOLUME_PAIRS
+Top.Amount.............: $TOP_AMOUNT_PAIRS
+Top.Spread.............: $TOP_SPREAD_PAIRS%
+Top.Dip................: $TOP_DIP_PAIRS%
+Last_Order.txid........: $TX_ID_LAST $TXID_AGE"
 } >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data
 
 ################################################################################
