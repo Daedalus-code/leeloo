@@ -1066,7 +1066,7 @@ fi
 INPUT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 
 # extract relevant data fields
-ACTIVE_MARKETS="$(echo "$INPUT_DATA" | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | awk '!a[$0]++' | xargs)"
+ACTIVE_MARKETS="$(echo "$INPUT_DATA" | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n |  awk '!a[$0]++' | xargs)"
 PAIRS=$(echo "$INPUT_DATA" | awk '{print $1}')
 VOLUMES=$(echo "$INPUT_DATA" | awk -F 'Volume: ' '{print $2}' | awk '{print $1}')
 PRICE_MOVEMENTS=$(echo "$INPUT_DATA" | awk -F 'Price Movement: ' '{print $2}' | awk '{print $1}')
