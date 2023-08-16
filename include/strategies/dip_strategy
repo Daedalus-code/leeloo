@@ -321,7 +321,7 @@ DIP_ACTIVE_FILE_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/
 DIP_ACTIVE_FILE_AVERAGE_PROFIT="$(echo "$DIP_ACTIVE_FILE_PROFIT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 # total average price movement
-DIP_ACTIVE_FILE_PRICE_MOVEMENT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $20 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+DIP_ACTIVE_FILE_PRICE_MOVEMENT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $20 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
 # calculate average price movement
 DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="$(echo "$DIP_ACTIVE_FILE_PRICE_MOVEMENT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
@@ -1066,7 +1066,7 @@ fi
 INPUT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 
 # extract relevant data fields
-ACTIVE_MARKETS="$(echo "$INPUT_DATA" | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n |  awk '!a[$0]++' | xargs)"
+ACTIVE_MARKETS="$(echo "$INPUT_DATA" | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n | awk '!a[$0]++' | xargs)"
 PAIRS=$(echo "$INPUT_DATA" | awk '{print $1}')
 VOLUMES=$(echo "$INPUT_DATA" | awk -F 'Volume: ' '{print $2}' | awk '{print $1}')
 PRICE_MOVEMENTS=$(echo "$INPUT_DATA" | awk -F 'Price Movement: ' '{print $2}' | awk '{print $1}')
