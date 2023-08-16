@@ -347,6 +347,12 @@ SPREAD_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $16}')"
 DIP_ACTIVE_FILE_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
 # top active profit
 DIP_ACTIVE_TOP_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | tail -1)"
+# top profit data
+DIP_TOP_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+# top profit market
+PROFIT_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_PROFIT" | awk '{ print $1}' | tr -d ':')"
+# top profit amount
+PROFIT_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_PROFIT" | awk '{ print $20}')"
 # calculate average profit
 DIP_ACTIVE_FILE_AVERAGE_PROFIT="$(echo "$DIP_ACTIVE_FILE_PROFIT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
@@ -1130,7 +1136,7 @@ Average.Dip............: $DIP_ACTIVE_FILE_AVERAGE_DIP%
 Average.Spread.........: $DIP_ACTIVE_FILE_AVERAGE_SPREAD%
 Average.Price.Movement.: $DIP_ACTIVE_FILE_A_PRICE_MOVEMENT%
 Average.Profit.........: $DIP_ACTIVE_FILE_AVERAGE_PROFIT%
-Top.Profit.............: $DIP_ACTIVE_TOP_PROFIT%
+Top.Profit.............: $PROFIT_TOP_MARKET $PROFIT_TOP_MARKET_AMOUNT
 Top.Price.Movement.....: $SPREAD_TOP_MARKET $SPREAD_TOP_MARKET_AMOUNT
 Top.Volume.............: $DIP_TOP_VOLUME_MARKET $DIP_TOP_VOLUME_AMOUNT
 Top.Amount.............: $DIP_TOP_AMOUNT_MARKET $DIP_TOP_AMOUNT_AMOUNT
