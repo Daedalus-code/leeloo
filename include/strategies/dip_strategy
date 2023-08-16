@@ -320,6 +320,11 @@ DIP_ACTIVE_FILE_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/
 # calculate average profit
 DIP_ACTIVE_FILE_AVERAGE_PROFIT="$(echo "$DIP_ACTIVE_FILE_PROFIT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+# total average price movement
+DIP_ACTIVE_FILE_PRICE_MOVEMENT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $20 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+# calculate average price movement
+DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="$(echo "$DIP_ACTIVE_FILE_PRICE_MOVEMENT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
 # if zero
 if [[ -z "$DIP_ACTIVE_FILE_COUNT" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_COUNT="0"
@@ -1069,9 +1074,6 @@ AMOUNTS=$(echo "$INPUT_DATA" | awk -F 'Amount: ' '{print $2}')
 DIPS=$(echo "$INPUT_DATA" | awk -F 'Dip: ' '{print $2}' | awk -F '%' '{print $1}')
 SPREADS=$(echo "$INPUT_DATA" | awk -F 'Spread: ' '{print $2}' | awk -F '%' '{print $1}')
 
-# calculate average price movement
-AVERAGE_PRICE_MOVEMENT=$(echo "$PRICE_MOVEMENTS" | awk '{total += $1} END {print total/NR}')
-
 # find top values
 TOP_PRICE_MOVEMENT_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$PRICE_MOVEMENTS") | sort -k2 -nr | head -n 1)
 TOP_VOLUME_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$VOLUMES") | sort -k2 -nr | head -n 1)
@@ -1085,7 +1087,7 @@ TOP_DIP_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$DIPS") | sort -k2 -n | hea
 Active.................: $DIP_ACTIVE_FILE_COUNT
 Average.Dip............: $DIP_ACTIVE_FILE_AVERAGE_DIP%
 Average.Spread.........: $DIP_ACTIVE_FILE_AVERAGE_SPREAD%
-Average.Price.Movement.: $AVERAGE_PRICE_MOVEMENT%
+Average.Price.Movement.: $DIP_ACTIVE_FILE_A_PRICE_MOVEMENT%
 Average.Profit.........: $DIP_ACTIVE_FILE_AVERAGE_PROFIT%
 Top.Price.Movement.....: $TOP_PRICE_MOVEMENT_PAIRS
 Top.Volume.............: $TOP_VOLUME_PAIRS
