@@ -119,16 +119,19 @@ function amount_to_buy_sell() {
 
 ################################################################################
 
+CAT_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+CAT_TARGET_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+
 # target data for both target and active
 function target_data() {
 
   # use latest target
   if [[ "$TARGET_ACTIVE" == "TARGET" ]] &>/dev/null; then
-    DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | head -1)"
+    DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_TARGET_FILE" | head -1)"
 
     # use active list
   elif [[ "$TARGET_ACTIVE" == "ACTIVE" ]] &>/dev/null; then
-    DIP_TARGET_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | shuf | head -1)"
+    DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" | shuf | head -1)"
     # disregard with already searched markets
     if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
       DIP_TARGET_FILE_OUTPUT="$(grep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | shuf | tail -1)"
@@ -302,28 +305,85 @@ echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${
 
 ################################################################################
 
+# active market pairs
+ACTIVE_MARKET_PAIRS="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n | awk '!a[$0]++' | xargs)"
+
+################################################################################
+
 # total active count
 DIP_ACTIVE_FILE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }')"
 
 # total active dip
-DIP_ACTIVE_FILE_DIP="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
+DIP_ACTIVE_FILE_DIP="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
+# top active dip
+DIP_ACTIVE_TOP_DIP="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $13 }' | sort -n | head -1)"
 # calculate average dip
 DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+# top dip data
+DIP_TOP_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_TOP_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+# top dip market
+DIP_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':')"
+# top dip amount
+DIP_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}')"
+
+################################################################################
 
 # total active spread
-DIP_ACTIVE_FILE_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
+DIP_ACTIVE_FILE_SPREAD="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
+# top active spread
+DIP_ACTIVE_TOP_SPREAD="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $16 }' | sort -n | tail -1)"
 # calculate average spread
 DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+# top spread data
+DIP_TOP_ACTIVE_SPREAD="$(grep -- "$DIP_ACTIVE_TOP_SPREAD" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+# top spread market
+SPREAD_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $1}' | tr -d ':')"
+# top spread amount
+SPREAD_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $16}')"
+
+################################################################################
 
 # total active profit
 DIP_ACTIVE_FILE_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+# top active profit
+DIP_ACTIVE_TOP_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | tail -1)"
 # calculate average profit
 DIP_ACTIVE_FILE_AVERAGE_PROFIT="$(echo "$DIP_ACTIVE_FILE_PROFIT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+################################################################################
+
 # total average price movement
-DIP_ACTIVE_FILE_PRICE_MOVEMENT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $20 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+DIP_ACTIVE_FILE_PRICE_MOVEMENT="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $20 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+# top average price movement
+DIP_ACTIVE_TOP_PRICE_MOVEMENT="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $20 }' | tr -d '%' | sort -n | tail -1)"
 # calculate average price movement
 DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="$(echo "$DIP_ACTIVE_FILE_PRICE_MOVEMENT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+# top price movement data
+DIP_TOP_ACTIVE_SPREAD="$(grep -- "$DIP_ACTIVE_TOP_PRICE_MOVEMENT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+# top price movement market
+SPREAD_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $1}' | tr -d ':')"
+# top price movement amount
+SPREAD_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $20}')"
+
+################################################################################
+
+# top volume
+DIP_TOP_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $23 }' | sort -n | tail -1)"
+# top volume market
+DIP_TOP_VOLUME_MARKET="$(echo "$DIP_TOP_ACTIVE_VOLUME" | awk '{ print $1}' | tr -d ':')"
+# top volume amount
+DIP_TOP_VOLUME_AMOUNT="$(echo "$DIP_TOP_ACTIVE_VOLUME" | awk '{ print $23}')"
+
+################################################################################
+
+# top amount
+DIP_TOP_ACTIVE_AMOUNT="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $26 }' | sort -n | tail -1)"
+# top amount market
+DIP_TOP_AMOUNT_MARKET="$(echo "$DIP_TOP_ACTIVE_AMOUNT" | awk '{ print $1}' | tr -d ':')"
+# top amount amount
+DIP_TOP_AMOUNT_AMOUNT="$(echo "$DIP_TOP_ACTIVE_AMOUNT" | awk '{ print $26}')"
+
+################################################################################
 
 # if zero
 if [[ -z "$DIP_ACTIVE_FILE_COUNT" ]] &>/dev/null; then
@@ -1062,38 +1122,20 @@ fi
 
 ################################################################################
 
-# input data file
-INPUT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
-
-# extract relevant data fields
-ACTIVE_MARKETS="$(echo "$INPUT_DATA" | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n | awk '!a[$0]++' | xargs)"
-PAIRS=$(echo "$INPUT_DATA" | awk '{print $1}')
-VOLUMES=$(echo "$INPUT_DATA" | awk -F 'Volume: ' '{print $2}' | awk '{print $1}')
-PRICE_MOVEMENTS=$(echo "$INPUT_DATA" | awk -F 'Price Movement: ' '{print $2}' | awk '{print $1}')
-AMOUNTS=$(echo "$INPUT_DATA" | awk -F 'Amount: ' '{print $2}')
-DIPS=$(echo "$INPUT_DATA" | awk -F 'Dip: ' '{print $2}' | awk -F '%' '{print $1}')
-SPREADS=$(echo "$INPUT_DATA" | awk -F 'Spread: ' '{print $2}' | awk -F '%' '{print $1}')
-
-# find top values
-TOP_PRICE_MOVEMENT_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$PRICE_MOVEMENTS") | sort -k2 -nr | head -n 1)
-TOP_VOLUME_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$VOLUMES") | sort -k2 -nr | head -n 1)
-TOP_AMOUNT_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$AMOUNTS") | sort -k2 -nr | head -n 1)
-TOP_SPREAD_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$SPREADS") | sort -k2 -nr | head -n 1)
-TOP_DIP_PAIRS=$(paste -d' ' <(echo "$PAIRS") <(echo "$DIPS") | sort -k2 -n | head -n 1)
-
 # format and display output
 {
-  echo "Market.................: $ACTIVE_MARKETS
+  echo "Market.................: $ACTIVE_MARKET_PAIRS
 Active.................: $DIP_ACTIVE_FILE_COUNT
 Average.Dip............: $DIP_ACTIVE_FILE_AVERAGE_DIP%
 Average.Spread.........: $DIP_ACTIVE_FILE_AVERAGE_SPREAD%
 Average.Price.Movement.: $DIP_ACTIVE_FILE_A_PRICE_MOVEMENT%
 Average.Profit.........: $DIP_ACTIVE_FILE_AVERAGE_PROFIT%
-Top.Price.Movement.....: $TOP_PRICE_MOVEMENT_PAIRS
-Top.Volume.............: $TOP_VOLUME_PAIRS
-Top.Amount.............: $TOP_AMOUNT_PAIRS
-Top.Spread.............: $TOP_SPREAD_PAIRS%
-Top.Dip................: $TOP_DIP_PAIRS%
+Top.Profit.............: $DIP_ACTIVE_TOP_PROFIT%
+Top.Price.Movement.....: $SPREAD_TOP_MARKET $SPREAD_TOP_MARKET_AMOUNT
+Top.Volume.............: $DIP_TOP_VOLUME_MARKET $DIP_TOP_VOLUME_AMOUNT
+Top.Amount.............: $DIP_TOP_AMOUNT_MARKET $DIP_TOP_AMOUNT_AMOUNT
+Top.Spread.............: $SPREAD_TOP_MARKET $SPREAD_TOP_MARKET_AMOUNT%
+Top.Dip................: $DIP_TOP_MARKET $DIP_TOP_MARKET_AMOUNT%
 Last_Order.txid........: $TX_ID_LAST $TXID_AGE"
 } >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data
 
