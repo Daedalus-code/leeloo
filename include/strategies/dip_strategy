@@ -365,11 +365,11 @@ DIP_ACTIVE_TOP_PRICE_MOVEMENT="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $20 }' |
 # calculate average price movement
 DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="$(echo "$DIP_ACTIVE_FILE_PRICE_MOVEMENT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 # top price movement data
-DIP_TOP_ACTIVE_SPREAD="$(grep -- "$DIP_ACTIVE_TOP_PRICE_MOVEMENT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+DIP_TOP_ACTIVE_PRICE_MOVEMENT="$(grep -- "$DIP_ACTIVE_TOP_PRICE_MOVEMENT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 # top price movement market
-SPREAD_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $1}' | tr -d ':')"
+PRICE_MOVEMENT_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_PRICE_MOVEMENT" | awk '{ print $1}' | tr -d ':')"
 # top price movement amount
-SPREAD_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $20}')"
+PRICE_MOVEMENT_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_PRICE_MOVEMENT" | awk '{ print $20}')"
 
 ################################################################################
 
@@ -1137,7 +1137,7 @@ Average.Spread.........: $DIP_ACTIVE_FILE_AVERAGE_SPREAD%
 Average.Price.Movement.: $DIP_ACTIVE_FILE_A_PRICE_MOVEMENT%
 Average.Profit.........: $DIP_ACTIVE_FILE_AVERAGE_PROFIT%
 Top.Profit.............: $PROFIT_TOP_MARKET $PROFIT_TOP_MARKET_AMOUNT
-Top.Price.Movement.....: $SPREAD_TOP_MARKET $SPREAD_TOP_MARKET_AMOUNT
+Top.Price.Movement.....: $PRICE_MOVEMENT_TOP_MARKET $PRICE_MOVEMENT_TOP_MARKET_AMOUNT
 Top.Volume.............: $DIP_TOP_VOLUME_MARKET $DIP_TOP_VOLUME_AMOUNT
 Top.Amount.............: $DIP_TOP_AMOUNT_MARKET $DIP_TOP_AMOUNT_AMOUNT
 Top.Spread.............: $SPREAD_TOP_MARKET $SPREAD_TOP_MARKET_AMOUNT
