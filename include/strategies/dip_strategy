@@ -322,7 +322,7 @@ DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT
 # top dip data
 DIP_TOP_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_TOP_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 # top dip market
-DIP_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':')"
+DIP_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':' | awk '{ printf "%.2f\n", $1 }')"
 # top dip amount
 DIP_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}')"
 
@@ -343,10 +343,12 @@ SPREAD_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $16}')"
 
 ################################################################################
 
+CAT_POOL_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
+
 # total active profit
-DIP_ACTIVE_FILE_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+DIP_ACTIVE_FILE_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
 # top active profit
-DIP_ACTIVE_TOP_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | tail -1)"
+DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | tail -1)"
 # top profit data
 DIP_TOP_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
 # top profit market
@@ -355,6 +357,14 @@ PROFIT_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_PROFIT" | awk '{ print $2}' | tr -d '
 PROFIT_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_PROFIT" | awk '{ print $5}')"
 # calculate average profit
 DIP_ACTIVE_FILE_AVERAGE_PROFIT="$(echo "$DIP_ACTIVE_FILE_PROFIT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+# total order time
+DIP_ACTIVE_FILE_TOTAL_TIME="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $NF }' | awk -Fh '{ print $1 }' | awk '{ SUM += $1} END { print SUM }')"
+# calculate average order age
+DIP_ACTIVE_FILE_AVERAGE_TIME="$(echo "$DIP_ACTIVE_FILE_TOTAL_TIME/$DIP_ACTIVE_FILE_PROFIT" | bc -l)"
+# calculate average order age into seconds
+DIP_ACTIVE_FILE_AVERAGE_SECONDS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_TIME*3600" | bc 2>/dev/null)"
+# average order age
+DIP_ACTIVE_FILE_AVERAGE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_ACTIVE_FILE_AVERAGE_SECONDS/3600")) $(("$DIP_ACTIVE_FILE_AVERAGE_SECONDS%3600/60")) $(("$DIP_ACTIVE_FILE_AVERAGE_SECONDS%60")))
 
 ################################################################################
 
@@ -1136,7 +1146,8 @@ Average.Dip............: $DIP_ACTIVE_FILE_AVERAGE_DIP%
 Average.Spread.........: $DIP_ACTIVE_FILE_AVERAGE_SPREAD%
 Average.Price.Movement.: $DIP_ACTIVE_FILE_A_PRICE_MOVEMENT%
 Average.Profit.........: $DIP_ACTIVE_FILE_AVERAGE_PROFIT%
-Top.Profit.............: $PROFIT_TOP_MARKET $PROFIT_TOP_MARKET_AMOUNT
+Average.Order.Age......: $DIP_ACTIVE_FILE_AVERAGE_AGE
+Top.Potential.Profit...: $PROFIT_TOP_MARKET $PROFIT_TOP_MARKET_AMOUNT
 Top.Price.Movement.....: $PRICE_MOVEMENT_TOP_MARKET $PRICE_MOVEMENT_TOP_MARKET_AMOUNT
 Top.Volume.............: $DIP_TOP_VOLUME_MARKET $DIP_TOP_VOLUME_AMOUNT
 Top.Amount.............: $DIP_TOP_AMOUNT_MARKET $DIP_TOP_AMOUNT_AMOUNT
