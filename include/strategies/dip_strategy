@@ -322,9 +322,9 @@ DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT
 # top dip data
 DIP_TOP_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_TOP_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 # top dip market
-DIP_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':' | awk '{ printf "%.2f\n", $1 }')"
+DIP_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':')"
 # top dip amount
-DIP_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}')"
+DIP_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 
@@ -364,7 +364,7 @@ DIP_ACTIVE_FILE_AVERAGE_TIME="$(echo "$DIP_ACTIVE_FILE_TOTAL_TIME/$DIP_ACTIVE_FI
 # calculate average order age into seconds
 DIP_ACTIVE_FILE_AVERAGE_SECONDS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_TIME*86400" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 # calculate average order age into days
-DIP_ACTIVE_FILE_AVERAGE_DAYS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_TIME/24" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+DIP_ACTIVE_FILE_AVERAGE_DAYS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SECONDS" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_AVERAGE_SECONDS="0"
@@ -1159,7 +1159,7 @@ Top.Price.Movement.....: $PRICE_MOVEMENT_TOP_MARKET $PRICE_MOVEMENT_TOP_MARKET_A
 Top.Volume.............: $DIP_TOP_VOLUME_MARKET $DIP_TOP_VOLUME_AMOUNT
 Top.Amount.............: $DIP_TOP_AMOUNT_MARKET $DIP_TOP_AMOUNT_AMOUNT
 Top.Spread.............: $SPREAD_TOP_MARKET $SPREAD_TOP_MARKET_AMOUNT
-Top.Dip................: $DIP_TOP_MARKET $DIP_TOP_MARKET_AMOUNT
+Top.Dip................: $DIP_TOP_MARKET $DIP_TOP_MARKET_AMOUNT%
 Last_Order.txid........: $TX_ID_LAST $TXID_AGE"
 } >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data
 
