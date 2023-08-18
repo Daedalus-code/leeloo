@@ -357,12 +357,14 @@ PROFIT_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_PROFIT" | awk '{ print $2}' | tr -d '
 PROFIT_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_PROFIT" | awk '{ print $5}')"
 # calculate average profit
 DIP_ACTIVE_FILE_AVERAGE_PROFIT="$(echo "$DIP_ACTIVE_FILE_PROFIT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-# total order time
-DIP_ACTIVE_FILE_TOTAL_TIME="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $NF }' | awk -Fh '{ print $1 }' | awk '{ SUM += $1} END { print SUM }')"
+# total order time (hours)
+DIP_ACTIVE_FILE_TOTAL_TIME="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $NF }' | awk -Fh '{ print $1 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.0f\n", $1 }')"
 # calculate average order age
 DIP_ACTIVE_FILE_AVERAGE_TIME="$(echo "$DIP_ACTIVE_FILE_TOTAL_TIME/$DIP_ACTIVE_FILE_PROFIT" | bc -l 2>/dev/null)"
 # calculate average order age into seconds
-DIP_ACTIVE_FILE_AVERAGE_SECONDS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_TIME*3600" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+DIP_ACTIVE_FILE_AVERAGE_SECONDS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_TIME*86400" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+# calculate average order age into days
+DIP_ACTIVE_FILE_AVERAGE_DAYS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_TIME/24" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SECONDS" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_AVERAGE_SECONDS="0"
@@ -1151,7 +1153,7 @@ Average.Dip............: $DIP_ACTIVE_FILE_AVERAGE_DIP%
 Average.Spread.........: $DIP_ACTIVE_FILE_AVERAGE_SPREAD%
 Average.Price.Movement.: $DIP_ACTIVE_FILE_A_PRICE_MOVEMENT%
 Average.Profit.........: $DIP_ACTIVE_FILE_AVERAGE_PROFIT%
-Average.Order.Age......: $DIP_ACTIVE_FILE_AVERAGE_AGE
+Average.Order.Age......: $DIP_ACTIVE_FILE_AVERAGE_AGE $DIP_ACTIVE_FILE_AVERAGE_DAYS Day(s)
 Top.Potential.Profit...: $PROFIT_TOP_MARKET $PROFIT_TOP_MARKET_AMOUNT
 Top.Price.Movement.....: $PRICE_MOVEMENT_TOP_MARKET $PRICE_MOVEMENT_TOP_MARKET_AMOUNT
 Top.Volume.............: $DIP_TOP_VOLUME_MARKET $DIP_TOP_VOLUME_AMOUNT
