@@ -395,7 +395,11 @@ DIP_TOP_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $23 }' | sort -n
 # top volume market
 DIP_TOP_VOLUME_MARKET="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':')"
 # top volume amount
-DIP_TOP_VOLUME_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $23}' | tr -d '%' | awk '{ printf "%.9f\n", $1 }')"
+DIP_TOP_VOLUME_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $23}' | awk '{ printf "%.0f\n", $1 }')"
+
+if [[ "$DIP_TOP_VOLUME_AMOUNT" -lt "0" ]] &>/dev/null; then
+  DIP_TOP_VOLUME_AMOUNT=">0"
+fi
 
 ################################################################################
 
@@ -404,7 +408,11 @@ DIP_TOP_ACTIVE_AMOUNT="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $26 }' | sort -n
 # top amount market
 DIP_TOP_AMOUNT_MARKET="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':')"
 # top amount amount
-DIP_TOP_AMOUNT_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26}' | tr -d '%' | awk '{ printf "%.9f\n", $1 }')"
+DIP_TOP_AMOUNT_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26}' | awk '{ printf "%.0f\n", $1 }')"
+
+if [[ "$DIP_TOP_AMOUNT_AMOUNT" -lt "0" ]] &>/dev/null; then
+  DIP_TOP_AMOUNT_AMOUNT=">0"
+fi
 
 ################################################################################
 
@@ -1156,8 +1164,8 @@ Average.Potential.Profit.: ${DIP_ACTIVE_FILE_AVERAGE_PROFIT:?}%
 Average.Order.Age........: $DIP_ACTIVE_FILE_AVERAGE_AGE $DIP_ACTIVE_FILE_AVERAGE_DAYS Days
 Top.Potential.Profit.....: $PROFIT_TOP_MARKET ${PROFIT_TOP_MARKET_AMOUNT:?}%
 Top.Price.Movement.......: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
-Top.Volume...............: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?}%
-Top.Amount...............: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?}%
+Top.Volume...............: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?}
+Top.Amount...............: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?}
 Top.Spread...............: $SPREAD_TOP_MARKET ${SPREAD_TOP_MARKET_AMOUNT:?}%
 Top.Dip..................: $DIP_TOP_MARKET ${DIP_TOP_MARKET_AMOUNT:?}%
 Last_Order.txid..........: $TX_ID_LAST $TXID_AGE"
