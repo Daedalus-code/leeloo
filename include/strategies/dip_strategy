@@ -465,7 +465,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     VOLUME_PERCENTAGE=$(echo "$line" | awk '{print $6}' | sed 's/%//')
     # if the symbol matches the specified market and if the spread, dip, and volume meet the criteria
     if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] && (($(echo "$DIP < -$DIP_MIN_DIP" | bc -l 2>/dev/null))) && (($(echo "$VOLUME_PERCENTAGE > $DIP_MIN_VOLUME" | bc -l 2>/dev/null))); then
-      if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]]; then
+      if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]] &>/dev/null; then
         # spread
         SPREAD=$(bc -l <<<"scale=2; ($ASK - $BID) / $BID * 100" 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
         if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l))); then
@@ -477,7 +477,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
           # if the symbol meets the potential buy criteria
           if (($(echo "$PRICE_MOVEMENT > 0" | bc -l 2>/dev/null))); then
-            if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]]; then
+            if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
               # potential symbol, bid, ask, last
               POTENTIAL_BUY_SYMBOL="$SYMBOL"
               POTENTIAL_BUY_BID="$BID"

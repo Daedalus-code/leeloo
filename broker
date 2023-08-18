@@ -95,15 +95,15 @@ case $CHOICE in
     VALID_OPTIONS=()
 
     # poloniex option
-    if [[ -n "$API_POLONIEX_KEY" ]] && [[ -n "$API_POLONIEX_SECRET" ]]; then
+    if [[ -n "$API_POLONIEX_KEY" ]] && [[ -n "$API_POLONIEX_SECRET" ]] &>/dev/null; then
       VALID_OPTIONS+=("1" "Poloniex")
     fi
     # southxchange option
-    if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]]; then
+    if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]] &>/dev/null; then
       VALID_OPTIONS+=("2" "SouthXchange")
     fi
     # stakecube option
-    if [[ -n "$API_STAKECUBE_KEY" ]] && [[ -n "$API_STAKECUBE_SECRET" ]]; then
+    if [[ -n "$API_STAKECUBE_KEY" ]] && [[ -n "$API_STAKECUBE_SECRET" ]] &>/dev/null; then
       VALID_OPTIONS+=("3" "StakeCube")
     fi
 
@@ -808,12 +808,12 @@ $MARKET_RESULT"
     VALID_OPTIONS=()
 
     # poloniex option
-    if [[ -n "$API_POLONIEX_KEY" ]] && [[ -n "$API_POLONIEX_SECRET" ]]; then
+    if [[ -n "$API_POLONIEX_KEY" ]] && [[ -n "$API_POLONIEX_SECRET" ]] &>/dev/null; then
       VALID_OPTIONS+=("P" "Poloniex")
     fi
 
     # southxchange option
-    if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]]; then
+    if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]] &>/dev/null; then
       VALID_OPTIONS+=("S" "SouthXchange")
     fi
 
@@ -1631,130 +1631,127 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     key_secret_set
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
+      if [[ -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
 
-      # position n
-      POS_N_STATUS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+        # position n
+        POS_N_STATUS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-      FILE_TIME="$(ls -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $8 }')"
-      if [[ -z "$FILE_TIME" ]] &>/dev/null; then
-        FILE_TIME="00:00"
+        FILE_TIME="$(ls -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $8 }')"
+        if [[ -z "$FILE_TIME" ]] &>/dev/null; then
+          FILE_TIME="00:00"
+        fi
+
+        # function to calculate time since last edit
+        get_time_since_last_edit() {
+          LASTEDIT=$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null)
+          CURRENT_TIME=$(date +%s)
+          echo "$((CURRENT_TIME - LASTEDIT))"
+        }
+
+        # initialize variables
+        MAX_AGE=5
+        PROGRESS=0
+        START_TIME=$(date +%s)
+
+        if [[ "$POS_N_STATUS" -ge "$MAX_AGE" || ! -f "${SYS_DIR:?}"/robot/pos_n ]] &>/dev/null; then
+          # output position count
+          echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
+        fi
+
+        # read the expected number of positions from the pos_n file
+        EXPECTED_POSITIONS=$(cat "${SYS_DIR:?}"/robot/pos_n 2>/dev/null)
+
+        if [[ "$POS_N_STATUS" -lt "$MAX_AGE" ]] &>/dev/null; then
+          # create a background subshell to display the dialog progress bar
+          (
+            # loop until the pool file is old enough (more than 5 seconds)
+            until [[ $(get_time_since_last_edit) -gt $MAX_AGE ]] &>/dev/null; do
+
+              BROKER_POSITIONS="$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')"
+              BROKER_POSITIONS=$((BROKER_POSITIONS - 1)) # subtract 1 for header
+
+              # if zero
+              if [[ -z "$BROKER_POSITIONS" ]] &>/dev/null; then
+                BROKER_POSITIONS="0"
+              fi
+
+              # calculate progress based on the expected position count
+              PROGRESS=$((BROKER_POSITIONS * 100 / EXPECTED_POSITIONS))
+
+              # max progress
+              if [[ "$PROGRESS" -ge "99" ]] &>/dev/null; then
+                PROGRESS="100"
+              fi
+
+              # display the progress using dialog
+              echo "$PROGRESS" # print the progress value for the dialog to read
+              sleep 1
+            done
+          ) | dialog --title "Strategy Positions" --gauge "Updating positions, please wait." 6 50
+        fi
+
+        ########################################################################
+
+        DURATIONS_FILE="durations.txt"
+        TOTAL_SECONDS=0
+
+        # fetch the list of time durations
+        cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $NF }' | egrep -v "N/A|Age" >"$DURATIONS_FILE"
+        while IFS=: read -r HOURS MINUTES SECONDS; do
+          HOURS=$(echo "$HOURS" | tr -d 'h')
+          MINUTES=$(echo "$MINUTES" | tr -d 'm')
+          SECONDS=$(echo "$SECONDS" | tr -d 's')
+          TOTAL_SECONDS=$((TOTAL_SECONDS + (HOURS * 3600) + (MINUTES * 60) + SECONDS))
+        done <"$DURATIONS_FILE"
+
+        OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
+
+        if [[ "$(echo "$OPEN_COUNT" | grep '[-]' 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+          OPEN_COUNT="0"
+        fi
+
+        OPEN_TOTAL_SECONDS="$(echo "$TOTAL_SECONDS/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+        if [[ -z "$OPEN_TOTAL_SECONDS" ]] &>/dev/null; then
+          OPEN_TOTAL_SECONDS="0"
+        fi
+        OPEN_TOTAL_AGE=$(printf '%dh:%dm:%ds\n' $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%60")))
+        OPEN_TOTAL_AGE_DAYS="$(echo "$OPEN_TOTAL_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+        OPEN_PERCENTAGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $5 }' | grep -v "Result" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+        OPEN_PERCENTAGE_AVERAGE="$(echo "$OPEN_PERCENTAGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+        WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+        LENGTH="$(echo "$(tail -"$LOG_LENGTH" "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -l | awk '{ print $1 }')+4" | bc 2>/dev/null)"
+
+        if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+          LOG_LENGTH="7"
+        fi
+        if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+          LENGTH="$LOG_LENGTH"
+        fi
+
+        if [[ -z "$WIDTH" ]] &>/dev/null; then
+          WIDTH="68"
+        fi
+        if [[ "$WIDTH" -lt "68" ]] &>/dev/null; then
+          WIDTH="68"
+        fi
+
+        display_result() {
+          dialog --title "$FILE_TIME :: Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
+            --no-collapse \
+            --keep-window \
+            --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+        }
+
+        RESULT="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
+        if [[ -z "$RESULT" ]] &>/dev/null; then
+          RESULT="No data"
+        fi
+        display_result 2>/dev/null
+      else
+        no_key_no_secret
       fi
-
-      # function to calculate time since last edit
-      get_time_since_last_edit() {
-        LASTEDIT=$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool 2>/dev/null)
-        CURRENT_TIME=$(date +%s)
-        echo "$((CURRENT_TIME - LASTEDIT))"
-      }
-
-      output_pos_n() {
-        # output position count
-        echo "$(wc -l "${SYS_DIR:?}"/robot/pool | awk '{ print $1 }')-1" | bc 2>/dev/null >"${SYS_DIR:?}"/robot/pos_n
-      }
-
-      # initialize variables
-      MAX_AGE=5
-      PROGRESS=0
-      START_TIME=$(date +%s)
-
-      if [[ "$POS_N_STATUS" -ge "$MAX_AGE" || ! -f "${SYS_DIR:?}"/robot/pos_n ]] &>/dev/null; then
-        # output position count
-        output_pos_n
-      fi
-
-      # read the expected number of positions from the pos_n file
-      EXPECTED_POSITIONS=$(cat "${SYS_DIR:?}"/robot/pos_n 2>/dev/null)
-
-      if [[ "$POS_N_STATUS" -lt "$MAX_AGE" ]] &>/dev/null; then
-        # create a background subshell to display the dialog progress bar
-        (
-          # loop until the pool file is old enough (more than 5 seconds)
-          until [[ $(get_time_since_last_edit) -gt $MAX_AGE ]]; do
-
-            BROKER_POSITIONS="$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')"
-            BROKER_POSITIONS=$((BROKER_POSITIONS - 1)) # subtract 1 for header
-
-            # if zero
-            if [[ -z "$BROKER_POSITIONS" ]] &>/dev/null; then
-              BROKER_POSITIONS="0"
-            fi
-
-            # calculate progress based on the expected position count
-            PROGRESS=$((BROKER_POSITIONS * 100 / EXPECTED_POSITIONS))
-
-            # max progress
-            if [[ "$PROGRESS" -ge "99" ]] &>/dev/null; then
-              PROGRESS="100"
-            fi
-
-            # display the progress using dialog
-            echo "$PROGRESS" # print the progress value for the dialog to read
-            sleep 1
-          done
-        ) | dialog --title "Strategy Positions" --gauge "Updating positions, please wait." 6 50
-      fi
-
-      ##########################################################################
-
-      DURATIONS_FILE="durations.txt"
-      TOTAL_SECONDS=0
-
-      # fetch the list of time durations
-      cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $NF }' | egrep -v "N/A|Age" >"$DURATIONS_FILE"
-      while IFS=: read -r HOURS MINUTES SECONDS; do
-        HOURS=$(echo "$HOURS" | tr -d 'h')
-        MINUTES=$(echo "$MINUTES" | tr -d 'm')
-        SECONDS=$(echo "$SECONDS" | tr -d 's')
-        TOTAL_SECONDS=$((TOTAL_SECONDS + (HOURS * 3600) + (MINUTES * 60) + SECONDS))
-      done <"$DURATIONS_FILE"
-
-      OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
-
-      if [[ "$(echo "$OPEN_COUNT" | grep '[-]' 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
-        OPEN_COUNT="0"
-      fi
-
-      OPEN_TOTAL_SECONDS="$(echo "$TOTAL_SECONDS/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-      if [[ -z "$OPEN_TOTAL_SECONDS" ]] &>/dev/null; then
-        OPEN_TOTAL_SECONDS="0"
-      fi
-      OPEN_TOTAL_AGE=$(printf '%dh:%dm:%ds\n' $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%60")))
-      OPEN_TOTAL_AGE_DAYS="$(echo "$OPEN_TOTAL_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-      OPEN_PERCENTAGE="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | awk '{ print $5 }' | grep -v "Result" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
-      OPEN_PERCENTAGE_AVERAGE="$(echo "$OPEN_PERCENTAGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-      WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
-      LENGTH="$(echo "$(tail -"$LOG_LENGTH" "${SYS_DIR:?}"/robot/pool 2>/dev/null | wc -l | awk '{ print $1 }')+4" | bc 2>/dev/null)"
-
-      if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
-        LOG_LENGTH="7"
-      fi
-      if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
-        LENGTH="$LOG_LENGTH"
-      fi
-
-      if [[ -z "$WIDTH" ]] &>/dev/null; then
-        WIDTH="68"
-      fi
-      if [[ "$WIDTH" -lt "68" ]] &>/dev/null; then
-        WIDTH="68"
-      fi
-
-      display_result() {
-        dialog --title "$FILE_TIME :: Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
-          --no-collapse \
-          --keep-window \
-          --msgbox "$RESULT" "$LENGTH" "$WIDTH"
-      }
-
-      RESULT="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
-      if [[ -z "$RESULT" ]] &>/dev/null; then
-        RESULT="No data"
-      fi
-      display_result 2>/dev/null
-    else
-      no_key_no_secret
     fi
 
     ;;
