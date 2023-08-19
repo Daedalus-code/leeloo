@@ -119,14 +119,21 @@ function amount_to_buy_sell() {
 
 ################################################################################
 
-CAT_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+function cat_active_target() {
+  CAT_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+  CAT_TARGET_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+}
+
+# cat active, target data
+cat_active_target
 
 ################################################################################
 
 # target data for both target and active
 function target_data() {
 
-  CAT_TARGET_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+  # cat active, target data
+  cat_active_target
 
   # use latest target
   if [[ "$TARGET_ACTIVE" == "TARGET" ]] &>/dev/null; then
