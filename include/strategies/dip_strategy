@@ -429,6 +429,8 @@ PRICE_MOVEMENT_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_PRICE_MOVEMENT" | awk 
 DIP_TOP_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $23 }' | sort -n | tail -1)"
 # top volume market
 DIP_TOP_VOLUME_MARKET="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':')"
+# top volume reference
+DIP_TOP_VOLUME_LISTING="$(echo "$DIP_TOP_VOLUME_MARKET" | awk -F/ '{ print $1 }')"
 # top volume amount
 DIP_TOP_VOLUME_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $23}' | awk '{ printf "%.0f\n", $1 }')"
 
@@ -442,6 +444,8 @@ fi
 DIP_TOP_ACTIVE_AMOUNT="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $26 }' | sort -n | tail -1)"
 # top amount market
 DIP_TOP_AMOUNT_MARKET="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':')"
+# top amount reference
+DIP_TOP_AMOUNT_LISTING="$(echo "$DIP_TOP_VOLUME_MARKET" | awk -F/ '{ print $1 }')"
 # top amount amount
 DIP_TOP_AMOUNT_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26}' | awk '{ printf "%.0f\n", $1 }')"
 
@@ -1209,8 +1213,8 @@ Average.Order.Age........: $DIP_ACTIVE_FILE_AVERAGE_AGE $DIP_ACTIVE_FILE_AVERAGE
 Top.Potential.Profit.....: $PROFIT_TOP_MARKET ${PROFIT_TOP_MARKET_AMOUNT:?}%
 Lowest.Potential.Profit..: $PROFIT_LOW_MARKET ${PROFIT_LOW_MARKET_AMOUNT:?}%
 Top.Price.Movement.......: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
-Top.Volume...............: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?}
-Top.Amount...............: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?}
+Top.Volume...............: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?} $DIP_TOP_VOLUME_LISTING
+Top.Amount...............: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
 Top.Spread...............: $SPREAD_TOP_MARKET ${SPREAD_TOP_MARKET_AMOUNT:?}%
 Top.Dip..................: $DIP_TOP_MARKET ${DIP_TOP_MARKET_AMOUNT:?}%
 Last_Order.txid..........: $TX_ID_LAST $TXID_AGE"
