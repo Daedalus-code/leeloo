@@ -375,17 +375,6 @@ DIP_ACTIVE_FILE_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{
 
 ################################################################################
 
-# top active profit
-DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | tail -1)"
-# top profit data
-DIP_TOP_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
-# top profit market
-PROFIT_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_PROFIT" | awk '{ print $2}' | tr -d ':')"
-# top profit amount
-PROFIT_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_PROFIT" | awk '{ print $5}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
-
-################################################################################
-
 # lowest active profit
 DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | head -1)"
 # lowest profit data
@@ -394,11 +383,6 @@ DIP_LOW_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"
 PROFIT_LOW_MARKET="$(echo "$DIP_LOW_ACTIVE_PROFIT" | awk '{ print $2}' | tr -d ':')"
 # lowest profit amount
 PROFIT_LOW_MARKET_AMOUNT="$(echo "$DIP_LOW_ACTIVE_PROFIT" | awk '{ print $5}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
-
-################################################################################
-
-# calculate average profit
-DIP_ACTIVE_FILE_AVERAGE_PROFIT="$(echo "$DIP_ACTIVE_FILE_PROFIT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 # total order time (hours)
@@ -473,9 +457,6 @@ if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_DIP" ]] &>/dev/null; then
 fi
 if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" ]] &>/dev/null; then
   DIP_ACTIVE_FILE_AVERAGE_SPREAD="0"
-fi
-if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_PROFIT" ]] &>/dev/null; then
-  DIP_ACTIVE_FILE_AVERAGE_PROFIT="0"
 fi
 
 # specific prices count
@@ -1217,10 +1198,10 @@ Active.Orders............: $DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS
 Average.Dip..............: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}%
 Average.Spread...........: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}%
 Average.Price.Movement...: ${DIP_ACTIVE_FILE_A_PRICE_MOVEMENT:?}%
-Average.Potential.Profit.: ${DIP_ACTIVE_FILE_AVERAGE_PROFIT:?}%
 Average.Order.Age........: $DIP_ACTIVE_FILE_AVERAGE_AGE $DIP_ACTIVE_FILE_AVERAGE_DAYS Days
-Top.Potential.Profit.....: $PROFIT_TOP_MARKET ${PROFIT_TOP_MARKET_AMOUNT:?}%
-Lowest.Potential.Profit..: $PROFIT_LOW_MARKET ${PROFIT_LOW_MARKET_AMOUNT:?}%
+
+Low.Potential.Profit.....: $PROFIT_LOW_MARKET ${PROFIT_LOW_MARKET_AMOUNT:?}%
+
 Top.Price.Movement.......: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
 Top.Volume...............: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?} $DIP_TOP_VOLUME_LISTING
 Top.Amount...............: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
