@@ -512,13 +512,18 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # if the symbol matches the specified market and if the spread, dip, and volume meet the criteria
     if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] && (($(echo "$DIP < -$DIP_MIN_DIP" | bc -l 2>/dev/null))) && (($(echo "$VOLUME_PERCENTAGE > $DIP_MIN_VOLUME" | bc -l 2>/dev/null))); then
       if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]] &>/dev/null; then
+
         # spread
-        SPREAD=$(bc -l <<<"scale=2; ($ASK - $BID) / $BID * 100" 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
+        SPREAD=$(awk -v ask="$ASK" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((ask - bid) / bid * 100) }')
+
         if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l))); then
+
           # price movement ("Thats a good potential! --80s broker, New York)
-          PRICE_MOVEMENT=$(bc -l <<<"scale=2; ($LAST - $BID) / $BID * 100" 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
+          PRICE_MOVEMENT=$(awk -v last="$LAST" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
+
           # volume percentage (configuration)
           VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
+
           # create market file
           echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
           # if the symbol meets the potential buy criteria
