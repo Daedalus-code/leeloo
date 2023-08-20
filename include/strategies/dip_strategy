@@ -645,7 +645,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           DIP_BUY_AMOUNT_LISTING="$DIP_BUY_AMOUNT_LISTING"
           # data output
           DIP_DCA_DATA="Disabled"
-        else
+        elif [[ -n "$DIP_DCA" ]] &>/dev/null; then
           # default with dca, ruled by configuration
           DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_LISTING_DCA+$DIP_BUY_AMOUNT_LISTING" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # log dca output
@@ -1265,10 +1265,10 @@ fi
 ################################################################################
 
 # if false
-if [[ "$DIP_DCA" == "false" ]] &>/dev/null; then
+if [[ "$DIP_DCA" == "false" || -z "$DIP_DCA" ]] &>/dev/null; then
   # data output
   DIP_DCA_DATA="Disabled"
-else
+elif [[ -n "$DIP_DCA" ]] &>/dev/null; then
   # data output
   DIP_DCA_DATA="Enabled ${DIP_DCA:?}%"
 fi
