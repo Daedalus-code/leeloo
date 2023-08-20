@@ -370,6 +370,9 @@ DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $7 }'
 # order age (seconds)
 DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+# order spread
+DIP_LATEST_ORDER_SPREAD="$(grep "$DIP_LATEST_ORDER_LISTING/$DIP_LATEST_ORDER_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }')"
+DIP_OLDEST_ORDER_SPREAD="$(grep "$DIP_OLDEST_ORDER_LISTING/$DIP_OLDEST_ORDER_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }')"
 # order age
 DIP_LATEST_ORDER_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_LATEST_ORDER_SECONDS/3600")) $(("$DIP_LATEST_ORDER_SECONDS%3600/60")) $(("$DIP_LATEST_ORDER_SECONDS%60")))
 DIP_OLDEST_ORDER_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_OLDEST_ORDER_SECONDS/3600")) $(("$DIP_OLDEST_ORDER_SECONDS%3600/60")) $(("$DIP_OLDEST_ORDER_SECONDS%60")))
@@ -1230,8 +1233,8 @@ Top.Volume.............: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?} $DIP_
 Top.Amount.............: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
 Top.Spread.............: $SPREAD_TOP_MARKET ${SPREAD_TOP_MARKET_AMOUNT:?}%
 Top.Dip................: $DIP_TOP_MARKET ${DIP_TOP_MARKET_AMOUNT:?}%
-Old_Order.txid.........: $DIP_OLDEST_ORDER_ID $DIP_OLDEST_ORDER_AGE ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_TYPE
-Last_Order.txid........: $DIP_LATEST_ORDER_ID $DIP_LATEST_ORDER_AGE ${DIP_LATEST_ORDER_LISTING:?}/${DIP_LATEST_ORDER_REFERENCE:?} $DIP_LATEST_ORDER_TYPE"
+Old_Order.txid.........: $DIP_OLDEST_ORDER_ID $DIP_OLDEST_ORDER_AGE ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_TYPE $DIP_OLDEST_ORDER_SPREAD
+Last_Order.txid........: $DIP_LATEST_ORDER_ID $DIP_LATEST_ORDER_AGE ${DIP_LATEST_ORDER_LISTING:?}/${DIP_LATEST_ORDER_REFERENCE:?} $DIP_LATEST_ORDER_TYPE $DIP_LATEST_ORDER_SPREAD"
 } >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data
 
 ################################################################################
