@@ -351,12 +351,13 @@ DIP_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}' | tr -d
 
 ################################################################################
 
+# order data
 DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | tail -1)"
 DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | head -1)"
 
 # order id
-DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" | awk '{ print $1 }')"
-DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $1 }')"
+DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" | awk '{ print $1 }' | tr -d ':')"
+DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $1 }' | tr -d ':')"
 # order type
 DIP_LATEST_ORDER_TYPE="$(echo "$DIP_OLDEST_ORDER_DATA" | awk '{ print $2 }')"
 DIP_OLDEST_ORDER_TYPE="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $2 }')"
