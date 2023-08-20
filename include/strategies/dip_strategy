@@ -645,15 +645,13 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           DIP_BUY_AMOUNT_LISTING_DCA="$(echo "$DIP_DCA_NUM*$LISTING_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY Total: $LISTING_BALANCE $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk '!a[$1]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
-        fi
-
-        # if n
-        if [[ -n "$DIP_DCA" ]] &>/dev/null; then
           # log dca output
           DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: Including ${DIP_DCA_RAW:?}% extra from balance! +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY"
           echo "$DIP_TARGET_DCA_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         fi
       fi
+
+      ##########################################################################
 
       # update active file and add amount(+balance) to buy & sell at end
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) | Amount: $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
@@ -876,6 +874,15 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # leftover sell amount
   DIP_LEFTOVER_SOLD="$(echo "$DIP_TARGET_AMOUNT-$DIP_TOTAL_SOLD_SUM" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  # include extra if dca is enabled
+  if [[ -n "$DIP_DCA" ]] &>/dev/null; then
+    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -gt "0" ]] &>/dev/null; then
+      # include extra if dca is found
+      DIP_LEFTOVER_DCA="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $10 }' | tr -d '+')"
+      DIP_LEFTOVER_SOLD="$(echo "$DIP_LEFTOVER_SOLD+$DIP_LEFTOVER_DCA" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+    fi
+  fi
 
   # if zero
   if [[ -z "$DIP_LEFTOVER_SOLD" ]] &>/dev/null; then
