@@ -622,8 +622,40 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       fi
 
-      # update active file and add amount to buy at end
+      ##########################################################################
+
+      # if order already has balance
+      if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+
+        # if zero
+        if [[ -z "$DIP_DCA" ]] &>/dev/null; then
+          # default
+          DIP_DCA="false"
+        elif [[ -n "$DIP_DCA" ]] &>/dev/null; then
+          # ruled by configuration
+          DIP_DCA_RAW="$DIP_DCA"
+          DIP_DCA="$(echo "$DIP_DCA/100" | bc -l 2>/dev/null)"
+          # include balance already existing (dollar cost average)
+          DIP_BUY_AMOUNT_LISTING_DCA="$(echo "$DIP_DCA*$LISTING_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+        fi
+
+        # if false
+        if [[ "$DIP_DCA" == "false" ]] &>/dev/null; then
+          # default, no dca
+          DIP_BUY_AMOUNT_LISTING="$DIP_BUY_AMOUNT_LISTING"
+        else
+          # default with dca, ruled by configuration
+          DIP_BUY_AMOUNT_LISTING="$DIP_BUY_AMOUNT_LISTING_DCA"
+          # log dca output
+          DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: ${DIP_DCA_RAW:?}% Extra balance being sold! +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY"
+          echo "$DIP_TARGET_DCA_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        fi
+      fi
+
+      # update active file and add amount(+balance) to buy & sell at end
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null) | Amount: $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null
+
+      ##########################################################################
 
       # old order id (buy)
       DIP_ORDER_ID="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':')"
@@ -753,6 +785,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         cancelOrder "$DIP_OLDEST_ORDER_ID" 2>>"${LOG_ERROR:?}"
       fi
     fi
+
+    ############################################################################
 
     # if any orders with reference, listing currency does not exist
     if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
