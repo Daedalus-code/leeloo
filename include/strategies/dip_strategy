@@ -366,9 +366,12 @@ DIP_OLDEST_ORDER_LISTING="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $6 }')"
 # order reference
 DIP_LATEST_ORDER_REFERENCE="$(echo "$DIP_OLDEST_ORDER_DATA" | awk '{ print $7 }')"
 DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $7 }')"
+# order age (seconds)
+DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 # order age
-DIP_LATEST_ORDER_AGE="$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep "$DIP_LATEST_ORDER_LISTING/$DIP_LATEST_ORDER_REFERENCE" | awk '{ print $NF }')"
-DIP_OLDEST_ORDER_AGE="$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool 2>/dev/null | grep "$DIP_OLDEST_ORDER_LISTING/$DIP_OLDEST_ORDER_REFERENCE" | awk '{ print $NF }')"
+DIP_LATEST_ORDER_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_LATEST_ORDER_SECONDS/3600")) $(("$DIP_LATEST_ORDER_SECONDS%3600/60")) $(("$DIP_LATEST_ORDER_SECONDS%60")))
+DIP_OLDEST_ORDER_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_OLDEST_ORDER_SECONDS/3600")) $(("$DIP_OLDEST_ORDER_SECONDS%3600/60")) $(("$DIP_OLDEST_ORDER_SECONDS%60")))
 
 ################################################################################
 
