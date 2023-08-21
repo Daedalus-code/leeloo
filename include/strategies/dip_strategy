@@ -604,6 +604,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
     # target variable empty
     POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+    # no profit output (log)
+    DIP_NO_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No profit! Not a target anymore!"
+    echo "$DIP_NO_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
   ##############################################################################
@@ -918,8 +921,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # listing balance, available (without decimal)
   DIP_LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-  # listing balance, available (without decimal)
-  DIP_REFERENCE_BALANCE_CHECK="$(echo "$REFERENCE_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   # listing balance, deposited (without decimal)
   DIP_LISTING_BALANCE_D_CHECK="$(echo "$LISTING_BALANCE_DEPOSITED" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
@@ -1161,20 +1162,17 @@ if [[ "$DIP_TOTAL_ORDER_CHECK" -eq "0" ]] &>/dev/null; then
   if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
     # if available balance is empty (listing)
     if [[ "$DIP_LISTING_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
-      # if available balance is empty (reference)
-      if [[ "$DIP_REFERENCE_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
-        # if selling order is older than n seconds
-        if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*10" | bc 2>/dev/null)" ]] &>/dev/null; then
-          # if buying order is older than n seconds
-          if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*10" | bc 2>/dev/null)" ]] &>/dev/null; then
-            # if target does not exist in orders
-            if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
-              # remove ghost (active) order
-              echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-              # ghost output (log)
-              DIP_GHOST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Ghost: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_AGE_OUTPUT"
-              echo "$DIP_GHOST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-            fi
+      # if selling order is older than n seconds
+      if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*10" | bc 2>/dev/null)" ]] &>/dev/null; then
+        # if buying order is older than n seconds
+        if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*10" | bc 2>/dev/null)" ]] &>/dev/null; then
+          # if target does not exist in orders
+          if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+            # remove ghost (active) order
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+            # ghost output (log)
+            DIP_GHOST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Ghost: Not a target anymore! Profit: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
+            echo "$DIP_GHOST_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           fi
         fi
       fi
