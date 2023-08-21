@@ -372,6 +372,15 @@ DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $7 }'
 # order age (seconds)
 DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+# if zero
+if [[ -z "$DIP_LATEST_ORDER_SECONDS" ]] &>/dev/null; then
+  DIP_LATEST_ORDER_SECONDS="0"
+fi
+if [[ -z "$DIP_OLDEST_ORDER_SECONDS" ]] &>/dev/null; then
+  DIP_OLDEST_ORDER_SECONDS="0"
+fi
+
 # order spread
 DIP_LATEST_ORDER_SPREAD="$(grep "$DIP_LATEST_ORDER_LISTING/$DIP_LATEST_ORDER_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }')"
 DIP_OLDEST_ORDER_SPREAD="$(grep "$DIP_OLDEST_ORDER_LISTING/$DIP_OLDEST_ORDER_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }')"
