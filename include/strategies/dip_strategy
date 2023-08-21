@@ -655,6 +655,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY Total: $LISTING_BALANCE $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
           # remove market duplicates
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk '!a[$3]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          # remove listing duplicates
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk -F/ '!a[$1]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
           # log dca output
           DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: $LISTING_CURRENCY has balance already! ($LISTING_BALANCE $LISTING_CURRENCY)"
           echo "$DIP_TARGET_DCA_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
