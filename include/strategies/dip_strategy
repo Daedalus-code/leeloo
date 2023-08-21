@@ -635,7 +635,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           DIP_DCA="false"
         fi
 
-        # if n
+        # if dca enabled
         if [[ -n "$DIP_DCA" ]] &>/dev/null; then
           # ruled by configuration
           DIP_DCA_RAW="$DIP_DCA"
@@ -644,7 +644,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # include old balance, ruled by configuration (dollar cost average)
           DIP_BUY_AMOUNT_LISTING_DCA="$(echo "$DIP_DCA_NUM*$LISTING_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY Total: $LISTING_BALANCE $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk '!a[$1]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          # remove market duplicates
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk '!a[$3]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
           # log dca output
           DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: Including ${DIP_DCA_RAW:?}% extra from balance! +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY"
           echo "$DIP_TARGET_DCA_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -872,7 +873,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_TOTAL_SOLD_SUM="0"
   fi
 
-  # if dca is enabled
+  # if dca enabled
   if [[ -n "$DIP_DCA" ]] &>/dev/null; then
     # if market dca is found
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -gt "0" ]] &>/dev/null; then
@@ -1122,6 +1123,13 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     # sell output (trade history)
     DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_FILE_AGE"
     echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+    # if dca enabled
+    if [[ -n "$DIP_DCA" ]] &>/dev/null; then
+      # remove completed dca
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+    fi
+
     # reset sold file
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
   fi
@@ -1274,7 +1282,7 @@ if [[ "$DIP_DCA" == "false" || -z "$DIP_DCA" ]] &>/dev/null; then
   # data output
   DIP_DCA_DATA="Disabled"
 fi
-# if n
+# if dca enabled
 if [[ -n "$DIP_DCA" ]] &>/dev/null; then
   # data output
   DIP_DCA_DATA="Enabled ${DIP_DCA:?}%"
