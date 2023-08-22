@@ -633,7 +633,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # create market.list
   cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null
   # keep n lines, remove duplicates, remove empty lines, sort
-  echo "$(tail -"$(echo "$DIP_MAX_ORDERS/3.3" | bc 2>/dev/null)" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk '!a[$1]++' | sed '/^$/d' | sort)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk '!a[$1]++' | sed '/^$/d' | sort)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+  # if lines greater than n, reset file
+  if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list | awk '{ print $1 }')" -gt "$(echo "$DIP_MAX_ORDERS/3.3" | bc 2>/dev/null)" ]] &>/dev/null; then
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list &>/dev/null
+  fi
 
   ##############################################################################
 
