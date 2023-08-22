@@ -593,6 +593,13 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   ##############################################################################
 
+  # create market.list
+  cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null
+  # keep n lines, remove duplicates, sort
+  echo "$(sort "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk '!a[$1]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+
+  ##############################################################################
+
   # target data
   TARGET_ACTIVE="TARGET"
   target_data
