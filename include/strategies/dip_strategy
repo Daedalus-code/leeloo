@@ -49,6 +49,8 @@ DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATE
 DIP_MARGIN="$(egrep "DIP_MARGIN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # dca (default false) 100=100%
 DIP_DCA="$(egrep "DIP_DCA=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# disregard reference as targets
+DIP_ALL_IN="$(egrep "DIP_ALL_IN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # dip max age (default 600 seconds)
 DIP_MAX_AGE="$(egrep "DIP_MAX_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # disregard other markets run by other bots
@@ -259,7 +261,7 @@ if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || t
   if [[ "$RANDOM_CLEARED_MARKET" == "1" ]] &>/dev/null; then
     # set the paths for the files
     PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
-    # extract the active markets from the active file
+    # extract the active markets from active file
     ALREADY_ACTIVE_BOTS="$(egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)"
     # filter out markets with found data
     grep -vf <(echo "$ALREADY_ACTIVE_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
@@ -268,15 +270,46 @@ if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || t
   fi
 fi
 
+################################################################################
+
 # disregard already running bots from market (strategies)
 if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   # set the paths for the files
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
   PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
-  # extract the running markets from the robot.log file
+  # extract the running markets from robot.log file
   ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/All|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+")
   # filter out markets with found data
   grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
+  # replace the original prices file with the filtered version
+  mv "${PRICES_FILE}.temp" "$PRICES_FILE"
+fi
+
+################################################################################
+
+# if zero
+if [[ -z "$DIP_ALL_IN" ]] &>/dev/null; then
+  DIP_ALL_IN="0"
+fi
+
+# disregard reference as targets (strategies)
+if [[ "$DIP_ALL_IN" == "0" ]] &>/dev/null; then
+  # set the paths for the files
+  PRICES_FILE_RAW="${LOG_DIR}/leeloo/southxchange/prices"
+  PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
+  # extract the reference markets from prices
+  ALREADY_REFERENCE_MARKETS=$(awk -F'[:/[:blank:]]+' '{ print $2 }' "$PRICES_FILE_RAW" | awk '!a[$0]++')
+  # filter out markets with found data using awk
+  awk -F'[:/[:blank:]]+' -v refs="$ALREADY_REFERENCE_MARKETS" '
+    BEGIN {
+      n = split(refs, ref_arr, "\n");
+      for (i = 1; i <= n; i++) {
+        reference[ref_arr[i]] = 1;
+      }
+    }
+    $1 in reference { next }
+    { print }
+  ' "$PRICES_FILE" >"${PRICES_FILE}.temp"
   # replace the original prices file with the filtered version
   mv "${PRICES_FILE}.temp" "$PRICES_FILE"
 fi
