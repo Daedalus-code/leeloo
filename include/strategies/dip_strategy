@@ -634,8 +634,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null
   # keep n lines, remove duplicates, remove empty lines, sort
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk '!a[$1]++' | sed '/^$/d' | sort)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
-  # if lines greater than n, reset file
-  if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list | awk '{ print $1 }')" -gt "$(echo "$DIP_MAX_ORDERS/3.3" | bc 2>/dev/null)" ]] &>/dev/null; then
+  # if time equal midnight, reset file
+  if [[ "$(date +"%T" | egrep "00:00" | wc -l)" -eq "1" ]] &>/dev/null; then
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list &>/dev/null
   fi
 
@@ -1350,12 +1350,22 @@ if [[ -n "$DIP_DCA" ]] &>/dev/null; then
   DIP_DCA_DATA="Enabled ${DIP_DCA:?}%"
 fi
 
+if [[ "$DIP_ALL_IN" == "0" ]] &>/dev/null; then
+  DIP_ALL_IN_DATA="Disabled"
+else
+  DIP_ALL_IN_DATA="Enabled"
+fi
+
+DIP_DAILY_POTENTIAL="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list | awk '{ print $1 }')"
+
 ################################################################################
 
 # format and display output
 {
   echo "Market.................: $ACTIVE_MARKET_PAIRS
+Daily.Potential........: $DIP_DAILY_POTENTIAL
 DCA....................: $DIP_DCA_DATA
+All.In.................: $DIP_ALL_IN_DATA
 Active.Orders..........: $DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS
 Average.Dip............: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}%
 Average.Spread.........: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}%
