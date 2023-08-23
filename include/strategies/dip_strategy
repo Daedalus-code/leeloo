@@ -375,16 +375,27 @@ DIP_ORDERS_FILE_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/
 
 # total active dip
 DIP_ACTIVE_FILE_DIP="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
-# top active dip
-DIP_ACTIVE_TOP_DIP="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $13 }' | sort -n | head -1)"
+
 # calculate average dip
 DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# top active dip
+DIP_ACTIVE_TOP_DIP="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $13 }' | sort -n | head -1)"
 # top dip data
 DIP_TOP_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_TOP_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 # top dip market
 DIP_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':')"
 # top dip amount
 DIP_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
+
+# low active dip
+DIP_ACTIVE_LOW_DIP="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $13 }' | sort -n | tail -1)"
+# low dip data
+DIP_LOW_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_LOW_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+# low dip market
+DIP_LOW_MARKET="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':')"
+# low dip amount
+DIP_LOW_MARKET_AMOUNT="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 
@@ -1402,12 +1413,13 @@ Average.Dip............: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}%
 Average.Spread.........: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}%
 Average.Price.Movement.: ${DIP_ACTIVE_FILE_A_PRICE_MOVEMENT:?}%
 Average.Order.Age......: $DIP_ACTIVE_FILE_AVERAGE_AGE $DIP_ACTIVE_FILE_AVERAGE_DAYS Days
-Low.Potential.Profit...: $PROFIT_LOW_MARKET ${PROFIT_LOW_MARKET_AMOUNT:?}%
 Top.Price.Movement.....: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
 Top.Volume.............: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?} $DIP_TOP_VOLUME_LISTING
 Top.Amount.............: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
 Top.Spread.............: $SPREAD_TOP_MARKET ${SPREAD_TOP_MARKET_AMOUNT:?}%
+Low.Spread.............: $PROFIT_LOW_MARKET ${PROFIT_LOW_MARKET_AMOUNT:?}%
 Top.Dip................: $DIP_TOP_MARKET ${DIP_TOP_MARKET_AMOUNT:?}%
+Low.Dip................: $DIP_LOW_MARKET ${DIP_LOW_MARKET_AMOUNT:?}%
 Old_Order.txid.........: $DIP_OLDEST_ORDER_ID $DIP_OLDEST_ORDER_AGE ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_TYPE $DIP_OLDEST_ORDER_SPREAD
 Last_Order.txid........: $DIP_LATEST_ORDER_ID $DIP_LATEST_ORDER_AGE ${DIP_LATEST_ORDER_LISTING:?}/${DIP_LATEST_ORDER_REFERENCE:?} $DIP_LATEST_ORDER_TYPE $DIP_LATEST_ORDER_SPREAD"
 } >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data
