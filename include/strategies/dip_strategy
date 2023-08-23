@@ -1350,20 +1350,49 @@ if [[ -n "$DIP_DCA" ]] &>/dev/null; then
   DIP_DCA_DATA="Enabled ${DIP_DCA:?}%"
 fi
 
+################################################################################
+
 if [[ "$DIP_ALL_IN" == "0" ]] &>/dev/null; then
   DIP_ALL_IN_DATA="Disabled"
 else
   DIP_ALL_IN_DATA="Enabled"
 fi
 
-DIP_DAILY_POTENTIAL="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list | awk '{ print $1 }')"
+################################################################################
+
+CAT_MARKET_LIST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null)"
+
+# daily potential
+DIP_DAILY_POTENTIAL="$(echo "$CAT_MARKET_LIST" | wc -l)"
+# if zero
+if [[ -z "$DIP_DAILY_POTENTIAL" ]] &>/dev/null; then
+  DIP_DAILY_POTENTIAL="0"
+fi
+
+# calculate average dip
+DIP_DAILY_DIP_TOTAL="$(echo "$CAT_MARKET_LIST" | awk '{ print $10 }' | awk '{ SUM += $1} END { print SUM }')"
+# if zero
+if [[ -z "$DIP_DAILY_DIP_TOTAL" ]] &>/dev/null; then
+  DIP_DAILY_DIP_TOTAL="0"
+fi
+# daily average dip output
+DIP_DAILY_DIP="$(echo "$DIP_DAILY_DIP_TOTAL/$DIP_DAILY_POTENTIAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# calculate average spread
+DIP_DAILY_SPREAD_TOTAL="$(echo "$CAT_MARKET_LIST" | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
+# if zero
+if [[ -z "$DIP_DAILY_SPREAD_TOTAL" ]] &>/dev/null; then
+  DIP_DAILY_SPREAD_TOTAL="0"
+fi
+# daily average spread output
+DIP_DAILY_SPREAD="$(echo "$DIP_DAILY_SPREAD_TOTAL/$DIP_DAILY_POTENTIAL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 
 # format and display output
 {
   echo "Market.................: $ACTIVE_MARKET_PAIRS
-Daily.Potential........: $DIP_DAILY_POTENTIAL
+Daily.Potential........: $DIP_DAILY_POTENTIAL ${DIP_DAILY_DIP:?}% ${DIP_DAILY_SPREAD:?}%
 DCA....................: $DIP_DCA_DATA
 All.In.................: $DIP_ALL_IN_DATA
 Active.Orders..........: $DIP_ACTIVE_FILE_COUNT/$DIP_MAX_ORDERS
