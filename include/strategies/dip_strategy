@@ -1484,8 +1484,11 @@ DIP_DAILY_SPREAD="$(echo "$DIP_DAILY_SPREAD_TOTAL/$DIP_DAILY_POTENTIAL" | bc -l 
 
 # listing market
 DIP_DUMP_LISTING="$(grep "$LISTING_CURRENCY" "$DELISTED_FILE" | head -1)"
-# listing market order id
-DIP_DUMP_LISTING_ORDER_ID="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
+# if dump listing has data
+if [[ -n "$DIP_DUMP_LISTING" ]] &>/dev/null; then
+  # listing market order id
+  DIP_DUMP_LISTING_ORDER_ID="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
+fi
 
 # if order id found
 if [[ -n "$DIP_DUMP_LISTING_ORDER_ID" ]] &>/dev/null; then
