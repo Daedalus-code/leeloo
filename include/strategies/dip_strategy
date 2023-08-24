@@ -192,7 +192,7 @@ function target_data() {
     # if market dca is found
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -gt "0" ]] &>/dev/null; then
       # extra amount
-      DIP_TARGET_DCA="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $10 }' | tr -d '+')"
+      DIP_TARGET_DCA="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $8 }' | tr -d '+')"
       # increase target amount
       DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_AMOUNT+$DIP_TARGET_DCA" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
     fi
