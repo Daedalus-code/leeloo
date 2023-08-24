@@ -85,6 +85,9 @@ function delisted() {
       sed -i "/^${MARKET//\//\\/}/d" "$PRICES_COPY_FILE"
     done
 
+    # remove duplicates, sort
+    cat "$DELISTED_FILE" 2>/dev/null | awk '!a[$0]++' | sort >"$DELISTED_FILE"
+
     # use file if any data
     if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/prices.copy | awk '{ print $1 }')" ]] &>/dev/null; then
       mv "$PRICES_COPY_FILE" "$PRICES_FILE"
