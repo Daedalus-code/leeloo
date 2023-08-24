@@ -469,9 +469,21 @@ DIP_OLDEST_ORDER_LISTING="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $6 }')"
 # order reference
 DIP_LATEST_ORDER_REFERENCE="$(echo "$DIP_OLDEST_ORDER_DATA" | awk '{ print $7 }')"
 DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $7 }')"
-# order age (seconds)
+# order age (bought,seconds)
 DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+# if latest sold has data
+if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold)" -gt "0" ]] &>/dev/null; then
+  # order age (sold,seconds)
+  DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+fi
+
+# if oldest sold has data
+if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".sold)" -gt "0" ]] &>/dev/null; then
+  # order age (sold,seconds)
+  DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+fi
 
 # if zero
 if [[ -z "$DIP_LATEST_ORDER_SECONDS" ]] &>/dev/null; then
