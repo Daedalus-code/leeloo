@@ -428,17 +428,21 @@ DIP_ORDER_PERCENTAGE_SELL="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_ORDER_SELL_CO
 # total active dip
 DIP_ACTIVE_FILE_DIP="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
 
+################################################################################
+
 # calculate average dip
 DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+################################################################################
 
 # top active dip
 DIP_ACTIVE_TOP_DIP="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $13 }' | sort -n | head -1)"
 # top dip data
 DIP_TOP_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_TOP_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1)"
 # top dip market
-DIP_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':')"
+DIP_TOP_DIP="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':')"
 # top dip amount
-DIP_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
+DIP_TOP_DIP_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 
@@ -447,9 +451,51 @@ DIP_ACTIVE_LOW_DIP="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $13 }' | sort -n | 
 # low dip data
 DIP_LOW_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_LOW_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1)"
 # low dip market
-DIP_LOW_MARKET="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':')"
+DIP_LOW_DIP="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':')"
 # low dip amount
-DIP_LOW_MARKET_AMOUNT="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
+DIP_LOW_DIP_AMOUNT="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
+
+################################################################################
+
+# total active spread
+DIP_ACTIVE_FILE_SPREAD="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
+
+################################################################################
+
+# calculate average spread
+DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+################################################################################
+
+# cat pool data
+CAT_POOL_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
+
+################################################################################
+
+# total active profit
+DIP_ACTIVE_FILE_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+
+################################################################################
+
+# top active profit (spread)
+DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $16 }' | sort -n | tail -1)"
+# top profit (spread) data
+DIP_SPECIFIC_PROFIT="$(grep -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+# top profit (spread) market
+DIP_TOP_PROFIT="$(echo "$DIP_SPECIFIC_PROFIT" | awk '{ print $1}' | tr -d ':')"
+# top profit (spread) amount
+DIP_TOP_PROFIT_AMOUNT="$(echo "$DIP_SPECIFIC_PROFIT" | awk '{ print $16}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
+
+################################################################################
+
+# lowest active profit (spread)
+DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | head -1)"
+# lowest profit (spread) data
+DIP_LOW_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
+# lowest profit (spread) market
+DIP_LOW_PROFIT="$(echo "$DIP_LOW_ACTIVE_PROFIT" | awk '{ print $2}' | tr -d ':')"
+# lowest profit (spread) amount
+DIP_LOW_PROFIT_AMOUNT="$(echo "$DIP_LOW_ACTIVE_PROFIT" | awk '{ print $5}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 
@@ -536,48 +582,6 @@ elif [[ "$DIP_OLDEST_ORDER_SECONDS" -gt "60" ]] &>/dev/null; then
 elif [[ "$DIP_OLDEST_ORDER_SECONDS" -lt "60" ]] &>/dev/null; then
   DIP_OLDEST_ORDER_AGE="0m"
 fi
-
-################################################################################
-
-# total active spread
-DIP_ACTIVE_FILE_SPREAD="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
-
-################################################################################
-
-# calculate average spread
-DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-################################################################################
-
-# cat pool data
-CAT_POOL_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
-
-################################################################################
-
-# total active profit
-DIP_ACTIVE_FILE_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
-
-################################################################################
-
-# top active spread
-DIP_ACTIVE_TOP_SPREAD="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $16 }' | sort -n | tail -1)"
-# top spread data
-DIP_TOP_ACTIVE_SPREAD="$(grep -- "$DIP_ACTIVE_TOP_SPREAD" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
-# top spread market
-SPREAD_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $1}' | tr -d ':')"
-# top spread amount
-SPREAD_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_SPREAD" | awk '{ print $16}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
-
-################################################################################
-
-# lowest active profit
-DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | head -1)"
-# lowest profit data
-DIP_LOW_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
-# lowest profit market
-DIP_LOW_MARKET="$(echo "$DIP_LOW_ACTIVE_PROFIT" | awk '{ print $2}' | tr -d ':')"
-# lowest profit amount
-DIP_LOW_MARKET_AMOUNT="$(echo "$DIP_LOW_ACTIVE_PROFIT" | awk '{ print $5}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 
@@ -1573,10 +1577,10 @@ Average.Order.Age......: $DIP_ACTIVE_FILE_AVERAGE_AGE $DIP_ACTIVE_FILE_AVERAGE_D
 Top.Price.Movement.....: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
 Top.Volume.............: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?} $DIP_TOP_VOLUME_LISTING
 Top.Amount.............: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
-Top.Spread.............: $SPREAD_TOP_MARKET ${SPREAD_TOP_MARKET_AMOUNT:?}%
-Low.Spread.............: $DIP_LOW_MARKET ${DIP_LOW_MARKET_AMOUNT:?}%
-Top.Dip................: $DIP_TOP_MARKET ${DIP_TOP_MARKET_AMOUNT:?}%
-Low.Dip................: $DIP_LOW_MARKET ${DIP_LOW_MARKET_AMOUNT:?}%
+Top.Spread.............: $DIP_TOP_PROFIT ${DIP_TOP_PROFIT_AMOUNT:?}%
+Low.Spread.............: $DIP_LOW_PROFIT ${DIP_LOW_PROFIT_AMOUNT:?}%
+Top.Dip................: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
+Low.Dip................: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
 Old_Order.txid.........: $DIP_OLDEST_ORDER_ID ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_AGE $DIP_OLDEST_ORDER_TYPE $DIP_OLDEST_ORDER_SPREAD
 Last_Order.txid........: $DIP_LATEST_ORDER_ID ${DIP_LATEST_ORDER_LISTING:?}/${DIP_LATEST_ORDER_REFERENCE:?} $DIP_LATEST_ORDER_AGE $DIP_LATEST_ORDER_TYPE $DIP_LATEST_ORDER_SPREAD"
 } >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data
