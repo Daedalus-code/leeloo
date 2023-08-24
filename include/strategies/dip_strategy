@@ -1125,37 +1125,38 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         DIP_LEFTOVER_SIZE="0"
       fi
 
-      # disregard duplicates, empty lines
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
-
-      # calculate percentage of order filled
-      DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
-
-      if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
-        DIP_LEFTOVER_FILLED_AMOUNT="0"
-      fi
-
-      DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
-
-      if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
-        DIP_LEFTOVER_FILLED="100"
-      fi
-
-      # re calculate get amount based on order size
-      DIP_SELL_AMOUNT_REFERENCE="$(echo "$(echo "$DIP_LEFTOVER_SIZE/100" | bc -l 2>/dev/null)*$DIP_GET_AMOUNT_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-      DIP_SELL_AMOUNT_PROFIT="$(echo "$(echo "$DIP_LEFTOVER_SIZE/100" | bc -l 2>/dev/null)*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
-      ##########################################################################
-
-      # update log date
-      LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
-
-      # setup limit sell order #################################################
-      placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_ASK" "$LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-      ##########################################################################
-
       # if leftover size is greater than 1000000 (0.01000000%)
       if [[ "$(echo "$DIP_LEFTOVER_SIZE" | tr -d '.' | sed 's/^0*//')" -gt "1000000" ]] &>/dev/null; then
+
+        # disregard duplicates, empty lines
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+
+        # calculate percentage of order filled
+        DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+        # if zero
+        if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
+          DIP_LEFTOVER_FILLED_AMOUNT="0"
+        fi
+
+        # calculate total filled
+        DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
+        # if zero
+        if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
+          DIP_LEFTOVER_FILLED="100"
+        fi
+
+        # re calculate get amount based on order size
+        DIP_SELL_AMOUNT_REFERENCE="$(echo "$(echo "$DIP_LEFTOVER_SIZE/100" | bc -l 2>/dev/null)*$DIP_GET_AMOUNT_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+        DIP_SELL_AMOUNT_PROFIT="$(echo "$(echo "$DIP_LEFTOVER_SIZE/100" | bc -l 2>/dev/null)*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+        ########################################################################
+
+        # update log date
+        LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+
+        # setup limit sell order ###############################################
+        placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_ASK" "$LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+        ########################################################################
 
         # track amount being sold
         echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
