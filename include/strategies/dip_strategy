@@ -383,16 +383,19 @@ DIP_ORDERS_FILE_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/
 # cat order data
 CAT_ORDER_FILE="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
 
-# sell count
-DIP_SELL_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "sell")"
-if [[ -z "$DIP_SELL_COUNT" ]] &>/dev/null; then
-  DIP_SELL_COUNT="0"
-fi
 # buy count
-DIP_BUY_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "buy")"
-if [[ -z "$DIP_BUY_COUNT" ]] &>/dev/null; then
-  DIP_BUY_COUNT="0"
+DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "buy")"
+if [[ -z "$DIP_ORDER_BUY_COUNT" ]] &>/dev/null; then
+  DIP_ORDER_BUY_COUNT="0"
 fi
+# sell count
+DIP_ORDER_SELL_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "sell")"
+if [[ -z "$DIP_ORDER_SELL_COUNT" ]] &>/dev/null; then
+  DIP_ORDER_SELL_COUNT="0"
+fi
+
+DIP_ORDER_PERCENTAGE_BUY="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_ORDER_BUY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+DIP_ORDER_PERCENTAGE_SELL="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_ORDER_SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 
@@ -585,7 +588,7 @@ DIP_SEARCHING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARK
 echo "$DIP_SEARCHING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 log_date
 # log position output
-DIP_POSITIONS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/INFO :: Active: $DIP_ACTIVE_FILE_COUNT/$DIP_ORDERS_FILE_COUNT Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% B: $DIP_BUY_COUNT S: $DIP_SELL_COUNT"
+DIP_POSITIONS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/INFO :: Active: $DIP_ACTIVE_FILE_COUNT/$DIP_ORDERS_FILE_COUNT Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% B: $DIP_ORDER_BUY_COUNT S: $DIP_ORDER_SELL_COUNT"
 echo "$DIP_POSITIONS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
@@ -1441,7 +1444,7 @@ DIP_DAILY_SPREAD="$(echo "$DIP_DAILY_SPREAD_TOTAL/$DIP_DAILY_POTENTIAL" | bc -l 
 {
   echo "Market.................: $ACTIVE_MARKET_PAIRS
 Daily.Potential........: $DIP_DAILY_POTENTIAL Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}%
-Order.Count............: Buy: $DIP_BUY_COUNT Sell: $DIP_SELL_COUNT
+Order.Count............: Buy: $DIP_ORDER_BUY_COUNT (${DIP_ORDER_PERCENTAGE_BUY:?}%) Sell: $DIP_ORDER_SELL_COUNT (${DIP_ORDER_PERCENTAGE_SELL:?}%)
 DCA....................: $DIP_DCA_DATA
 All.In.................: $DIP_ALL_IN_DATA
 Active/Orders/Max......: $DIP_ACTIVE_FILE_COUNT/$DIP_ORDERS_FILE_COUNT/$DIP_MAX_ORDERS
