@@ -188,7 +188,7 @@ function target_data() {
   # target amount to buy and sell (listing)
   DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
   # if dca enabled
-  if [[ -n "$DIP_DCA" ]] &>/dev/null; then
+  if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
     # if market dca is found
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -gt "0" ]] &>/dev/null; then
       # extra amount
@@ -251,6 +251,22 @@ function bought_sold_age() {
     # if zero
     if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
       DIP_SOLD_FILE_AGE_SECONDS="0"
+    fi
+  fi
+}
+
+################################################################################
+
+function cancelDCA() {
+  # if dca enabled
+  if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
+    # if listing, reference has data
+    if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      # if listing, reference exist as dca
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -gt "0" ]] &>/dev/null; then
+        # remove obsolete dca
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+      fi
     fi
   fi
 }
@@ -747,11 +763,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # if zero
         if [[ -z "$DIP_DCA" ]] &>/dev/null; then
           # default
-          DIP_DCA="false"
+          DIP_DCA="0"
         fi
 
         # if dca enabled
-        if [[ -n "$DIP_DCA" ]] &>/dev/null; then
+        if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
           # ruled by configuration
           DIP_DCA_RAW="$DIP_DCA"
           # calculate dca value
@@ -796,6 +812,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
           # cancel old order (buy)
           cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+          # remove obsolete dca
+          cancelDCA
           # remove old order
           echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
           # log target update output
@@ -905,6 +923,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       if [[ -n "$DIP_OLDEST_ORDER_ID" ]] &>/dev/null; then
         # cancel old order (buy/sell)
         cancelOrder "$DIP_OLDEST_ORDER_ID" 2>>"${LOG_ERROR:?}"
+        # remove obsolete dca
+        cancelDCA
       fi
     fi
 
@@ -1237,7 +1257,7 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
     # if dca enabled
-    if [[ -n "$DIP_DCA" ]] &>/dev/null; then
+    if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
       # remove completed dca
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
     fi
@@ -1374,6 +1394,8 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/
     if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
       # cancel old order (buy)
       cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+      # remove obsolete dca
+      cancelDCA
       # remove old order
       echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
       # remove old (active) order
@@ -1390,12 +1412,14 @@ fi
 ################################################################################
 
 # if false, zero
-if [[ "$DIP_DCA" == "false" || -z "$DIP_DCA" ]] &>/dev/null; then
+if [[ "$DIP_DCA" == "false" || -z "$DIP_DCA" || "$DIP_DCA" -lt "1" ]] &>/dev/null; then
   # data output
   DIP_DCA_DATA="Disabled"
+  DIP_DCA="0"
 fi
+
 # if dca enabled
-if [[ -n "$DIP_DCA" ]] &>/dev/null; then
+if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
   # data output
   DIP_DCA_DATA="Enabled ${DIP_DCA:?}%"
 fi
