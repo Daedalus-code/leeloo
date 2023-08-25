@@ -215,7 +215,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
     # ready to buy (signal age)
     if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
       # is this bullish signal allocated correctly?
-      if [[ ! "$REFERENCE_ALLOCATED_REAL" -ge "$REFERENCE_ALLOCATED" ]] &>/dev/null; then
+      if [[ "$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -lt "$(echo "$REFERENCE_ALLOCATED" | awk -F. '{ print $1 }')" ]] &>/dev/null; then
         # trigger a buy for fear of missing out
         echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
         echo "Bearish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
@@ -310,7 +310,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
     # ready to sell (signal age)
     if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
       # is this bearish signal allocated correctly?
-      if [[ ! "$LISTING_ALLOCATED_REAL" -ge "$LISTING_ALLOCATED" ]] &>/dev/null; then
+      if [[ "$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -lt "$(echo "$LISTING_ALLOCATED" | awk -F. '{ print $1 }')" ]] &>/dev/null; then
         # trigger a sell for fear of missing out
         echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
         echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
