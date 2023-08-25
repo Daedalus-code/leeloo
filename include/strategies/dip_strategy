@@ -190,7 +190,7 @@ function target_data() {
   # if dca enabled
   if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
     # if market dca is found
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
       # extra amount
       DIP_TARGET_DCA="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $8 }' | tr -d '+')"
       # increase target amount
@@ -263,7 +263,7 @@ function cancel_DCA() {
     # if listing, reference has data
     if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
       # if listing, reference exist as dca
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -gt "0" ]] &>/dev/null; then
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
         # remove obsolete dca
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
       fi
@@ -419,12 +419,12 @@ DIP_ORDERS_FILE_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/
 CAT_ORDER_FILE="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
 
 # buy count
-DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "buy")"
+DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "buy" || true)"
 if [[ -z "$DIP_ORDER_BUY_COUNT" ]] &>/dev/null; then
   DIP_ORDER_BUY_COUNT="0"
 fi
 # sell count
-DIP_ORDER_SELL_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "sell")"
+DIP_ORDER_SELL_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "sell" || true)"
 if [[ -z "$DIP_ORDER_SELL_COUNT" ]] &>/dev/null; then
   DIP_ORDER_SELL_COUNT="0"
 fi
@@ -529,13 +529,13 @@ DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEG
 DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # if latest sold has data
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold)" -gt "0" ]] &>/dev/null; then
+if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold || true)" -gt "0" ]] &>/dev/null; then
   # order age (sold,seconds)
   DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 fi
 
 # if oldest sold has data
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".sold)" -gt "0" ]] &>/dev/null; then
+if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".sold || true)" -gt "0" ]] &>/dev/null; then
   # order age (sold,seconds)
   DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 fi
@@ -1532,8 +1532,8 @@ DIP_DAILY_SPREAD="$(echo "$DIP_DAILY_SPREAD_TOTAL/$DIP_DAILY_POTENTIAL" | bc -l 
 
 ################################################################################
 
-# listing market
-DIP_DUMP_LISTING="$(grep "$LISTING_CURRENCY" "$DELISTED_FILE" | head -1)"
+# delisted listing market
+DIP_DUMP_LISTING="$(cat "$DELISTED_FILE" 2>/dev/null | sort -R | head -1)"
 
 # if zero
 if [[ -z "$DIP_DUMP_LISTING" ]] &>/dev/null; then
@@ -1541,7 +1541,7 @@ if [[ -z "$DIP_DUMP_LISTING" ]] &>/dev/null; then
 fi
 
 # if dump listing has data
-if [[ "$(echo "$DIP_DUMP_LISTING" | egrep -c "[A-Z]+|[0-9]+")" -gt "0" ]] &>/dev/null; then
+if [[ "$(echo "$DIP_DUMP_LISTING" | egrep -c "[A-Z]+|[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
   # listing market order id
   DIP_DUMP_LISTING_ORDER_ID="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
 fi
@@ -1551,7 +1551,7 @@ if [[ -z "$DIP_DUMP_LISTING_ORDER_ID" ]] &>/dev/null; then
 fi
 
 # if order id found
-if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+")" -gt "0" ]] &>/dev/null; then
+if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
   # if order has balance
   if [[ "$DIP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     # cancel delisted market
