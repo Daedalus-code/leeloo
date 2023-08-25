@@ -746,8 +746,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           # create market file
           echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
-          # if the symbol meets the potential buy criteria, "thats a good potential!" --80s broker, New York
-          if (($(echo "$PRICE_MOVEMENT > 0" | bc -l 2>/dev/null))); then
+
+          # if zero
+          if [[ -z "$DIP_MIN_MOVEMENT" ]] &>/dev/null; then
+            # use default
+            DIP_MIN_MOVEMENT="0"
+          fi
+
+          # if the symbol meets the potential buy criteria, ruled by configuration
+          if (($(echo "$PRICE_MOVEMENT > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
               # potential symbol, bid, ask, last
               POTENTIAL_BUY_SYMBOL="$SYMBOL"
