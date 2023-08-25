@@ -1546,15 +1546,6 @@ if [[ "$(echo "$DIP_DUMP_LISTING" | egrep -c "[A-Z]+|[0-9]+" || true)" -gt "0" ]
   DIP_DUMP_LISTING_ORDER_ID="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
 fi
 
-# if dump listing exist as active order
-if [[ "$(grep -c "$DIP_DUMP_LISTING" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
-  # remove delisted (active) order
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-  # removing output (log)
-  DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Removing active! $LISTING_CURRENCY. (Delisted)"
-  echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-fi
-
 # if zero
 if [[ -z "$DIP_DUMP_LISTING_ORDER_ID" ]] &>/dev/null; then
   DIP_DUMP_LISTING_ORDER_ID="null"
