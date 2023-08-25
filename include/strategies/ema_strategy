@@ -44,6 +44,8 @@ MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 EMA_SHORT="$(egrep "EMA_SHORT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # ema long
 EMA_LONG="$(egrep "EMA_LONG=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# ema fomo
+EMA_FOMO="$(egrep "EMA_FOMO=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # rogue profit enable, disable
 ROGUE_PROFIT="$(egrep "ROGUE_PROFIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # signal age
@@ -186,6 +188,7 @@ signal_age
 ################################################################################
 
 BULLISH_EMA_CROSS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : ${REFERENCE_ALLOCATED:?}% :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $TYPE"
+BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Trigger :: Bullish+Signal :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${REFERENCE_ALLOCATED_REAL:?}% > ${REFERENCE_ALLOCATED:?}%"
 BULLISH_EMA_STATUS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bullish ${EMA_PERCENTAGE:?}% ${ROGUE_PROFIT_INDICATOR:?}"
 
 ################################################################################
@@ -202,8 +205,29 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
 
   ##############################################################################
 
+  # if zero
+  if [[ -z "$EMA_FOMO" ]] &>/dev/null; then
+    EMA_FOMO="false"
+  fi
+
+  # if fear of missing out is true
+  if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
+    # ready to buy (signal age)
+    if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
+      # is this bullish signal allocated correctly?
+      if [[ ! "$REFERENCE_ALLOCATED_REAL" -ge "$REFERENCE_ALLOCATED" ]] &>/dev/null; then
+        # trigger a buy for fear of missing out
+        echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+        echo "Bearish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+        echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+      fi
+    fi
+  fi
+
+  ##############################################################################
+
   # is this a bullish cross?
-  if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}" | grep -c "Bullish+Cross")" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
+  if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}" | egrep -c "Bullish+Cross|Bullish+Signal")" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
     if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] 2>>"${LOG_ERROR:?}"; then
       if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | grep -c "Bullish")" -eq "1" ]] 2>>"${LOG_ERROR:?}"; then
@@ -246,7 +270,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
             echo "$ORDER_BUY_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
             # remove duplicates
             echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-
           fi
           echo "$BULLISH_EMA_CROSS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         fi
@@ -260,6 +283,7 @@ fi
 ################################################################################
 
 BEARISH_EMA_CROSS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : ${LISTING_ALLOCATED:?}% :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $TYPE"
+BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Trigger :: Bearish+Signal :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${LISTING_ALLOCATED_REAL:?}% > ${LISTING_ALLOCATED:?}%"
 BEARISH_EMA_STATUS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT/$EMA_REAL_LONG Bearish ${EMA_PERCENTAGE:?}% ${ROGUE_PROFIT_INDICATOR:?}"
 
 ################################################################################
@@ -276,8 +300,29 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
 
   ##############################################################################
 
+  # if zero
+  if [[ -z "$EMA_FOMO" ]] &>/dev/null; then
+    EMA_FOMO="false"
+  fi
+
+  # if fear of missing out is true
+  if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
+    # ready to sell (signal age)
+    if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
+      # is this bearish signal allocated correctly?
+      if [[ ! "$LISTING_ALLOCATED_REAL" -ge "$LISTING_ALLOCATED" ]] &>/dev/null; then
+        # trigger a sell for fear of missing out
+        echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+        echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+        echo "Bearish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+      fi
+    fi
+  fi
+
+  ##############################################################################
+
   # is this a bearish cross?
-  if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}" | grep -c "Bearish+Cross")" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
+  if [[ ! "$(tail -10 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}" | egrep -c "Bearish+Cross|Bearish+Signal")" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
     if [[ ! "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | head -1 | awk '{ print $1 }')" == "$(tail -2 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | tail -1 | awk '{ print $1 }')" ]] 2>>"${LOG_ERROR:?}"; then
       if [[ "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal | grep -c "Bearish")" -eq "1" ]] 2>>"${LOG_ERROR:?}"; then
@@ -320,7 +365,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
             echo "$ORDER_SELL_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
             # remove duplicates
             echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-
           fi
           echo "$BEARISH_EMA_CROSS" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         fi
