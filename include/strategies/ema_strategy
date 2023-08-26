@@ -97,6 +97,20 @@ fi
 
 ################################################################################
 
+# if zero
+if [[ -z "$EMA_FOMO" ]] &>/dev/null; then
+  EMA_FOMO="false"
+fi
+
+# fomo data
+if [[ "$EMA_FOMO" == "false" ]] &>/dev/null; then
+  EMA_FOMO_DATA="Disabled"
+elif [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
+  EMA_FOMO_DATA="Enabled"
+fi
+
+################################################################################
+
 echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
 
 EMA_Data..............: $STRATEGY_TYPE $GET_EMA_CONFIG
@@ -104,7 +118,7 @@ EMA_Short.............: $GET_SHORT_DATA
 EMA_Long..............: $GET_LONG_DATA
 EMA_Signal............: $GET_EMA_SIGNAL
 EMA_Strength..........: ${GET_PERCENTAGE:?}%
-
+EMA_FOMO..............: $EMA_FOMO_DATA
 Price.................: $LISTING_PRICE $REFERENCE_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL:?}%/${LISTING_ALLOCATED:?}%
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY
@@ -205,11 +219,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
 
   ##############################################################################
 
-  # if zero
-  if [[ -z "$EMA_FOMO" ]] &>/dev/null; then
-    EMA_FOMO="false"
-  fi
-
   # if fear of missing out is true
   if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
     # ready to buy (signal age)
@@ -299,11 +308,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
   fi
 
   ##############################################################################
-
-  # if zero
-  if [[ -z "$EMA_FOMO" ]] &>/dev/null; then
-    EMA_FOMO="false"
-  fi
 
   # if fear of missing out is true
   if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
