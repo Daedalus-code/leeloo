@@ -830,15 +830,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # keep n lines, remove duplicates, remove empty lines, sort
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk '!a[$1]++' | sed '/^$/d' | sort | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
 
-  # time check
-  DIP_TIME_CHECK="$(date +"%T" | egrep "00:00" | wc -l)"
-
-  # if date is 00:00 (midnight)
-  if [[ "$DIP_TIME_CHECK" -eq "1" ]] &>/dev/null; then
-    # reset market.list file
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list &>/dev/null
-  fi
-
   ##############################################################################
 
   # target data
@@ -1778,7 +1769,9 @@ if [[ "$DIP_TIME_CHECK" -eq "1" ]] &>/dev/null; then
   # track daily potential
   echo "$LOG_DATE :: Potential: $DIP_DAILY_POTENTIAL Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% Price Movement: ${DIP_DAILY_MOVEMENT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
   # keep n lines, remove duplicates
-  echo "$(tail -365 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp | awk '!a[$4]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
+  echo "$(tail -365 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | awk '!a[$4]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
+  # reset market.list file
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list &>/dev/null
 fi
 
 ################################################################################
