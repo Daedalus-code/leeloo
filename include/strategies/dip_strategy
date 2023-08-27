@@ -735,6 +735,10 @@ DIP_TOP_AMOUNT_LISTING="$(echo "$DIP_TOP_AMOUNT_MARKET" | awk -F/ '{ print $1 }'
 # top amount amount
 DIP_TOP_AMOUNT_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26}' | awk '{ printf "%.0f\n", $1 }' || true)"
 
+if [[ -z "$DIP_TOP_AMOUNT_AMOUNT" ]]; then
+  DIP_TOP_AMOUNT_AMOUNT="0"
+fi
+
 # if amount is less than n
 if [[ "$DIP_TOP_AMOUNT_AMOUNT" -lt "0" ]] &>/dev/null; then
   DIP_TOP_AMOUNT_AMOUNT=">0"
