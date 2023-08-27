@@ -241,6 +241,12 @@ function bought_sold_age() {
 
     # sold file age (seconds)
     DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+    # if zero
+    if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
+      DIP_SOLD_FILE_AGE_SECONDS="0"
+    fi
+
     # sold file age (days)
     DIP_SOLD_FILE_AGE_DAYS="$(echo "$DIP_SOLD_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
@@ -267,11 +273,6 @@ function bought_sold_age() {
       # if less than n seconds (minutes)
     elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -lt "60" ]] &>/dev/null; then
       DIP_BOUGHT_AGE_OUTPUT="0m"
-    fi
-
-    # if zero
-    if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
-      DIP_SOLD_FILE_AGE_SECONDS="0"
     fi
   fi
 }
