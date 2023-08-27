@@ -167,9 +167,6 @@ function target_data() {
 
   ##############################################################################
 
-  # target count (data)
-  DIP_TARGET_COUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | sed '/^$/d' | wc -l)"
-
   # target symbol
   DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
   # listing (target from above)
@@ -968,15 +965,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # log target output
     DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Found: $POTENTIAL_MARKET_COUNT Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}% Average"
     echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-    # target count greater than n
-    if [[ "$DIP_TARGET_COUNT" -gt "0" ]] &>/dev/null; then
-      # update log date
-      LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
-      # log target output
-      DIP_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Spread: ${DIP_TARGET_SPREAD:?}%"
-      echo "$DIP_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    fi
 
     ############################################################################
 
