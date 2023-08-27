@@ -223,56 +223,62 @@ function bought_sold_age() {
 
   # if not zero
   if [[ ! -z "$LISTING_CURRENCY" || ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    # if listing order exist
+    if [[ "$(echo "$LISTING_CURRENCY" | grep -c "N/A" || true)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(echo "$REFERENCE_CURRENCY" | grep -c "N/A" || true)" -eq "0" ]] &>/dev/null; then
 
-    # if not found
-    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought ]] &>/dev/null; then
-      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought &>/dev/null
-    fi
+        # if not found
+        if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought ]] &>/dev/null; then
+          touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought &>/dev/null
+        fi
 
-    # if not found
-    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold ]] &>/dev/null; then
-      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
-    fi
+        # if not found
+        if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold ]] &>/dev/null; then
+          touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
+        fi
 
-    # bought file age (seconds)
-    DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-    # bought file age (days)
-    DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
+        # bought file age (seconds)
+        DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-    # sold file age (seconds)
-    DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+        # if zero
+        if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
+          DIP_BOUGHT_FILE_AGE_SECONDS="0"
+        fi
 
-    # if zero
-    if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
-      DIP_SOLD_FILE_AGE_SECONDS="0"
-    fi
+        # bought file age (days)
+        DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
-    # sold file age (days)
-    DIP_SOLD_FILE_AGE_DAYS="$(echo "$DIP_SOLD_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
+        # sold file age (seconds)
+        DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-    # if zero
-    if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
-      DIP_BOUGHT_FILE_AGE_SECONDS="0"
-    fi
+        # if zero
+        if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
+          DIP_SOLD_FILE_AGE_SECONDS="0"
+        fi
 
-    # bought file age (hours:minutes:seconds)
-    DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
-    DIP_BOUGHT_FILE_AGE_MINUTES="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-    DIP_BOUGHT_FILE_AGE_HOURS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-    DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+        # sold file age (days)
+        DIP_SOLD_FILE_AGE_DAYS="$(echo "$DIP_SOLD_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
-    # if greater than n seconds (day)
-    if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
-      DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_DAYS:?}d"
-      # if greater than n seconds (hours)
-    elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
-      DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_HOURS:?}h"
-      # if greater than n seconds (minutes)
-    elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "60" ]] &>/dev/null; then
-      DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_MINUTES:?}m"
-      # if less than n seconds (minutes)
-    elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -lt "60" ]] &>/dev/null; then
-      DIP_BOUGHT_AGE_OUTPUT="0m"
+        # bought file age (hours:minutes:seconds)
+        DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
+        DIP_BOUGHT_FILE_AGE_MINUTES="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+        DIP_BOUGHT_FILE_AGE_HOURS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+        DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
+        # if greater than n seconds (day)
+        if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
+          DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_DAYS:?}d"
+          # if greater than n seconds (hours)
+        elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
+          DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_HOURS:?}h"
+          # if greater than n seconds (minutes)
+        elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "60" ]] &>/dev/null; then
+          DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_MINUTES:?}m"
+          # if less than n seconds (minutes)
+        elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -lt "60" ]] &>/dev/null; then
+          DIP_BOUGHT_AGE_OUTPUT="0m"
+        fi
+      fi
     fi
   fi
 }
