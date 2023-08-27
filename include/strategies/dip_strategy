@@ -437,357 +437,12 @@ fi
 # create specific dip_markets list
 echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS" 2>/dev/null
 
-################################################################################
-
-# active market pairs
-ACTIVE_MARKET_PAIRS="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n | awk '!a[$0]++' | xargs)"
-
-if [[ -z "$ACTIVE_MARKET_PAIRS" ]] &>/dev/null; then
-  ACTIVE_MARKET_PAIRS="N/A"
-fi
-
-################################################################################
-
-# total active count
-DIP_ACTIVE_FILE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }')"
-# total order count
-DIP_ORDERS_FILE_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | awk '{ print $1 }')"
-
-################################################################################
-
-# cat order data
-CAT_ORDER_FILE="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
-
-# buy count
-DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "buy" || true)"
-if [[ -z "$DIP_ORDER_BUY_COUNT" ]] &>/dev/null; then
-  DIP_ORDER_BUY_COUNT="0"
-fi
-
-# sell count
-DIP_ORDER_SELL_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "sell" || true)"
-if [[ -z "$DIP_ORDER_SELL_COUNT" ]] &>/dev/null; then
-  DIP_ORDER_SELL_COUNT="0"
-fi
-
-# calculate buy count percentage
-DIP_ORDER_PERCENTAGE_BUY="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_ORDER_BUY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-# calculate sell count percentage
-DIP_ORDER_PERCENTAGE_SELL="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_ORDER_SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-################################################################################
-
-# total active dip
-DIP_ACTIVE_FILE_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
-
-################################################################################
-
-# calculate average dip
-DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-################################################################################
-
-# top active dip
-DIP_ACTIVE_TOP_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $13 }' | sort -n | head -1)"
-# top dip data
-DIP_TOP_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_TOP_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1 || true)"
-
-# if zero
-if [[ -z "$DIP_TOP_ACTIVE_DIP" ]] &>/dev/null; then
-  DIP_TOP_ACTIVE_DIP="N/A"
-fi
-
-# top dip market
-DIP_TOP_DIP="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':' | head -1)"
-# top dip amount
-DIP_TOP_DIP_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
-
-################################################################################
-
-# low active dip
-DIP_ACTIVE_LOW_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $13 }' | sort -n | tail -1)"
-# low dip data
-DIP_LOW_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_LOW_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1 || true)"
-
-# if zero
-if [[ -z "$DIP_LOW_ACTIVE_DIP" ]] &>/dev/null; then
-  DIP_LOW_ACTIVE_DIP="N/A"
-fi
-
-# low dip market
-DIP_LOW_DIP="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':' | head -1)"
-# low dip amount
-DIP_LOW_DIP_AMOUNT="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
-
-################################################################################
-
-# total active spread
-DIP_ACTIVE_FILE_SPREAD="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
-
-################################################################################
-
-# calculate average spread
-DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-################################################################################
-
-# cat pool data
-CAT_POOL_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
-
-################################################################################
-
-# total active profit
-DIP_ACTIVE_FILE_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
-
-################################################################################
-
-# top active profit (spread)
-DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $16 }' | sort -n | tail -1)"
-# top profit (spread) data
-DIP_SPECIFIC_PROFIT="$(grep -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)"
-
-# if zero
-if [[ -z "$DIP_SPECIFIC_PROFIT" ]] &>/dev/null; then
-  DIP_SPECIFIC_PROFIT="N/A"
-fi
-
-# top profit (spread) market
-DIP_TOP_PROFIT="$(echo "$DIP_SPECIFIC_PROFIT" 2>/dev/null | awk '{ print $1}' | tr -d ':' | head -1)"
-# top profit (spread) amount
-DIP_TOP_PROFIT_AMOUNT="$(echo "$DIP_SPECIFIC_PROFIT" 2>/dev/null | awk '{ print $16}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
-
-################################################################################
-
-# lowest active profit (spread)
-DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | head -1)"
-# lowest profit (spread) data
-DIP_LOW_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null || true)"
-
-# if zero
-if [[ -z "$DIP_LOW_ACTIVE_PROFIT" ]] &>/dev/null; then
-  DIP_LOW_ACTIVE_PROFIT="N/A"
-fi
-
-# lowest profit (spread) market
-DIP_LOW_PROFIT="$(echo "$DIP_LOW_ACTIVE_PROFIT" 2>/dev/null | awk '{ print $2}' | tr -d ':' | head -1)"
-# lowest profit (spread) amount
-DIP_LOW_PROFIT_AMOUNT="$(echo "$DIP_LOW_ACTIVE_PROFIT" 2>/dev/null | awk '{ print $5}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
-
-################################################################################
-
-# order data
-DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | tail -1)"
-DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | head -1)"
-
-# order id
-DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
-DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
-# order type
-DIP_LATEST_ORDER_TYPE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
-DIP_OLDEST_ORDER_TYPE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
-# order listing
-DIP_LATEST_ORDER_LISTING="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
-DIP_OLDEST_ORDER_LISTING="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
-# order reference
-DIP_LATEST_ORDER_REFERENCE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
-DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
-# order age (bought,seconds)
-DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-# if latest sold has data
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold || true)" -gt "0" ]] &>/dev/null; then
-  # order age (sold,seconds)
-  DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-fi
-
-# if oldest sold has data
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".sold || true)" -gt "0" ]] &>/dev/null; then
-  # order age (sold,seconds)
-  DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-fi
-
-# if zero
-if [[ -z "$DIP_LATEST_ORDER_SECONDS" ]] &>/dev/null; then
-  DIP_LATEST_ORDER_SECONDS="0"
-fi
-
-# if zero
-if [[ -z "$DIP_OLDEST_ORDER_SECONDS" ]] &>/dev/null; then
-  DIP_OLDEST_ORDER_SECONDS="0"
-fi
-
-# latest order spread
-DIP_LATEST_ORDER_SPREAD="$(grep "$DIP_LATEST_ORDER_LISTING/$DIP_LATEST_ORDER_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }')"
-# oldest order spread
-DIP_OLDEST_ORDER_SPREAD="$(grep "$DIP_OLDEST_ORDER_LISTING/$DIP_OLDEST_ORDER_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }')"
-
-################################################################################
-
-# calculate latest file age, minutes, hours, days
-DIP_FILE_AGE_MINUTES="$(echo "$DIP_LATEST_ORDER_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-DIP_FILE_AGE_HOURS="$(echo "$DIP_LATEST_ORDER_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-DIP_FILE_AGE_DAYS="$(echo "$DIP_LATEST_ORDER_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-
-# if greater than n seconds (day)
-if [[ "$DIP_LATEST_ORDER_SECONDS" -gt "86400" ]] &>/dev/null; then
-  DIP_LATEST_ORDER_AGE="${DIP_FILE_AGE_DAYS:?}d"
-  # if greater than n seconds (hours)
-elif [[ "$DIP_LATEST_ORDER_SECONDS" -gt "3600" ]] &>/dev/null; then
-  DIP_LATEST_ORDER_AGE="${DIP_FILE_AGE_HOURS:?}h"
-  # if greater than n seconds (minutes)
-elif [[ "$DIP_LATEST_ORDER_SECONDS" -gt "60" ]] &>/dev/null; then
-  DIP_LATEST_ORDER_AGE="${DIP_FILE_AGE_MINUTES:?}m"
-  # if less than n seconds (minutes)
-elif [[ "$DIP_LATEST_ORDER_SECONDS" -lt "60" ]] &>/dev/null; then
-  DIP_LATEST_ORDER_AGE="0m"
-fi
-
-# calculate oldest file age, minutes, hours, days
-DIP_FILE_AGE_MINUTES="$(echo "$DIP_OLDEST_ORDER_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-DIP_FILE_AGE_HOURS="$(echo "$DIP_OLDEST_ORDER_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-DIP_FILE_AGE_DAYS="$(echo "$DIP_OLDEST_ORDER_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-
-# if greater than n seconds (day)
-if [[ "$DIP_OLDEST_ORDER_SECONDS" -gt "86400" ]] &>/dev/null; then
-  DIP_OLDEST_ORDER_AGE="${DIP_FILE_AGE_DAYS:?}d"
-  # if greater than n seconds (hours)
-elif [[ "$DIP_OLDEST_ORDER_SECONDS" -gt "3600" ]] &>/dev/null; then
-  DIP_OLDEST_ORDER_AGE="${DIP_FILE_AGE_HOURS:?}h"
-  # if greater than n seconds (minutes)
-elif [[ "$DIP_OLDEST_ORDER_SECONDS" -gt "60" ]] &>/dev/null; then
-  DIP_OLDEST_ORDER_AGE="${DIP_FILE_AGE_MINUTES:?}m"
-  # if less than n seconds (minutes)
-elif [[ "$DIP_OLDEST_ORDER_SECONDS" -lt "60" ]] &>/dev/null; then
-  DIP_OLDEST_ORDER_AGE="0m"
-fi
-
-################################################################################
-
-# total order time (hours)
-DIP_ACTIVE_FILE_TOTAL_TIME="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $NF }' | awk -Fh '{ print $1 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.0f\n", $1 }')"
-# calculate average order age
-DIP_ACTIVE_FILE_AVERAGE_TIME="$(echo "$DIP_ACTIVE_FILE_TOTAL_TIME/$DIP_ACTIVE_FILE_PROFIT" | bc -l 2>/dev/null)"
-# calculate average order age into seconds
-DIP_ACTIVE_FILE_AVERAGE_SECONDS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_TIME*86400" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-# calculate average order age into days
-DIP_ACTIVE_FILE_AVERAGE_DAYS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-# if zero
-if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SECONDS" ]] &>/dev/null; then
-  DIP_ACTIVE_FILE_AVERAGE_SECONDS="0"
-fi
-
-# active file average (hours:minutes:seconds)
-DIP_ACTIVE_FILE_AVERAGE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_ACTIVE_FILE_AVERAGE_SECONDS/3600")) $(("$DIP_ACTIVE_FILE_AVERAGE_SECONDS%3600/60")) $(("$DIP_ACTIVE_FILE_AVERAGE_SECONDS%60")))
-
-################################################################################
-
-# total average price movement
-DIP_ACTIVE_FILE_PRICE_MOVEMENT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $20 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
-# top average price movement
-DIP_ACTIVE_TOP_PRICE_MOVEMENT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $20 }' | tr -d '%' | sort -n | tail -1)"
-# calculate average price movement
-DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="$(echo "$DIP_ACTIVE_FILE_PRICE_MOVEMENT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-if [[ -z "$DIP_ACTIVE_FILE_A_PRICE_MOVEMENT" ]] &>/dev/null; then
-  DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="0"
-fi
-
-# top price movement data
-DIP_TOP_ACTIVE_PRICE_MOVEMENT="$(grep -- "$DIP_ACTIVE_TOP_PRICE_MOVEMENT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)"
-
-# if zero
-if [[ -z "$DIP_TOP_ACTIVE_PRICE_MOVEMENT" ]] &>/dev/null; then
-  DIP_TOP_ACTIVE_PRICE_MOVEMENT="N/A"
-fi
-
-# top price movement market
-PRICE_MOVEMENT_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_PRICE_MOVEMENT" | awk '{ print $1}' | tr -d ':' | head -1)"
-# top price movement amount
-PRICE_MOVEMENT_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_PRICE_MOVEMENT" | awk '{ print $20}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
-
-################################################################################
-
-# top volume
-DIP_TOP_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $23 }' | sort -n | tail -1)"
-# top volume market
-DIP_TOP_VOLUME_MARKET="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
-
-# if zero
-if [[ -z "$DIP_TOP_VOLUME_MARKET" ]] &>/dev/null; then
-  DIP_TOP_VOLUME_MARKET="N/A"
-fi
-
-# top volume listing
-DIP_TOP_VOLUME_LISTING="$(echo "$DIP_TOP_VOLUME_MARKET" | awk -F/ '{ print $1 }')"
-# top volume amount
-DIP_TOP_VOLUME_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $23}' | awk '{ printf "%.0f\n", $1 }' || true)"
-
-if [[ -z "$DIP_TOP_VOLUME_AMOUNT" ]] &>/dev/null; then
-  DIP_TOP_VOLUME_AMOUNT="0"
-fi
-
-# if volume amount less than n
-if [[ "$DIP_TOP_VOLUME_AMOUNT" -lt "0" ]] &>/dev/null; then
-  DIP_TOP_VOLUME_AMOUNT=">0"
-fi
-
-################################################################################
-
-# top amount
-DIP_TOP_ACTIVE_AMOUNT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $26 }' | sort -n | tail -1)"
-# top amount market
-DIP_TOP_AMOUNT_MARKET="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
-
-# if zero
-if [[ -z "$DIP_TOP_AMOUNT_MARKET" ]] &>/dev/null; then
-  DIP_TOP_AMOUNT_MARKET="N/A"
-fi
-
-# top amount reference
-DIP_TOP_AMOUNT_LISTING="$(echo "$DIP_TOP_AMOUNT_MARKET" | awk -F/ '{ print $1 }')"
-# top amount amount
-DIP_TOP_AMOUNT_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26}' | awk '{ printf "%.0f\n", $1 }' || true)"
-
-if [[ -z "$DIP_TOP_AMOUNT_AMOUNT" ]]; then
-  DIP_TOP_AMOUNT_AMOUNT="0"
-fi
-
-# if amount is less than n
-if [[ "$DIP_TOP_AMOUNT_AMOUNT" -lt "0" ]] &>/dev/null; then
-  DIP_TOP_AMOUNT_AMOUNT=">0"
-fi
-
-################################################################################
-
-# if zero
-if [[ -z "$DIP_ACTIVE_FILE_COUNT" ]] &>/dev/null; then
-  DIP_ACTIVE_FILE_COUNT="0"
-fi
-
-# if zero
-if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_DIP" ]] &>/dev/null; then
-  DIP_ACTIVE_FILE_AVERAGE_DIP="0"
-fi
-
-# if zero
-if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" ]] &>/dev/null; then
-  DIP_ACTIVE_FILE_AVERAGE_SPREAD="0"
-fi
-
 # specific prices count
 DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" || true)"
 
 # log searching output
 DIP_SEARCHING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Search: $DIP_MARKETS Found: $DIP_PRICES_FILE_COUNT"
 echo "$DIP_SEARCHING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-log_date
-
-# log position output
-DIP_POSITIONS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/INFO :: Active: $DIP_ACTIVE_FILE_COUNT/$DIP_ORDERS_FILE_COUNT Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% Buy: $DIP_ORDER_BUY_COUNT Sell: $DIP_ORDER_SELL_COUNT"
-echo "$DIP_POSITIONS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
 # search market for a target
@@ -1193,13 +848,277 @@ TARGET_ACTIVE="ACTIVE"
 target_data
 bought_sold_age
 
-# has active file any orders
+# if active file has any orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
 
   # create strategy directory
   if [[ ! -d "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" ]] &>/dev/null; then
     mkdir "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" &>/dev/null
   fi
+
+  ##############################################################################
+
+  # active market pairs
+  ACTIVE_MARKET_PAIRS="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n | awk '!a[$0]++' | xargs)"
+
+  ##############################################################################
+
+  # total active count
+  DIP_ACTIVE_FILE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }')"
+  # total order count
+  DIP_ORDERS_FILE_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | awk '{ print $1 }')"
+
+  ##############################################################################
+
+  # cat order data
+  CAT_ORDER_FILE="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
+
+  # buy count
+  DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "buy" || true)"
+
+  # if zero
+  if [[ -z "$DIP_ORDER_BUY_COUNT" ]] &>/dev/null; then
+    DIP_ORDER_BUY_COUNT="0"
+  fi
+
+  # sell count
+  DIP_ORDER_SELL_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "sell" || true)"
+
+  # if zero
+  if [[ -z "$DIP_ORDER_SELL_COUNT" ]] &>/dev/null; then
+    DIP_ORDER_SELL_COUNT="0"
+  fi
+
+  # calculate buy count percentage
+  DIP_ORDER_PERCENTAGE_BUY="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_ORDER_BUY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # calculate sell count percentage
+  DIP_ORDER_PERCENTAGE_SELL="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_ORDER_SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  ##############################################################################
+
+  # total active dip
+  DIP_ACTIVE_FILE_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
+
+  ##############################################################################
+
+  # calculate average dip
+  DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  ##############################################################################
+
+  # top active dip
+  DIP_ACTIVE_TOP_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $13 }' | sort -n | head -1)"
+  # top dip data
+  DIP_TOP_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_TOP_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1 || true)"
+  # top dip market
+  DIP_TOP_DIP="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':' | head -1)"
+  # top dip amount
+  DIP_TOP_DIP_AMOUNT="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
+
+  ##############################################################################
+
+  # low active dip
+  DIP_ACTIVE_LOW_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $13 }' | sort -n | tail -1)"
+  # low dip data
+  DIP_LOW_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_LOW_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1 || true)"
+  # low dip market
+  DIP_LOW_DIP="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':' | head -1)"
+  # low dip amount
+  DIP_LOW_DIP_AMOUNT="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $13}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
+
+  ##############################################################################
+
+  # total active spread
+  DIP_ACTIVE_FILE_SPREAD="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
+
+  ##############################################################################
+
+  # calculate average spread
+  DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  ##############################################################################
+
+  # cat pool data
+  CAT_POOL_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
+
+  ##############################################################################
+
+  # total active profit
+  DIP_ACTIVE_FILE_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+
+  ##############################################################################
+
+  # top active profit (spread)
+  DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $16 }' | sort -n | tail -1)"
+  # top profit (spread) data
+  DIP_SPECIFIC_PROFIT="$(grep -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)"
+  # top profit (spread) market
+  DIP_TOP_PROFIT="$(echo "$DIP_SPECIFIC_PROFIT" 2>/dev/null | awk '{ print $1}' | tr -d ':' | head -1)"
+  # top profit (spread) amount
+  DIP_TOP_PROFIT_AMOUNT="$(echo "$DIP_SPECIFIC_PROFIT" 2>/dev/null | awk '{ print $16}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
+
+  ##############################################################################
+
+  # lowest active profit (spread)
+  DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | head -1)"
+  # lowest profit (spread) data
+  DIP_LOW_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null || true)"
+  # lowest profit (spread) market
+  DIP_LOW_PROFIT="$(echo "$DIP_LOW_ACTIVE_PROFIT" 2>/dev/null | awk '{ print $2}' | tr -d ':' | head -1)"
+  # lowest profit (spread) amount
+  DIP_LOW_PROFIT_AMOUNT="$(echo "$DIP_LOW_ACTIVE_PROFIT" 2>/dev/null | awk '{ print $5}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
+
+  ##############################################################################
+
+  # order data
+  DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | tail -1)"
+  DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | head -1)"
+
+  # order id
+  DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
+  DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
+  # order type
+  DIP_LATEST_ORDER_TYPE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
+  DIP_OLDEST_ORDER_TYPE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
+  # order listing
+  DIP_LATEST_ORDER_LISTING="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
+  DIP_OLDEST_ORDER_LISTING="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
+  # order reference
+  DIP_LATEST_ORDER_REFERENCE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
+  DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
+  # order age (bought,seconds)
+  DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if latest sold has data
+  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold || true)" -gt "0" ]] &>/dev/null; then
+    # order age (sold,seconds)
+    DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  fi
+
+  # if oldest sold has data
+  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".sold || true)" -gt "0" ]] &>/dev/null; then
+    # order age (sold,seconds)
+    DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  fi
+
+  # if zero
+  if [[ -z "$DIP_LATEST_ORDER_SECONDS" ]] &>/dev/null; then
+    DIP_LATEST_ORDER_SECONDS="0"
+  fi
+
+  # if zero
+  if [[ -z "$DIP_OLDEST_ORDER_SECONDS" ]] &>/dev/null; then
+    DIP_OLDEST_ORDER_SECONDS="0"
+  fi
+
+  # latest order spread
+  DIP_LATEST_ORDER_SPREAD="$(grep "$DIP_LATEST_ORDER_LISTING/$DIP_LATEST_ORDER_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }')"
+  # oldest order spread
+  DIP_OLDEST_ORDER_SPREAD="$(grep "$DIP_OLDEST_ORDER_LISTING/$DIP_OLDEST_ORDER_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }')"
+
+  ##############################################################################
+
+  # calculate latest file age, minutes, hours, days
+  DIP_FILE_AGE_MINUTES="$(echo "$DIP_LATEST_ORDER_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+  DIP_FILE_AGE_HOURS="$(echo "$DIP_LATEST_ORDER_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+  DIP_FILE_AGE_DAYS="$(echo "$DIP_LATEST_ORDER_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
+  # if greater than n seconds (day)
+  if [[ "$DIP_LATEST_ORDER_SECONDS" -gt "86400" ]] &>/dev/null; then
+    DIP_LATEST_ORDER_AGE="${DIP_FILE_AGE_DAYS:?}d"
+    # if greater than n seconds (hours)
+  elif [[ "$DIP_LATEST_ORDER_SECONDS" -gt "3600" ]] &>/dev/null; then
+    DIP_LATEST_ORDER_AGE="${DIP_FILE_AGE_HOURS:?}h"
+    # if greater than n seconds (minutes)
+  elif [[ "$DIP_LATEST_ORDER_SECONDS" -gt "60" ]] &>/dev/null; then
+    DIP_LATEST_ORDER_AGE="${DIP_FILE_AGE_MINUTES:?}m"
+    # if less than n seconds (minutes)
+  elif [[ "$DIP_LATEST_ORDER_SECONDS" -lt "60" ]] &>/dev/null; then
+    DIP_LATEST_ORDER_AGE="0m"
+  fi
+
+  # calculate oldest file age, minutes, hours, days
+  DIP_FILE_AGE_MINUTES="$(echo "$DIP_OLDEST_ORDER_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+  DIP_FILE_AGE_HOURS="$(echo "$DIP_OLDEST_ORDER_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+  DIP_FILE_AGE_DAYS="$(echo "$DIP_OLDEST_ORDER_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
+  # if greater than n seconds (day)
+  if [[ "$DIP_OLDEST_ORDER_SECONDS" -gt "86400" ]] &>/dev/null; then
+    DIP_OLDEST_ORDER_AGE="${DIP_FILE_AGE_DAYS:?}d"
+    # if greater than n seconds (hours)
+  elif [[ "$DIP_OLDEST_ORDER_SECONDS" -gt "3600" ]] &>/dev/null; then
+    DIP_OLDEST_ORDER_AGE="${DIP_FILE_AGE_HOURS:?}h"
+    # if greater than n seconds (minutes)
+  elif [[ "$DIP_OLDEST_ORDER_SECONDS" -gt "60" ]] &>/dev/null; then
+    DIP_OLDEST_ORDER_AGE="${DIP_FILE_AGE_MINUTES:?}m"
+    # if less than n seconds (minutes)
+  elif [[ "$DIP_OLDEST_ORDER_SECONDS" -lt "60" ]] &>/dev/null; then
+    DIP_OLDEST_ORDER_AGE="0m"
+  fi
+
+  ##############################################################################
+
+  # total order time (hours)
+  DIP_ACTIVE_FILE_TOTAL_TIME="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $NF }' | awk -Fh '{ print $1 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.0f\n", $1 }')"
+  # calculate average order age
+  DIP_ACTIVE_FILE_AVERAGE_TIME="$(echo "$DIP_ACTIVE_FILE_TOTAL_TIME/$DIP_ACTIVE_FILE_PROFIT" | bc -l 2>/dev/null)"
+  # calculate average order age into seconds
+  DIP_ACTIVE_FILE_AVERAGE_SECONDS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_TIME*86400" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+  # calculate average order age into days
+  DIP_ACTIVE_FILE_AVERAGE_DAYS="$(echo "$DIP_ACTIVE_FILE_AVERAGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  # if zero
+  if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SECONDS" ]] &>/dev/null; then
+    DIP_ACTIVE_FILE_AVERAGE_SECONDS="0"
+  fi
+
+  # active file average (hours:minutes:seconds)
+  DIP_ACTIVE_FILE_AVERAGE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_ACTIVE_FILE_AVERAGE_SECONDS/3600")) $(("$DIP_ACTIVE_FILE_AVERAGE_SECONDS%3600/60")) $(("$DIP_ACTIVE_FILE_AVERAGE_SECONDS%60")))
+
+  ##############################################################################
+
+  # total average price movement
+  DIP_ACTIVE_FILE_PRICE_MOVEMENT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $20 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+  # top average price movement
+  DIP_ACTIVE_TOP_PRICE_MOVEMENT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $20 }' | tr -d '%' | sort -n | tail -1)"
+  # calculate average price movement
+  DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="$(echo "$DIP_ACTIVE_FILE_PRICE_MOVEMENT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  # top price movement data
+  DIP_TOP_ACTIVE_PRICE_MOVEMENT="$(grep -- "$DIP_ACTIVE_TOP_PRICE_MOVEMENT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)"
+  # top price movement market
+  PRICE_MOVEMENT_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_PRICE_MOVEMENT" | awk '{ print $1}' | tr -d ':' | head -1)"
+  # top price movement amount
+  PRICE_MOVEMENT_TOP_MARKET_AMOUNT="$(echo "$DIP_TOP_ACTIVE_PRICE_MOVEMENT" | awk '{ print $20}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }' | head -1)"
+
+  ##############################################################################
+
+  # top volume
+  DIP_TOP_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $23 }' | sort -n | tail -1)"
+  # top volume market
+  DIP_TOP_VOLUME_MARKET="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
+  # top volume listing
+  DIP_TOP_VOLUME_LISTING="$(echo "$DIP_TOP_VOLUME_MARKET" | awk -F/ '{ print $1 }')"
+  # top volume amount
+  DIP_TOP_VOLUME_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $23}' | awk '{ printf "%.0f\n", $1 }' || true)"
+
+  ##############################################################################
+
+  # top amount
+  DIP_TOP_ACTIVE_AMOUNT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $26 }' | sort -n | tail -1)"
+  # top amount market
+  DIP_TOP_AMOUNT_MARKET="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
+  # top amount reference
+  DIP_TOP_AMOUNT_LISTING="$(echo "$DIP_TOP_AMOUNT_MARKET" | awk -F/ '{ print $1 }')"
+  # top amount amount
+  DIP_TOP_AMOUNT_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26}' | awk '{ printf "%.0f\n", $1 }' || true)"
+
+  ##############################################################################
+
+  # log position output
+  DIP_POSITIONS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/INFO :: Active: $DIP_ACTIVE_FILE_COUNT/$DIP_ORDERS_FILE_COUNT Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% Buy: $DIP_ORDER_BUY_COUNT Sell: $DIP_ORDER_SELL_COUNT"
+  echo "$DIP_POSITIONS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   ##############################################################################
 
@@ -1405,6 +1324,26 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       fi
     fi
   fi
+fi
+
+################################################################################
+
+# if active file has zero orders
+if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
+  ACTIVE_MARKET_PAIRS="N/A"
+  DIP_TOP_ACTIVE_DIP="N/A"
+  DIP_LOW_ACTIVE_DIP="N/A"
+  DIP_SPECIFIC_PROFIT="N/A"
+  DIP_LOW_ACTIVE_PROFIT="N/A"
+  DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="N/A"
+  DIP_TOP_ACTIVE_PRICE_MOVEMENT="N/A"
+  DIP_TOP_VOLUME_MARKET="N/A"
+  DIP_TOP_VOLUME_AMOUNT="N/A"
+  DIP_TOP_AMOUNT_MARKET="N/A"
+  DIP_TOP_AMOUNT_AMOUNT="N/A"
+  DIP_ACTIVE_FILE_COUNT="N/A"
+  DIP_ACTIVE_FILE_AVERAGE_DIP="N/A"
+  DIP_ACTIVE_FILE_AVERAGE_SPREAD="N/A"
 fi
 
 ################################################################################
