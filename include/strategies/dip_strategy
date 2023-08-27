@@ -519,9 +519,9 @@ DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_ACTIVE_FILE" | awk '{ print $16 }' | sort -n
 # top profit (spread) data
 DIP_SPECIFIC_PROFIT="$(grep -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
 # top profit (spread) market
-DIP_TOP_PROFIT="$(echo "$DIP_SPECIFIC_PROFIT" | awk '{ print $1}' | tr -d ':')"
+DIP_TOP_PROFIT="$(echo "$DIP_SPECIFIC_PROFIT" 2>/dev/null | awk '{ print $1}' | tr -d ':')"
 # top profit (spread) amount
-DIP_TOP_PROFIT_AMOUNT="$(echo "$DIP_SPECIFIC_PROFIT" | awk '{ print $16}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
+DIP_TOP_PROFIT_AMOUNT="$(echo "$DIP_SPECIFIC_PROFIT" 2>/dev/null | awk '{ print $16}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 
@@ -530,9 +530,9 @@ DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ 
 # lowest profit (spread) data
 DIP_LOW_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null)"
 # lowest profit (spread) market
-DIP_LOW_PROFIT="$(echo "$DIP_LOW_ACTIVE_PROFIT" | awk '{ print $2}' | tr -d ':')"
+DIP_LOW_PROFIT="$(echo "$DIP_LOW_ACTIVE_PROFIT" 2>/dev/null | awk '{ print $2}' | tr -d ':')"
 # lowest profit (spread) amount
-DIP_LOW_PROFIT_AMOUNT="$(echo "$DIP_LOW_ACTIVE_PROFIT" | awk '{ print $5}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
+DIP_LOW_PROFIT_AMOUNT="$(echo "$DIP_LOW_ACTIVE_PROFIT" 2>/dev/null | awk '{ print $5}' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
 
@@ -541,17 +541,17 @@ DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/nu
 DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | head -1)"
 
 # order id
-DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" | awk '{ print $1 }' | tr -d ':')"
-DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $1 }' | tr -d ':')"
+DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
+DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
 # order type
-DIP_LATEST_ORDER_TYPE="$(echo "$DIP_OLDEST_ORDER_DATA" | awk '{ print $2 }')"
-DIP_OLDEST_ORDER_TYPE="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $2 }')"
+DIP_LATEST_ORDER_TYPE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
+DIP_OLDEST_ORDER_TYPE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
 # order listing
-DIP_LATEST_ORDER_LISTING="$(echo "$DIP_OLDEST_ORDER_DATA" | awk '{ print $6 }')"
-DIP_OLDEST_ORDER_LISTING="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $6 }')"
+DIP_LATEST_ORDER_LISTING="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
+DIP_OLDEST_ORDER_LISTING="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
 # order reference
-DIP_LATEST_ORDER_REFERENCE="$(echo "$DIP_OLDEST_ORDER_DATA" | awk '{ print $7 }')"
-DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" | awk '{ print $7 }')"
+DIP_LATEST_ORDER_REFERENCE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
+DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
 # order age (bought,seconds)
 DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
