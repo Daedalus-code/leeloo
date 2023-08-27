@@ -442,6 +442,10 @@ echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${
 # active market pairs
 ACTIVE_MARKET_PAIRS="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n | awk '!a[$0]++' | xargs)"
 
+if [[ -z "$ACTIVE_MARKET_PAIRS" ]] &>/dev/null; then
+  ACTIVE_MARKET_PAIRS="N/A"
+fi
+
 ################################################################################
 
 # total active count
