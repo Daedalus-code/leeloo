@@ -169,10 +169,21 @@ function target_data() {
 
   # target symbol
   DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
+
   # listing (target from above)
-  LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" | awk -F/ '{ print $1 }')"
+  LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $1 }')"
   # reference (market from above)
-  REFERENCE_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" | awk -F/ '{ print $2 }')"
+  REFERENCE_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $2 }')"
+
+  # if zero
+  if [[ -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+    LISTING_CURRENCY="N/A"
+  fi
+
+  # if zero
+  if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    REFERENCE_CURRENCY="N/A"
+  fi
 
   # target bid
   DIP_TARGET_BID="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $4 }')"
