@@ -839,24 +839,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
   fi
 
-  # random n
-  DIP_RANDOM_TARGET=$((((RANDOM % 18) + 1)))
-
-  # if target empty
-  if [[ ! -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
-    # if correct random n
-    if [[ "$DIP_RANDOM_TARGET" -eq "1" ]] &>/dev/null; then
-      # target based on market.list, sort price movement, 0.00 above n
-      DIP_DAILY_POTENTIAL_MARKET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | sort -n -k 17 | awk '{ print $17 }' | egrep "0.00" | grep -v "-" | tail -1)"
-      # target found in market.list, based on target from above
-      DIP_DAILY_POTENTIAL_TARGET="$(grep "$DIP_DAILY_POTENTIAL_MARKET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list | sort -n -k 17 | tail -1)"
-      # create target line
-      echo "$DIP_DAILY_POTENTIAL_TARGET" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
-      # target variable
-      POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
-    fi
-  fi
-
   ##############################################################################
   # potential buy target
   ##############################################################################
