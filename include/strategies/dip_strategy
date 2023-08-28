@@ -159,9 +159,11 @@ function target_data() {
 
     DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
 
-    # disregard with already searched markets
-    if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "10" ]]; then
+    # if active has more lines than n
+    if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
+      # if search has more lines than n
       if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
+        # disregard with already searched markets
         DIP_TARGET_FILE_OUTPUT="$(grep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | shuf | tail -1)"
       fi
     fi
@@ -215,62 +217,57 @@ function bought_sold_age() {
 
   # if not zero
   if [[ ! -z "$LISTING_CURRENCY" || ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-    # if listing order exist
-    if [[ "$(echo "$LISTING_CURRENCY" | grep -c "N/A" || true)" -eq "0" ]] &>/dev/null; then
-      if [[ "$(echo "$REFERENCE_CURRENCY" | grep -c "N/A" || true)" -eq "0" ]] &>/dev/null; then
 
-        # if not found
-        if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought ]] &>/dev/null; then
-          touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought &>/dev/null
-        fi
+    # if not found
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought ]] &>/dev/null; then
+      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought &>/dev/null
+    fi
 
-        # if not found
-        if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold ]] &>/dev/null; then
-          touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
-        fi
+    # if not found
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold ]] &>/dev/null; then
+      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
+    fi
 
-        # bought file age (seconds)
-        DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    # bought file age (seconds)
+    DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-        # if zero
-        if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
-          DIP_BOUGHT_FILE_AGE_SECONDS="0"
-        fi
+    # if zero
+    if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
+      DIP_BOUGHT_FILE_AGE_SECONDS="0"
+    fi
 
-        # bought file age (days)
-        DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
+    # bought file age (days)
+    DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
-        # sold file age (seconds)
-        DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    # sold file age (seconds)
+    DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-        # if zero
-        if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
-          DIP_SOLD_FILE_AGE_SECONDS="0"
-        fi
+    # if zero
+    if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
+      DIP_SOLD_FILE_AGE_SECONDS="0"
+    fi
 
-        # sold file age (days)
-        DIP_SOLD_FILE_AGE_DAYS="$(echo "$DIP_SOLD_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
+    # sold file age (days)
+    DIP_SOLD_FILE_AGE_DAYS="$(echo "$DIP_SOLD_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
-        # bought file age (hours:minutes:seconds)
-        DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
-        DIP_BOUGHT_FILE_AGE_MINUTES="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-        DIP_BOUGHT_FILE_AGE_HOURS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-        DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+    # bought file age (hours:minutes:seconds)
+    DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
+    DIP_BOUGHT_FILE_AGE_MINUTES="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+    DIP_BOUGHT_FILE_AGE_HOURS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+    DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 
-        # if greater than n seconds (day)
-        if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
-          DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_DAYS:?}d"
-          # if greater than n seconds (hours)
-        elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
-          DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_HOURS:?}h"
-          # if greater than n seconds (minutes)
-        elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "60" ]] &>/dev/null; then
-          DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_MINUTES:?}m"
-          # if less than n seconds (minutes)
-        elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -lt "60" ]] &>/dev/null; then
-          DIP_BOUGHT_AGE_OUTPUT="0m"
-        fi
-      fi
+    # if greater than n seconds (day)
+    if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
+      DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_DAYS:?}d"
+      # if greater than n seconds (hours)
+    elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
+      DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_HOURS:?}h"
+      # if greater than n seconds (minutes)
+    elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "60" ]] &>/dev/null; then
+      DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_MINUTES:?}m"
+      # if less than n seconds (minutes)
+    elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -lt "60" ]] &>/dev/null; then
+      DIP_BOUGHT_AGE_OUTPUT="0m"
     fi
   fi
 }
@@ -321,13 +318,11 @@ if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || t
 
     # set the paths for the files
     PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
-
     # extract the active markets from active file
     ALREADY_ACTIVE_BOTS="$(egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)"
 
     # filter out markets with found data
     grep -vf <(echo "$ALREADY_ACTIVE_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
-
     # replace the original prices file with the filtered version
     mv "${PRICES_FILE}.temp" "$PRICES_FILE"
   fi
@@ -346,13 +341,11 @@ if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   # set the paths for the files
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
   PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
-
   # extract the running markets from robot.log file
   ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/All|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+")
 
   # filter out markets with found data
   grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
-
   # replace the original prices file with the filtered version
   mv "${PRICES_FILE}.temp" "$PRICES_FILE"
 fi
@@ -370,7 +363,6 @@ if [[ "$DIP_ALL_IN" == "0" ]] &>/dev/null; then
   # set the paths for the files
   PRICES_FILE_RAW="${LOG_DIR}/leeloo/southxchange/prices"
   PRICES_FILE="${LOG_DIR}/leeloo/southxchange/prices.dip"
-
   # extract the reference markets from prices
   ALREADY_REFERENCE_MARKETS=$(awk -F'[:/[:blank:]]+' '{ print $2 }' "$PRICES_FILE_RAW" | awk '!a[$0]++')
 
@@ -385,7 +377,6 @@ if [[ "$DIP_ALL_IN" == "0" ]] &>/dev/null; then
     $1 in reference { next }
     { print }
   ' "$PRICES_FILE" >"${PRICES_FILE}.temp"
-
   # replace the original prices file with the filtered version
   mv "${PRICES_FILE}.temp" "$PRICES_FILE"
 fi
