@@ -199,6 +199,10 @@ function target_data() {
   # target amount to buy and sell (listing)
   DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
 
+  if [[ -z "$DIP_TARGET_AMOUNT" ]] &>/dev/null; then
+    DIP_TARGET_AMOUNT="0"
+  fi
+
   # if dca enabled
   if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
     # if market dca is found
