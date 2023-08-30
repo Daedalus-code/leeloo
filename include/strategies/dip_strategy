@@ -137,6 +137,12 @@ function amount_to_buy_sell() {
   DIP_GET_AMOUNT_PROFIT="$(echo "$DIP_GET_AMOUNT_REFERENCE-$DIP_BUY_AMOUNT_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # amount to profit (reference percentage)
   DIP_GET_RATIO_PROFIT="$(echo "100/$DIP_BUY_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  # if zero
+  if [[ -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
+    DIP_GET_RATIO_PROFIT="0"
+  fi
+
   # amount to profit (reference percentage, no decimal)
   DIP_GET_RATIO_PROFIT_CHECK="$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')"
 }
