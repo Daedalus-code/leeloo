@@ -72,10 +72,15 @@ delisted
 ################################################################################
 
 function txid_null() {
+  DIP_NULL_TXID="$(egrep -o "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+  # if zero
+  if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
+    DIP_NULL_TXID="NULL"
+  fi
   # track of non txid
-  echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY : $(egrep "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY : $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   # keep n lines
-  echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  echo "$(tail -5 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
 }
 
 ################################################################################
