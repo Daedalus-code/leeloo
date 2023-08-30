@@ -320,6 +320,14 @@ function clean_DCA() {
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk '!a[$1]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
   # remove listing duplicates, column
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk -F/ '!a[$1]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+  # if active has data
+  if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+    # if dca has data
+    if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+      # remove old dca
+      echo "$(awk -F'[:[:space:]]+' 'NR==FNR { active[$1]; next } $1 in active' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+    fi
+  fi
 }
 
 ################################################################################
