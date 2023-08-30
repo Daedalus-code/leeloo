@@ -619,6 +619,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
 
           clean_DCA
+
           log_date
 
           # log dca balance output
@@ -663,6 +664,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # remove old order
           echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
 
+          log_date
+
           # log target update output
           DIP_OLD_ORDER_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Update: Order: $DIP_ORDER_ID Age: $DIP_BOUGHT_AGE_OUTPUT"
           echo "$DIP_OLD_ORDER_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -698,6 +701,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
       # update log date
       LOG_DATE="$(date +"%d/%m.%y-%H:%M:%S")"
+
+      log_date
 
       # log target output
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Main market $REFERENCE_CURRENCY has no balance!"
@@ -760,6 +765,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # max active orders, set by configuration
     if [[ "$DIP_ORDERS_FILE_COUNT" -gt "$DIP_MAX_ORDERS" ]] &>/dev/null; then
 
+      log_date
+
       # log max orders output
       DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Reached max open orders! $DIP_ORDERS_FILE_COUNT/$DIP_MAX_ORDERS"
       echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -817,17 +824,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # target file age (hours:minutes:seconds)
           DIP_TARGET_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_TARGET_FILE_AGE_SECONDS/3600")) $(("$DIP_TARGET_FILE_AGE_SECONDS%3600/60")) $(("$DIP_TARGET_FILE_AGE_SECONDS%60")))
 
+          log_date
+
           # profit output (log)
           DIP_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Profit: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY -> ${DIP_GET_RATIO_PROFIT:?}%"
           echo "$DIP_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-          log_date
-
           # buying output (log)
           DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
           echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-          log_date
 
           # buy output (trade history)
           DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : buy :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?}% $DIP_TARGET_FILE_AGE"
@@ -1322,6 +1327,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         # track amount being sold
         echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
 
+        log_date
+
         # selling output (log)
         DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Selling $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
         echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -1431,6 +1438,8 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
     # remove old (sold) order
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+
+    log_date
 
     # cleanup output (log)
     DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (sold)"
@@ -1603,6 +1612,8 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/
       # remove old (active) order
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
+      log_date
+
       # removing output (log)
       DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing old buy order $DIP_BOUGHT_AGE_OUTPUT"
       echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -1746,6 +1757,8 @@ if [[ "$(grep -c "$DIP_DUMP_LISTING" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".a
   # remove delisted (active) order
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$DIP_DUMP_LISTING")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
+  log_date
+
   # removing output (log)
   DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/All :: Removing active! $DIP_DUMP_LISTING. (Delisted)"
   echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -1766,6 +1779,8 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
 
     # cancel delisted market
     cancelOrder "$DIP_DUMP_LISTING_ORDER_ID"
+
+    log_date
 
     # removing output (log)
     DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Removing order! $DIP_DUMP_LISTING_ORDER_ID. (Delisted)"
