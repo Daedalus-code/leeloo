@@ -72,8 +72,8 @@ delisted
 ################################################################################
 
 function txid_null() {
-  if [[ "$(egrep -c "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" -gt "0" ]] &>/dev/null; then
-    DIP_NULL_TXID="$(egrep -o "[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+  if [[ "$(egrep -c "[A-Z]+|a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+    DIP_NULL_TXID="$(egrep "[A-Z]+|a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
     # if zero
     if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
       DIP_NULL_TXID="NULL"
@@ -678,6 +678,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           # cancel old order (buy)
           cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+          sleep 1
 
           # remove obsolete dca
           cancel_DCA
@@ -801,6 +802,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
         # cancel old order (buy/sell)
         cancelOrder "$DIP_OLDEST_ORDER_ID" 2>>"${LOG_ERROR:?}"
+        sleep 1
 
         # remove obsolete dca
         cancel_DCA
@@ -1623,6 +1625,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/
 
       # cancel old order (buy)
       cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+      sleep 1
 
       # remove obsolete dca
       cancel_DCA
@@ -1800,6 +1803,7 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
 
     # cancel delisted market
     cancelOrder "$DIP_DUMP_LISTING_ORDER_ID"
+    sleep 1
 
     log_date
 
