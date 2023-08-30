@@ -1770,10 +1770,10 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
 
-      ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null | tail -100)"
+      ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null)"
       ORDERS_COUNT="$(echo "$ORDERS_TAC" | sed -r '/^\s*$/d' | wc -l)"
 
-      WIDTH="$(echo "$ORDERS_TAC" | column -t | wc -L)"
+      WIDTH="$(echo "$ORDERS_TAC" | tail -100 | column -t | wc -L)"
       LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
       RESULT="$(echo "$ORDERS_TAC" 2>/dev/null | column -t | head -100)"
 
