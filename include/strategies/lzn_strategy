@@ -148,8 +148,8 @@ function lorentzian_classification {
 TRADE=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>>"${LOG_ERROR:?}")
 # not zero
 if [[ ! -z "$TRADE" ]] &>/dev/null; then
-  NEW_PRICE=$(echo "${TRADE}" | jq '.Price')
-  NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At')
+  NEW_PRICE=$(echo "${TRADE}" | jq '.Price' 2>/dev/null)
+  NEW_TIMESTAMP=$(echo "${TRADE}" | jq '.At' 2>/dev/null)
 
   # check if new trade has been executed
   if (($(echo "${NEW_PRICE} != ${PRICE}" | bc -l 2>/dev/null))); then
