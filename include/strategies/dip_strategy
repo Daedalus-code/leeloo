@@ -466,9 +466,9 @@ DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS
 
 log_date
 
-# log searching output
-DIP_SEARCHING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Searching $DIP_MARKETS. Found $DIP_PRICES_FILE_COUNT potential targets."
-echo "$DIP_SEARCHING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+# log potential targets output
+DIP_POTENTIAL_TARGETS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: $DIP_MARKETS have $DIP_PRICES_FILE_COUNT potential targets."
+echo "$DIP_POTENTIAL_TARGETS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
 # search market for a target
@@ -708,8 +708,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     POTENTIAL_MARKET_TOTAL_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
     # average market spread
     POTENTIAL_MARKET_AVERAGE_SPREAD="$(echo "$POTENTIAL_MARKET_TOTAL_SPREAD/$POTENTIAL_MARKET_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-    log_date
 
     # log target output
     DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Found: $POTENTIAL_MARKET_COUNT Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}% Average"
