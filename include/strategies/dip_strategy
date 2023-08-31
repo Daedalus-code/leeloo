@@ -71,22 +71,6 @@ delisted
 
 ################################################################################
 
-function txid_null() {
-  if [[ "$(egrep -c "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" -gt "0" ]] &>/dev/null; then
-    DIP_NULL_TXID="$(egrep "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
-    # if zero
-    if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
-      DIP_NULL_TXID="NULL"
-    fi
-    # track of non txid
-    echo "$DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-    # keep n lines
-    echo "$(tail -5 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-  fi
-}
-
-################################################################################
-
 # amount to buy sell
 function amount_to_buy_sell() {
 
@@ -234,6 +218,22 @@ function target_data() {
       # increase target amount
       DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_AMOUNT+$DIP_TARGET_DCA" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
     fi
+  fi
+}
+
+################################################################################
+
+function txid_null() {
+  if [[ "$(egrep -c "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+    DIP_NULL_TXID="$(egrep "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')"
+    # if zero
+    if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
+      DIP_NULL_TXID="NULL"
+    fi
+    # track of non txid
+    echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    # keep n lines
+    echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   fi
 }
 
