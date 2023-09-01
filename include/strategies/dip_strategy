@@ -682,9 +682,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
           sleep 1
 
-          # remove obsolete dca
-          cancel_DCA
-
           # remove old order
           echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
 
@@ -801,9 +798,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # cancel old order (buy/sell)
         cancelOrder "$DIP_OLDEST_ORDER_ID" 2>>"${LOG_ERROR:?}"
         sleep 1
-
-        # remove obsolete dca
-        cancel_DCA
       fi
     fi
 
