@@ -462,16 +462,29 @@ fi
 
 ################################################################################
 
-# market.list file output
-DIP_MARKET_L_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/market.list 2>/dev/null)"
-
 # create specific dip_markets list
 echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS" 2>/dev/null
 
+################################################################################
+
+# market.list file output
+DIP_MARKET_L_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/market.list 2>/dev/null)"
+
 # specific prices count
 DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" || true)"
+
+# if zero
+if [[ -z "$DIP_PRICES_FILE_COUNT" ]] &>/dev/null; then
+  DIP_PRICES_FILE_COUNT="0"
+fi
+
 # market.list target found
 DIP_MARKET_L_FILE_COUNT="$(echo "$DIP_MARKET_L_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" || true)"
+
+# if zero
+if [[ -z "$DIP_MARKET_L_FILE_COUNT" ]] &>/dev/null; then
+  DIP_MARKET_L_FILE_COUNT="0"
+fi
 
 log_date
 
