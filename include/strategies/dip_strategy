@@ -691,8 +691,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # remove old order
           echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
 
-          cancel_DCA
-
           log_date
 
           # log target update output
@@ -806,8 +804,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # cancel old order (buy/sell)
         cancelOrder "$DIP_OLDEST_ORDER_ID" 2>>"${LOG_ERROR:?}"
         sleep 1
-
-        cancel_DCA
       fi
     fi
 
@@ -1499,12 +1495,6 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?} $DIP_BOUGHT_FILE_AGE"
     echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
-    # if dca enabled
-    if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
-      # remove completed dca
-      cancel_DCA
-    fi
-
     # reset sold file
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
   fi
@@ -1655,8 +1645,6 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/
 
       # remove old (active) order
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-
-      cancel_DCA
 
       log_date
 
@@ -1831,8 +1819,6 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
     cancelOrder "$DIP_DUMP_LISTING_ORDER_ID"
     sleep 1
 
-    cancel_DCA
-
     log_date
 
     # removing output (log)
@@ -1903,7 +1889,14 @@ Last_Order.txid....: $DIP_LATEST_ORDER_ID ${DIP_LATEST_ORDER_LISTING:?}/${DIP_LA
 
 ################################################################################
 
-clean_DCA
+# if dca enabled
+if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
+  # remove completed dca
+  cancel_DCA
+  # clean dca
+  clean_DCA
+fi
+
 save_orders
 last_orders
 sxc_backup_orders
