@@ -422,12 +422,12 @@ fi
 ################################################################################
 
 # prices file output
-DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
+CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
 
 # if zero, do random markets (all reference markets)
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # dip markets (random)
-  DIP_MARKETS="$(echo "$DIP_PRICES_FILE_OUTPUT" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | awk '!a[$1]++' | tr -d ':' | shuf | head -1)"
+  DIP_MARKETS="$(echo "$CAT_PRICES_DIP_FILE" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | awk '!a[$1]++' | tr -d ':' | shuf | head -1)"
 fi
 
 # if still zero, use good old bitcoin as main market (reference)
@@ -463,15 +463,18 @@ fi
 ################################################################################
 
 # create specific dip_markets list
-echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS" 2>/dev/null
+echo "$(echo "$CAT_PRICES_DIP_FILE" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS" 2>/dev/null
 
 ################################################################################
 
+# cat order data
+CAT_ORDERS_FILE="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
+
 # market.list file output
-DIP_MARKET_L_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null)"
+CAT_MARKET_LIST_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null)"
 
 # specific prices count
-DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" || true)"
+DIP_PRICES_FILE_COUNT="$(echo "$CAT_PRICES_DIP_FILE" | grep -c "/$DIP_MARKETS" || true)"
 
 # if zero
 if [[ -z "$DIP_PRICES_FILE_COUNT" ]] &>/dev/null; then
@@ -481,7 +484,7 @@ else
 fi
 
 # market.list target found
-DIP_MARKET_L_FILE_COUNT="$(echo "$DIP_MARKET_L_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" || true)"
+DIP_MARKET_L_FILE_COUNT="$(echo "$CAT_MARKET_LIST_FILE" | grep -c "/$DIP_MARKETS" || true)"
 
 # if zero
 if [[ -z "$DIP_MARKET_L_FILE_COUNT" ]] &>/dev/null; then
@@ -491,7 +494,7 @@ else
 fi
 
 # orders found
-DIP_ORDERS_TARGET_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "/$DIP_MARKETS" || true)"
+DIP_ORDERS_TARGET_COUNT="$(echo "$CAT_ORDERS_FILE" | grep -c "/$DIP_MARKETS" || true)"
 
 # if zero
 if [[ -z "$DIP_ORDERS_TARGET_COUNT" ]] &>/dev/null; then
@@ -930,11 +933,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
-  # cat order data
-  CAT_ORDER_FILE="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
-
   # buy count
-  DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "buy" || true)"
+  DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDERS_FILE" | grep -c "buy" || true)"
 
   # if zero
   if [[ -z "$DIP_ORDER_BUY_COUNT" ]] &>/dev/null; then
@@ -942,7 +942,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   fi
 
   # sell count
-  DIP_ORDER_SELL_COUNT="$(echo "$CAT_ORDER_FILE" | grep -c "sell" || true)"
+  DIP_ORDER_SELL_COUNT="$(echo "$CAT_ORDERS_FILE" | grep -c "sell" || true)"
 
   # if zero
   if [[ -z "$DIP_ORDER_SELL_COUNT" ]] &>/dev/null; then
