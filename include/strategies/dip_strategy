@@ -422,7 +422,7 @@ fi
 ################################################################################
 
 # prices file output
-DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}/leeloo/southxchange/prices.dip" 2>/dev/null)"
+DIP_PRICES_FILE_OUTPUT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices.dip 2>/dev/null)"
 
 # if zero, do random markets (all reference markets)
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
@@ -462,16 +462,21 @@ fi
 
 ################################################################################
 
+# market.list file output
+DIP_MARKET_L_FILE_OUTPUT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/market.list 2>/dev/null)"
+
 # create specific dip_markets list
 echo "$(echo "$DIP_PRICES_FILE_OUTPUT" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/southxchange/prices.$DIP_MARKETS" 2>/dev/null
 
 # specific prices count
 DIP_PRICES_FILE_COUNT="$(echo "$DIP_PRICES_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" || true)"
+# market.list target found
+DIP_MARKET_L_FILE_COUNT="$(echo "$DIP_MARKET_L_FILE_OUTPUT" | grep -c "/$DIP_MARKETS" || true)"
 
 log_date
 
 # log potential targets output
-DIP_POTENTIAL_TARGETS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Reference: $DIP_MARKETS > Listing: +$DIP_PRICES_FILE_COUNT"
+DIP_POTENTIAL_TARGETS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Reference: $DIP_MARKETS > Listing: +$DIP_PRICES_FILE_COUNT ($DIP_MARKET_L_FILE_COUNT)"
 echo "$DIP_POTENTIAL_TARGETS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
 ################################################################################
