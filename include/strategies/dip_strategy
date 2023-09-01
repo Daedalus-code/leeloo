@@ -308,10 +308,13 @@ function cancel_DCA() {
   if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
     # if listing, reference has data
     if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-      # if listing, reference exist as dca
+      # if dca exist
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
-        # remove obsolete dca
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+        # if no order exist
+        if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+          # remove obsolete dca
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+        fi
       fi
     fi
   fi
@@ -682,6 +685,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
           sleep 1
 
+          cancel_DCA
+
           # remove old order
           echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
 
@@ -798,6 +803,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # cancel old order (buy/sell)
         cancelOrder "$DIP_OLDEST_ORDER_ID" 2>>"${LOG_ERROR:?}"
         sleep 1
+
+        cancel_DCA
       fi
     fi
 
@@ -1640,7 +1647,6 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/
       cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
       sleep 1
 
-      # remove obsolete dca
       cancel_DCA
 
       # remove old order
@@ -1821,6 +1827,8 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
     # cancel delisted market
     cancelOrder "$DIP_DUMP_LISTING_ORDER_ID"
     sleep 1
+
+    cancel_DCA
 
     log_date
 
