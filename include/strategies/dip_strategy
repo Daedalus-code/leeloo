@@ -312,8 +312,11 @@ function cancel_DCA() {
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
         # if no order exist
         if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
-          # remove obsolete dca
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          # if no active exist
+          if [[ "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+            # remove obsolete dca
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          fi
         fi
       fi
     fi
@@ -685,10 +688,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
           sleep 1
 
-          cancel_DCA
-
           # remove old order
           echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
+
+          cancel_DCA
 
           log_date
 
@@ -1430,7 +1433,7 @@ fi
 # sold order
 ################################################################################
 
-# if no orders exists
+# if no orders exist
 if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
 
   # total sum (confirmed sell)
@@ -1647,13 +1650,13 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/
       cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
       sleep 1
 
-      cancel_DCA
-
       # remove old order
       echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
 
       # remove old (active) order
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+
+      cancel_DCA
 
       log_date
 
