@@ -1512,8 +1512,10 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
     # if dca
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -eq "1" ]] &>/dev/null; then
+
       # use last profit value
-      DIP_GET_RATIO_PROFIT="$(grep "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $NF }')"
+      DIP_GET_RATIO_PROFIT="$(grep "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $NF }' | tr -d '%')*"
+
       # if zero
       if [[ -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
         DIP_GET_RATIO_PROFIT="DCA"
