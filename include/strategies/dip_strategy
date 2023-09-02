@@ -1510,6 +1510,9 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     DIP_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Profit: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% after $DIP_BOUGHT_AGE_OUTPUT"
     echo "$DIP_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
+    # track profit
+    echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY > $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
+
     # if dca
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -eq "1" ]] &>/dev/null; then
 
