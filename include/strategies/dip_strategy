@@ -1495,8 +1495,11 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
   # fully sold order (old)
   ##############################################################################
 
-  # old active markets, with data
-  DIP_OLD_TARGET_LIST="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/*.sold | egrep " [1-9]+ [A-Z]+" 2>/dev/null)" | awk '{ print $NF }' | sort -R | head -1)"
+  # default
+  DIP_TARGET_OLD_NO_ACTIVE="0"
+
+  # old active markets, with sold data
+  DIP_OLD_TARGET_LIST="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/*.sold 2>/dev/null | egrep " [1-9]+ [A-Z]+" 2>/dev/null)" | awk '{ print $NF }' | shuf | head -1)"
 
   if [[ -n "$DIP_OLD_TARGET_LIST" ]] &>/dev/null; then
 
@@ -1522,9 +1525,6 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
     if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLD_TARGET_LISTING:?}"_"${DIP_OLD_TARGET_REFERENCE:?}".bought ]] &>/dev/null; then
       if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLD_TARGET_LISTING:?}"_"${DIP_OLD_TARGET_REFERENCE:?}".sold ]] &>/dev/null; then
-
-        # default
-        DIP_TARGET_OLD_NO_ACTIVE="0"
 
         # old orders bought
         DIP_BOUGHT_FILE="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${DIP_OLD_TARGET_LISTING:?}_${DIP_OLD_TARGET_REFERENCE:?}.bought"
