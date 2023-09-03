@@ -1494,98 +1494,105 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
   # fully sold order (old)
   ##############################################################################
 
-  # default
-  DIP_TARGET_OLD_NO_ACTIVE="0"
-
   # old active markets
-  DIP_OLD_TARGET_LIST="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/)" | grep -v "total" | awk '{ print $NF }' | sort -R | head -1)"
+  DIP_OLD_TARGET_LIST="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/ 2>/dev/null)" | grep -v "total" 2>/dev/null | awk '{ print $NF }' | sort -R | head -1)"
 
-  # old listing
-  DIP_OLD_TARGET_LISTING="$(echo "$DIP_OLD_TARGET_LIST" | awk -F_ '{ print $1 }')"
-  # old reference
-  DIP_OLD_TARGET_REFERENCE="$(echo "$DIP_OLD_TARGET_LIST" | awk -F_ '{ print $2 }' | awk -F. '{ print $1 }')"
-
-  # old orders bought
-  DIP_BOUGHT_FILE="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${DIP_OLD_TARGET_LISTING:?}_${DIP_OLD_TARGET_REFERENCE:?}.bought"
-  # old orders sold
-  DIP_SOLD_FILE="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${DIP_OLD_TARGET_LISTING:?}_${DIP_OLD_TARGET_REFERENCE:?}.sold"
-
-  # bought file age (seconds)
-  DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "$DIP_BOUGHT_FILE" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  # sold file age (seconds)
-  DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "$DIP_SOLD_FILE" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  # difference between bought and sold (seconds)
-  DIP_SOLD_FILE_AGE_DIFF="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS-$DIP_SOLD_FILE_AGE_SECONDS" | bc 2>/dev/null)"
-
-  # if zero
-  if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
-    DIP_BOUGHT_FILE_AGE_SECONDS="0"
+  if [[ -n "$DIP_OLD_TARGET_LIST" ]] &>/dev/null; then
+    # old listing
+    DIP_OLD_TARGET_LISTING="$(echo "$DIP_OLD_TARGET_LIST" | awk -F_ '{ print $1 }')"
+    # old reference
+    DIP_OLD_TARGET_REFERENCE="$(echo "$DIP_OLD_TARGET_LIST" | awk -F_ '{ print $2 }' | awk -F. '{ print $1 }')"
   fi
 
-  # if zero
-  if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
-    DIP_SOLD_FILE_AGE_SECONDS="0"
-  fi
+  if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLD_TARGET_LISTING:?}"_"${DIP_OLD_TARGET_REFERENCE:?}".bought ]] &>/dev/null; then
+    if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLD_TARGET_LISTING:?}"_"${DIP_OLD_TARGET_REFERENCE:?}".sold ]] &>/dev/null; then
 
-  # bought age
-  DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
-  # sold age
-  DIP_SOLD_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_SOLD_FILE_AGE_SECONDS/3600")) $(("$DIP_SOLD_FILE_AGE_SECONDS%3600/60")) $(("$DIP_SOLD_FILE_AGE_SECONDS%60")))
-  # diff age
-  DIP_DIFF_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_SOLD_FILE_AGE_DIFF/3600")) $(("$DIP_SOLD_FILE_AGE_DIFF%3600/60")) $(("$DIP_SOLD_FILE_AGE_DIFF%60")))
+      # default
+      DIP_TARGET_OLD_NO_ACTIVE="0"
 
-  # cat files
-  CAT_BOUGHT_FILE="$(cat "$DIP_BOUGHT_FILE" 2>/dev/null)"
-  CAT_SOLD_FILE="$(cat "$DIP_SOLD_FILE" 2>/dev/null)"
+      # old orders bought
+      DIP_BOUGHT_FILE="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${DIP_OLD_TARGET_LISTING:?}_${DIP_OLD_TARGET_REFERENCE:?}.bought"
+      # old orders sold
+      DIP_SOLD_FILE="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${DIP_OLD_TARGET_LISTING:?}_${DIP_OLD_TARGET_REFERENCE:?}.sold"
 
-  # old target profit
-  DIP_OLD_TARGET_PROFIT="$(cat "$DIP_BOUGHT_FILE" 2>/dev/null | awk '{ print $NF }' | tail -1)"
-  # old target earning
-  DIP_OLD_TARGET_EARNING="$(cat "$DIP_BOUGHT_FILE" 2>/dev/null | egrep -o "Earning: [0-9]+.[0-9]+" | awk '{ print $2 }' | tail -1)"
+      # bought file age (seconds)
+      DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "$DIP_BOUGHT_FILE" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+      # sold file age (seconds)
+      DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "$DIP_SOLD_FILE" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+      # difference between bought and sold (seconds)
+      DIP_SOLD_FILE_AGE_DIFF="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS-$DIP_SOLD_FILE_AGE_SECONDS" | bc 2>/dev/null)"
 
-  # if no profit found
-  if [[ "$(echo "$DIP_OLD_TARGET_PROFIT" | grep -c "%" || true)" -eq "0" || "$(echo "$DIP_OLD_TARGET_EARNING" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
-    DIP_GET_RATIO_PROFIT="null "
-    DIP_GET_AMOUNT_PROFIT="null"
-  fi
+      # if zero
+      if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
+        DIP_BOUGHT_FILE_AGE_SECONDS="0"
+      fi
 
-  # old bought value
-  DIP_BOUGHT_VALUE="$(echo "$CAT_BOUGHT_FILE" | egrep -o "Buying [0-9]+.[0-9]+" | awk '{ print $2 }' | tail -1)"
-  # old sold total value
-  DIP_SOLD_VALUE="$(echo "$CAT_SOLD_FILE" | awk '{ SUM += $1} END { print SUM }')"
+      # if zero
+      if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
+        DIP_SOLD_FILE_AGE_SECONDS="0"
+      fi
 
-  # calculate sold percentage
-  DIP_SOLD_VALUE_PERCENTAGE="$(echo "100/$DIP_BOUGHT_VALUE*$DIP_SOLD_VALUE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+      # bought age
+      DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
+      # sold age
+      DIP_SOLD_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_SOLD_FILE_AGE_SECONDS/3600")) $(("$DIP_SOLD_FILE_AGE_SECONDS%3600/60")) $(("$DIP_SOLD_FILE_AGE_SECONDS%60")))
+      # diff age
+      DIP_DIFF_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_SOLD_FILE_AGE_DIFF/3600")) $(("$DIP_SOLD_FILE_AGE_DIFF%3600/60")) $(("$DIP_SOLD_FILE_AGE_DIFF%60")))
 
-  DIP_OLD_TARGET_BOUGHT="$(wc -l "$DIP_BOUGHT_FILE" | awk '{ print $1 }')"
-  DIP_OLD_TARGET_SOLD="$(wc -l "$DIP_SOLD_FILE" | awk '{ print $1 }')"
+      # cat files
+      CAT_BOUGHT_FILE="$(cat "$DIP_BOUGHT_FILE" 2>/dev/null)"
+      CAT_SOLD_FILE="$(cat "$DIP_SOLD_FILE" 2>/dev/null)"
 
-  # if files has data
-  if [[ -n "$DIP_OLD_TARGET_BOUGHT" || -n "$DIP_OLD_TARGET_SOLD" ]] &>/dev/null; then
-    # if data has values
-    if [[ "$DIP_OLD_TARGET_BOUGHT" -gt "0" || "$DIP_OLD_TARGET_SOLD" -gt "0" ]] &>/dev/null; then
+      # old target profit
+      DIP_OLD_TARGET_PROFIT="$(cat "$DIP_BOUGHT_FILE" 2>/dev/null | awk '{ print $NF }' | tail -1)"
+      # old target earning
+      DIP_OLD_TARGET_EARNING="$(cat "$DIP_BOUGHT_FILE" 2>/dev/null | egrep -o "Earning: [0-9]+.[0-9]+" | awk '{ print $2 }' | tail -1)"
 
-      # if values are the same or greater
-      if [[ "$DIP_SOLD_VALUE_PERCENTAGE" -ge "99" ]] &>/dev/null; then
-        # if orders are gone
-        if [[ "$(grep "$DIP_OLD_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$DIP_OLD_TARGET_LISTING" || true)" -eq "0" ]] &>/dev/null; then
-          # if active are gone
-          if [[ "$(grep "$DIP_OLD_TARGET_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -c "$DIP_OLD_TARGET_LISTING" || true)" -eq "0" ]] &>/dev/null; then
+      # if no profit found
+      if [[ "$(echo "$DIP_OLD_TARGET_PROFIT" | grep -c "%" || true)" -eq "0" || "$(echo "$DIP_OLD_TARGET_EARNING" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
+        DIP_GET_RATIO_PROFIT="null "
+        DIP_GET_AMOUNT_PROFIT="null"
+      fi
 
-            # trigger sold order
-            DIP_TOTAL_SOLD_SUM_CHECK="1"
-            DIP_TARGET_BALANCE_CHECK="1"
-            DIP_TARGET_OLD_NO_ACTIVE="1"
+      # old bought value
+      DIP_BOUGHT_VALUE="$(echo "$CAT_BOUGHT_FILE" | egrep -o "Buying [0-9]+.[0-9]+" | awk '{ print $2 }' | tail -1)"
+      # old sold total value
+      DIP_SOLD_VALUE="$(echo "$CAT_SOLD_FILE" | awk '{ SUM += $1} END { print SUM }')"
 
-            # use old order data
-            LISTING_CURRENCY="$DIP_OLD_TARGET_LISTING"
-            REFERENCE_CURRENCY="$DIP_OLD_TARGET_REFERENCE"
-            DIP_GET_RATIO_PROFIT="$DIP_OLD_TARGET_EARNING"
-            DIP_GET_AMOUNT_PROFIT="$DIP_OLD_TARGET_PROFIT"
+      # calculate sold percentage
+      DIP_SOLD_VALUE_PERCENTAGE="$(echo "100/$DIP_BOUGHT_VALUE*$DIP_SOLD_VALUE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 
-            # old profit output (log)
-            DIP_OLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_OLD_TARGET_LISTING/$DIP_OLD_TARGET_REFERENCE :: Sold! Profit: $DIP_OLD_TARGET_PROFIT Buy: $DIP_BOUGHT_FILE_AGE Sell: $DIP_DIFF_FILE_AGE"
-            echo "$DIP_OLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      DIP_OLD_TARGET_BOUGHT="$(wc -l "$DIP_BOUGHT_FILE" | awk '{ print $1 }')"
+      DIP_OLD_TARGET_SOLD="$(wc -l "$DIP_SOLD_FILE" | awk '{ print $1 }')"
+
+      # if files has data
+      if [[ -n "$DIP_OLD_TARGET_BOUGHT" || -n "$DIP_OLD_TARGET_SOLD" ]] &>/dev/null; then
+        # if data has values
+        if [[ "$DIP_OLD_TARGET_BOUGHT" -gt "0" || "$DIP_OLD_TARGET_SOLD" -gt "0" ]] &>/dev/null; then
+
+          # if values are the same or greater
+          if [[ "$DIP_SOLD_VALUE_PERCENTAGE" -ge "99" ]] &>/dev/null; then
+            # if orders are gone
+            if [[ "$(grep "$DIP_OLD_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$DIP_OLD_TARGET_LISTING" || true)" -eq "0" ]] &>/dev/null; then
+              # if active are gone
+              if [[ "$(grep "$DIP_OLD_TARGET_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -c "$DIP_OLD_TARGET_LISTING" || true)" -eq "0" ]] &>/dev/null; then
+
+                # trigger sold order
+                DIP_TOTAL_SOLD_SUM_CHECK="1"
+                DIP_TARGET_BALANCE_CHECK="1"
+                DIP_TARGET_OLD_NO_ACTIVE="1"
+
+                # use old order data
+                LISTING_CURRENCY="$DIP_OLD_TARGET_LISTING"
+                REFERENCE_CURRENCY="$DIP_OLD_TARGET_REFERENCE"
+                DIP_GET_RATIO_PROFIT="$DIP_OLD_TARGET_EARNING"
+                DIP_GET_AMOUNT_PROFIT="$DIP_OLD_TARGET_PROFIT"
+
+                # old profit output (log)
+                DIP_OLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_OLD_TARGET_LISTING/$DIP_OLD_TARGET_REFERENCE :: Sold! Profit: $DIP_OLD_TARGET_PROFIT Buy: $DIP_BOUGHT_FILE_AGE Sell: $DIP_DIFF_FILE_AGE"
+                echo "$DIP_OLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+              fi
+            fi
           fi
         fi
       fi
