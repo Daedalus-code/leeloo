@@ -1540,10 +1540,13 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
   # old target profit
   DIP_OLD_TARGET_PROFIT="$(cat "$DIP_BOUGHT_FILE" 2>/dev/null | awk '{ print $NF }' | tail -1)"
+  # old target earning
+  DIP_OLD_TARGET_EARNING="$(cat "$DIP_BOUGHT_FILE" 2>/dev/null | egrep -o "Earning: [0-9]+.[0-9]+" | awk '{ print $2 }' | tail -1)"
 
   # if no profit found
-  if [[ "$(echo "$DIP_OLD_TARGET_PROFIT" | grep -c "%" || true)" -eq "0" ]] &>/dev/null; then
-    DIP_OLD_TARGET_PROFIT="Not Found "
+  if [[ "$(echo "$DIP_OLD_TARGET_PROFIT" | grep -c "%" || true)" -eq "0" || "$(echo "$DIP_OLD_TARGET_EARNING" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
+    DIP_GET_RATIO_PROFIT="null "
+    DIP_GET_AMOUNT_PROFIT="null"
   fi
 
   # old bought value
@@ -1577,6 +1580,8 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
             # use old order data
             LISTING_CURRENCY="$DIP_OLD_TARGET_LISTING"
             REFERENCE_CURRENCY="$DIP_OLD_TARGET_REFERENCE"
+            DIP_GET_RATIO_PROFIT="$DIP_OLD_TARGET_EARNING"
+            DIP_GET_AMOUNT_PROFIT="$DIP_OLD_TARGET_PROFIT"
 
             # old profit output (log)
             DIP_OLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_OLD_TARGET_LISTING/$DIP_OLD_TARGET_REFERENCE :: Sold! Profit: $DIP_OLD_TARGET_PROFIT Buy: $DIP_BOUGHT_FILE_AGE Sell: $DIP_DIFF_FILE_AGE"
@@ -1609,9 +1614,6 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
       DIP_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Profit: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% after $DIP_BOUGHT_AGE_OUTPUT"
       echo "$DIP_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-      # track profit
-      echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY > $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
-
       # if dca
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -eq "1" ]] &>/dev/null; then
 
@@ -1628,6 +1630,9 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
       DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?} $DIP_BOUGHT_FILE_AGE"
       echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
     fi
+
+    # track profit
+    echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY > $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
 
     # reset sold file
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
