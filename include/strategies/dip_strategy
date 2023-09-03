@@ -1532,9 +1532,20 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
         DIP_SOLD_FILE="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${DIP_OLD_TARGET_LISTING:?}_${DIP_OLD_TARGET_REFERENCE:?}.sold"
 
         # bought file age (seconds)
-        DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "$DIP_BOUGHT_FILE" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+        DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "$DIP_BOUGHT_FILE" 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
         # sold file age (seconds)
-        DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "$DIP_SOLD_FILE" | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+        DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "$DIP_SOLD_FILE" 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+        # if zero
+        if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
+          DIP_BOUGHT_FILE_AGE_SECONDS="0"
+        fi
+
+        # if zero
+        if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
+          DIP_SOLD_FILE_AGE_SECONDS="0"
+        fi
+
         # difference between bought and sold (seconds)
         DIP_SOLD_FILE_AGE_DIFF="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS-$DIP_SOLD_FILE_AGE_SECONDS" | bc 2>/dev/null)"
 
@@ -1726,7 +1737,7 @@ calculate_sold_file_age() {
   fi
 
   if [[ -f "$FILE_PATH" ]] &>/dev/null; then
-    LAST_EDIT=$(stat -c '%Y' "$FILE_PATH")
+    LAST_EDIT=$(stat -c '%Y' "$FILE_PATH" 2>/dev/null)
     AGE_SECONDS=$(($(date +%s) - $LAST_EDIT))
 
     # if zero
