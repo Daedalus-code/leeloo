@@ -1495,20 +1495,20 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
   # fully sold order (old)
   ##############################################################################
 
-  # old active markets
-  DIP_OLD_TARGET_LIST="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/ 2>/dev/null)" | grep -v "total" 2>/dev/null | awk '{ print $NF }' | sort -R | head -1)"
+  # old active markets, with data
+  DIP_OLD_TARGET_LIST="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/*.sold | egrep " [1-9]+ [A-Z]+" 2>/dev/null)" | awk '{ print $NF }' | sort -R | head -1)"
 
   if [[ -n "$DIP_OLD_TARGET_LIST" ]] &>/dev/null; then
 
     # old listing
-    DIP_OLD_TARGET_LISTING="$(echo "$DIP_OLD_TARGET_LIST" | awk -F_ '{ print $1 }')"
+    DIP_OLD_TARGET_LISTING="$(echo "$DIP_OLD_TARGET_LIST" | awk -F_ '{ print $1 }' | awk -F/ '{ print $NF }')"
     # old reference
     DIP_OLD_TARGET_REFERENCE="$(echo "$DIP_OLD_TARGET_LIST" | awk -F_ '{ print $2 }' | awk -F. '{ print $1 }')"
 
     # listing balance (available)
-    LISTING_BALANCE="$(grep -w "\<$DIP_OLD_TARGET_LISTING:" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
+    LISTING_BALANCE="$(grep -w "\<$DIP_OLD_TARGET_LISTING:" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1 || true)"
     # reference balance (available)
-    REFERENCE_BALANCE="$(grep -w "\<$DIP_OLD_TARGET_REFERENCE:" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
+    REFERENCE_BALANCE="$(grep -w "\<$DIP_OLD_TARGET_REFERENCE:" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1 || true)"
 
     # if zero
     if [[ -z "$REFERENCE_BALANCE" ]] &>/dev/null; then
