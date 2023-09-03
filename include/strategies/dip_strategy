@@ -1566,19 +1566,22 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
       if [[ "$DIP_SOLD_VALUE_PERCENTAGE" -ge "99" ]] &>/dev/null; then
         # if orders are gone
         if [[ "$(grep "$DIP_OLD_TARGET_REFERENCE" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -c "$DIP_OLD_TARGET_LISTING" || true)" -eq "0" ]] &>/dev/null; then
+          # if active are gone
+          if [[ "$(grep "$DIP_OLD_TARGET_REFERENCE" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -c "$DIP_OLD_TARGET_LISTING" || true)" -eq "0" ]] &>/dev/null; then
 
-          # trigger sold order
-          DIP_TOTAL_SOLD_SUM_CHECK="1"
-          DIP_TARGET_BALANCE_CHECK="1"
-          DIP_TARGET_OLD_NO_ACTIVE="1"
+            # trigger sold order
+            DIP_TOTAL_SOLD_SUM_CHECK="1"
+            DIP_TARGET_BALANCE_CHECK="1"
+            DIP_TARGET_OLD_NO_ACTIVE="1"
 
-          # use old order data
-          LISTING_CURRENCY="$DIP_OLD_TARGET_LISTING"
-          REFERENCE_CURRENCY="$DIP_OLD_TARGET_REFERENCE"
+            # use old order data
+            LISTING_CURRENCY="$DIP_OLD_TARGET_LISTING"
+            REFERENCE_CURRENCY="$DIP_OLD_TARGET_REFERENCE"
 
-          # old profit output (log)
-          DIP_OLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_OLD_TARGET_LISTING/$DIP_OLD_TARGET_REFERENCE :: Sold! Profit: $DIP_OLD_TARGET_PROFIT Buy: $DIP_BOUGHT_FILE_AGE Sell: $DIP_DIFF_FILE_AGE"
-          echo "$DIP_OLD_PROFIT_OUTPUT"
+            # old profit output (log)
+            DIP_OLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_OLD_TARGET_LISTING/$DIP_OLD_TARGET_REFERENCE :: Sold! Profit: $DIP_OLD_TARGET_PROFIT Buy: $DIP_BOUGHT_FILE_AGE Sell: $DIP_DIFF_FILE_AGE"
+            echo "$DIP_OLD_PROFIT_OUTPUT"
+          fi
         fi
       fi
     fi
