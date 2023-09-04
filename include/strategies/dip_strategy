@@ -1497,6 +1497,7 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
   # default
   DIP_TARGET_OLD_NO_ACTIVE="0"
+  DIP_TARGET_SOLD_STATUS="Sold"
 
   # old active markets, with sold data
   DIP_OLD_TARGET_LIST="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/*.sold 2>/dev/null | egrep " [1-9]+ [A-Z]+" 2>/dev/null)" | awk '{ print $NF }' | shuf | head -1)"
@@ -1577,8 +1578,8 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
         # if no profit found
         if [[ "$(echo "$DIP_OLD_TARGET_PROFIT" | grep -c "%" || true)" -eq "0" || "$(echo "$DIP_OLD_TARGET_EARNING" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
-          DIP_GET_RATIO_PROFIT="null "
-          DIP_GET_AMOUNT_PROFIT="null"
+          DIP_GET_RATIO_PROFIT="0"
+          DIP_GET_AMOUNT_PROFIT="0"
         fi
 
         # old bought value
@@ -1610,15 +1611,12 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
                   DIP_TARGET_OLD_NO_ACTIVE="1"
 
                   # use old order data
+                  DIP_TARGET_SOLD_STATUS="Old"
                   LISTING_CURRENCY="$DIP_OLD_TARGET_LISTING"
                   REFERENCE_CURRENCY="$DIP_OLD_TARGET_REFERENCE"
                   DIP_GET_RATIO_PROFIT="$DIP_OLD_TARGET_PROFIT"
                   DIP_GET_AMOUNT_PROFIT="$DIP_OLD_TARGET_EARNING"
                   DIP_BOUGHT_AGE_OUTPUT="$DIP_DIFF_FILE_AGE"
-
-                  # old profit output (log)
-                  DIP_OLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_OLD_TARGET_LISTING/$DIP_OLD_TARGET_REFERENCE :: Old Profit: $DIP_OLD_TARGET_PROFIT Buy: $DIP_BOUGHT_FILE_AGE Sell: $DIP_DIFF_FILE_AGE"
-                  echo "$DIP_OLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
                 fi
               fi
             fi
@@ -1656,7 +1654,7 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     fi
 
     # cleanup output (log)
-    DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (sold)"
+    DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. ($DIP_TARGET_SOLD_STATUS)"
     echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
     # profit output (log)
