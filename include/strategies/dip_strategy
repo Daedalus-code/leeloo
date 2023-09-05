@@ -2034,6 +2034,37 @@ fi
 
 ################################################################################
 
+# if profit found
+if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
+
+  # input data from the specified file
+  DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit)
+
+  # initialize an associative array to store the total SUM for each reference
+  declare -A REFERENCE_TOTAL
+
+  # loop through each line in the input data
+  while read -r LINE; do
+    # extract the reference name (the part before '>')
+    REFERENCE=$(echo "$LINE" | awk -F'>' '{print $1}' | awk -F' ' '{print $NF}' | awk -F'/' '{print $2}' | awk '{print $1}')
+    # extract the numeric value after '>'
+    AMOUNT=$(echo "$LINE" | awk -F'>' '{print $2}' | awk '{print $1}')
+    # check if the amount is numeric
+    if [[ $AMOUNT =~ ^[0-9.]+$ ]]; then
+      # add the amount to the reference total
+      REFERENCE_TOTAL["$REFERENCE"]=$(awk "BEGIN { printf \"%.9f\", ${REFERENCE_TOTAL["$REFERENCE"]} + $AMOUNT }")
+    fi
+  done <<<"$DATA"
+
+  # output the total SUM for each reference
+  for REFERENCE in "${!REFERENCE_TOTAL[@]}"; do
+    printf "%s: %s\n" "$REFERENCE" "${REFERENCE_TOTAL["$REFERENCE"]}" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
+  done
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '!a[$1]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
+fi
+
+################################################################################
+
 # format and display output
 {
   echo "Targets............: $DIP_DAILY_POTENTIAL | Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% PM: ${DIP_DAILY_MOVEMENT:?}%
