@@ -2056,10 +2056,11 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
     fi
   done <<<"$DATA"
 
-  # output the total SUM for each reference
+  # output the total value for each reference
   for REFERENCE in "${!REFERENCE_TOTAL[@]}"; do
     printf "%s: %s\n" "$REFERENCE" "${REFERENCE_TOTAL["$REFERENCE"]}" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
   done
+  # total gains by reference, remove duplicates
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '!a[$1]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
 fi
 
