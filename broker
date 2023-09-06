@@ -1771,8 +1771,8 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
 
-      ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null)"
-      ORDERS_COUNT="$(echo "$ORDERS_TAC" | sed -r '/^\s*$/d' | wc -l)"
+      ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '!a[$0]++')"
+      ORDERS_COUNT="$(echo "$ORDERS_TAC" | awk '!a[$0]++' | sed -r '/^\s*$/d' | wc -l)"
 
       WIDTH="$(echo "$(echo "$ORDERS_TAC" | head -100 | column -t | wc -L)+5" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
