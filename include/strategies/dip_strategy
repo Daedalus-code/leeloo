@@ -2039,7 +2039,7 @@ fi
 ################################################################################
 
 # if profit found
-if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]]; then
+if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
 
   # input data from the specified file
   DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | tr -d '%' 2>/dev/null || ERROR_STATUS=$?)
@@ -2087,6 +2087,8 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]]; then
     printf "%s: %s %.2f%%\n" "$REFERENCE" "$TOTAL" "$AVERAGE_PERCENTAGE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
   done
 
+  # remove duplicates
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '!a[$0]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
   # total gains by reference, remove duplicates, sort by n
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '!a[$1]++' | sort -n -k 3 | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
 fi
