@@ -2039,7 +2039,7 @@ fi
 
 ################################################################################
 
-# default
+# default error status
 ERROR_STATUS=0
 
 # if profit found
@@ -2082,19 +2082,25 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
     true
   }
 
-  # output the total value and average percentage for each reference
+  # output the total value and average percentage for each reference to a temporary gains file
+  TEMP_GAINS_FILE="${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".temp_gains
   for REFERENCE in "${!REFERENCE_TOTAL[@]}"; do
     TOTAL="${REFERENCE_TOTAL["$REFERENCE"]}"
     TOTAL_PERCENTAGE="${REFERENCE_TOTAL_PERCENTAGE["$REFERENCE"]}"
     COUNT="${REFERENCE_COUNT["$REFERENCE"]}"
     AVERAGE_PERCENTAGE=$(awk "BEGIN { printf \"%.2f\", $TOTAL_PERCENTAGE / $COUNT }")
-    printf "%s: %s %.2f%%\n" "$REFERENCE" "$TOTAL" "$AVERAGE_PERCENTAGE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
+    printf "%s: %s %.2f%%\n" "$REFERENCE" "$TOTAL" "$AVERAGE_PERCENTAGE" >>"$TEMP_GAINS_FILE"
   done
 
-  # remove duplicates
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
-  # total gains by reference, remove duplicates, sort by n
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | sort -n -k 2 | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
+  # remove duplicates from the original profit file
+  awk '!a[$1]++' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
+
+  # append the gains data from the temporary gains file
+  cat "$TEMP_GAINS_FILE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
+  rm "$TEMP_GAINS_FILE" # Remove the temporary gains file
+
+  # sort the combined gains file by the reference name
+  sort -n -k 2 -o "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
 fi
 
 # exit with the error status (non-zero if errors occurred)
