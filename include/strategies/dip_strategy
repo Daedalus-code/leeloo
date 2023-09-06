@@ -2038,9 +2038,6 @@ fi
 
 ################################################################################
 
-# default
-ERROR_STATUS=0
-
 # if profit found
 if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]]; then
 
@@ -2064,13 +2061,22 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]]; then
     # check if the amount is numeric
     if [[ $AMOUNT =~ ^[0-9.]+$ ]] &>/dev/null; then
       # add the amount to the reference total
-      REFERENCE_TOTAL["$REFERENCE"]=$(awk "BEGIN { printf \"%.9f\", ${REFERENCE_TOTAL["$REFERENCE"]} + $AMOUNT }" 2>/dev/null || ERROR_STATUS=$?)
+      REFERENCE_TOTAL["$REFERENCE"]=$(awk "BEGIN { printf \"%.9f\", ${REFERENCE_TOTAL["$REFERENCE"]} + $AMOUNT }" 2>/dev/null || {
+        ERROR_STATUS=$?
+        true
+      })
       # add the percentage to the reference total percentage
-      REFERENCE_TOTAL_PERCENTAGE["$REFERENCE"]=$(awk "BEGIN { printf \"%.2f\", ${REFERENCE_TOTAL_PERCENTAGE["$REFERENCE"]} + $PERCENTAGE }" 2>/dev/null || ERROR_STATUS=$?)
+      REFERENCE_TOTAL_PERCENTAGE["$REFERENCE"]=$(awk "BEGIN { printf \"%.2f\", ${REFERENCE_TOTAL_PERCENTAGE["$REFERENCE"]} + $PERCENTAGE }" 2>/dev/null || {
+        ERROR_STATUS=$?
+        true
+      })
       # increment the count for the reference
       ((REFERENCE_COUNT["$REFERENCE"]++))
     fi
-  done <<<"$DATA" 2>/dev/null || ERROR_STATUS=$?
+  done <<<"$DATA" 2>/dev/null || {
+    ERROR_STATUS=$?
+    true
+  }
 
   # output the total value and average percentage for each reference
   for REFERENCE in "${!REFERENCE_TOTAL[@]}"; do
@@ -2084,9 +2090,6 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]]; then
   # total gains by reference, remove duplicates, sort by n
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '!a[$1]++' | sort -n -k 3 | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
 fi
-
-# restore the error status and exit with it
-exit $ERROR_STATUS || true
 
 ################################################################################
 
