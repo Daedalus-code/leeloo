@@ -2044,8 +2044,10 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   # input data from the specified file
   DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | tr -d '%')
 
-  # initialize an associative array to store the total SUM for each reference
+  # initialize associative arrays to store the total SUM and total percentage for each reference
   declare -A REFERENCE_TOTAL
+  declare -A REFERENCE_TOTAL_PERCENTAGE
+  declare -A REFERENCE_COUNT
 
   # loop through each line in the input data
   while read -r LINE; do
@@ -2053,16 +2055,27 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
     REFERENCE=$(echo "$LINE" | awk -F'>' '{print $1}' | awk -F' ' '{print $NF}' | awk -F'/' '{print $2}' | awk '{print $1}')
     # extract the numeric value after '>'
     AMOUNT=$(echo "$LINE" | awk -F'>' '{print $2}' | awk '{print $1}')
+    # extract the last numeric value
+    PERCENTAGE=$(echo "$LINE" | awk '{print $NF}' | tr -d '%')
+
     # check if the amount is numeric
-    if [[ $AMOUNT =~ ^[0-9.]+$ ]]; then
+    if [[ $AMOUNT =~ ^[0-9.]+$ ]] &>/dev/null; then
       # add the amount to the reference total
       REFERENCE_TOTAL["$REFERENCE"]=$(awk "BEGIN { printf \"%.9f\", ${REFERENCE_TOTAL["$REFERENCE"]} + $AMOUNT }")
+      # add the percentage to the reference total percentage
+      REFERENCE_TOTAL_PERCENTAGE["$REFERENCE"]=$(awk "BEGIN { printf \"%.2f\", ${REFERENCE_TOTAL_PERCENTAGE["$REFERENCE"]} + $PERCENTAGE }")
+      # increment the count for the reference
+      ((REFERENCE_COUNT["$REFERENCE"]++))
     fi
   done <<<"$DATA"
 
-  # output the total value for each reference
+  # output the total value and average percentage for each reference
   for REFERENCE in "${!REFERENCE_TOTAL[@]}"; do
-    printf "%s: %s\n" "$REFERENCE" "${REFERENCE_TOTAL["$REFERENCE"]}" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
+    TOTAL="${REFERENCE_TOTAL["$REFERENCE"]}"
+    TOTAL_PERCENTAGE="${REFERENCE_TOTAL_PERCENTAGE["$REFERENCE"]}"
+    COUNT="${REFERENCE_COUNT["$REFERENCE"]}"
+    AVERAGE_PERCENTAGE=$(awk "BEGIN { printf \"%.2f\", $TOTAL_PERCENTAGE / $COUNT }")
+    printf "%s: Total %s, Average Percentage %.2f%%\n" "$REFERENCE" "$TOTAL" "$AVERAGE_PERCENTAGE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
   done
   # total gains by reference, remove duplicates, sort by n
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '!a[$1]++' | column -t | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
