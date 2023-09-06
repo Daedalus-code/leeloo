@@ -2093,9 +2093,9 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   done
 
   # remove duplicates from the original profit file
-  awk '!a[$1]++' "$TEMP_GAINS_FILE" | sort -n -k 2 -o | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
+  echo "$(awk '!a[$1]++' "$TEMP_GAINS_FILE")" | sort -n -k 2 -o | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains
   # remove the temporary gains file
-  rm "$TEMP_GAINS_FILE"
+  rm "$TEMP_GAINS_FILE" &>/dev/null
 fi
 
 # exit with the error status (non-zero if errors occurred)
