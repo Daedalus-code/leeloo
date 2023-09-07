@@ -738,13 +738,19 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # market count
     POTENTIAL_MARKET_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market | awk '{ print $1 }')"
+
     # total market spread
     POTENTIAL_MARKET_TOTAL_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
     # average market spread
     POTENTIAL_MARKET_AVERAGE_SPREAD="$(echo "$POTENTIAL_MARKET_TOTAL_SPREAD/$POTENTIAL_MARKET_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+    # total price movement
+    POTENTIAL_MARKET_TOTAL_MOVEMENT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '{ print $17 }' | awk '{ SUM += $1} END { print SUM }')"
+    # average price movement
+    POTENTIAL_MARKET_AVERAGE_MOVEMENT="$(echo "$POTENTIAL_MARKET_TOTAL_MOVEMENT/$POTENTIAL_MARKET_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
     # log target output
-    DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Found: $POTENTIAL_MARKET_COUNT Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}% Average"
+    DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Found: $POTENTIAL_MARKET_COUNT Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}% Price movement: ${POTENTIAL_MARKET_AVERAGE_MOVEMENT:?}%"
     echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
     ############################################################################
@@ -2039,6 +2045,32 @@ fi
 
 ################################################################################
 
+if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp ]] &>/dev/null; then
+  # low target data
+  DIP_LOW_DAY_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | sort -n -k 7 | head -1)"
+  DIP_LOW_DAY="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $2 }')"
+  DIP_LOW_TARGETS="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $7 }')"
+  DIP_LOW_MOVEMENTS="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $NF }')"
+  # high target data
+  DIP_HIGH_DAY_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | sort -n -k 7 | tail -1)"
+  DIP_HIGH_DAY="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $2 }')"
+  DIP_HIGH_TARGETS="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $7 }')"
+  DIP_HIGH_MOVEMENTS="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $NF }')"
+else
+  # low
+  DIP_LOW_DAY_DATA="N/A"
+  DIP_LOW_DAY="0"
+  DIP_LOW_TARGETS="0"
+  DIP_LOW_MOVEMENTS="0"
+  # high
+  DIP_HIGH_DAY_DATA="N/A"
+  DIP_HIGH_DAY="0"
+  DIP_HIGH_TARGETS="0"
+  DIP_HIGH_MOVEMENTS="0"
+fi
+
+################################################################################
+
 # default error status
 ERROR_STATUS=0
 
@@ -2112,6 +2144,7 @@ Orders.............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_D
 Buying.............: $DIP_ORDER_BUY_COUNT (${DIP_ORDER_PERCENTAGE_BUY:?}%)
 Selling............: $DIP_ORDER_SELL_COUNT (${DIP_ORDER_PERCENTAGE_SELL:?}%)
 DCA................: $DIP_DCA_DATA Orders: $DIP_DCA_COUNT
+Activity...........: Low: $DIP_LOW_DAY (${DIP_LOW_TARGETS:?}%/${DIP_LOW_MOVEMENTS:?}%) High:$DIP_HIGH_DAY (${DIP_HIGH_TARGETS:?}%/${DIP_HIGH_MOVEMENTS:?}%)
 All_In.............: $DIP_ALL_IN_DATA
 Average_Order_Age..: $DIP_ACTIVE_FILE_AVERAGE_AGE | Days: $DIP_ACTIVE_FILE_AVERAGE_DAYS
 Top_Price_Movement.: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
