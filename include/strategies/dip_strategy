@@ -1694,11 +1694,10 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
     log_date
 
-    # if not old and not active, run normally
+    # if not old and not active
     if [[ "$DIP_TARGET_OLD_NO_ACTIVE" == "0" ]] &>/dev/null; then
       # remove old (sold) order
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-
       # if dca
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -eq "1" ]] &>/dev/null; then
 
@@ -1715,7 +1714,7 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
       DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?} $DIP_BOUGHT_FILE_AGE"
       echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
-      # if not old and not active, run normally
+      # if old and active
     elif [[ "$DIP_TARGET_OLD_NO_ACTIVE" == "1" ]] &>/dev/null; then
       # sell output (old trade history)
       DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE_OLD $REFERENCE_BALANCE_OLD ${DIP_GET_RATIO_PROFIT:?} $DIP_BOUGHT_FILE_AGE"
