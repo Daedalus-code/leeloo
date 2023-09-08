@@ -656,6 +656,22 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
       ##########################################################################
 
+      function remove_old_dca() {
+        # if listing, reference already exist as dca order
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+          # remove old dca order
+          echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+        fi
+      }
+
+      # if listing, reference dont exist in orders
+      if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+        # remove old dca order
+        remove_old_dca
+      fi
+
+      ##########################################################################
+
       # if order already has balance
       if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
@@ -687,11 +703,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           DIP_TARGET_DCA_I_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: +Target amount ${DIP_DCA_RAW:?}% -> +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY"
           echo "$DIP_TARGET_DCA_I_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-          # if listing, reference already exist as dca order
-          if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
-            # remove old dca order
-            echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
-          fi
+          # remove old dca order
+          remove_old_dca
 
           # create/update dca list
           echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
