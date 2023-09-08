@@ -978,7 +978,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # top active dip
   DIP_ACTIVE_TOP_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $13 }' | sort -n | head -1)"
   # top dip data
-  DIP_TOP_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_TOP_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1 || true)"
+  DIP_TOP_ACTIVE_DIP="$(grep -w -- "$DIP_ACTIVE_TOP_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1 || true)"
   # top dip market
   DIP_TOP_DIP="$(echo "$DIP_TOP_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':' | head -1)"
   # top dip amount
@@ -989,7 +989,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # low active dip
   DIP_ACTIVE_LOW_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $13 }' | sort -n | tail -1)"
   # low dip data
-  DIP_LOW_ACTIVE_DIP="$(grep -- "$DIP_ACTIVE_LOW_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1 || true)"
+  DIP_LOW_ACTIVE_DIP="$(grep -w -- "$DIP_ACTIVE_LOW_DIP" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | head -1 || true)"
   # low dip market
   DIP_LOW_DIP="$(echo "$DIP_LOW_ACTIVE_DIP" | awk '{ print $1}' | tr -d ':' | head -1)"
   # low dip amount
@@ -1020,7 +1020,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # top active profit (spread)
   DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $16 }' | sort -n | tail -1)"
   # top profit (spread) data
-  DIP_SPECIFIC_PROFIT="$(grep -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)"
+  DIP_SPECIFIC_PROFIT="$(grep -w -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)"
   # top profit (spread) market
   DIP_TOP_PROFIT="$(echo "$DIP_SPECIFIC_PROFIT" 2>/dev/null | awk '{ print $1}' | tr -d ':' | head -1)"
   # top profit (spread) amount
@@ -1031,7 +1031,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # lowest active profit (spread)
   DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | head -1)"
   # lowest profit (spread) data
-  DIP_LOW_ACTIVE_PROFIT="$(grep -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null || true)"
+  DIP_LOW_ACTIVE_PROFIT="$(grep -w -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null || true)"
   # lowest profit (spread) market
   DIP_LOW_PROFIT="$(echo "$DIP_LOW_ACTIVE_PROFIT" 2>/dev/null | awk '{ print $2}' | tr -d ':' | head -1)"
   # lowest profit (spread) amount
@@ -1155,7 +1155,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="$(echo "$DIP_ACTIVE_FILE_PRICE_MOVEMENT/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   # top price movement data
-  DIP_TOP_ACTIVE_PRICE_MOVEMENT="$(grep -- "$DIP_ACTIVE_TOP_PRICE_MOVEMENT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)"
+  DIP_TOP_ACTIVE_PRICE_MOVEMENT="$(grep -w -- "$DIP_ACTIVE_TOP_PRICE_MOVEMENT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)"
   # top price movement market
   PRICE_MOVEMENT_TOP_MARKET="$(echo "$DIP_TOP_ACTIVE_PRICE_MOVEMENT" | awk '{ print $1}' | tr -d ':' | head -1)"
   # top price movement amount
@@ -1166,22 +1166,22 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # top volume
   DIP_TOP_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $23 }' | sort -n | tail -1)"
   # top volume market
-  DIP_TOP_VOLUME_MARKET="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
+  DIP_TOP_VOLUME_MARKET="$(grep -w -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
   # top volume listing
   DIP_TOP_VOLUME_LISTING="$(echo "$DIP_TOP_VOLUME_MARKET" | awk -F/ '{ print $1 }')"
   # top volume amount
-  DIP_TOP_VOLUME_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $23}' | awk '{ printf "%.0f\n", $1 }' || true)"
+  DIP_TOP_VOLUME_AMOUNT="$(grep -w -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $23}' | awk '{ printf "%.0f\n", $1 }' || true)"
 
   ##############################################################################
 
   # top amount
   DIP_TOP_ACTIVE_AMOUNT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $26 }' | sort -n | tail -1)"
   # top amount market
-  DIP_TOP_AMOUNT_MARKET="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
+  DIP_TOP_AMOUNT_MARKET="$(grep -w -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
   # top amount reference
   DIP_TOP_AMOUNT_LISTING="$(echo "$DIP_TOP_AMOUNT_MARKET" | awk -F/ '{ print $1 }')"
   # top amount amount
-  DIP_TOP_AMOUNT_AMOUNT="$(grep -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26}' | awk '{ printf "%.0f\n", $1 }' || true)"
+  DIP_TOP_AMOUNT_AMOUNT="$(grep -w -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26}' | awk '{ printf "%.0f\n", $1 }' || true)"
 
   ##############################################################################
 
