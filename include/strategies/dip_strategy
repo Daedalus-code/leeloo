@@ -621,6 +621,27 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   target_data
   bought_sold_age
 
+  ##############################################################################
+
+  function remove_old_dca() {
+    # if file exist
+    if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca ]] &>/dev/null; then
+      # if listing, reference already exist as dca order
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+        # remove old dca order
+        echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+      fi
+    fi
+  }
+
+  # if listing, reference dont exist in orders
+  if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+    # remove old dca order
+    remove_old_dca
+  fi
+
+  ##############################################################################
+
   # if no profit
   if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -eq "0" ]] &>/dev/null; then
     # reset target file
@@ -652,22 +673,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
         # remove old (active) order
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-      fi
-
-      ##########################################################################
-
-      function remove_old_dca() {
-        # if listing, reference already exist as dca order
-        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
-          # remove old dca order
-          echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
-        fi
-      }
-
-      # if listing, reference dont exist in orders
-      if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
-        # remove old dca order
-        remove_old_dca
       fi
 
       ##########################################################################
@@ -938,6 +943,27 @@ fi
 TARGET_ACTIVE="ACTIVE"
 target_data
 bought_sold_age
+
+################################################################################
+
+function remove_old_dca() {
+  # if file exist
+  if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca ]] &>/dev/null; then
+    # if listing, reference already exist as dca order
+    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+      # remove old dca order
+      echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+    fi
+  fi
+}
+
+# if listing, reference dont exist in orders
+if [[ "$(grep "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+  # remove old dca order
+  remove_old_dca
+fi
+
+################################################################################
 
 # if active file has any orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
