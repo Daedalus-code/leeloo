@@ -1570,6 +1570,11 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
     # reference balance (available)
     REFERENCE_BALANCE="$(grep -w "\<$DIP_OLD_TARGET_REFERENCE:" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1 || true)"
 
+    # old listing balance
+    LISTING_BALANCE_OLD="$LISTING_BALANCE"
+    # old reference balance
+    REFERENCE_BALANCE_OLD="$REFERENCE_BALANCE"
+
     # if zero
     if [[ -z "$REFERENCE_BALANCE" ]] &>/dev/null; then
       REFERENCE_BALANCE="0.000000000"
@@ -1705,6 +1710,16 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
           DIP_GET_RATIO_PROFIT="DCA"
         fi
       fi
+
+      # sell output (trade history)
+      DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?} $DIP_BOUGHT_FILE_AGE"
+      echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+      # if not old and not active, run normally
+    elif [[ "$DIP_TARGET_OLD_NO_ACTIVE" == "1" ]] &>/dev/null; then
+      # sell output (old trade history)
+      DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE_OLD $REFERENCE_BALANCE_OLD ${DIP_GET_RATIO_PROFIT:?} $DIP_BOUGHT_FILE_AGE"
+      echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
     fi
 
     # cleanup output (log)
@@ -1717,10 +1732,6 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
 
     # track profit
     echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY > $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
-
-    # sell output (trade history)
-    DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?} $DIP_BOUGHT_FILE_AGE"
-    echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
     # remove duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
