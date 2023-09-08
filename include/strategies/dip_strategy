@@ -136,12 +136,18 @@ function amount_to_buy_sell() {
 ################################################################################
 
 function remove_old_dca() {
-  # if file exist
-  if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca ]] &>/dev/null; then
-    # if listing, reference already exist as dca order
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
-      # remove old dca order
-      echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+  # if dca enabled
+  if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
+    # if file exist
+    if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca ]] &>/dev/null; then
+      # if listing, reference has value
+      if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+        # if listing, reference already exist as dca order
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+          # remove old dca order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+        fi
+      fi
     fi
   fi
 }
