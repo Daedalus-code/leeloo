@@ -2050,12 +2050,12 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp ]] &>/dev/null; then
   DIP_LOW_DAY_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | sort -n -k 7 | head -1)"
   DIP_LOW_DAY="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $2 }')"
   DIP_LOW_TARGETS="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $8 }' | tr -d '()')"
-  DIP_LOW_MOVEMENTS="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $NF }')"
+  DIP_LOW_MOVEMENTS="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $NF }' | awk '{ printf "%.0f\n", $1 }')"
   # high target data
   DIP_HIGH_DAY_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | sort -n -k 7 | tail -1)"
   DIP_HIGH_DAY="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $2 }')"
   DIP_HIGH_TARGETS="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $8 }' | tr -d '()')"
-  DIP_HIGH_MOVEMENTS="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $NF }')"
+  DIP_HIGH_MOVEMENTS="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $NF }' | awk '{ printf "%.0f\n", $1 }')"
 else
   # low
   DIP_LOW_DAY_DATA="N/A"
@@ -2144,7 +2144,7 @@ Orders.............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_D
 Buying.............: $DIP_ORDER_BUY_COUNT (${DIP_ORDER_PERCENTAGE_BUY:?}%)
 Selling............: $DIP_ORDER_SELL_COUNT (${DIP_ORDER_PERCENTAGE_SELL:?}%)
 DCA................: $DIP_DCA_DATA Orders: $DIP_DCA_COUNT
-Activity...........: Low: $DIP_LOW_DAY ${DIP_LOW_TARGETS:?}/${DIP_LOW_MOVEMENTS:?} High: $DIP_HIGH_DAY ${DIP_HIGH_TARGETS:?}/${DIP_HIGH_MOVEMENTS:?}
+Targets/Movement...: Low: $DIP_LOW_DAY ${DIP_LOW_TARGETS:?} | ${DIP_LOW_MOVEMENTS:?} High: $DIP_HIGH_DAY ${DIP_HIGH_TARGETS:?} | ${DIP_HIGH_MOVEMENTS:?}
 All_In.............: $DIP_ALL_IN_DATA
 Average_Order_Age..: $DIP_ACTIVE_FILE_AVERAGE_AGE | Days: $DIP_ACTIVE_FILE_AVERAGE_DAYS
 Top_Price_Movement.: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
