@@ -1789,17 +1789,17 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         BUY_COUNT="0"
       fi
       # profit high
-      PROFIT_HIGH="$(echo "$ORDERS_TAC" | grep "sell" | egrep -o ".[0-9]+.[0-9]+%" | tr -d ' %' | sort -n 2>/dev/null | tail -1)"
+      PROFIT_HIGH="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | tail -1)"
       if [[ -z "$PROFIT_HIGH" ]] &>/dev/null; then
         PROFIT_HIGH="0"
       fi
       # profit low
-      PROFIT_LOW="$(echo "$ORDERS_TAC" | grep "sell" | egrep -o ".[0-9]+.[0-9]+%" | tr -d ' %' | sort -n 2>/dev/null | head -1)"
+      PROFIT_LOW="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | head -1)"
       if [[ -z "$PROFIT_LOW" ]] &>/dev/null; then
         PROFIT_LOW="0"
       fi
       # profit sum
-      PROFIT_SUM="$(echo "$ORDERS_TAC" | grep "sell" | egrep -o ".[0-9]+.[0-9]+%" | tr -d ' %' | awk '{ SUM += $1} END { print SUM }')"
+      PROFIT_SUM="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | awk '{ SUM += $1} END { print SUM }')"
       if [[ -z "$PROFIT_SUM" ]] &>/dev/null; then
         PROFIT_SUM="0"
       fi
