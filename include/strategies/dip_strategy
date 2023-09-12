@@ -1441,13 +1441,18 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         # calculate percentage of order filled
         DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }' | sed '/^$/d')"
 
-        # if zero
-        if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
+        # if zero, equals zero
+        if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" || "$DIP_LEFTOVER_FILLED_AMOUNT" -eq "0" ]] &>/dev/null; then
           DIP_LEFTOVER_FILLED_AMOUNT="0"
         fi
 
         # calculate total filled
         DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
+
+        # if zero
+        if [[ -z "$DIP_LEFTOVER_FILLED" ]] &>/dev/null; then
+          DIP_LEFTOVER_FILLED="0"
+        fi
 
         # if zero
         if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
@@ -1743,7 +1748,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/
       log_date
 
       # removing output (log)
-      DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing old buy order $DIP_BOUGHT_AGE_OUTPUT Spread: ${DIP_TARGET_SPREAD:?}%"
+      DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing: $DIP_ORDER_ID Age: $DIP_BOUGHT_AGE_OUTPUT (Old buy) Spread: ${DIP_TARGET_SPREAD:?}%"
       echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
   fi
