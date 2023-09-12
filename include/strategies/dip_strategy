@@ -1246,6 +1246,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_TOTAL_SOLD_SUM="0"
   fi
 
+  ##############################################################################
+
   # leftover sell amount
   DIP_LEFTOVER_SOLD="$(echo "$DIP_TARGET_AMOUNT-$DIP_TOTAL_SOLD_SUM" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
@@ -1253,6 +1255,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   if [[ -z "$DIP_LEFTOVER_SOLD" ]] &>/dev/null; then
     DIP_LEFTOVER_SOLD="0"
   fi
+
+  ##############################################################################
 
   # leftover sell amount (without decimal)
   DIP_LEFTOVER_SOLD_CHECK="$(echo "$DIP_LEFTOVER_SOLD" | tr -d '.' | sed 's/^0*//')"
@@ -1262,6 +1266,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_LEFTOVER_SOLD_CHECK="0"
   fi
 
+  ##############################################################################
+
   # total sum (without decimal)
   DIP_TOTAL_SOLD_SUM_CHECK="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
@@ -1269,6 +1275,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   if [[ -z "$DIP_TOTAL_SOLD_SUM_CHECK" ]] &>/dev/null; then
     DIP_TOTAL_SOLD_SUM_CHECK="0"
   fi
+
+  ##############################################################################
 
   # listing balance, available (without decimal)
   DIP_LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
@@ -1311,6 +1319,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_TOTAL_ORDER_COUNT="0"
   fi
 
+  ##############################################################################
+
   # percentage of buy
   DIP_BUY_PERCENTAGE="$(echo "100/$DIP_TOTAL_ORDER_COUNT*$DIP_BUY_ORDER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
   # percentage of sell
@@ -1325,27 +1335,43 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_SELL_PERCENTAGE="0"
   fi
 
-  # if buy percentage greater than sell percentage
-  if [[ "$DIP_BUY_PERCENTAGE" > "$DIP_SELL_PERCENTAGE" ]] &>/dev/null; then
-    DIP_BS_STATUS="Buy ${DIP_BUY_PERCENTAGE:?}%"
-    # if sell percentage greater than buy percentage
-  elif [[ "$DIP_SELL_PERCENTAGE" > "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
-    DIP_BS_STATUS="Sell ${DIP_SELL_PERCENTAGE:?}%"
-    # if sell percentage equals buy percentage
-  elif [[ "$DIP_SELL_PERCENTAGE" == "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
-    DIP_BS_STATUS="Trade"
-    # if sell count and buy count equals zero
-  elif [[ "$DIP_BUY_ORDER_COUNT" == "0" && "$DIP_SELL_ORDER_COUNT" == "0" ]] &>/dev/null; then
-    DIP_BS_STATUS="Wait"
+  ##############################################################################
+
+  # active checks
+  DIP_CHECK_ACTIVE="$(grep "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$REFERENCE_CURRENCY" || true)"
+  DIP_CHECK_ORDERS="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$REFERENCE_CURRENCY" || true)"
+  DIP_CHECK_LISTING_BALANCED="$(grep -c "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances || true)"
+
+  # if true active
+  if [[ "$DIP_CHECK_ACTIVE" -gt "0" && "$DIP_CHECK_ORDERS" -gt "0" && "$DIP_CHECK_LISTING_BALANCED" -gt "0" ]] &>/dev/null; then
+
+    # if buy percentage greater than sell percentage
+    if [[ "$DIP_BUY_PERCENTAGE" > "$DIP_SELL_PERCENTAGE" ]] &>/dev/null; then
+      DIP_BS_STATUS="Buy ${DIP_BUY_PERCENTAGE:?}%"
+      # if sell percentage greater than buy percentage
+    elif [[ "$DIP_SELL_PERCENTAGE" > "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
+      DIP_BS_STATUS="Sell ${DIP_SELL_PERCENTAGE:?}%"
+      # if sell percentage equals buy percentage
+    elif [[ "$DIP_SELL_PERCENTAGE" == "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
+      DIP_BS_STATUS="Trade"
+      # if sell count and buy count equals zero
+    elif [[ "$DIP_BUY_ORDER_COUNT" == "0" && "$DIP_SELL_ORDER_COUNT" == "0" ]] &>/dev/null; then
+      DIP_BS_STATUS="Wait"
+    fi
+  else
+    DIP_BS_STATUS="404"
   fi
+
+  # if zero
+  if [[ -z "$DIP_BS_STATUS" ]] &>/dev/null; then
+    DIP_BS_STATUS="null"
+  fi
+
+  ##############################################################################
 
   # dca status
   if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -eq "1" ]] &>/dev/null; then
     DIP_DCA_STATUS="(DCA)"
-  fi
-  # if zero
-  if [[ -z "$DIP_BS_STATUS" ]] &>/dev/null; then
-    DIP_BS_STATUS="null"
   fi
 
   # status output (log)
