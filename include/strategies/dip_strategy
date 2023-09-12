@@ -226,7 +226,7 @@ function target_data() {
 
 function txid_null() {
   # if words is found
-  if [[ "$(egrep -c "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
     # output words
     DIP_NULL_TXID="$(egrep "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')"
     # if zero
@@ -1372,7 +1372,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # dca status
-  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -eq "1" ]] &>/dev/null; then
+  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
     DIP_DCA_STATUS="(DCA)"
   fi
 
@@ -1587,7 +1587,7 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
       # remove old (sold) order
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       # if dca
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" -eq "1" ]] &>/dev/null; then
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
 
         # use last profit value
         DIP_GET_RATIO_PROFIT="$(grep "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $NF }' | tr -d '%')*"
