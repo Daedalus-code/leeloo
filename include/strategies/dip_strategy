@@ -1546,8 +1546,8 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
   # total sum (confirmed sell)
   DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }' | sed '/^$/d')"
 
-  # if zero
-  if [[ -z "$DIP_TOTAL_SOLD_SUM" ]] &>/dev/null; then
+  # if zero, equals zero
+  if [[ -z "$DIP_TOTAL_SOLD_SUM" || "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
     DIP_TOTAL_SOLD_SUM="0"
   fi
 
