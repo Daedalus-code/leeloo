@@ -1418,9 +1418,12 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       if [[ -z "$DIP_LEFTOVER_SIZE" ]] &>/dev/null; then
         DIP_LEFTOVER_SIZE="0"
       fi
+
       # if leftover size greater or equal to n
       if [[ "$(echo "$DIP_LEFTOVER_SIZE" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
         DIP_LEFTOVER_SIZE="100.000000000"
+        # dip leftover output
+        DIP_LEFTOVER_SIZE_OUTPUT="100"
       fi
 
       # default leftover size limit (0.001000000%)
@@ -1482,7 +1485,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Selling $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
         echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         # filled output (log)
-        DIP_FILLED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Selling ${DIP_LEFTOVER_SIZE:?}% of the order. ${DIP_LEFTOVER_FILLED:?}% Filled."
+        DIP_FILLED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Selling ${DIP_LEFTOVER_SIZE_OUTPUT:?}% of the order. ${DIP_LEFTOVER_FILLED:?}% Filled."
         echo "$DIP_FILLED_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         # profit output (log)
         DIP_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Profit: $DIP_SELL_AMOUNT_PROFIT $REFERENCE_CURRENCY -> ${DIP_GET_RATIO_PROFIT:?}%"
