@@ -213,7 +213,7 @@ function target_data() {
   # if dca enabled
   if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
     # if market dca is found
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
       # extra amount
       DIP_TARGET_DCA="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $8 }' | tr -d '+')"
       # increase target amount
@@ -312,7 +312,7 @@ function remove_old_dca() {
       # if listing, reference has value
       if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
         # if listing, reference already exist as dca order
-        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
           # remove old dca order
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
         fi
@@ -327,7 +327,7 @@ function cancel_DCA() {
   # if listing, reference has data
   if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # if dca exist
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
       # if no order exist
       if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
         # if no active exist
@@ -343,6 +343,7 @@ function cancel_DCA() {
 ################################################################################
 
 function clean_DCA() {
+
   # remove market duplicates
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk '!a[$1]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
   # remove listing duplicates, column
