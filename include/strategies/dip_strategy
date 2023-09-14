@@ -609,8 +609,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             DIP_MIN_MOVEMENT="0"
           fi
 
+          # price movement check (without decimal)
+          PRICE_MOVEMENT_CHECK="$(echo "$PRICE_MOVEMENT" | tr -d '.' | sed 's/^0*//')"
+
           # if the symbol meets the potential buy criteria, ruled by configuration
-          if (($(echo "$PRICE_MOVEMENT > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
+          if (($(echo "$PRICE_MOVEMENT_CHECK > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
             if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
               # potential symbol, bid, ask, last
