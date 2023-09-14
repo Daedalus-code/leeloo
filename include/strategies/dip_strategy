@@ -1801,7 +1801,7 @@ if [[ -z "$DIP_DAILY_POTENTIAL" ]] &>/dev/null; then
 fi
 
 # daily potential targets
-DIP_DAILY_TARGETS="$(awk '/Price  Movement:  [1-9][0-9]*\.[0-9]+%/{ count++ } END { print count }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list)"
+DIP_DAILY_TARGETS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk '{ print $17 }' | sort -n | tr -d '%' | egrep -v "[0]+.[0]+[0]" | grep -v "-" | wc -l)"
 # calculate potential percentage
 DIP_DAILY_POTENTIAL_PERCENTAGE="$(echo "100/$DIP_DAILY_POTENTIAL*$DIP_DAILY_TARGETS" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
