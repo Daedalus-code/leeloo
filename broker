@@ -1766,7 +1766,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
       display_result() {
-        dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT Profit: High $PROFIT_HIGH Low $PROFIT_LOW Average $PROFIT_AVERAGE" \
+        dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT Profit: High ${PROFIT_HIGH:?}% Low ${PROFIT_LOW:?}% Average ${PROFIT_AVERAGE:?}%" \
           --no-collapse \
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
@@ -1804,9 +1804,9 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         PROFIT_SUM="0"
       fi
       # profit average
-      PROFIT_AVERAGE="$(echo "$PROFIT_SUM/$SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')%"
+      PROFIT_AVERAGE="$(echo "$PROFIT_SUM/$SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
       if [[ -z "$PROFIT_AVERAGE" ]] &>/dev/null; then
-        PROFIT_AVERAGE="0%"
+        PROFIT_AVERAGE="0"
       fi
 
       if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
