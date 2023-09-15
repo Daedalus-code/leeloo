@@ -1729,27 +1729,30 @@ DIP_OLD_ORDER_MAX_SECONDS="$(echo "$DIP_OLD_ORDER_MAX*86400" | bc 2>/dev/null)"
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/null; then
   # if specific market exist in orders file (buy)
   if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
+    # if specific market dont exist in orders file (sell)
+    if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep "$LISTING_CURRENCY" | grep -c "buy" || true)" -eq "0" ]] &>/dev/null; then
 
-    # old order id (buy)
-    DIP_ORDER_ID="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':')"
+      # old order id (buy)
+      DIP_ORDER_ID="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders | grep "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':')"
 
-    # order id found
-    if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
+      # order id found
+      if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
 
-      # cancel old order (buy)
-      cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
-      sleep 1
+        # cancel old order (buy)
+        cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+        sleep 1
 
-      # remove old order
-      echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
-      # remove old (active) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+        # remove old order
+        echo "$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/southxchange/orders
+        # remove old (active) order
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
 
-      log_date
+        log_date
 
-      # removing output (log)
-      DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing: $DIP_ORDER_ID Age: $DIP_BOUGHT_AGE_OUTPUT (Old buy) Spread: ${DIP_TARGET_SPREAD:?}%"
-      echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        # removing output (log)
+        DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing: $DIP_ORDER_ID Age: $DIP_BOUGHT_AGE_OUTPUT (Old buy) Spread: ${DIP_TARGET_SPREAD:?}%"
+        echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      fi
     fi
   fi
 fi
