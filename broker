@@ -1900,6 +1900,57 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
     key_secret_set
 
+    ############################################################################
+
+    function install_strategy() {
+      # copy configuration and strategy
+      cp "${HOME_DIR:?}"/leeloo/include/strategies/"$INSTALL_CONFIG" "${LOG_DIR:?}"/stgc.tmp &>/dev/null
+      cp "${HOME_DIR:?}"/leeloo/include/strategies/"$INSTALL_STRATEGY" "${LOG_DIR:?}"/stgt.tmp &>/dev/null
+      # edit configuration
+      nano "${LOG_DIR:?}"/stgc.tmp
+      clear
+      # dialog menu
+      DIALOG_OPTIONS=(
+        --backtitle "Leeloo (Multipass)"
+        --title "Creating $INSTALL_TITLE"
+        --yesno "Install new strategy?"
+        0 0
+      )
+      dialog "${DIALOG_OPTIONS[@]}"
+      DIALOG_RESULT=$?
+      # if zero
+      if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
+        # installing strategy
+        display_result() {
+          dialog --title "Creating $INSTALL_TITLE" \
+            --no-collapse \
+            --msgbox "$RESULT" 0 0
+        }
+        # enter strategy name
+        enter_strategy_name
+        # if zero
+        if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
+          STRATEGY_NAME="$INSTALL_STRATEGY_NAME"
+        fi
+        # create strategy.robot_id
+        ROBOT_CONFIG="$INSTALL_ROBOT_CONFIG"
+        # install new strategy.robot_id
+        mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
+        mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
+        # output
+        RESULT="$ROBOT_CONFIG strategy installed!
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
+        # display output
+        display_result 2>/dev/null
+      else
+        # not installing strategy
+        rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
+        rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
+      fi
+    }
+
+    ############################################################################
+
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
       HEIGHT=14
@@ -1930,344 +1981,106 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
       "1")
 
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/bst_config "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/bst_strategy "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        nano "${LOG_DIR:?}"/stgc.tmp
-        clear
+        # install buy/sell strategy (bst)
+        STRATEGY_NAME="BST"
+        INSTALL_CONFIG="bst_config"
+        INSTALL_STRATEGY="bst_strategy"
+        INSTALL_TITLE="Buy/Sell strategy"
+        INSTALL_STRATEGY_NAME="BST"
+        INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|TYPE|BST_COOLDOWN|BST_TAKE_PROFIT|LISTING_TRIGGER|REFERENCE_TRIGGER" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
 
-        DIALOG_OPTIONS=(
-          --backtitle "Leeloo (Multipass)"
-          --title "Creating Buy/Sell strategy"
-          --yesno "Install new strategy?"
-          0 0
-        )
-
-        dialog "${DIALOG_OPTIONS[@]}"
-        DIALOG_RESULT=$?
-
-        if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
-          # installing strategy
-
-          display_result() {
-            dialog --title "Creating Buy/Sell strategy" \
-              --no-collapse \
-              --msgbox "$RESULT" 0 0
-          }
-
-          STRATEGY_NAME="BST"
-          enter_strategy_name
-          if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
-            STRATEGY_NAME="BST"
-          fi
-
-          # create strategy.robot_id
-          ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|TYPE|BST_COOLDOWN|BST_TAKE_PROFIT|LISTING_TRIGGER|REFERENCE_TRIGGER" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
-          # install new strategy.robot_id
-          mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
-          mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
-
-          RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
-          display_result 2>/dev/null
-        else
-          # not installing strategy
-          rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-          rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        fi
+        # install strategy
+        install_strategy
 
         ;;
 
       "2")
 
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/ema_config "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/ema_strategy "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        nano "${LOG_DIR:?}"/stgc.tmp
-        clear
+        # install ema strategy (ema)
+        STRATEGY_NAME="EMA"
+        INSTALL_CONFIG="ema_config"
+        INSTALL_STRATEGY="ema_strategy"
+        INSTALL_TITLE="EMA strategy"
+        INSTALL_STRATEGY_NAME="EMA"
+        INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|EMA_SHORT|EMA_LONG|ROGUE_PROFIT" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
 
-        DIALOG_OPTIONS=(
-          --backtitle "Leeloo (Multipass)"
-          --title "Creating EMA strategy"
-          --yesno "Install new strategy?"
-          0 0
-        )
-
-        dialog "${DIALOG_OPTIONS[@]}"
-        DIALOG_RESULT=$?
-
-        if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
-          # installing strategy
-
-          display_result() {
-            dialog --title "Creating EMA strategy" \
-              --no-collapse \
-              --msgbox "$RESULT" 0 0
-          }
-
-          STRATEGY_NAME="EMA"
-          enter_strategy_name
-          if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
-            STRATEGY_NAME="EMA"
-          fi
-
-          # create strategy.robot_id
-          ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|EMA_SHORT|EMA_LONG|ROGUE_PROFIT" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
-          # install new strategy.robot_id
-          mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
-          mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
-
-          RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
-          display_result 2>/dev/null
-        else
-          # not installing strategy
-          rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-          rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        fi
+        # install strategy
+        install_strategy
 
         ;;
 
       "3")
 
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/rsi_config "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/rsi_strategy "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        nano "${LOG_DIR:?}"/stgc.tmp
-        clear
+        # install rsi strategy (rsi)
+        STRATEGY_NAME="RSI"
+        INSTALL_CONFIG="rsi_config"
+        INSTALL_STRATEGY="rsi_strategy"
+        INSTALL_TITLE="RSI strategy"
+        INSTALL_STRATEGY_NAME="RSI"
+        INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|RSI_VALUE|RSI_OVERBOUGHT|RSI_OVERSOLD|RSI_COOLDOWN|RSI_MAX_DAY" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
 
-        DIALOG_OPTIONS=(
-          --backtitle "Leeloo (Multipass)"
-          --title "Creating RSI strategy"
-          --yesno "Install new strategy?"
-          0 0
-        )
-
-        dialog "${DIALOG_OPTIONS[@]}"
-        DIALOG_RESULT=$?
-
-        if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
-          # installing strategy
-
-          display_result() {
-            dialog --title "Creating RSI strategy" \
-              --no-collapse \
-              --msgbox "$RESULT" 0 0
-          }
-
-          STRATEGY_NAME="RSI"
-          enter_strategy_name
-          if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
-            STRATEGY_NAME="RSI"
-          fi
-
-          # create strategy.robot_id
-          ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|RSI_VALUE|RSI_OVERBOUGHT|RSI_OVERSOLD|RSI_COOLDOWN|RSI_MAX_DAY" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
-          # install new strategy.robot_id
-          mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
-          mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
-
-          RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
-          display_result 2>/dev/null
-        else
-          # not installing strategy
-          rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-          rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        fi
+        # install strategy
+        install_strategy
 
         ;;
 
       "4")
 
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/lzn_config "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/lzn_strategy "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        nano "${LOG_DIR:?}"/stgc.tmp
-        clear
+        # install lzn strategy (lzn)
+        STRATEGY_NAME="LZN"
+        INSTALL_CONFIG="lzn_config"
+        INSTALL_STRATEGY="lzn_strategy"
+        INSTALL_TITLE="LZN strategy"
+        INSTALL_STRATEGY_NAME="LZN"
+        INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|LZN_LAMBDA|LZN_BUY_THRESHOLD|LZN_SELL_THRESHOLD" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
 
-        DIALOG_OPTIONS=(
-          --backtitle "Leeloo (Multipass)"
-          --title "Creating LZN strategy"
-          --yesno "Install new strategy?"
-          0 0
-        )
-
-        dialog "${DIALOG_OPTIONS[@]}"
-        DIALOG_RESULT=$?
-
-        if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
-          # installing strategy
-
-          display_result() {
-            dialog --title "Creating LZN strategy" \
-              --no-collapse \
-              --msgbox "$RESULT" 0 0
-          }
-
-          STRATEGY_NAME="LZN"
-          enter_strategy_name
-          if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
-            STRATEGY_NAME="LZN"
-          fi
-
-          # create strategy.robot_id
-          ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|LZN_LAMBDA|LZN_BUY_THRESHOLD|LZN_SELL_THRESHOLD" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
-          # install new strategy.robot_id
-          mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
-          mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
-
-          RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
-          display_result 2>/dev/null
-        else
-          # not installing strategy
-          rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-          rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        fi
+        # install strategy
+        install_strategy
 
         ;;
 
       "5")
 
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/mcs_config "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/mcs_strategy "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        nano "${LOG_DIR:?}"/stgc.tmp
-        clear
+        # install mcs strategy (mcs)
+        STRATEGY_NAME="MCS"
+        INSTALL_CONFIG="mcs_config"
+        INSTALL_STRATEGY="mcs_strategy"
+        INSTALL_TITLE="MCS strategy"
+        INSTALL_STRATEGY_NAME="MCS"
+        INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
 
-        DIALOG_OPTIONS=(
-          --backtitle "Leeloo (Multipass)"
-          --title "Creating MCS strategy"
-          --yesno "Install new strategy?"
-          0 0
-        )
-
-        dialog "${DIALOG_OPTIONS[@]}"
-        DIALOG_RESULT=$?
-
-        if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
-          # installing strategy
-
-          display_result() {
-            dialog --title "Creating MCS strategy" \
-              --no-collapse \
-              --msgbox "$RESULT" 0 0
-          }
-
-          STRATEGY_NAME="MCS"
-          enter_strategy_name
-          if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
-            STRATEGY_NAME="MCS"
-          fi
-
-          # create strategy.robot_id
-          ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
-          # install new strategy.robot_id
-          mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
-          mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
-
-          RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
-          display_result 2>/dev/null
-        else
-          # not installing strategy
-          rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-          rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        fi
+        # install strategy
+        install_strategy
 
         ;;
 
       "6")
 
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/dip_config "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/dip_strategy "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        nano "${LOG_DIR:?}"/stgc.tmp
-        clear
+        # install dip strategy (dip)
+        STRATEGY_NAME="DIP"
+        INSTALL_CONFIG="dip_config"
+        INSTALL_STRATEGY="dip_strategy"
+        INSTALL_TITLE="DIP strategy"
+        INSTALL_STRATEGY_NAME="DIP"
+        INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|MIN_DIP_PERCENTAGE|MIN_SPREAD_PERCENTAGE|DIP_MARKETS|DIP_MAX_ORDERS" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".()' | xargs | tr -d ' ')"
 
-        DIALOG_OPTIONS=(
-          --backtitle "Leeloo (Multipass)"
-          --title "Creating DIP strategy"
-          --yesno "Install new strategy?"
-          0 0
-        )
-
-        dialog "${DIALOG_OPTIONS[@]}"
-        DIALOG_RESULT=$?
-
-        if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
-          # installing strategy
-
-          display_result() {
-            dialog --title "Creating DIP strategy" \
-              --no-collapse \
-              --msgbox "$RESULT" 0 0
-          }
-
-          STRATEGY_NAME="DIP"
-          enter_strategy_name
-          if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
-            STRATEGY_NAME="DIP"
-          fi
-
-          # create strategy.robot_id
-          ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|MIN_DIP_PERCENTAGE|MIN_SPREAD_PERCENTAGE|DIP_MARKETS|DIP_MAX_ORDERS" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".()' | xargs | tr -d ' ')"
-          # install new strategy.robot_id
-          mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
-          mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
-
-          RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
-          display_result 2>/dev/null
-        else
-          # not installing strategy
-          rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-          rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        fi
+        # install strategy
+        install_strategy
 
         ;;
 
       "0")
 
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/custom_config "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-        cp "${HOME_DIR:?}"/leeloo/include/strategies/custom_strategy "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        nano "${LOG_DIR:?}"/stgc.tmp
-        clear
+        # install cst strategy (cst)
+        STRATEGY_NAME="CST"
+        INSTALL_CONFIG="custom_config"
+        INSTALL_STRATEGY="custom_strategy"
+        INSTALL_TITLE="CST strategy"
+        INSTALL_STRATEGY_NAME="CST"
+        INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|TYPE|CST_COOLDOWN|LISTING_TRIGGER|REFERENCE_TRIGGER" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
 
-        DIALOG_OPTIONS=(
-          --backtitle "Leeloo (Multipass)"
-          --title "Creating CST strategy"
-          --yesno "Install new strategy?"
-          0 0
-        )
-
-        dialog "${DIALOG_OPTIONS[@]}"
-        DIALOG_RESULT=$?
-
-        if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
-          # installing strategy
-
-          display_result() {
-            dialog --title "Creating CST strategy" \
-              --no-collapse \
-              --msgbox "$RESULT" 0 0
-          }
-
-          STRATEGY_NAME="CST"
-          enter_strategy_name
-          if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
-            STRATEGY_NAME="CST"
-          fi
-
-          # create strategy.robot_id
-          ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|TYPE|CST_COOLDOWN|LISTING_TRIGGER|REFERENCE_TRIGGER" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | xargs | tr -d ' ')"
-          # install new strategy.robot_id
-          mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".config
-          mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$ROBOT_CONFIG".strategy
-
-          RESULT="$ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
-          display_result 2>/dev/null
-        else
-          # not installing strategy
-          rm "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-          rm "${LOG_DIR:?}"/stgt.tmp &>/dev/null
-        fi
+        # install strategy
+        install_strategy
 
         ;;
 
