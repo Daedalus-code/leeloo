@@ -1351,19 +1351,24 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # if true active
   if [[ "$DIP_CHECK_ACTIVE" -gt "0" && "$DIP_CHECK_ORDERS" -gt "0" ]] &>/dev/null; then
+
     # if buy percentage greater than sell percentage
     if [[ "$DIP_BUY_PERCENTAGE" > "$DIP_SELL_PERCENTAGE" ]] &>/dev/null; then
       DIP_BS_STATUS="Buying ${DIP_BUY_PERCENTAGE:?}%"
+
       # if sell percentage greater than buy percentage
     elif [[ "$DIP_SELL_PERCENTAGE" > "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
       DIP_BS_STATUS="Selling ${DIP_SELL_PERCENTAGE:?}%"
+
       # if sell percentage equals buy percentage
     elif [[ "$DIP_SELL_PERCENTAGE" == "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
-      DIP_BS_STATUS="Brokering"
+      DIP_BS_STATUS="Broker"
+
       # if sell count and buy count equals zero
     elif [[ "$DIP_BUY_ORDER_COUNT" == "0" && "$DIP_SELL_ORDER_COUNT" == "0" ]] &>/dev/null; then
       DIP_BS_STATUS="Waiting"
     fi
+
   else # no active, no orders
     DIP_BS_STATUS="Trading"
   fi
