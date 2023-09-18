@@ -200,6 +200,8 @@ function target_data() {
   # target volume
   DIP_TARGET_VOLUME="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $23 }')"
 
+  ##############################################################################
+
   amount_to_buy_sell
 
   # target amount to buy and sell (listing)
@@ -1978,22 +1980,28 @@ if [[ "$DIP_TIME_CHECK" -eq "1" ]] &>/dev/null; then
 fi
 
 if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp ]] &>/dev/null; then
+  DIP_DAY_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | tr -d '(%)' | sort -n -k 8)"
   # low target data
-  DIP_LOW_DAY_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | awk '{ print $8 }' | tr -d '(%)' | sort -n | head -1)"
-  DIP_LOW_DAY="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $2 }')"
-  DIP_LOW_TARGETS="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $8 }' | tr -d '()')"
-  DIP_LOW_MOVEMENTS="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $NF }')"
+  DIP_LOW_DAY="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $2 }' | head -1 | xargs)"
+  DIP_LOW_TARGETS="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $8 }' | head -1)%"
+  DIP_LOW_MOVEMENTS="$(echo "$DIP_LOW_DAY_DATA" | awk '{ print $NF }' | head -1)%"
   # high target data
-  DIP_HIGH_DAY_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | awk '{ print $8 }' | tr -d '(%)' | sort -n | tail -1)"
-  DIP_HIGH_DAY="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $2 }')"
-  DIP_HIGH_TARGETS="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $8 }' | tr -d '()')"
-  DIP_HIGH_MOVEMENTS="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $NF }')"
-else
+  DIP_HIGH_DAY="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $2 }' | tail -1 | xargs)"
+  DIP_HIGH_TARGETS="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $8 }' | tail -1)"
+  DIP_HIGH_MOVEMENTS="$(echo "$DIP_HIGH_DAY_DATA" | awk '{ print $NF }' | tail -1)"
+fi
+
+# if zero
+if [[ -z "$DIP_LOW_DAY" || -z "$DIP_LOW_TARGETS" || -z "$DIP_LOW_MOVEMENTS" ]] &>/dev/null; then
   # low
   DIP_LOW_DAY_DATA="N/A"
   DIP_LOW_DAY="0"
   DIP_LOW_TARGETS="0"
   DIP_LOW_MOVEMENTS="0"
+fi
+
+# if zero
+if [[ -z "$DIP_HIGH_DAY" || -z "$DIP_HIGH_TARGETS" || -z "$DIP_HIGH_MOVEMENTS" ]] &>/dev/null; then
   # high
   DIP_HIGH_DAY_DATA="N/A"
   DIP_HIGH_DAY="0"
