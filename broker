@@ -1211,12 +1211,6 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
       --msgbox "$RESULT" 16 "$WIDTH"
   }
 
-  # check for strategy error duplicates
-  if [[ -f "${LOG_DIR:?}"/leeloo/error.log ]] &>/dev/null; then
-    # remove duplicates
-    echo "$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
-  fi
-
   ##############################################################################
 
   # system uptime
@@ -1334,6 +1328,8 @@ error.log.....: $STRATEGY_ERROR"
     if dialog --stdout --title "Check data?" \
       --backtitle "Check data?" \
       --yesno "Yes: Check! No: Go back!" 5 32; then
+      # remove duplicates
+      echo "$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
       # strategy data exist, edit
       nano "$LOG_DIR"/leeloo/error.log
       clear
