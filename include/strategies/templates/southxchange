@@ -247,6 +247,24 @@ function last_tx() {
 
 ################################################################################
 
+function txid_null() {
+  # if words is found
+  if [[ "$(egrep -c "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
+    # output words
+    DIP_NULL_TXID="$(egrep "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')"
+    # if zero
+    if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
+      DIP_NULL_TXID="null"
+    fi
+    # track non txid
+    echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    # keep n lines
+    echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  fi
+}
+
+################################################################################
+
 function cost_price() {
   # update balances, prices after last order
   echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null

@@ -65,9 +65,12 @@ DIP_OLD_ORDER_MAX="$(egrep "DIP_OLD_ORDER_MAX=" "${SYS_DIR:?}"/robot/"$BASENAME_
 exchange_template
 
 ################################################################################
+# data
+################################################################################
 
-last_tx
-delisted
+last_tx   # last tx
+txid_null # txid null
+delisted  # delisted markets
 
 ################################################################################
 
@@ -226,21 +229,7 @@ function target_data() {
 
 ################################################################################
 
-function txid_null() {
-  # if words is found
-  if [[ "$(egrep -c "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
-    # output words
-    DIP_NULL_TXID="$(egrep "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')"
-    # if zero
-    if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
-      DIP_NULL_TXID="null"
-    fi
-    # track non txid
-    echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-    # keep n lines
-    echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-  fi
-}
+txid_null
 
 ################################################################################
 
