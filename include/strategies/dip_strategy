@@ -1608,7 +1608,7 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
         DIP_GET_RATIO_PROFIT="DCA"
       fi
 
-      # if no_dca exist
+      # if no dca exist
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca)" -eq "1" ]] &>/dev/null; then
         # remove old no dca
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
@@ -1976,7 +1976,7 @@ if [[ "$DIP_TIME_CHECK" -eq "1" ]] &>/dev/null; then
   LOG_DATE_DAY="$(date | awk '{ print $3,$1 }')"
   echo "$LOG_DATE_DAY :: Potential: $DIP_DAILY_POTENTIAL Targets: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% Price Movement: ${DIP_DAILY_MOVEMENT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
   # keep n lines, remove duplicates
-  echo "$(tail -21 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | awk '!a[$1]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
+  echo "$(tail -30 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | awk '!a[$1]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
   # reset market.list file
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list &>/dev/null
 fi
