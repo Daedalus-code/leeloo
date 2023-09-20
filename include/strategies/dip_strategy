@@ -683,42 +683,49 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
       ##########################################################################
 
-      # if order already has balance
-      if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+      # if order already been checked
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca)" -eq "0" ]] &>/dev/null; then
 
-        # if zero
-        if [[ -z "$DIP_DCA" ]] &>/dev/null; then
-          # default
-          DIP_DCA="0"
-        fi
+        # if order already has balance
+        if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
-        # if dca enabled
-        if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
-          # if listing is single inside active
-          if [[ "$(grep -c "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
-
-            # ruled by configuration
-            DIP_DCA_RAW="$DIP_DCA"
-            # calculate dca value
-            DIP_DCA_NUM="$(echo "$DIP_DCA/100" | bc -l 2>/dev/null)"
-            # include old balance, ruled by configuration (dollar cost average)
-            DIP_BUY_AMOUNT_LISTING_DCA="$(echo "$DIP_DCA_NUM*$LISTING_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
-            log_date
-
-            # log dca balance output
-            DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: $LISTING_CURRENCY Has balance! $LISTING_BALANCE $LISTING_CURRENCY"
-            echo "$DIP_TARGET_DCA_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-            # log dca data output
-            DIP_TARGET_DCA_I_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: +Target amount ${DIP_DCA_RAW:?}% -> +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY"
-            echo "$DIP_TARGET_DCA_I_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-            # remove old dca order
-            remove_old_dca
-
-            # create/update dca list
-            echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          # if zero
+          if [[ -z "$DIP_DCA" ]] &>/dev/null; then
+            # default
+            DIP_DCA="0"
           fi
+
+          # if dca enabled
+          if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
+            # if listing is single inside active
+            if [[ "$(grep -c "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+
+              # ruled by configuration
+              DIP_DCA_RAW="$DIP_DCA"
+              # calculate dca value
+              DIP_DCA_NUM="$(echo "$DIP_DCA/100" | bc -l 2>/dev/null)"
+              # include old balance, ruled by configuration (dollar cost average)
+              DIP_BUY_AMOUNT_LISTING_DCA="$(echo "$DIP_DCA_NUM*$LISTING_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+              log_date
+
+              # log dca balance output
+              DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: $LISTING_CURRENCY Has balance! $LISTING_BALANCE $LISTING_CURRENCY"
+              echo "$DIP_TARGET_DCA_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+              # log dca data output
+              DIP_TARGET_DCA_I_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: +Target amount ${DIP_DCA_RAW:?}% -> +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY"
+              echo "$DIP_TARGET_DCA_I_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+              # remove old dca order
+              remove_old_dca
+
+              # create/update dca list
+              echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+            fi
+          fi
+        else
+          # order has no balance (no dca)
+          echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY NO DCA Available" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
         fi
       fi
 
@@ -1599,6 +1606,12 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>
       # if zero
       if [[ -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
         DIP_GET_RATIO_PROFIT="DCA"
+      fi
+
+      # if no_dca exist
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca)" -eq "1" ]] &>/dev/null; then
+        # remove old no dca
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
       fi
     fi
 
