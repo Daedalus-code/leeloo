@@ -561,6 +561,24 @@ fi
 
 ################################################################################
 
+# total active count
+DIP_ACTIVE_FILE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }')"
+# total order count
+DIP_ORDERS_FILE_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | awk '{ print $1 }')"
+
+################################################################################
+
+function old_order_id() {
+  # order data
+  DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | tail -1)"
+  DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | head -1)"
+  # order id
+  DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
+  DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
+}
+
+################################################################################
+
 # file age greater than max age
 if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
@@ -871,6 +889,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # max active orders, set by configuration
     if [[ "$DIP_ORDERS_FILE_COUNT" -gt "$DIP_MAX_ORDERS" ]] &>/dev/null; then
 
+      old_order_id
       log_date
 
       # log max orders output
@@ -990,13 +1009,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
-  # total active count
-  DIP_ACTIVE_FILE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }')"
-  # total order count
-  DIP_ORDERS_FILE_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | awk '{ print $1 }')"
-
-  ##############################################################################
-
   # buy count
   DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDERS_FILE" | grep -c "buy" || true)"
 
@@ -1094,13 +1106,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
-  # order data
-  DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | tail -1)"
-  DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | head -1)"
+  old_order_id
 
-  # order id
-  DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
-  DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
   # order type
   DIP_LATEST_ORDER_TYPE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
   DIP_OLDEST_ORDER_TYPE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
