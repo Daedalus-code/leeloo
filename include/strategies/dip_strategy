@@ -325,9 +325,9 @@ function cancel_DCA() {
         if [[ "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "0" ]] &>/dev/null; then
           # remove obsolete dca
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
-          # if no dca exist
-          if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca)" -eq "1" ]] &>/dev/null; then
-            # remove old no dca
+          # if no_dca exist
+          if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -eq "1" ]] &>/dev/null; then
+            # remove old no_dca
             echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
           fi
         fi
@@ -707,7 +707,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       ##########################################################################
 
       # if order already been checked
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -eq "0" ]] &>/dev/null; then
 
         # if order already has balance
         if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
@@ -747,7 +747,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             fi
           fi
         else
-          # order has no balance (no dca)
+          # order has no balance (no_dca)
           echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY NO DCA Available" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
         fi
       fi
