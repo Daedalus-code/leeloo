@@ -257,7 +257,7 @@ function observe_market() {
   # get poloniex prices
   if [[ "$OBSERVE_MARKET" == "poloniex" ]] &>/dev/null; then
     SUPPORT_LENGTH="5"
-    SUPPORT_WIDTH="7"
+    SUPPORT_WIDTH="-7"
     SUPPORT="Support: https://support.poloniex.com"
     function result_prices() {
       echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
@@ -267,7 +267,7 @@ function observe_market() {
   # get southxchange prices
   if [[ "$OBSERVE_MARKET" == "southxchange" ]] &>/dev/null; then
     SUPPORT_LENGTH="5"
-    SUPPORT_WIDTH="5"
+    SUPPORT_WIDTH="+5"
     SUPPORT="Support: https://southxchange.gorgias.help"
     function result_prices() {
       echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
@@ -296,7 +296,7 @@ function observe_market() {
   MARKET_MOON="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
   MARKET_MOON_COUNT="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | wc -l)"
   MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-  WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)-$SUPPORT_WIDTH" | bc 2>/dev/null)"
+  WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)$SUPPORT_WIDTH" | bc 2>/dev/null)"
   LENGTH="25"
 
   if [[ -z "$WIDTH" ]] &>/dev/null; then
