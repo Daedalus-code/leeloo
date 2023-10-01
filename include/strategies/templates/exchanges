@@ -105,6 +105,24 @@ function exchange_template() {
 
   ##############################################################################
 
+  # xeggex template
+  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+
+    if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/xeggex ]] &>/dev/null; then
+      EXCHANGE_API="Nothing"
+      echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      exit
+    else
+      source /usr/local/bin/include/leeloo/strategies/templates/xeggex
+    fi
+
+    # stakecube api
+    source /usr/local/bin/include/leeloo/api/xeggex/private_API
+    source /usr/local/bin/include/leeloo/api/xeggex/public_API
+  fi
+
+  ##############################################################################
+
   if [[ -z "$EXCHANGE_API" ]] &>/dev/null; then
     EXCHANGE_API="No config!"
     echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No EXCHANGE_API= set in configuration!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null

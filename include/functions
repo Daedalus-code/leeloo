@@ -241,9 +241,6 @@ function no_irssi_no_access() {
 
 function observe_market() {
 
-  # configuration
-  source /usr/local/bin/include/leeloo/broker.conf
-
   # search markets
   USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
@@ -256,6 +253,7 @@ function observe_market() {
 
   # get poloniex prices
   if [[ "$OBSERVE_MARKET" == "poloniex" ]] &>/dev/null; then
+    EXCHANGE_API="POL"
     SUPPORT_LENGTH="5"
     SUPPORT_WIDTH="-7"
     SUPPORT="Support: https://support.poloniex.com"
@@ -266,6 +264,7 @@ function observe_market() {
 
   # get southxchange prices
   if [[ "$OBSERVE_MARKET" == "southxchange" ]] &>/dev/null; then
+    EXCHANGE_API="SXC"
     SUPPORT_LENGTH="5"
     SUPPORT_WIDTH="+5"
     SUPPORT="Support: https://southxchange.gorgias.help"
@@ -276,6 +275,7 @@ function observe_market() {
 
   # get stakecube prices
   if [[ "$OBSERVE_MARKET" == "stakecube" ]] &>/dev/null; then
+    EXCHANGE_API="SCE"
     SUPPORT_LENGTH="5"
     SUPPORT_WIDTH="+8"
     SUPPORT_RESULT="Support Mail: support@stakecube.zohodesk.com"
@@ -286,6 +286,7 @@ function observe_market() {
 
   # get xeggex prices
   if [[ "$OBSERVE_MARKET" == "xeggex" ]] &>/dev/null; then
+    EXCHANGE_API="XGX"
     SUPPORT_LENGTH="5"
     SUPPORT_WIDTH="+8"
     SUPPORT_RESULT="Support: https://xeggex.com/account/support"
