@@ -747,8 +747,14 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             fi
           fi
         else
+          # if zero
+          if [[ -z "$LISTING_BALANCE_DEPOSITED" ]] &>/dev/null; then
+            LISTING_BALANCE_DEPOSITED="0.000000000"
+          fi
           # order has no balance (no_dca)
           echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY NO DCA Available" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
+          # format output
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
         fi
       fi
 
