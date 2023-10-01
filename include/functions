@@ -276,6 +276,9 @@ function observe_market() {
 
   # get stakecube prices
   if [[ "$OBSERVE_MARKET" == "stakecube" ]] &>/dev/null; then
+    SUPPORT_LENGTH="5"
+    SUPPORT_WIDTH="+8"
+    SUPPORT_RESULT="Support Mail: support@stakecube.zohodesk.com"
     function result_prices() {
       echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
     }
@@ -283,18 +286,21 @@ function observe_market() {
 
   # get xeggex prices
   if [[ "$OBSERVE_MARKET" == "xeggex" ]] &>/dev/null; then
+    SUPPORT_LENGTH="5"
+    SUPPORT_WIDTH="+8"
+    SUPPORT_RESULT="Support: https://xeggex.com/account/support"
     function result_prices() {
       echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
     }
   fi
 
-  CAT_POLONIEX_PRICES="$(cat "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null)"
+  CAT_EXCHANGE_PRICES="$(cat "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null)"
 
   # 450 max before dialog breaks
-  MARKET_RESULT="$(echo "$CAT_POLONIEX_PRICES" | sort -k2 -n -r 2>/dev/null | head -100)"
+  MARKET_RESULT="$(echo "$CAT_EXCHANGE_PRICES" | sort -k2 -n -r 2>/dev/null | head -100)"
   MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null | sed '/^$/d' | wc -l)"
-  MARKET_MOON="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
-  MARKET_MOON_COUNT="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | wc -l)"
+  MARKET_MOON="$(echo "$CAT_EXCHANGE_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
+  MARKET_MOON_COUNT="$(echo "$CAT_EXCHANGE_PRICES" | awk '{ print $5 }' | wc -l)"
   MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
   WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)$SUPPORT_WIDTH" | bc 2>/dev/null)"
   LENGTH="25"
