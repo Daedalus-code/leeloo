@@ -295,6 +295,17 @@ function observe_market() {
     }
   fi
 
+  # update data every n seconds
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
+    result_prices
+    # update data if missing
+  elif [[ ! -f "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices ]] &>/dev/null; then
+    result_prices
+    # update data if empty
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices ]] &>/dev/null; then
+    result_prices
+  fi
+
   CAT_EXCHANGE_PRICES="$(cat "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null)"
 
   # 450 max before dialog breaks
