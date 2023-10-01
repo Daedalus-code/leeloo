@@ -345,8 +345,8 @@ case $CHOICE in
 
   "1")
 
-    SEARCH_MARKET="poloniex"
-    search_market
+    OBSERVE_MARKET="poloniex"
+    observe_market
 
     ;;
 
@@ -354,63 +354,8 @@ case $CHOICE in
 
   "2")
 
-    USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-
-    display_result() {
-      dialog --title "$FILE_TIME :: Top 100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
-        --no-collapse \
-        --scrollbar \
-        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
-    }
-
-    # get prices
-    function result_prices() {
-      echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
-    }
-    # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
-      result_prices
-      # update data if missing
-    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
-      result_prices
-      # update data if empty
-    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
-      result_prices
-    fi
-
-    CAT_SOUTHX_PRICES="$(cat "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)"
-
-    # 450 max before dialog breaks
-    MARKET_RESULT="$(echo "$CAT_SOUTHX_PRICES" | sort -k2 -n -r 2>/dev/null | head -100)"
-    MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | sed '/^$/d' | wc -l)"
-    MARKET_MOON="$(echo "$CAT_SOUTHX_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
-    MARKET_MOON_COUNT="$(echo "$CAT_SOUTHX_PRICES" | awk '{ print $5 }' | wc -l)"
-    MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-    WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)+5" | bc 2>/dev/null)"
-    LENGTH="25"
-
-    if [[ -z "$WIDTH" ]] &>/dev/null; then
-      WIDTH="77"
-    fi
-
-    if [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
-      WIDTH="77"
-    fi
-
-    if [[ "$MARKET_COUNT" -eq "0" ]] &>/dev/null; then
-      LENGTH="5"
-      RESULT="Support: https://southxchange.gorgias.help"
-    else
-      RESULT="Market: Bid Ask Last (%) Volume24Hr
-$MARKET_RESULT"
-    fi
-
-    FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | awk '{ print $8 }')"
-    if [[ -z "$FILE_TIME" ]] &>/dev/null; then
-      FILE_TIME="00:00"
-    fi
-
-    display_result 2>/dev/null
+    OBSERVE_MARKET="southxchange"
+    observe_market
 
     ;;
 
