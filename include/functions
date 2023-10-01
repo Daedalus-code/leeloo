@@ -11,6 +11,7 @@
 ## shellcheck ##################################################################
 
 # shellcheck disable=SC2034  # Unused variables left for readability
+# shellcheck disable=SC2153  # Sourced
 
 # system directory #############################################################
 
@@ -233,6 +234,85 @@ function no_irssi_no_access() {
       --msgbox "$RESULT" 5 25
   }
   RESULT="$(echo "Client not installed!")"
+  display_result 2>/dev/null
+}
+
+# search markets ###############################################################
+
+function search_market() {
+
+  # configuration
+  source /usr/local/bin/include/leeloo/broker.conf
+
+  # search markets
+  USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+
+  display_result() {
+    dialog --title "$FILE_TIME :: Top 100 Market: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
+      --no-collapse \
+      --scrollbar \
+      --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+  }
+
+  # get poloniex prices
+  if [[ "$SEARCH_MARKET" == "poloniex" ]] &>/dev/null; then
+    SUPPORT_LENGTH="5"
+    SUPPORT="Support: https://support.poloniex.com"
+    function result_prices() {
+      echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
+    }
+  fi
+  # get southxchange prices
+  if [[ "$SEARCH_MARKET" == "southxchange" ]] &>/dev/null; then
+    function result_prices() {
+      echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
+    }
+  fi
+  # get stakecube prices
+  if [[ "$SEARCH_MARKET" == "stakecube" ]] &>/dev/null; then
+    function result_prices() {
+      echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
+    }
+  fi
+  # get xeggex prices
+  if [[ "$SEARCH_MARKET" == "xeggex" ]] &>/dev/null; then
+    function result_prices() {
+      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+    }
+  fi
+
+  CAT_POLONIEX_PRICES="$(cat "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null)"
+
+  # 450 max before dialog breaks
+  MARKET_RESULT="$(echo "$CAT_POLONIEX_PRICES" | sort -k2 -n -r 2>/dev/null | head -100)"
+  MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null | sed '/^$/d' | wc -l)"
+  MARKET_MOON="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
+  MARKET_MOON_COUNT="$(echo "$CAT_POLONIEX_PRICES" | awk '{ print $5 }' | wc -l)"
+  MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  WIDTH="$(echo "$(echo "$MARKET_RESULT" | wc -L)-7" | bc 2>/dev/null)"
+  LENGTH="25"
+
+  if [[ -z "$WIDTH" ]] &>/dev/null; then
+    WIDTH="77"
+  fi
+
+  if [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
+    WIDTH="77"
+  fi
+
+  if [[ "$MARKET_COUNT" -eq "0" ]] &>/dev/null; then
+    LENGTH="$SUPPORT_LENGTH"
+    RESULT="$SUPPORT"
+  else
+    RESULT="Market: Bid Ask Last (%) Volume24Hr
+$MARKET_RESULT"
+  fi
+
+  FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null | awk '{ print $8 }')"
+  if [[ -z "$FILE_TIME" ]] &>/dev/null; then
+    FILE_TIME="00:00"
+  fi
+
   display_result 2>/dev/null
 }
 

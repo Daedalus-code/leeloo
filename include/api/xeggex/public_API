@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# tickers ######################################################################
+# https://api.xeggex.com/api/v2/tickers
+# Example: tickers
+
+function tickers {
+  if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
+    torify curl -s -X GET "https://api.xeggex.com/api/v2/tickers" -H "accept: application/json" | jq -r '.[] | "\(.ticker_id): \(.bid) \(.ask) \(.last_price) \(.change_percent) \(.usd_volume_est)"'
+  else
+    curl -s -X GET "https://api.xeggex.com/api/v2/tickers" -H "accept: application/json" | jq -r '.[] | "\(.ticker_id): \(.bid) \(.ask) \(.last_price) \(.change_percent) \(.usd_volume_est)"'
+  fi
+}
+
+# END
