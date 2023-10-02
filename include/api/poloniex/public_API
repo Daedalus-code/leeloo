@@ -6,9 +6,9 @@
 
 function getPrices {
   if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
-    torify curl -s https://poloniex.com/public?command=returnTicker | jq -r 'to_entries[] | "\(.key) \(.value.highestBid) \(.value.lowestAsk) \(.value.last) \(.value.percentChange) \(.value.baseVolume)"' 2>/dev/null | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
+    torify curl -s -X GET "https://api.poloniex.com/markets/ticker24h" -H "accept: application/json" | jq -r '.[] | "\(.symbol): \(.bid) \(.ask) \(.markPrice) \(.dailyChange) \(.quantity)"' | awk 'BEGIN{OFS="\t"} {for(i=2;i<=NF;i++){if($i ~ /^[0-9]+(\.[0-9]+)?$/){if($i < 1){$i=sprintf("%.9f",$i)}else{$i=sprintf("%.2f",$i)}}} print}'
   else
-    curl -s https://poloniex.com/public?command=returnTicker | jq -r 'to_entries[] | "\(.key) \(.value.highestBid) \(.value.lowestAsk) \(.value.last) \(.value.percentChange) \(.value.baseVolume)"' 2>/dev/null | awk '{for(i=1;i<=NF;i++) {if($i == "null"){printf("0\t")} else if($i~/^[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/) {if(i==5){printf("%.2f%%\t",$i)}else{printf("%.9f\t",$i)}} else {printf("%s\t",$i)}} printf("\n")}'
+    curl -s -X GET "https://api.poloniex.com/markets/ticker24h" -H "accept: application/json" | jq -r '.[] | "\(.symbol): \(.bid) \(.ask) \(.markPrice) \(.dailyChange) \(.quantity)"' | awk 'BEGIN{OFS="\t"} {for(i=2;i<=NF;i++){if($i ~ /^[0-9]+(\.[0-9]+)?$/){if($i < 1){$i=sprintf("%.9f",$i)}else{$i=sprintf("%.2f",$i)}}} print}'
   fi
 }
 
