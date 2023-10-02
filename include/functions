@@ -357,21 +357,23 @@ function search_market() {
   # exchanges, includes functions
   source /usr/local/bin/include/leeloo/strategies/templates/exchanges
 
-  # search format
-  MARKET_INPUT=$(
-    # poloniex search
-    if [[ "$SEARCH_MARKET" == "poloniex" ]] &>/dev/null; then
+  # poloniex search
+  if [[ "$SEARCH_MARKET" == "poloniex" ]] &>/dev/null; then
+    MARKET_INPUT=$(
       dialog --title "Market (BTC_USDT) (BTC)" \
         --inputbox "Enter name:" 8 40 \
         3>&1 1>&2 2>&3 3>&-
-    fi
-    # southxchange search
+    )
+  fi
+
+  # southxchange search
+  if [[ "$SEARCH_MARKET" == "southxchange" ]] &>/dev/null; then
     MARKET_INPUT=$(
       dialog --title "Market (BTC/USDT) (BTC)" \
         --inputbox "Enter name:" 8 40 \
         3>&1 1>&2 2>&3 3>&-
     )
-  )
+  fi
 
   if [[ ! -z "$MARKET_INPUT" ]] &>/dev/null; then
 
