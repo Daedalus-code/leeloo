@@ -11,7 +11,7 @@
 ## shellcheck ##################################################################
 
 # shellcheck disable=SC2034  # Unused variables left for readability
-# shellcheck disable=SC2153  # Sourced
+# shellcheck disable=SC2153  # Already sourced
 
 # system directory #############################################################
 
@@ -89,6 +89,7 @@ function key_secret_set() {
   KEY_SECRET_SET_PLX="0" # poloniex
   KEY_SECRET_SET_SXC="0" # southxchange
   KEY_SECRET_SET_SCE="0" # stakecube
+  KEY_SECRET_SET_XGX="0" # xeggex
 
   ##############################################################################
 
@@ -104,14 +105,20 @@ function key_secret_set() {
   if [[ -n "$API_STAKECUBE_KEY" ]] && [[ -n "$API_STAKECUBE_SECRET" ]]; then
     KEY_SECRET_SET_SCE="1"
   fi
+  # xeggex option
+  if [[ -n "$API_XEGGEX_KEY" ]] && [[ -n "$API_XEGGEX_SECRET" ]]; then
+    KEY_SECRET_SET_XGX="1"
+  fi
 
   ##############################################################################
 
-  # calculate status
-  KEY_SECRET_SET="$(echo "$KEY_SECRET_SET_PLX+$KEY_SECRET_SET_SXC+$KEY_SECRET_SET_SCE" | bc 2>/dev/null)"
+  # calculate general status
+  KEY_SECRET_SET="$(echo "$KEY_SECRET_SET_PLX+$KEY_SECRET_SET_SXC+$KEY_SECRET_SET_SCE+$KEY_SECRET_SET_XGX" | bc 2>/dev/null)"
+  # if zero
   if [[ -z "$KEY_SECRET_SET" ]] &>/dev/null; then
     KEY_SECRET_SET="0"
   fi
+
   # if set
   if [[ "$KEY_SECRET_SET" -gt "0" ]] &>/dev/null; then
     KEY_SECRET_OK="1"
@@ -178,10 +185,10 @@ fi
 
 # parasite_check
 function parasite_check() {
-  history -c &>/dev/null           # F
-  echo "Okey parasite."            # U
-  sudo shutdown -h now &>/dev/null # C
-  exit                             # K
+  history -c &>/dev/null
+  echo "Okey parasite."
+  sudo shutdown -h now &>/dev/null
+  exit
 }
 
 ################################################################################
@@ -292,7 +299,7 @@ function observe_market() {
     }
   fi
 
-  # search markets
+  # observe markets
   USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
   # update data every n seconds
