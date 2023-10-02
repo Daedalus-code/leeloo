@@ -6,9 +6,9 @@
 
 function getMarkets {
   if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
-    torify curl -s --compressed https://stakecube.io/api/v2/exchange/spot/markets | jq -r '.result[] | "\(.baseMarket)_\(.tradeMarket) \(.lastPrice)\t\(.low24h)%\t\(.high24h)\t\(.change24h)\t\(.volumeTrade24h)"' | awk 'BEGIN{OFS="\t"} {for(i=2;i<=NF;i++){if($i ~ /^[0-9]+(\.[0-9]+)?$/){if($i < 1){$i=sprintf("%.9f",$i)}else{$i=sprintf("%.2f",$i)}}} print}'
+    torify curl -s --compressed https://stakecube.io/api/v2/exchange/spot/markets | jq -r '.result[] | "\(.baseMarket)_\(.tradeMarket) \(.high24h)\t\(.low24h)\t\(.lastPrice)\t\(.change24h)%\t\(.volumeTrade24h)"' | awk 'BEGIN{OFS="\t"} {for(i=2;i<=NF;i++){if($i ~ /^[0-9]+(\.[0-9]+)?$/){if($i < 1){$i=sprintf("%.9f",$i)}else{$i=sprintf("%.2f",$i)}}} print}'
   else
-    curl -s --compressed https://stakecube.io/api/v2/exchange/spot/markets | jq -r '.result[] | "\(.baseMarket)_\(.tradeMarket) \(.lastPrice)\t\(.low24h)%\t\(.high24h)\t\(.change24h)\t\(.volumeTrade24h)"' | awk 'BEGIN{OFS="\t"} {for(i=2;i<=NF;i++){if($i ~ /^[0-9]+(\.[0-9]+)?$/){if($i < 1){$i=sprintf("%.9f",$i)}else{$i=sprintf("%.2f",$i)}}} print}'
+    curl -s --compressed https://stakecube.io/api/v2/exchange/spot/markets | jq -r '.result[] | "\(.baseMarket)_\(.tradeMarket) \(.high24h)\t\(.low24h)\t\(.lastPrice)\t\(.change24h)%\t\(.volumeTrade24h)"' | awk 'BEGIN{OFS="\t"} {for(i=2;i<=NF;i++){if($i ~ /^[0-9]+(\.[0-9]+)?$/){if($i < 1){$i=sprintf("%.9f",$i)}else{$i=sprintf("%.2f",$i)}}} print}'
   fi
 }
 
