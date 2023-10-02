@@ -26,3 +26,4 @@ XeggeX       : Search market
 [SouthXchange](https://main.southxchange.com)  
 [StakeCube](https://stakecube.net)  
 [Poloniex](https://poloniex.com/signup?c=R2LDDSXB)  
+[XeggeX](https://xeggex.com?ref=650e9399625501b3b53b1172)  
