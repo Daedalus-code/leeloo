@@ -6,9 +6,9 @@
 
 function tickers {
   if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
-    torify curl -s -X GET "https://api.xeggex.com/api/v2/tickers" -H "accept: application/json" | jq -r '.[] | "\(.ticker_id): \(.bid) \(.ask) \(.last_price) \(.change_percent) \(.usd_volume_est)"'
+    torify curl -s -X GET "https://api.xeggex.com/api/v2/tickers" -H "accept: application/json" | jq -r '.[] | "\(.ticker_id): \(.bid) \(.ask) \(.last_price) \(.change_percent) \(.usd_volume_est)"' | awk 'BEGIN{OFS="\t"} {for(i=2;i<=NF;i++){if($i ~ /^[0-9]+(\.[0-9]+)?$/){if($i < 1){$i=sprintf("%.9f",$i)}else{$i=sprintf("%.2f",$i)}}} print}'
   else
-    curl -s -X GET "https://api.xeggex.com/api/v2/tickers" -H "accept: application/json" | jq -r '.[] | "\(.ticker_id): \(.bid) \(.ask) \(.last_price) \(.change_percent) \(.usd_volume_est)"'
+    curl -s -X GET "https://api.xeggex.com/api/v2/tickers" -H "accept: application/json" | jq -r '.[] | "\(.ticker_id): \(.bid) \(.ask) \(.last_price) \(.change_percent) \(.usd_volume_est)"' | awk 'BEGIN{OFS="\t"} {for(i=2;i<=NF;i++){if($i ~ /^[0-9]+(\.[0-9]+)?$/){if($i < 1){$i=sprintf("%.9f",$i)}else{$i=sprintf("%.2f",$i)}}} print}'
   fi
 }
 
