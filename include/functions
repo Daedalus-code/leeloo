@@ -350,24 +350,110 @@ $MARKET_RESULT"
   display_result 2>/dev/null
 }
 
-# search market, poloniex ######################################################
+# search markets ###############################################################
 
-function search_poloniex {
+function search_market() {
+
+  # exchanges, includes functions
+  source /usr/local/bin/include/leeloo/strategies/templates/exchanges
+
+  # search format
   MARKET_INPUT=$(
-    dialog --title "Market (BTC_USDT) (BTC)" \
-      --inputbox "Enter name:" 8 40 \
-      3>&1 1>&2 2>&3 3>&-
+    # poloniex search
+    if [[ "$SEARCH_MARKET" == "poloniex" ]] &>/dev/null; then
+      dialog --title "Market (BTC_USDT) (BTC)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    fi
+    # southxchange search
+    MARKET_INPUT=$(
+      dialog --title "Market (BTC/USDT) (BTC)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
   )
-}
 
-# search market, southxchange ##################################################
+  if [[ ! -z "$MARKET_INPUT" ]] &>/dev/null; then
 
-function search_southxchange {
-  MARKET_INPUT=$(
-    dialog --title "Market (BTC/USDT) (BTC)" \
-      --inputbox "Enter name:" 8 40 \
-      3>&1 1>&2 2>&3 3>&-
-  )
+    # get poloniex prices
+    if [[ "$SEARCH_MARKET" == "poloniex" ]] &>/dev/null; then
+      EXCHANGE_API="POL"
+      exchange_template
+      SUPPORT_WIDTH="+5"
+      SUPPORT_LENGTH="+5"
+      function result_prices() {
+        echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
+      }
+    fi
+
+    # get southxchange prices
+    if [[ "$SEARCH_MARKET" == "southxchange" ]] &>/dev/null; then
+      EXCHANGE_API="SXC"
+      exchange_template
+      SUPPORT_WIDTH="+5"
+      SUPPORT_LENGTH="+5"
+      function result_prices() {
+        echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
+      }
+    fi
+
+    USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+
+    # update data every n seconds
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
+      result_prices
+      # update data if missing
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices ]] &>/dev/null; then
+      result_prices
+      # update data if empty
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices ]] &>/dev/null; then
+      result_prices
+    fi
+
+    MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
+    MARKET_RESULT="$(grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null | sort -k2 -n -r 2>/dev/null)"
+    MARKET_COUNT="$(echo "$MARKET_RESULT" | sed -r '/^\s*$/d' | wc -l)"
+    MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
+    MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | wc -l)"
+    MARKET_MOON_VALUE="$(echo "$MARKET_MOON/$MARKET_MOON_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    LENGTH="$(echo "$MARKET_COUNT+$SUPPORT_LENGTH" | bc 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$MARKET_RESULT" | column -t | wc -L)$SUPPORT_WIDTH" | bc 2>/dev/null)"
+
+    if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+      LOG_LENGTH="7"
+    fi
+    if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+      LENGTH="$LOG_LENGTH"
+    fi
+
+    if [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
+      WIDTH="77"
+    fi
+
+    display_result() {
+      dialog --title "Search result $MARKET_SEARCH: +$MARKET_COUNT :: $DATE :: ${MARKET_MOON_VALUE:?}%" \
+        --no-collapse \
+        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+    }
+
+    if [[ "$MARKET_COUNT" -eq "0" ]] &>/dev/null; then
+      RESULT="No market was found."
+    else
+      RESULT="Market: Bid Ask Last (%) Volume24Hr
+$MARKET_RESULT"
+    fi
+
+    display_result 2>/dev/null
+  else
+    display_result() {
+      dialog --title "Market info (empty)" \
+        --no-collapse \
+        --msgbox "$RESULT" 0 0
+    }
+
+    RESULT="No $EXCHANGE_API data found!"
+    display_result 2>/dev/null
+  fi
 }
 
 # search market, stakecube #####################################################
