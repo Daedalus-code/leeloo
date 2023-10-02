@@ -252,7 +252,7 @@ function observe_market() {
     SUPPORT_LENGTH="5"
     SUPPORT="Support: https://support.poloniex.com"
     function result_prices() {
-      echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
+      echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null
     }
   fi
 
@@ -264,7 +264,7 @@ function observe_market() {
     SUPPORT_LENGTH="5"
     SUPPORT="Support: https://southxchange.gorgias.help"
     function result_prices() {
-      echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
+      echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null
     }
   fi
 
@@ -276,7 +276,7 @@ function observe_market() {
     SUPPORT_LENGTH="5"
     SUPPORT_RESULT="Support Mail: support@stakecube.zohodesk.com"
     function result_prices() {
-      echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
+      echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null
     }
   fi
 
@@ -288,7 +288,7 @@ function observe_market() {
     SUPPORT_LENGTH="5"
     SUPPORT_RESULT="Support: https://xeggex.com/account/support"
     function result_prices() {
-      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null
     }
   fi
 
@@ -375,6 +375,24 @@ function search_market() {
     )
   fi
 
+  # stakecube search
+  if [[ "$SEARCH_MARKET" == "stakecube" ]] &>/dev/null; then
+    MARKET_INPUT=$(
+      dialog --title "Market (BTC_USDT) (BTC)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+  fi
+
+  # xeggex search
+  if [[ "$SEARCH_MARKET" == "xeggex" ]] &>/dev/null; then
+    MARKET_INPUT=$(
+      dialog --title "Market (BTC_USDT) (BTC)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+  fi
+
   if [[ ! -z "$MARKET_INPUT" ]] &>/dev/null; then
 
     # get poloniex prices
@@ -395,7 +413,29 @@ function search_market() {
       SUPPORT_WIDTH="+5"
       SUPPORT_LENGTH="+5"
       function result_prices() {
-        echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
+        echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
+      }
+    fi
+
+    # get stakecube prices
+    if [[ "$SEARCH_MARKET" == "stakecube" ]] &>/dev/null; then
+      EXCHANGE_API="SCE"
+      exchange_template
+      SUPPORT_WIDTH="+5"
+      SUPPORT_LENGTH="+8"
+      function result_prices() {
+        echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
+      }
+    fi
+
+    # get xeggex prices
+    if [[ "$SEARCH_MARKET" == "xeggex" ]] &>/dev/null; then
+      EXCHANGE_API="XGX"
+      exchange_template
+      SUPPORT_WIDTH="+5"
+      SUPPORT_LENGTH="+8"
+      function result_prices() {
+        echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
       }
     fi
 
@@ -456,16 +496,6 @@ $MARKET_RESULT"
     RESULT="No $EXCHANGE_API data found!"
     display_result 2>/dev/null
   fi
-}
-
-# search market, stakecube #####################################################
-
-function search_stakecube {
-  MARKET_INPUT=$(
-    dialog --title "Market (BTC_USDT) (BTC)" \
-      --inputbox "Enter name:" 8 40 \
-      3>&1 1>&2 2>&3 3>&-
-  )
 }
 
 # market info ##################################################################
