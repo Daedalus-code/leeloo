@@ -93,33 +93,16 @@ case $CHOICE in
 
   if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-    VALID_OPTIONS=()
-
-    # poloniex option
-    if [[ -n "$API_POLONIEX_KEY" ]] && [[ -n "$API_POLONIEX_SECRET" ]] &>/dev/null; then
-      VALID_OPTIONS+=("1" "Poloniex")
-    fi
-    # southxchange option
-    if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]] &>/dev/null; then
-      VALID_OPTIONS+=("2" "SouthXchange")
-    fi
-    # stakecube option
-    if [[ -n "$API_STAKECUBE_KEY" ]] && [[ -n "$API_STAKECUBE_SECRET" ]] &>/dev/null; then
-      VALID_OPTIONS+=("3" "StakeCube")
-    fi
-
-    BASE_HEIGHT="5"
-    CHOICE_HEIGHT=$((${#VALID_OPTIONS[@]} / 2))
-    HEIGHT=$((BASE_HEIGHT + CHOICE_HEIGHT + 2))
-    WIDTH="24"
+    HEIGHT=11
+    WIDTH=24
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Account Balances"
     MENU="$DATE"
 
-    OPTIONS=()
-    for ((i = 0; i < CHOICE_HEIGHT * 2; i += 2)); do
-      OPTIONS+=("${VALID_OPTIONS[i]}" "${VALID_OPTIONS[i + 1]}")
-    done
+    OPTIONS=(1 "Poloniex"
+      2 "SouthXchange"
+      3 "StakeCube"
+      4 "XeggeX")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
