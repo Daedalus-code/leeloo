@@ -244,6 +244,134 @@ function no_irssi_no_access() {
   display_result 2>/dev/null
 }
 
+# exchange balance #############################################################
+
+function exchange_balance() {
+
+  USER_TIMER="$(echo "$BOT_TIMER*1.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+
+  ##############################################################################
+
+  # poloniex
+  if [[ "$EXCHANGE_BALANCE" == "poloniex" ]] &>/dev/null; then
+    EXCHANGE_API="POL"
+    exchange_template
+    # get balance
+    function result_balances() {
+      echo "$(returnBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null
+    }
+  fi
+
+  ##############################################################################
+
+  # southxchange
+  if [[ "$EXCHANGE_BALANCE" == "southxchange" ]] &>/dev/null; then
+    EXCHANGE_API="SXC"
+    exchange_template
+    # get balance
+    function result_balances() {
+      echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null
+    }
+  fi
+
+  ##############################################################################
+
+  # stakecube
+  if [[ "$EXCHANGE_BALANCE" == "stakecube" ]] &>/dev/null; then
+    EXCHANGE_API="SCE"
+    exchange_template
+    # get balance
+    function result_balances() {
+      echo "$(returnAccount | jq -r '.result.wallets[] | "\(.asset): \(.balance) \(.balanceInOrder) \(.balanceInMasternodes) \(.balanceInInterest)"' 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null
+    }
+    SCE_NONCE_COUNTER=$(cat "${LOG_DIR:?}"/leeloo/nonce.count 2>/dev/null)
+    # if zero
+    if [[ -z "$SCE_NONCE_COUNTER" ]] &>/dev/null; then
+      SCE_NONCE_COUNTER="0"
+    fi
+  fi
+
+  ##############################################################################
+
+  # southxchange
+  if [[ "$EXCHANGE_BALANCE" == "xeggex" ]] &>/dev/null; then
+    EXCHANGE_API="XGX"
+    exchange_template
+    # get balance
+    function result_balances() {
+      echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null
+    }
+  fi
+
+  ##############################################################################
+
+  # update data every n seconds
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
+    result_balances
+    # update data if missing
+  elif [[ ! -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances ]] &>/dev/null; then
+    result_balances
+    # update data if empty
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances ]] &>/dev/null; then
+    result_balances
+  fi
+
+  until [[ -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances ]] &>/dev/null; do
+    clear
+    echo "Please wait.."
+    sleep 1
+  done
+
+  FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{ print $8 }')"
+  if [[ -z "$FILE_TIME" ]] &>/dev/null; then
+    FILE_TIME="00:00"
+  fi
+
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances | awk '{ print $1 }')" -lt "2" ]] &>/dev/null; then
+    LENGTH="5"
+    RESULT="No balance"
+  else
+    RESULT="Coins: Deposited Available Unconfirmed
+  $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
+  fi
+
+  ##############################################################################
+
+  if [[ "$EXCHANGE_BALANCE" == "stakecube" ]] &>/dev/null; then
+
+    RESULT_FORMAT="Coins: Deposited InOrder InMasternodes InInterest
+$(cat "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)"
+
+    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/stakecube/balances | awk '{ print $1 }')" -lt "1" ]] &>/dev/null; then
+      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | wc -L)+10" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$RESULT_FORMAT" | wc -l)+4" | bc 2>/dev/null)"
+      RESULT="No balance"
+    else
+      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | wc -L)+10" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$RESULT_FORMAT" | wc -l)+4" | bc 2>/dev/null)"
+      RESULT="$RESULT_FORMAT"
+    fi
+
+    display_result() {
+      dialog --title "$FILE_TIME :: Account Balance ($SCE_NONCE_COUNTER)" \
+        --no-collapse \
+        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+    }
+  fi
+
+  ##############################################################################
+
+  if [[ "$EXCHANGE_BALANCE" == "poloniex" || "$EXCHANGE_BALANCE" == "southxchange" ]] &>/dev/null; then
+    display_result() {
+      dialog --title "$FILE_TIME :: Account Balance" \
+        --no-collapse \
+        --msgbox "$(echo "$RESULT" | column -t)" 0 0
+    }
+  fi
+
+  display_result 2>/dev/null
+}
+
 # observe markets ##############################################################
 
 function observe_market() {
@@ -251,7 +379,9 @@ function observe_market() {
   # exchanges, includes functions
   source /usr/local/bin/include/leeloo/strategies/templates/exchanges
 
-  # get poloniex prices
+  ##############################################################################
+
+  # poloniex prices
   if [[ "$OBSERVE_MARKET" == "poloniex" ]] &>/dev/null; then
     EXCHANGE_API="POL"
     exchange_template
@@ -263,7 +393,9 @@ function observe_market() {
     }
   fi
 
-  # get southxchange prices
+  ##############################################################################
+
+  # southxchange prices
   if [[ "$OBSERVE_MARKET" == "southxchange" ]] &>/dev/null; then
     EXCHANGE_API="SXC"
     exchange_template
@@ -275,7 +407,9 @@ function observe_market() {
     }
   fi
 
-  # get stakecube prices
+  ##############################################################################
+
+  # stakecube prices
   if [[ "$OBSERVE_MARKET" == "stakecube" ]] &>/dev/null; then
     EXCHANGE_API="SCE"
     exchange_template
@@ -287,7 +421,9 @@ function observe_market() {
     }
   fi
 
-  # get xeggex prices
+  ##############################################################################
+
+  # xeggex prices
   if [[ "$OBSERVE_MARKET" == "xeggex" ]] &>/dev/null; then
     EXCHANGE_API="XGX"
     exchange_template
@@ -298,6 +434,8 @@ function observe_market() {
       echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null
     }
   fi
+
+  ##############################################################################
 
   # observe markets
   USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
@@ -364,8 +502,8 @@ function search_market() {
   # exchanges, includes functions
   source /usr/local/bin/include/leeloo/strategies/templates/exchanges
 
-  # poloniex search
-  if [[ "$SEARCH_MARKET" == "poloniex" ]] &>/dev/null; then
+  # poloniex, stakecube, xeggex search
+  if [[ "$SEARCH_MARKET" == "poloniex" || "$SEARCH_MARKET" == "stakecube" || "$SEARCH_MARKET" == "xeggex" ]] &>/dev/null; then
     MARKET_INPUT=$(
       dialog --title "Market (BTC_USDT) (BTC)" \
         --inputbox "Enter name:" 8 40 \
@@ -377,24 +515,6 @@ function search_market() {
   if [[ "$SEARCH_MARKET" == "southxchange" ]] &>/dev/null; then
     MARKET_INPUT=$(
       dialog --title "Market (BTC/USDT) (BTC)" \
-        --inputbox "Enter name:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-  fi
-
-  # stakecube search
-  if [[ "$SEARCH_MARKET" == "stakecube" ]] &>/dev/null; then
-    MARKET_INPUT=$(
-      dialog --title "Market (BTC_USDT) (BTC)" \
-        --inputbox "Enter name:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-  fi
-
-  # xeggex search
-  if [[ "$SEARCH_MARKET" == "xeggex" ]] &>/dev/null; then
-    MARKET_INPUT=$(
-      dialog --title "Market (BTC_USDT) (BTC)" \
         --inputbox "Enter name:" 8 40 \
         3>&1 1>&2 2>&3 3>&-
     )
