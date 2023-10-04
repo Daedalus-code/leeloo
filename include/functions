@@ -341,14 +341,15 @@ function exchange_balance() {
   if [[ "$EXCHANGE_BALANCE" == "stakecube" ]] &>/dev/null; then
 
     RESULT_FORMAT="Coins: Deposited InOrder InMasternodes InInterest
-$(cat "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)"
+$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
 
-    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/stakecube/balances | awk '{ print $1 }')" -lt "1" ]] &>/dev/null; then
-      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | wc -L)+11" | bc 2>/dev/null)"
+    # if lines are less than n
+    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances | awk '{ print $1 }')" -lt "1" ]] &>/dev/null; then
+      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | wc -L)+12" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$RESULT_FORMAT" | wc -l)+4" | bc 2>/dev/null)"
-      RESULT="No balance"
+      RESULT="No Data"
     else
-      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | wc -L)+11" | bc 2>/dev/null)"
+      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | wc -L)+12" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$RESULT_FORMAT" | wc -l)+4" | bc 2>/dev/null)"
       RESULT="$RESULT_FORMAT"
     fi
@@ -363,10 +364,21 @@ $(cat "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)"
   ##############################################################################
 
   if [[ "$EXCHANGE_BALANCE" == "poloniex" || "$EXCHANGE_BALANCE" == "southxchange" || "$EXCHANGE_BALANCE" == "xeggex" ]] &>/dev/null; then
+
+    # default
+    WIDTH="0"
+    LENGTH="0"
+
+    # if no lines has n
+    if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -eq "0" ]] &>/dev/null; then
+      WIDTH="45"
+      LENGTH="5"
+    fi
+
     display_result() {
       dialog --title "$FILE_TIME :: Account Balance" \
         --no-collapse \
-        --msgbox "$(echo "$RESULT" | column -t)" 0 0
+        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
     }
   fi
 
