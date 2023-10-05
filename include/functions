@@ -252,6 +252,13 @@ function exchange_balance() {
 
   ##############################################################################
 
+  # if no directory
+  if [[ ! -d "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE" ]] &>/dev/null; then
+    mkdir "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE" &>/dev/null
+  fi
+
+  ##############################################################################
+
   # poloniex
   if [[ "$EXCHANGE_BALANCE" == "poloniex" ]] &>/dev/null; then
     EXCHANGE_API="POL"
@@ -314,11 +321,6 @@ function exchange_balance() {
     # update data if empty
   elif [[ ! -s "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances ]] &>/dev/null; then
     result_balances
-  fi
-
-  # if no directory
-  if [[ ! -d "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE" ]] &>/dev/null; then
-    mkdir "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE" &>/dev/null
   fi
 
   until [[ -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances ]] &>/dev/null; do
@@ -397,6 +399,13 @@ function observe_market() {
 
   # exchanges, includes functions
   source /usr/local/bin/include/leeloo/strategies/templates/exchanges
+
+  ##############################################################################
+
+  # if no directory
+  if [[ ! -d "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE" ]] &>/dev/null; then
+    mkdir "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE" &>/dev/null
+  fi
 
   ##############################################################################
 
