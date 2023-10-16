@@ -632,10 +632,14 @@ function rogue_profit() {
     REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }' | head -1)"
     echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      # place buy market order
       placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # vanish text
       rogue_vanish
     elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      # place buy limit order
       placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # vanish text
       rogue_vanish
     fi
   }
@@ -648,10 +652,14 @@ function rogue_profit() {
     LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }' | head -1)"
     echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
-      placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # place sell market order
+      placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # vanish text
       rogue_vanish
     elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
-      placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$LISTING_AMOUNT" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # place sell limit order
+      placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$LISTING_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # vanish text
       rogue_vanish
     fi
   }
