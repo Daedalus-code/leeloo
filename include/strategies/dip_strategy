@@ -1949,24 +1949,26 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
 fi
 
 # dump listing balance
-DUMP_LISTING_BALANCE_CHECK="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+DUMP_LISTING_BALANCE="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
+# dump listing balance (without decimal)
+DUMP_LISTING_BALANCE_CHECK="$(echo "$DUMP_LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')"
 
 # if zero
 if [[ -z "$DUMP_LISTING_BALANCE_CHECK" ]] &>/dev/null; then
   DUMP_LISTING_BALANCE_CHECK="0"
 fi
 
-# if order has balance (without decimal)
-if [[ "$(echo "$DUMP_LISTING_BALANCE_CHECK" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+# if order has balance
+if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   # no reference, use bitcoin as dumping ground
   if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     REFERENCE_CURRENCY="BTC"
   fi
   # dump output (log)
-  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $DUMP_LISTING_BALANCE_CHECK $DIP_DUMP_LISTING (Delisted)"
+  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING (Delisted)"
   echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   # setup market sell order
-  placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$DUMP_LISTING_BALANCE_CHECK" "false"
+  placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$DUMP_LISTING_BALANCE" "false"
   sleep 1
 fi
 
