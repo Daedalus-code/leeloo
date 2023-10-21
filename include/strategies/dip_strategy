@@ -1904,7 +1904,7 @@ fi
 ################################################################################
 
 # delisted listing market
-DIP_DUMP_LISTING="$(cat "$DELISTED_FILE" 2>/dev/null | sort -R | head -1)"
+DIP_DUMP_LISTING="$(sort -R "$DELISTED_FILE" | head -1 2>/dev/null)"
 
 # if zero
 if [[ -z "$DIP_DUMP_LISTING" ]] &>/dev/null; then
@@ -1914,23 +1914,7 @@ fi
 # if dump listing has data
 if [[ "$(echo "$DIP_DUMP_LISTING" | egrep -c "[A-Z]+|[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
   # listing market order id
-  DIP_DUMP_LISTING_ORDER_ID="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
-fi
-
-# if dump listing exist as active order
-if [[ "$(grep -c "$DIP_DUMP_LISTING" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
-
-  # remove delisted (active) order
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$DIP_DUMP_LISTING")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-
-  log_date
-
-  # removing output (log)
-  DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/All :: Removing active! $DIP_DUMP_LISTING. (Delisted)"
-  echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-  # remove old data
-  rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$DIP_DUMP_LISTING"* &>/dev/null
+  DIP_DUMP_LISTING_ORDER_ID="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
 fi
 
 # if zero
@@ -1938,32 +1922,45 @@ if [[ -z "$DIP_DUMP_LISTING_ORDER_ID" ]] &>/dev/null; then
   DIP_DUMP_LISTING_ORDER_ID="null"
 fi
 
+# if dump listing exist as active order
+if [[ "$(grep -c "$DIP_DUMP_LISTING" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
+  # remove delisted (active) order
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$DIP_DUMP_LISTING")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+  log_date
+  # removing output (log)
+  DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/All :: Removing active! $DIP_DUMP_LISTING. (Delisted)"
+  # removing output
+  echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  # remove old data
+  rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$DIP_DUMP_LISTING"* &>/dev/null
+fi
+
+# dump listing balance
+DUMP_LISTING_BALANCE_CHECK="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | tr -d '.' | sed 's/^0*//')"
+
 # if order id found
 if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
   # if order has balance
-  if [[ "$DIP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
-
+  if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     # cancel delisted market
     cancelOrder "$DIP_DUMP_LISTING_ORDER_ID"
     sleep 1
-
     log_date
-
     # removing output (log)
     DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Removing order! $DIP_DUMP_LISTING_ORDER_ID. (Delisted)"
     echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
     # update balances
     echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
-
     # dump output (log)
     DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Dumping order! $LISTING_BALANCE $LISTING_CURRENCY (Market Order)"
     echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-    # setup market sell order ##################################################
+    # no reference, use bitcoin
+    if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      REFERENCE_CURRENCY="BTC"
+    fi
+    # setup market sell order
     placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_BALANCE" "false"
     sleep 1
-    ############################################################################
   fi
 fi
 
