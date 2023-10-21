@@ -1911,17 +1911,6 @@ if [[ -z "$DIP_DUMP_LISTING" ]] &>/dev/null; then
   DIP_DUMP_LISTING="null"
 fi
 
-# if dump listing has data
-if [[ "$(echo "$DIP_DUMP_LISTING" | egrep -c "[A-Z]+|[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
-  # listing market order id
-  DIP_DUMP_LISTING_ORDER_ID="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
-fi
-
-# if zero
-if [[ -z "$DIP_DUMP_LISTING_ORDER_ID" ]] &>/dev/null; then
-  DIP_DUMP_LISTING_ORDER_ID="null"
-fi
-
 # if dump listing exist as active order
 if [[ "$(grep -c "$DIP_DUMP_LISTING" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
   # remove delisted (active) order
@@ -1935,33 +1924,50 @@ if [[ "$(grep -c "$DIP_DUMP_LISTING" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".a
   rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$DIP_DUMP_LISTING"* &>/dev/null
 fi
 
-# dump listing balance
-DUMP_LISTING_BALANCE_CHECK="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | tr -d '.' | sed 's/^0*//')"
+# if dump listing has data
+if [[ "$(echo "$DIP_DUMP_LISTING" | egrep -c "[A-Z]+|[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+  # listing market order id
+  DIP_DUMP_LISTING_ORDER_ID="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/orders | awk '{ print $1 }' | tr -d ':')"
+fi
+
+# if zero
+if [[ -z "$DIP_DUMP_LISTING_ORDER_ID" ]] &>/dev/null; then
+  DIP_DUMP_LISTING_ORDER_ID="null"
+fi
 
 # if order id found
 if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
-  # if order has balance
-  if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
-    # cancel delisted market
-    cancelOrder "$DIP_DUMP_LISTING_ORDER_ID"
-    sleep 1
-    log_date
-    # removing output (log)
-    DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Removing order! $DIP_DUMP_LISTING_ORDER_ID. (Delisted)"
-    echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    # update balances
-    echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
-    # dump output (log)
-    DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $LISTING_BALANCE $DIP_DUMP_LISTING (Market Order)"
-    echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    # no reference, use bitcoin
-    if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-      REFERENCE_CURRENCY="BTC"
-    fi
-    # setup market sell order
-    placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$LISTING_BALANCE" "false"
-    sleep 1
+  # cancel delisted market
+  cancelOrder "$DIP_DUMP_LISTING_ORDER_ID"
+  sleep 1
+  log_date
+  # removing output (log)
+  DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Removing order! $DIP_DUMP_LISTING_ORDER_ID. (Delisted)"
+  echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  # update balances
+  echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
+fi
+
+# dump listing balance
+DUMP_LISTING_BALANCE_CHECK="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | tr -d '.' | sed 's/^0*//')"
+
+# if zero
+if [[ -z "$DUMP_LISTING_BALANCE_CHECK" ]] &>/dev/null; then
+  DUMP_LISTING_BALANCE_CHECK="0"
+fi
+
+# if order has balance
+if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
+  # no reference, use bitcoin as dumping ground
+  if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    REFERENCE_CURRENCY="BTC"
   fi
+  # dump output (log)
+  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $LISTING_BALANCE $DIP_DUMP_LISTING (Delisted)"
+  echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  # setup market sell order
+  placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$LISTING_BALANCE" "false"
+  sleep 1
 fi
 
 ################################################################################
