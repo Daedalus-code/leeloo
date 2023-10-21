@@ -1936,7 +1936,7 @@ if [[ "$(grep -c "$DIP_DUMP_LISTING" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".a
 fi
 
 # dump listing balance
-DUMP_LISTING_BALANCE_CHECK="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | tr -d '.' | sed 's/^0*//')"
+DUMP_LISTING_BALANCE_CHECK="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | tr -d '.' | sed 's/^0*//')"
 
 # if order id found
 if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
@@ -1947,19 +1947,19 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
     sleep 1
     log_date
     # removing output (log)
-    DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Removing order! $DIP_DUMP_LISTING_ORDER_ID. (Delisted)"
+    DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Removing order! $DIP_DUMP_LISTING_ORDER_ID. (Delisted)"
     echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     # update balances
     echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
     # dump output (log)
-    DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Dumping order! $LISTING_BALANCE $LISTING_CURRENCY (Market Order)"
+    DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $LISTING_BALANCE $DIP_DUMP_LISTING (Market Order)"
     echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     # no reference, use bitcoin
     if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
       REFERENCE_CURRENCY="BTC"
     fi
     # setup market sell order
-    placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_BALANCE" "false"
+    placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$LISTING_BALANCE" "false"
     sleep 1
   fi
 fi
