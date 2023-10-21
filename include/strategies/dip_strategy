@@ -1968,7 +1968,9 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING (Delisted)"
   echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   # setup market sell order
-  placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$DUMP_LISTING_BALANCE" "false"
+  placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$DUMP_LISTING_BALANCE" "false" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+  # keep n lines
+  echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
   sleep 1
 fi
 
