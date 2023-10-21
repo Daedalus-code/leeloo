@@ -1949,15 +1949,15 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
 fi
 
 # dump listing balance
-DUMP_LISTING_BALANCE_CHECK="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | tr -d '.' | sed 's/^0*//')"
+DUMP_LISTING_BALANCE_CHECK="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
 
 # if zero
 if [[ -z "$DUMP_LISTING_BALANCE_CHECK" ]] &>/dev/null; then
   DUMP_LISTING_BALANCE_CHECK="0"
 fi
 
-# if order has balance
-if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
+# if order has balance (without decimal)
+if [[ "$(echo "$DUMP_LISTING_BALANCE_CHECK" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
   # no reference, use bitcoin as dumping ground
   if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     REFERENCE_CURRENCY="BTC"
