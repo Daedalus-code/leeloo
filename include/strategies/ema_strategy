@@ -153,7 +153,407 @@ incoming_reference
 
 ################################################################################
 
-rogue_profit
+function rogue_profit() {
+  # rogue profit using rsi
+
+  ROGUE_TIMER_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  ROGUE_TIMER="3600" # n seconds (default: 3600 seconds/1 hour cooldown)
+  ROGUE_HOURS="6"    # n hours of data (default: 6 hours)
+  ROGUE_MAX_DAY="5"  # n trades a day (default: 4)
+  ROGUE_RSI="14"     # relative strength index (default: 14)
+
+  ##############################################################################
+
+  # missing
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue &>/dev/null
+  fi
+
+  ##############################################################################
+
+  # get_rsi n
+  function rogue_data() {
+    echo "L $LISTING_CURRENCY $(get_rsi "$ROGUE_RSI" "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+    sleep 1
+    echo "R $REFERENCE_CURRENCY $(get_rsi "$ROGUE_RSI" "$REFERENCE_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+  }
+
+  ##############################################################################
+
+  function rogue_stealth() {
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth ]] &>/dev/null; then
+      echo "Lurking in the Shadows.." >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth 2>/dev/null
+      sleep 1
+    fi
+
+    STEALTH_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    STEALTH_TIME=$(printf '%dh:%dm:%ds\n' $(("$STEALTH_TIME_SECONDS/3600")) $(("$STEALTH_TIME_SECONDS%3600/60")) $(("$STEALTH_TIME_SECONDS%60")))
+    STEALTH_TIME_H="$(("$STEALTH_TIME_SECONDS/3600"))"
+    STEALTH_TIME_D="$(("$STEALTH_TIME_H/24"))"
+    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Stealth mode ${STEALTH_TIME_D:?}d (${STEALTH_TIME:?})" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  }
+
+  ##############################################################################
+
+  function rogue_vanish() {
+    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Rogue used Vanishing Powder!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    sleep 1
+    # vanish the vanishing line
+    echo "$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -v "Vanishing")" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  }
+
+  ##############################################################################
+
+  function rogue_buying() {
+    # n% amount
+    ROGUE_AMOUNT="0.009225" # n % to be used (default: 0.009225)
+    REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }' | head -1)"
+    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      # place buy market order
+      placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # vanish text
+      rogue_vanish
+    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      # place buy limit order
+      placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # vanish text
+      rogue_vanish
+    fi
+  }
+
+  ##############################################################################
+
+  function rogue_selling() {
+    # n% amount
+    ROGUE_AMOUNT="0.009225" # n % to be used (default: 0.009225)
+    LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }' | head -1)"
+    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+      # place sell market order
+      placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # vanish text
+      rogue_vanish
+    elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+      # place sell limit order
+      placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$LISTING_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      # vanish text
+      rogue_vanish
+    fi
+  }
+
+  ##############################################################################
+
+  function rogue_clean_lines() {
+    # keep n lines
+    echo "$(tail -"$(echo "$ROGUE_HOURS*2" | bc -l 2>/dev/null)" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+  }
+
+  ##############################################################################
+
+  if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
+
+    # update data every n seconds
+    if [[ "$ROGUE_TIMER_NOW" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
+      rogue_data
+      rogue_stealth
+      rogue_clean_lines
+      # update data if missing
+    elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+      rogue_data
+      rogue_stealth
+      rogue_clean_lines
+      # update data if empty
+    elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
+      rogue_data
+      rogue_stealth
+      rogue_clean_lines
+    fi
+
+    ############################################################################
+
+    # line count
+    ROGUE_LINES="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $1 }')"
+    ROGUE_COUNT="$(echo "$ROGUE_LINES/2" | bc 2>/dev/null)"
+    ROGUE_DAYS="$(echo "$ROGUE_COUNT/24" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    # backup prices
+    sxc_backup_prices
+
+    # listing
+    LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
+    ROGUE_LISTING_PRICE="$LISTING_PRICE"
+    ROGUE_LISTING_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $3 }' | tail -1)"
+
+    if [[ -z "$ROGUE_LISTING_PRICE_OLD" ]] &>/dev/null; then
+      ROGUE_LISTING_PRICE_OLD="0"
+    fi
+
+    ROGUE_LISTING_PRICE_DIFF="$(echo "100/$ROGUE_LISTING_PRICE_OLD*$ROGUE_LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    if [[ -z "$ROGUE_LISTING_PRICE_DIFF" ]] &>/dev/null; then
+      ROGUE_LISTING_PRICE_DIFF="0"
+    fi
+
+    ROGUE_LISTING_NOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
+    ROGUE_LISTING_HIGH="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.4f\n", $1 }')"
+    ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
+
+    # rsi can not be empty/zero, regardless
+    if [[ -z "$ROGUE_LISTING_NOW" || "$(echo "$ROGUE_LISTING_NOW" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      ROGUE_LISTING_NOW="50.1111"
+    fi
+    if [[ -z "$ROGUE_LISTING_HIGH" || "$(echo "$ROGUE_LISTING_HIGH" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      ROGUE_LISTING_HIGH="50.1111"
+    fi
+    if [[ -z "$ROGUE_LISTING_LOW" || "$(echo "$ROGUE_LISTING_LOW" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      ROGUE_LISTING_LOW="50.1111"
+    fi
+
+    ROGUE_LISTING_DIFF="$(echo "$ROGUE_LISTING_HIGH-$ROGUE_LISTING_LOW" | bc -l 2>/dev/null | tr -d '-' | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_LISTING_TOTAL="$(echo "$ROGUE_LISTING_NOW+$ROGUE_LISTING_HIGH+$ROGUE_LISTING_LOW" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+    ROGUE_LISTING_AVERAGE="$(echo "$ROGUE_LISTING_TOTAL/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+    ############################################################################
+
+    # set idle
+    ROGUE_LISTING_RPI="50.1111"
+
+    # overbought, greater than n
+    if [[ "$(echo "$ROGUE_LISTING_NOW" | awk -F. '{ print $1 }')" -gt "50" ]] &>/dev/null; then
+      # positive
+      ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_AVERAGE+$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+    fi
+
+    # oversold, less than n
+    if [[ "$(echo "$ROGUE_LISTING_NOW" | awk -F. '{ print $1 }')" -lt "50" ]] &>/dev/null; then
+      # negative
+      ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_AVERAGE-$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+    fi
+
+    ROGUE_LISTING_RPI="$(echo "$ROGUE_LISTING_RPI" | awk '{ printf "%.9f\n", $1 }')"
+
+    # keep at idle if zero
+    if [[ -z "$ROGUE_LISTING_RPI" ]] &>/dev/null; then
+      ROGUE_LISTING_RPI="0"
+    fi
+
+    ############################################################################
+
+    ROGUE_LISTING_DIFF_PERCENTAGE="$(echo "100/$ROGUE_LISTING_AVERAGE*$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    if [[ -z "$ROGUE_LISTING_DIFF_PERCENTAGE" ]] &>/dev/null; then
+      ROGUE_LISTING_DIFF_PERCENTAGE="0"
+    fi
+
+    # reference
+    REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
+    ROGUE_REFERENCE_PRICE="$REFERENCE_PRICE"
+    ROGUE_REFERENCE_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $5 }' | tail -1)"
+
+    if [[ -z "$ROGUE_REFERENCE_PRICE_OLD" ]] &>/dev/null; then
+      ROGUE_REFERENCE_PRICE_OLD="0"
+    fi
+
+    ROGUE_REFERENCE_PRICE_DIFF="$(echo "100/$ROGUE_REFERENCE_PRICE_OLD*$ROGUE_REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    if [[ -z "$ROGUE_REFERENCE_PRICE_DIFF" ]] &>/dev/null; then
+      ROGUE_REFERENCE_PRICE_DIFF="0"
+    fi
+
+    ROGUE_REFERENCE_NOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | tail -1 | awk '{ printf "%.4f\n", $1 }')"
+    ROGUE_REFERENCE_HIGH="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | tail -1 | awk '{ printf "%.4f\n", $1 }')"
+    ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
+
+    # rsi can not be empty/zero, regardless
+    if [[ -z "$ROGUE_REFERENCE_NOW" || "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      ROGUE_REFERENCE_NOW="50.1111"
+    fi
+    if [[ -z "$ROGUE_REFERENCE_HIGH" || "$(echo "$ROGUE_REFERENCE_HIGH" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      ROGUE_REFERENCE_HIGH="50.1111"
+    fi
+    if [[ -z "$ROGUE_REFERENCE_LOW" || "$(echo "$ROGUE_REFERENCE_LOW" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      ROGUE_REFERENCE_LOW="50.1111"
+    fi
+
+    ROGUE_REFERENCE_DIFF="$(echo "$ROGUE_REFERENCE_HIGH-$ROGUE_REFERENCE_LOW" | bc -l 2>/dev/null | tr -d '-' | awk '{ printf "%.2f\n", $1 }')"
+    ROGUE_REFERENCE_TOTAL="$(echo "$ROGUE_REFERENCE_NOW+$ROGUE_REFERENCE_HIGH+$ROGUE_REFERENCE_LOW" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+    ROGUE_REFERENCE_AVERAGE="$(echo "$ROGUE_REFERENCE_TOTAL/3" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+    ############################################################################
+
+    # set idle
+    ROGUE_REFERENCE_RPI="50.1111"
+
+    # overbought, greater than n
+    if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -gt "50" ]] &>/dev/null; then
+      # positive
+      ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_AVERAGE+$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+    fi
+
+    ############################################################################
+
+    # oversold, greater than n
+    if [[ "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -lt "50" ]] &>/dev/null; then
+      # negative
+      ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_AVERAGE-$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.34f\n", $1 }')"
+    fi
+
+    ROGUE_REFERENCE_RPI="$(echo "$ROGUE_REFERENCE_RPI" | awk '{ printf "%.9f\n", $1 }')"
+
+    # keep at idle if zero
+    if [[ -z "$ROGUE_REFERENCE_RPI" ]] &>/dev/null; then
+      ROGUE_REFERENCE_RPI="0"
+    fi
+
+    ############################################################################
+
+    ROGUE_REFERENCE_DIFF_PERCENTAGE="$(echo "100/$ROGUE_REFERENCE_AVERAGE*$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    if [[ -z "$ROGUE_REFERENCE_DIFF_PERCENTAGE" ]] &>/dev/null; then
+      ROGUE_REFERENCE_DIFF_PERCENTAGE="0"
+    fi
+
+    ############################################################################
+
+    ROGUE_SYNCED_PERCENTAGE="$(echo "100/$ROGUE_HOURS*$ROGUE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    if [[ -z "$ROGUE_SYNCED_PERCENTAGE" ]] &>/dev/null; then
+      ROGUE_SYNCED_PERCENTAGE="0"
+    fi
+
+    ############################################################################
+
+    ROGUE_UPDATE_PERCENTAGE="$(echo "100/$ROGUE_TIMER*$ROGUE_TIMER_NOW" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    if [[ -z "$ROGUE_UPDATE_PERCENTAGE" ]] &>/dev/null; then
+      ROGUE_UPDATE_PERCENTAGE="0"
+    fi
+
+    ############################################################################
+
+    # call shot
+    if [[ "$(echo "$ROGUE_SYNCED_PERCENTAGE" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+      ROGUE_SYNCED_PERCENTAGE="100"
+    fi
+
+    ############################################################################
+
+    ROGUE_LISTING_RPI_NR="$(echo "$ROGUE_LISTING_RPI" | awk '{ printf "%.4f\n", $1 }')"
+    ROGUE_REFERENCE_RPI_NR="$(echo "$ROGUE_REFERENCE_RPI" | awk '{ printf "%.4f\n", $1 }')"
+
+    if [[ -z "$ROGUE_LISTING_RPI_NR" ]] &>/dev/null; then
+      # if zero, keep it idling
+      ROGUE_LISTING_RPI_NR="50.1111"
+    fi
+
+    if [[ -z "$ROGUE_REFERENCE_RPI_NR" ]] &>/dev/null; then
+      # if zero, keep it idling
+      ROGUE_REFERENCE_RPI_NR="50.1111"
+    fi
+
+    ############################################################################
+
+    # if zero, idle
+    if [[ "$(echo "$ROGUE_LISTING_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      ROGUE_LISTING_RPI="IDLE"
+    fi
+
+    # if zero, idle
+    if [[ "$(echo "$ROGUE_REFERENCE_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
+      ROGUE_REFERENCE_RPI="IDLE"
+    fi
+
+    ############################################################################
+
+    echo "Update    $ROGUE_TIMER_NOW/${ROGUE_TIMER:?}s ${ROGUE_UPDATE_PERCENTAGE:?}% (${ROGUE_SYNCED_PERCENTAGE:?}%)
+Lines     $ROGUE_LINES/${ROGUE_COUNT:?}h/${ROGUE_DAYS:?}d
+RSI       $ROGUE_RSI
+
+L_PRICE   $ROGUE_LISTING_PRICE Diff: ${ROGUE_LISTING_PRICE_DIFF:?}%
+L_NOW     $ROGUE_LISTING_NOW
+L_HIGHEST $ROGUE_LISTING_HIGH
+L_LOWEST  $ROGUE_LISTING_LOW
+L_AVERAGE $ROGUE_LISTING_AVERAGE
+L_DIFF    $ROGUE_LISTING_DIFF ${ROGUE_LISTING_DIFF_PERCENTAGE:?}%
+RPI       $ROGUE_LISTING_RPI ($ROGUE_LISTING_RPI_NR)
+
+R_PRICE   $ROGUE_REFERENCE_PRICE Diff: ${ROGUE_REFERENCE_PRICE_DIFF:?}%
+R_NOW     $ROGUE_REFERENCE_NOW
+R_HIGHEST $ROGUE_REFERENCE_HIGH
+R_LOWEST  $ROGUE_REFERENCE_LOW
+R_AVERAGE $ROGUE_REFERENCE_AVERAGE
+R_DIFF    $ROGUE_REFERENCE_DIFF ${ROGUE_REFERENCE_DIFF_PERCENTAGE:?}%
+RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi 2>/dev/null
+
+    ############################################################################
+
+    function rogue_shadow_output() {
+      echo "Lurking in the Shadows.." >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".stealth 2>/dev/null
+    }
+
+    ############################################################################
+
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status ]] &>/dev/null; then
+      touch >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status &>/dev/null
+    fi
+
+    ############################################################################
+
+    TYPE="sell"
+
+    MARKET_RGP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market $LISTING_AMOUNT"
+    MARKET_RGP_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
+    MARKET_RGP_STATUS_SOLD="SOLD @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)"
+
+    # wait on call shot
+    if [[ "$(echo "$ROGUE_SYNCED_PERCENTAGE" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+
+      # rogue_selling config n% of allocated n%
+      if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
+        # overbought, pick pocket at top!
+        if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
+          tx_id
+          cost_price
+          rogue_selling
+          rogue_shadow_output
+          echo "$MARKET_RGP_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+          echo "$MARKET_RGP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$MARKET_RGP_STATUS_SOLD" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+        fi
+      fi
+
+      ##########################################################################
+
+      TYPE="buy"
+
+      MARKET_RGP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market $LISTING_AMOUNT"
+      MARKET_RGP_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
+      MARKET_RGP_STATUS_BOUGHT="BOUGHT @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)"
+
+      # rogue_buying config n% of allocated n%
+      if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -lt "30" ]] &>/dev/null; then
+        # oversold, cheap shot at bottom!
+        if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
+          tx_id
+          cost_price
+          rogue_buying
+          rogue_shadow_output
+          echo "$MARKET_RGP_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+          echo "$MARKET_RGP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
+          echo "$MARKET_RGP_STATUS_BOUGHT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+        fi
+      fi
+    fi
+
+    ############################################################################
+
+    # reset status at midnight
+    if [[ "$(date '+%H:%M' | egrep "00:00" | wc -l)" -eq "1" ]] &>/dev/null; then
+      echo "IDLE @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
+    fi
+  fi
+}
+
+################################################################################
 
 # rogue profit indicator output
 if [[ "$ROGUE_PROFIT" -eq "1" ]] 2>>"${LOG_ERROR:?}"; then
