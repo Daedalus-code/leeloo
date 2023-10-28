@@ -268,8 +268,8 @@ function txid_null() {
     fi
     # track non txid
     echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-    # keep n lines
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '!a[$3]++' | tail -10)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    # keep n lines, remove html error data
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '!a[$3]++' | tail -10 | egrep -v "Error|Unavailable|text/html|null|DOCTYPE")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   fi
 }
 
