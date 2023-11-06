@@ -1349,17 +1349,17 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
           fi
         fi
       else
-        ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
-        RESULT="Fetching history from ${ROBOT_COUNT:?} bots.. ($ORDERS_AGE/$ORDERS_AGE_LIMIT)"
-        display_result() {
-          dialog --title "Please wait" \
-            --no-collapse \
-            --msgbox "$RESULT" 5 54
-        }
-        display_result 2>/dev/null
+        no_key_no_secret
       fi
     else
-      no_key_no_secret
+      ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
+      RESULT="Fetching history from ${ROBOT_COUNT:?} bots.. ($ORDERS_AGE/$ORDERS_AGE_LIMIT)"
+      display_result() {
+        dialog --title "Please wait" \
+          --no-collapse \
+          --msgbox "$RESULT" 5 54
+      }
+      display_result 2>/dev/null
     fi
 
     ;;
