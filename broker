@@ -1274,6 +1274,14 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
 
+      # order age
+      ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done)
+
+      until [[ "$ORDERS_AGE" -gt "1" ]] &>/dev/null; do
+        echo "Please wait, fetching history.."
+      done
+
+      # output orders
       ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '!a[$0]++')"
       ORDERS_COUNT="$(echo "$ORDERS_TAC" | awk '!a[$0]++' | sed -r '/^\s*$/d' | wc -l)"
 
