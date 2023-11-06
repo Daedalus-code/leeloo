@@ -251,8 +251,16 @@ function last_tx() {
   fi
   # get txid age (seconds)
   TXID_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$TXID_AGE_SECONDS" ]] &>/dev/null; then
+    TXID_AGE_SECONDS="0"
+  fi
+
   # txid age format
   TXID_AGE=$(printf '%dh:%dm:%ds\n' $(("$TXID_AGE_SECONDS/3600")) $(("$TXID_AGE_SECONDS%3600/60")) $(("$TXID_AGE_SECONDS%60")))
+  # calculate txid days
+  TXID_AGE_DAYS=$(echo "$TXID_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
 }
 
 ################################################################################
