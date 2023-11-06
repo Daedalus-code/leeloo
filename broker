@@ -1265,7 +1265,12 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
   "H")
 
     ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
-    ORDERS_AGE_LIMIT="11"
+    ORDERS_AGE_LIMIT="$(echo "2*$ROBOT_COUNT" | bc 2>/dev/null)"
+
+    # if zero
+    if [[ -z "$ORDERS_AGE_LIMIT" ]] &>/dev/null; then
+      ORDERS_AGE_LIMIT="0"
+    fi
 
     # if fetching history
     if [[ ! "$ORDERS_AGE" -lt "$ORDERS_AGE_LIMIT" ]] &>/dev/null; then
@@ -1357,7 +1362,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       display_result() {
         dialog --title "Please wait" \
           --no-collapse \
-          --msgbox "$RESULT" 5 54
+          --msgbox "$RESULT" 5 50
       }
       display_result 2>/dev/null
     fi
