@@ -1278,6 +1278,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
 
       until [[ "$ORDERS_AGE" -gt "10" ]] &>/dev/null; do
+        ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
         echo "Please wait, fetching history.. ($ORDERS_AGE/10)"
         sleep 1
         clear
