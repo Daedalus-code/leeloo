@@ -29,7 +29,9 @@ log_date
 
 # report active bot
 if [[ ! "$(grep -c "SXC" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)" -gt "0" ]] &>/dev/null; then
-  echo "SXC Running bots @ $(date | xargs)" >>"${LOG_DIR:?}"/leeloo/robots
+  if [[ "$(echo "$(ls -l "${SYS_DIR:?}"/robot/)" | egrep -c "SXC.*.strategy")" -gt "0" ]] &>/dev/null; then
+    echo "SXC Running bots @ $(date | xargs)" >>"${LOG_DIR:?}"/leeloo/robots
+  fi
 fi
 
 # remove duplicates
