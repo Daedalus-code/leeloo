@@ -18,7 +18,7 @@ broker
 
 API Status:  
 ```
-SouthXchange : Balance, Trade, Autotrade, Search market
+SouthXchange : Balance, Search market, Trade, Autotrade
 StakeCube    : Balance, Search market
 Poloniex     : Search market
 XeggeX       : Balance, Search market
