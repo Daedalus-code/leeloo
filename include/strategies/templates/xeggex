@@ -1,0 +1,40 @@
+#!/bin/bash
+
+################################################################################
+
+# XeggeX template - 2023
+
+################################################################################
+
+# shellcheck disable=SC2034  # Unused variables left for readability
+
+################################################################################
+
+# exchanges, includes functions
+source /usr/local/bin/include/leeloo/strategies/templates/exchanges
+# indicators
+source /usr/local/bin/include/leeloo/indicators/rsi
+source /usr/local/bin/include/leeloo/indicators/ema
+
+################################################################################
+
+account_private_api
+account_public_api
+
+################################################################################
+
+log_date
+
+################################################################################
+
+# report active bot
+if [[ ! "$(grep -c "XGX" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+  echo "XGX Running bots @ $(date | xargs)" >>"${LOG_DIR:?}"/leeloo/robots
+fi
+
+# remove duplicates
+echo "$(cat "${LOG_DIR:?}"/leeloo/robots 2>/dev/null | awk '!a[$1]++')" >"${LOG_DIR:?}"/leeloo/robots
+
+################################################################################
+
+# END

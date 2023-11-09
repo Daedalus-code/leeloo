@@ -152,6 +152,25 @@ if [[ "$SCE_ROBOT_API" -gt "0" ]] &>/dev/null; then
   fi
 fi
 
+# xeggex #######################################################################
+
+# get active robot
+XGX_ROBOT_API="$(grep -c "XGX" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
+
+if [[ -z "$XGX_ROBOT_API" ]] &>/dev/null; then
+  XGX_ROBOT_API="0"
+fi
+
+# active robot
+if [[ "$XGX_ROBOT_API" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+    echo "$LOG_DATE : XGX : KEK : Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  fi
+  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+    echo "$LOG_DATE : XGX : KEK : Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  fi
+fi
+
 ################################################################################
 
 # END
