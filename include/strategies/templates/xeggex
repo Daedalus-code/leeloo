@@ -39,4 +39,65 @@ echo "$(cat "${LOG_DIR:?}"/leeloo/robots 2>/dev/null | awk '!a[$1]++')" >"${LOG_
 
 ################################################################################
 
+function xgx_backup_balances() {
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances | wc -l)" -gt "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/xeggex/balances "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp &>/dev/null
+  fi
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances | wc -l)" -eq "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp "${LOG_DIR:?}"/leeloo/xeggex/balances &>/dev/null
+  fi
+}
+
+################################################################################
+
+function xgx_backup_prices() {
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/prices | wc -l)" -gt "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/xeggex/prices "${LOG_DIR:?}"/leeloo/xeggex/prices.bkp &>/dev/null
+  fi
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/prices | wc -l)" -eq "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/xeggex/prices.bkp "${LOG_DIR:?}"/leeloo/xeggex/prices &>/dev/null
+  fi
+}
+
+################################################################################
+
+function xgx_backup_orders() {
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/orders | wc -l)" -gt "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/xeggex/orders "${LOG_DIR:?}"/leeloo/xeggex/orders.bkp &>/dev/null
+  fi
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/orders | wc -l)" -eq "0" ]] &>/dev/null; then
+    cp "${LOG_DIR:?}"/leeloo/xeggex/orders.bkp "${LOG_DIR:?}"/leeloo/xeggex/orders &>/dev/null
+  fi
+}
+
+################################################################################
+
+function delisted() {
+  PRICES_FILE="${LOG_DIR:?}/leeloo/xeggex/prices"
+  DELISTED_FILE="${SYS_DIR:?}/delisted_xeggex"
+  PRICES_COPY_FILE="${PRICES_FILE}.copy"
+
+  if [[ "$(egrep -c "[0-9]+|[A-Z]+" "$DELISTED_FILE")" -gt "0" ]] &>/dev/null; then
+
+    # make a copy of the prices file
+    cp "$PRICES_FILE" "$PRICES_COPY_FILE" &>/dev/null
+
+    # read the delisted markets from the file into an array
+    mapfile -t DELISTED_MARKETS <"$DELISTED_FILE"
+
+    # loop through the delisted markets and remove them from the prices copy file
+    for MARKET in "${DELISTED_MARKETS[@]}"; do
+      sed -i "/^${MARKET//\//\\/}/d" "$PRICES_COPY_FILE"
+    done
+
+    # remove duplicates, sort
+    echo "$(cat "$DELISTED_FILE" 2>/dev/null | awk '!a[$0]++' | sort)" >"$DELISTED_FILE"
+
+    # use file if any data
+    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/xeggex/prices.copy | awk '{ print $1 }')" ]] &>/dev/null; then
+      mv "$PRICES_COPY_FILE" "$PRICES_FILE"
+    fi
+  fi
+}
+
 # END
