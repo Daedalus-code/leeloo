@@ -1,9 +1,56 @@
 #!/bin/bash
 
-# Balances #################################################################
+# Balances #####################################################################
 # https://api.xeggex.com/api/v2/balances
 # Lists balances for all currencies. Permission required: List Balances
 
 function Balances() {
-  curl -s -X GET -H "accept: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" "https://api.xeggex.com/api/v2/balances"
+  API_XEGGEX_NONCE=$(($(date +%s) * 10))
+  curl -s -X GET -H "accept: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" "https://api.xeggex.com/api/v2/balances?nonce=$API_XEGGEX_NONCE"
 }
+
+# CreateOrder ##################################################################
+# https://api.xeggex.com/api/v2/createorder
+# Make a new spot market/limit trade order. Permission required: Create Order
+# Example: CreateOrder "" "FREED/BTC" "sell" "limit" "1" "0.000000500" false
+
+function CreateOrder {
+  USER_PROVIDED_ID="$1"
+  SYMBOL="$2"
+  SIDE="$3"
+  TYPE="$4"
+  QUANTITY="$5"
+  PRICE="$6"
+  STRICT_VALIDATE="$7"
+  API_XEGGEX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_XEGGEX_NONCE\",\"userProvidedId\":\"$USER_PROVIDED_ID\",\"symbol\":\"$SYMBOL\",\"side\":\"$SIDE\",\"type\":\"$TYPE\",\"quantity\":\"$QUANTITY\",\"price\":\"$PRICE\",\"strictValidate\":$STRICT_VALIDATE}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_XEGGEX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" -d "$JSON_DATA" "https://api.xeggex.com/api/v2/createorder"
+}
+
+# cancelOrder ##################################################################
+# https://api.xeggex.com/api/v2/cancelOrder
+# Cancels a given order. Permission required: Cancel Order
+# Example: cancelOrder "$ORDER_ID"
+
+function cancelOrder {
+  ORDER_ID="$1"
+  API_XEGGEX_NONCE=$(($(date +%s) * 10))
+  JSON_DATA="{\"nonce\":\"$API_XEGGEX_NONCE\",\"id\":\"$ORDER_ID\"}"
+  HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_XEGGEX_SECRET" | awk '{print $NF}')
+  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" -d "$JSON_DATA" "https://api.xeggex.com/api/v2/cancelOrder"
+}
+
+# getOrders ####################################################################
+# https://api.xeggex.com/api/v2/getOrders
+# Lists your open orders. Permission required: Get Orders
+# Example: getOrders
+
+function getOrders {
+  curl -X 'GET' \
+    'https://xeggex.com/api/v2/getorders?status=active&limit=100&skip=0' \
+    -H 'accept: application/json' \
+    -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET"
+}
+
+# END
