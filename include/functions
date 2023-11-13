@@ -695,7 +695,7 @@ function open_orders {
     # set exchange template
     EXCHANGE_API="SXC"
     exchange_template
-    ORDER_EXCHANGE="southxchange"
+    ORDER_EXCHANGE="SouthXchange"
     # open orders function
     function result_orders {
       listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t | sort -r >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
@@ -888,20 +888,23 @@ function open_orders {
 
     USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
+    # lower caps
+    ORDER_EXCHANGE_NAME="$(echo "$ORDER_EXCHANGE" | tr '[A-Z]' '[a-z]')"
+
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
       result_orders
       # update data if missing
-    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders ]] &>/dev/null; then
       result_orders
       # update data if empty
-    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders ]] &>/dev/null; then
       result_orders
     fi
 
-    ORDER_TOTAL="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | awk '{ print $1 }')"
-    ORDER_TOTAL_BUY="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
-    ORDER_TOTAL_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
+    ORDER_TOTAL="$(wc -l "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null | awk '{ print $1 }')"
+    ORDER_TOTAL_BUY="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
+    ORDER_TOTAL_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
     ORDER_PERCENTAGE_BUY="$(echo "100/$ORDER_TOTAL*$ORDER_TOTAL_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     ORDER_PERCENTAGE_SELL="$(echo "100/$ORDER_TOTAL*$ORDER_TOTAL_SELL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
@@ -912,7 +915,7 @@ function open_orders {
     }
 
     RESULT="OrderID: Type Amount Original LimitPrice List Ref DateAdded
-$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r 2>/dev/null)"
+$(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null | sort -r 2>/dev/null)"
     display_result 2>/dev/null
 
     ;;
