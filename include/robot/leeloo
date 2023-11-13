@@ -29,6 +29,8 @@ for (( ; ; )); do
   LEELOO_RUNNING_BOTS="$(cat "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
 
   ##############################################################################
+  # southxchange
+  ##############################################################################
 
   # bots running
   if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "SXC")" -gt "0" ]] &>/dev/null; then
@@ -73,6 +75,28 @@ for (( ; ; )); do
   ##############################################################################
 
   # bots running
+  if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "SXC")" -gt "0" ]] &>/dev/null; then
+    # get southxchange prices
+    function result_prices() {
+      echo "$(prices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
+    }
+    # update data every n seconds
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+      result_prices
+      # update data if missing
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
+      result_prices
+      # update data if empty
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
+      result_prices
+    fi
+  fi
+
+  ##############################################################################
+  # poloniex
+  ##############################################################################
+
+  # bots running
   if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "POL")" -gt "0" ]] &>/dev/null; then
     # get poloniex prices
     function result_prices() {
@@ -91,25 +115,71 @@ for (( ; ; )); do
   fi
 
   ##############################################################################
+  # xeggex
+  ##############################################################################
 
   # bots running
-  if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "SXC")" -gt "0" ]] &>/dev/null; then
-    # get southxchange prices
-    function result_prices() {
-      echo "$(prices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
+  if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "XGX")" -gt "0" ]] &>/dev/null; then
+    # get xeggex balance
+    function result_balances() {
+      echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null
     }
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+      result_balances
+      # update data if missing
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/xeggex/balances ]] &>/dev/null; then
+      result_balances
+      # update data if empty
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/xeggex/balances ]] &>/dev/null; then
+      result_balances
+    fi
+    sleep 1
+  fi
+
+  ##############################################################################
+
+  # bots running
+  if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "XGX")" -gt "0" ]] &>/dev/null; then
+    # get xeggex orders
+    function result_orders() {
+      echo "$(getOrders | jq -r '.[] | "\(.id): \(.Type) \(.quantity) \(.OriginalAmount) \(.price) \(.symbol) \(.updatedAt)"' 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null
+    }
+    # update data every n seconds
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+      result_orders
+      # update data if missing
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/xeggex/orders ]] &>/dev/null; then
+      result_orders
+      # update data if empty
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/xeggex/orders ]] &>/dev/null; then
+      result_orders
+    fi
+    sleep 1
+  fi
+
+  ##############################################################################
+
+  # bots running
+  if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "XGX")" -gt "0" ]] &>/dev/null; then
+    # get xeggex prices
+    function result_prices() {
+      echo "$(tickers 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+    }
+    # update data every n seconds
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
       result_prices
       # update data if missing
-    elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
+    elif [[ ! -f "${LOG_DIR:?}"/leeloo/xeggex/prices ]] &>/dev/null; then
       result_prices
       # update data if empty
-    elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
+    elif [[ ! -s "${LOG_DIR:?}"/leeloo/xeggex/prices ]] &>/dev/null; then
       result_prices
     fi
   fi
 
+  ##############################################################################
+  # strategy pool & fetch, sort logs
   ##############################################################################
 
   if [[ ! -f "${SYS_DIR:?}"/robot/pool ]] &>/dev/null; then
