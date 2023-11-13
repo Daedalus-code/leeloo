@@ -305,30 +305,16 @@ case $CHOICE in
 
   if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-    VALID_OPTIONS=()
-
-    # poloniex option
-    if [[ -n "$API_POLONIEX_KEY" ]] && [[ -n "$API_POLONIEX_SECRET" ]] &>/dev/null; then
-      VALID_OPTIONS+=("P" "Poloniex")
-    fi
-
-    # southxchange option
-    if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]] &>/dev/null; then
-      VALID_OPTIONS+=("S" "SouthXchange")
-    fi
-
-    BASE_HEIGHT=5
-    CHOICE_HEIGHT=${#VALID_OPTIONS[@]}
-    HEIGHT=$((BASE_HEIGHT + CHOICE_HEIGHT))
+    HEIGHT=11
     WIDTH=24
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Orders"
     MENU="$DATE"
 
-    OPTIONS=()
-    for ((i = 0; i < CHOICE_HEIGHT; i += 2)); do
-      OPTIONS+=("${VALID_OPTIONS[i]}" "${VALID_OPTIONS[i + 1]}")
-    done
+    OPTIONS=(1 "Poloniex"
+      2 "SouthXchange"
+      3 "StakeCube"
+      4 "XeggeX")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
@@ -341,259 +327,55 @@ case $CHOICE in
     clear
     case $CHOICE in
 
-    "P") # poloniex menu
+    "1") # poloniex menu
 
       # set exchange template
       EXCHANGE_API="POL"
       exchange_template
+      open_orders
 
-      HEIGHT=10
-      WIDTH=40
-      CHOICE_HEIGHT=3
-      BACKTITLE="Leeloo (Multipass)"
-      TITLE="Poloniex Order Menu"
-      MENU="${DATE:?}"
-
-      OPTIONS=(1 "Buy              Buy Order"
-        2 "Sell             Sell Order"
-        3 "Status           Open Orders")
-
-      CHOICE=$(dialog --clear \
-        --backtitle "$BACKTITLE" \
-        --title "$TITLE" \
-        --menu "$MENU" \
-        $HEIGHT $WIDTH $CHOICE_HEIGHT \
-        "${OPTIONS[@]}" \
-        2>&1 >/dev/tty)
-
-      clear
-      case $CHOICE in
-
-      "1")
-
-        echo "Not available"
-
-        ;;
-
-      "2")
-
-        echo "Not available"
-
-        ;;
-
-      "3")
-
-        echo "Not available"
-
-        ;;
-
-      esac
-
-      # set exchange template
+      # set broker template
       EXCHANGE_API=""
       exchange_template
 
       ;;
 
-    "S") # southxchange menu
+    "2") # southxchange menu
 
       # set exchange template
       EXCHANGE_API="SXC"
       exchange_template
+      open_orders
 
-      HEIGHT=10
-      WIDTH=40
-      CHOICE_HEIGHT=3
-      BACKTITLE="Leeloo (Multipass)"
-      TITLE="SouthXchange Order Menu"
-      MENU="${DATE:?}"
+      # set broker template
+      EXCHANGE_API=""
+      exchange_template
 
-      OPTIONS=(1 "Buy              Buy Order"
-        2 "Sell             Sell Order"
-        3 "Status           Open Orders")
+      ;;
 
-      CHOICE=$(dialog --clear \
-        --backtitle "$BACKTITLE" \
-        --title "$TITLE" \
-        --menu "$MENU" \
-        $HEIGHT $WIDTH $CHOICE_HEIGHT \
-        "${OPTIONS[@]}" \
-        2>&1 >/dev/tty)
+    "3") # stakecube menu
 
-      clear
-      case $CHOICE in
+      # set exchange template
+      EXCHANGE_API="SCE"
+      exchange_template
+      open_orders
 
-      "1")
+      # set broker template
+      EXCHANGE_API=""
+      exchange_template
 
-        TYPE="buy"
-        HEIGHT=9
-        WIDTH=23
-        CHOICE_HEIGHT=2
-        BACKTITLE="Leeloo (Multipass)"
-        TITLE="Buy Order Menu"
-        AMOUNT_IN_REFERENCE_CURRENCY="true"
-        MENU="$(date | xargs | awk '{ print $4,$5,$6 }')"
+      ;;
 
-        OPTIONS=(
-          1 "Market Order"
-          2 "Limit Order")
+    "4") # xeggex menu
 
-        CHOICE=$(dialog --clear \
-          --backtitle "$BACKTITLE" \
-          --title "$TITLE" \
-          --menu "$MENU" \
-          $HEIGHT $WIDTH $CHOICE_HEIGHT \
-          "${OPTIONS[@]}" \
-          2>&1 >/dev/tty)
+      # set exchange template
+      EXCHANGE_API="XGX"
+      exchange_template
+      open_orders
 
-        clear
-        case $CHOICE in
-
-        "1")
-
-          log_date
-          setup_market_order
-          if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
-            if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-              if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-                PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                echo "$LOG_DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-                echo "$LOG_DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-              fi
-            fi
-          fi
-
-          ;;
-
-        "2")
-
-          log_date
-          setup_limit_order
-          if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
-            if [[ ! -z "$PRICE" ]] &>/dev/null; then
-              if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-                if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-                  PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                  echo "$LOG_DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-                  echo "$LOG_DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-                fi
-              fi
-            fi
-          fi
-
-          ;;
-
-        esac
-
-        last_log
-
-        ;;
-
-      "2")
-
-        TYPE="sell"
-        HEIGHT=9
-        WIDTH=23
-        CHOICE_HEIGHT=2
-        BACKTITLE="Leeloo (Multipass)"
-        TITLE="Sell Order Menu"
-        AMOUNT_IN_REFERENCE_CURRENCY="false"
-        MENU="$(date | xargs | awk '{ print $4,$5,$6 }')"
-
-        OPTIONS=(
-          1 "Market Order"
-          2 "Limit Order")
-
-        CHOICE=$(dialog --clear \
-          --backtitle "$BACKTITLE" \
-          --title "$TITLE" \
-          --menu "$MENU" \
-          $HEIGHT $WIDTH $CHOICE_HEIGHT \
-          "${OPTIONS[@]}" \
-          2>&1 >/dev/tty)
-
-        clear
-        case $CHOICE in
-
-        "1")
-
-          log_date
-          setup_market_order
-          if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
-            if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-              if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-                PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                echo "$LOG_DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-                echo "$LOG_DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-              fi
-            fi
-          fi
-
-          ;;
-
-        "2")
-
-          log_date
-          setup_limit_order
-          if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
-            if [[ ! -z "$PRICE" ]] &>/dev/null; then
-              if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-                if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-                  PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                  echo "$LOG_DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-                  echo "$LOG_DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-                fi
-              fi
-            fi
-          fi
-
-          ;;
-
-        esac
-
-        last_log
-
-        ;;
-
-        # open orders
-
-      "3")
-
-        USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-
-        function result_orders {
-          listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t | sort -r >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
-        }
-        # update data every n seconds
-        if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
-          result_orders
-          # update data if missing
-        elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
-          result_orders
-          # update data if empty
-        elif [[ ! -s "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
-          result_orders
-        fi
-
-        ORDER_TOTAL="$(wc -l "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | awk '{ print $1 }')"
-        ORDER_TOTAL_BUY="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
-        ORDER_TOTAL_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)"
-        ORDER_PERCENTAGE_BUY="$(echo "100/$ORDER_TOTAL*$ORDER_TOTAL_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-        ORDER_PERCENTAGE_SELL="$(echo "100/$ORDER_TOTAL*$ORDER_TOTAL_SELL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-        display_result() {
-          dialog --title "Open Orders: +$ORDER_TOTAL :: Buy: $ORDER_TOTAL_BUY (${ORDER_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_TOTAL_SELL (${ORDER_PERCENTAGE_SELL:?}%)" \
-            --no-collapse \
-            --msgbox "$(echo "$RESULT" | column -t)" 0 0
-        }
-
-        RESULT="OrderID: Type Amount Original LimitPrice List Ref DateAdded
-$(cat "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null | sort -r 2>/dev/null)"
-        display_result 2>/dev/null
-
-        ;;
-
-      esac
+      # set broker template
+      EXCHANGE_API=""
+      exchange_template
 
       ;;
 
