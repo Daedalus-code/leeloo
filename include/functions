@@ -744,7 +744,7 @@ function open_orders {
   function place_order_format {
     # get id, price, output format
     PLACE_ORDER="$(cat "${LOG_DIR:?}"/leeloo/broker.tx 2>/dev/null)"
-    PLACE_ORDER_ID="$(echo "$PLACE_ORDER" | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }')"
+    PLACE_ORDER_ID="$(echo "$PLACE_ORDER" | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }')"
     PLACE_ORDER_PRICE="$(echo "$PLACE_ORDER" | egrep -wo "price:[0-9]+.[0-9]+" | awk -F: '{ print $2 }')"
     PLACE_ORDER="$PLACE_ORDER_ID :: $PLACE_ORDER_PRICE"
   }
