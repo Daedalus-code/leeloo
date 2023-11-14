@@ -709,10 +709,14 @@ function last_log {
   RESULT="${LOG_DIR:?}/leeloo/broker.log"
   display_result 2>/dev/null
 
-  if dialog --stdout --title "Reset broker.log?" \
-    --backtitle "Reset data?" \
-    --yesno "Yes: Reset! No: Go back!" 5 32; then
-    truncate -s 0 "${LOG_DIR:?}"/leeloo/broker.log &>/dev/null
+  # if greater than n
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')" -gt "0" ]]; then
+    # ask for reset
+    if ! dialog --stdout --title "Reset broker.log?" \
+      --backtitle "Reset data?" \
+      --yesno "No: Go back! Yes: Reset!" 5 32; then
+      truncate -s 0 "${LOG_DIR:?}"/leeloo/broker.log &>/dev/null
+    fi
   fi
 }
 
