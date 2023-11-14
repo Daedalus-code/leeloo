@@ -682,7 +682,7 @@ function last_log {
     touch "${LOG_DIR:?}"/leeloo/broker.log &>/dev/null
   fi
 
-  LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null)"
+  LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null | awk '{ print $1 }')"
   WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/broker.log | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
   LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')+5" | bc 2>/dev/null)"
 
@@ -710,10 +710,10 @@ function last_log {
   display_result 2>/dev/null
 
   # if greater than n
-  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')" -gt "0" ]]; then
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
     # ask for reset
-    if ! dialog --stdout --title "Keep history?" \
-      --backtitle "Reset history? +$LOG_COUNT" \
+    if ! dialog --stdout --title "Keep history? +$LOG_COUNT" \
+      --backtitle "Reset history?" \
       --yesno "Yes: Keep! No: Delete!" 5 32; then
       truncate -s 0 "${LOG_DIR:?}"/leeloo/broker.log &>/dev/null
     fi
