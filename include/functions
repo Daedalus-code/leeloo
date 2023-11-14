@@ -692,6 +692,8 @@ function open_orders {
     }
   fi
 
+  ##############################################################################
+
   # southxchange data
   if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
     # set orders format
@@ -705,6 +707,8 @@ function open_orders {
       listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t | sort -r >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
     }
   fi
+
+  ##############################################################################
 
   # stakecube data
   if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
@@ -720,6 +724,8 @@ function open_orders {
     }
   fi
 
+  ##############################################################################
+
   # xeggex data
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
     # set orders format
@@ -733,6 +739,14 @@ function open_orders {
       echo "$(getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sort -r)" >"${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null
     }
   fi
+
+  # xeggex order format
+  function place_order_format {
+    # get id, price, output format
+    PLACE_ORDER_ID="$(echo "$PLACE_ORDER" | egrep -wo "id:[a-z0-9]+" | awk -F: '{ print $2 }')"
+    PLACE_ORDER_PRICE="$(echo "$PLACE_ORDER" | egrep -wo "price:[0-9]+.[0-9]+" | awk -F: '{ print $2 }')"
+    PLACE_ORDER="$PLACE_ORDER_ID :: $PLACE_ORDER_PRICE"
+  }
 
   ##############################################################################
 
@@ -799,6 +813,7 @@ function open_orders {
             # if xeggex
             if [[ "$ORDER_EXCHANGE" == "XeggeX" ]] &>/dev/null; then
               PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              place_order_format
             fi
 
             # if zero api
@@ -830,6 +845,7 @@ function open_orders {
               # if xeggex
               if [[ "$ORDER_EXCHANGE" == "XeggeX" ]] &>/dev/null; then
                 PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$AMOUNT" "$PRICE" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+                place_order_format
               fi
 
               # if zero api
@@ -893,6 +909,7 @@ function open_orders {
             # if xeggex
             if [[ "$ORDER_EXCHANGE" == "XeggeX" ]] &>/dev/null; then
               PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              place_order_format
             fi
 
             # if zero api
@@ -924,6 +941,7 @@ function open_orders {
               # if xeggex
               if [[ "$ORDER_EXCHANGE" == "XeggeX" ]] &>/dev/null; then
                 PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$AMOUNT" "$PRICE" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+                place_order_format
               fi
 
               # if zero api
