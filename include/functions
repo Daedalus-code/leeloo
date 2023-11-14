@@ -746,7 +746,7 @@ function open_orders {
     PLACE_ORDER="$(cat "${LOG_DIR:?}"/leeloo/broker.tx 2>/dev/null)"
     PLACE_ORDER_ID="$(echo "$PLACE_ORDER" | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
     PLACE_ORDER_PRICE="$(echo "$PLACE_ORDER" | egrep -wo "price:[0-9]+.[0-9]+" | awk -F: '{ print $2 }' | tail -1)"
-    PLACE_ORDER="$PLACE_ORDER_ID $PLACE_ORDER_PRICE"
+    PLACE_ORDER="$PLACE_ORDER_ID$PLACE_ORDER_PRICE"
   }
 
   ##############################################################################
@@ -823,8 +823,8 @@ function open_orders {
               echo "No API configuration!"
               exit
             fi
-            echo "$LOG_DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-            echo "$LOG_DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
+            echo "$LOG_DATE :: $ORDER_EXCHANGE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
+            echo "$LOG_DATE :: $ORDER_EXCHANGE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
           fi
         fi
       fi
@@ -856,8 +856,8 @@ function open_orders {
                 echo "No API configuration!"
                 exit
               fi
-              echo "$LOG_DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-              echo "$LOG_DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
+              echo "$LOG_DATE :: $ORDER_EXCHANGE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
+              echo "$LOG_DATE :: $ORDER_EXCHANGE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
             fi
           fi
         fi
@@ -921,8 +921,8 @@ function open_orders {
               echo "No API configuration!"
               exit
             fi
-            echo "$LOG_DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-            echo "$LOG_DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
+            echo "$LOG_DATE :: $ORDER_EXCHANGE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
+            echo "$LOG_DATE :: $ORDER_EXCHANGE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
           fi
         fi
       fi
@@ -954,8 +954,8 @@ function open_orders {
                 echo "No API configuration!"
                 exit
               fi
-              echo "$LOG_DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-              echo "$LOG_DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
+              echo "$LOG_DATE :: $ORDER_EXCHANGE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
+              echo "$LOG_DATE :: $ORDER_EXCHANGE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
             fi
           fi
         fi
