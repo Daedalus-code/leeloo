@@ -43,7 +43,7 @@ function xgx_backup_balances() {
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/xeggex/balances "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp &>/dev/null
   fi
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances | wc -l)" -eq "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp "${LOG_DIR:?}"/leeloo/xeggex/balances &>/dev/null
   fi
 }
@@ -99,5 +99,608 @@ function delisted() {
     fi
   fi
 }
+
+################################################################################
+
+function listing_data() {
+
+  # backup balances, prices
+  xgx_backup_balances
+  xgx_backup_prices
+
+  # get available listing data
+  LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_UNCONFIRMED_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+  LISTING_PRICE_ASK="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $3 }')"
+  LISTING_PRICE_LAST="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }')"
+  LISTING_AMOUNT_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_UNCONFIRMED_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  if [[ -z "$LISTING_AVAILABLE_BALANCE" ]] &>/dev/null; then
+    LISTING_AVAILABLE_BALANCE="0.00000000"
+  fi
+  if [[ -z "$LISTING_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
+    LISTING_UNCONFIRMED_BALANCE="0.00000000"
+  fi
+  if [[ -z "$LISTING_AMOUNT" ]] &>/dev/null; then
+    LISTING_AMOUNT="0.00000000"
+  fi
+  if [[ -z "$LISTING_PRICE" ]] &>/dev/null; then
+    LISTING_PRICE="0.00000000"
+  fi
+  if [[ -z "$LISTING_AMOUNT_VALUED" ]] &>/dev/null; then
+    LISTING_AMOUNT_VALUED="0.00000000"
+  fi
+  if [[ -z "$LISTING_AVAILABLE_VALUED" ]] &>/dev/null; then
+    LISTING_AVAILABLE_VALUED="0.00000000"
+  fi
+  if [[ -z "$LISTING_UNCONFIRMED_VALUED" ]] &>/dev/null; then
+    LISTING_UNCONFIRMED_VALUED="0.00000000"
+  fi
+}
+
+################################################################################
+
+function reference_data() {
+
+  # backup balances, prices
+  xgx_backup_balances
+  xgx_backup_prices
+
+  # get available reference data
+  REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_UNCONFIRMED_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+  REFERENCE_PRICE_ASK="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $3 }')"
+  REFERENCE_PRICE_LAST="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }')"
+  REFERENCE_AMOUNT_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_UNCONFIRMED_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  if [[ -z "$REFERENCE_AVAILABLE_BALANCE" ]] &>/dev/null; then
+    REFERENCE_AVAILABLE_BALANCE="0.00000000"
+  fi
+  if [[ -z "$REFERENCE_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
+    REFERENCE_UNCONFIRMED_BALANCE="0.00000000"
+  fi
+  if [[ -z "$REFERENCE_AMOUNT" ]] &>/dev/null; then
+    REFERENCE_AMOUNT="0.00000000"
+  fi
+  if [[ -z "$REFERENCE_PRICE" ]] &>/dev/null; then
+    REFERENCE_PRICE="0.00000000"
+  fi
+  if [[ -z "$REFERENCE_AMOUNT_VALUED" ]] &>/dev/null; then
+    REFERENCE_AMOUNT_VALUED="0.00000000"
+  fi
+  if [[ -z "$REFERENCE_AVAILABLE_VALUED" ]] &>/dev/null; then
+    REFERENCE_AVAILABLE_VALUED="0.00000000"
+  fi
+  if [[ -z "$REFERENCE_UNCONFIRMED_VALUED" ]] &>/dev/null; then
+    REFERENCE_UNCONFIRMED_VALUED="0.00000000"
+  fi
+}
+
+################################################################################
+
+function listing_total_value() {
+  # calculate total values
+  LISTING_TOTAL="$(echo "$LISTING_AVAILABLE_BALANCE+$LISTING_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_TOTAL_VALUED="$(echo "$LISTING_AVAILABLE_VALUED+$LISTING_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+}
+
+################################################################################
+
+function reference_total_value() {
+  # calculate total values
+  REFERENCE_TOTAL="$(echo "$REFERENCE_AVAILABLE_BALANCE+$REFERENCE_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_TOTAL_VALUED="$(echo "$REFERENCE_AVAILABLE_VALUED+$REFERENCE_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+}
+
+################################################################################
+
+function listing_allocated() {
+  # total listing allocated
+  LISTING_ALLOCATED_REAL="$(echo "100/$REFERENCE_TOTAL*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # total listing allocated raw
+  LISTING_ALLOCATED_REAL_RAW="$(echo "100/$REFERENCE_TOTAL*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  if [[ "$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+    LISTING_ALLOCATED_REAL="100"
+  fi
+  if [[ -z "$LISTING_ALLOCATED_REAL" ]] &>/dev/null; then
+    LISTING_ALLOCATED_REAL="0.00"
+  fi
+  if [[ -z "$LISTING_ALLOCATED_REAL_RAW" ]] &>/dev/null; then
+    LISTING_ALLOCATED_REAL_RAW="0.00"
+  fi
+}
+
+################################################################################
+
+function reference_allocated() {
+  # total reference allocated
+  REFERENCE_ALLOCATED_REAL="$(echo "100/$LISTING_TOTAL*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # total reference allocated raw
+  REFERENCE_ALLOCATED_REAL_RAW="$(echo "100/$LISTING_TOTAL*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  if [[ "$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+    REFERENCE_ALLOCATED_REAL="100"
+  fi
+  if [[ -z "$REFERENCE_ALLOCATED_REAL" ]] &>/dev/null; then
+    REFERENCE_ALLOCATED_REAL="0.00"
+  fi
+  if [[ -z "$REFERENCE_ALLOCATED_REAL_RAW" ]] &>/dev/null; then
+    REFERENCE_ALLOCATED_REAL_RAW="0.00"
+  fi
+}
+
+################################################################################
+
+function last_tx() {
+  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -eq "0" ]] &>/dev/null; then
+    echo "null" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  fi
+  # last tx
+  TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+  if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
+    # last tx (default)
+    TX_ID_LAST="null"
+  fi
+  # remove possible double quotes
+  if [[ "$(grep '"' -c "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  fi
+  # get txid age (seconds)
+  TXID_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$TXID_AGE_SECONDS" ]] &>/dev/null; then
+    TXID_AGE_SECONDS="0"
+  fi
+
+  # txid age format
+  TXID_AGE=$(printf '%dh:%dm:%ds\n' $(("$TXID_AGE_SECONDS/3600")) $(("$TXID_AGE_SECONDS%3600/60")) $(("$TXID_AGE_SECONDS%60")))
+  # calculate txid days
+  TXID_AGE_DAYS=$(echo "$TXID_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
+}
+
+################################################################################
+
+function txid_null() {
+  # if words is found
+  if [[ "$(egrep -c "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
+    # output words
+    DIP_NULL_TXID="$(egrep "[A-Z]+|[a-z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')"
+    # if zero
+    if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
+      DIP_NULL_TXID="null"
+    fi
+    # track non txid
+    echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    # keep n lines, remove html error data
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '!a[$3]++' | tail -10 | egrep -v "Error|Unavailable|text/html|null|DOCTYPE")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  fi
+}
+
+################################################################################
+
+function cost_price() {
+  # update balances, prices after last order
+  echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null
+  echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+
+  # backup balances, prices
+  sxc_backup_balances
+  sxc_backup_prices
+
+  LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+  LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
+    # listing
+    echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null
+    echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
+
+    # listing output
+    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Updating cost! $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  fi
+}
+
+################################################################################
+
+function tx_id {
+  echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+}
+
+################################################################################
+
+function incoming_listing() {
+
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming &>/dev/null
+  fi
+
+  if [[ -z "$LISTING_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
+    LISTING_UNCONFIRMED_BALANCE="0.000000000"
+  fi
+
+  # create list from listing unconfirmed balance
+  echo "$LISTING_UNCONFIRMED_BALANCE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null
+  # keep n lines
+  echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null
+
+  # last lines are different
+  LIST_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".list_incoming 2>/dev/null)"
+  # last n lines above
+  LIST_INCOMING_ABOVE="$(echo "$LIST_INCOMING" | tail -2 | head -1 | tr -d '.' | sed 's/^0*//')"
+  # last n lines below
+  LIST_INCOMING_BELOW="$(echo "$LIST_INCOMING" | tail -2 | tail -1 | tr -d '.' | sed 's/^0*//')"
+
+  # lines are different
+  if [[ ! "$LIST_INCOMING_ABOVE" -eq "$LIST_INCOMING_BELOW" ]] &>/dev/null; then
+    # make sure last change is a negative
+    if [[ "$LIST_INCOMING_ABOVE" -gt "$LIST_INCOMING_BELOW" ]] &>/dev/null; then
+
+      # update balances, prices after last order
+      echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null
+      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+
+      # backup balances, prices
+      xgx_backup_balances
+      xgx_backup_prices
+
+      LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+      LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+      LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+      if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
+        # listing
+        echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
+
+        # listing output
+        echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Updating price! $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      fi
+    fi
+  fi
+
+  # incoming listing
+  if [[ "$(echo "$LISTING_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+    if [[ "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep " :: Inc :: " | wc -l)" -lt "1" ]] &>/dev/null; then
+      echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Inc :: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY $LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    fi
+  fi
+}
+
+################################################################################
+
+function incoming_reference() {
+
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming &>/dev/null
+  fi
+
+  if [[ -z "$REFERENCE_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
+    REFERENCE_UNCONFIRMED_BALANCE="0.000000000"
+  fi
+
+  # create list from reference unconfirmed balance
+  echo "$REFERENCE_UNCONFIRMED_BALANCE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null
+  # keep n lines
+  echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null
+
+  # last lines are different
+  REF_INCOMING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ref_incoming 2>/dev/null)"
+  # last n lines above
+  REF_INCOMING_ABOVE="$(echo "$REF_INCOMING" | tail -2 | head -1 | tr -d '.' | sed 's/^0*//')"
+  # last n lines below
+  REF_INCOMING_BELOW="$(echo "$REF_INCOMING" | tail -2 | tail -1 | tr -d '.' | sed 's/^0*//')"
+
+  # lines are different
+  if [[ ! "$REF_INCOMING_ABOVE" -eq "$REF_INCOMING_BELOW" ]] &>/dev/null; then
+    # make sure last change is a negative
+    if [[ "$REF_INCOMING_ABOVE" -gt "$REF_INCOMING_BELOW" ]] &>/dev/null; then
+
+      # update balances, prices after last order
+      echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null
+      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+
+      # backup balances, prices
+      xgx_backup_balances
+      xgx_backup_prices
+
+      REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+      REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+      REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+      if [[ ! -z "$REFERENCE_PRICE" ]] &>/dev/null; then
+        # reference
+        echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
+
+        # reference output
+        echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Updating price! $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      fi
+    fi
+  fi
+
+  # incoming reference
+  if [[ "$(echo "$REFERENCE_UNCONFIRMED_BALANCE" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+    if [[ "$(tail -"$LOG_TIMER" "${LOG_DIR:?}"/leeloo/robot.log | grep " :: Inc :: " | wc -l)" -lt "1" ]] &>/dev/null; then
+      echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Inc :: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY $REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    fi
+  fi
+}
+
+################################################################################
+
+function signal_age() {
+  # hours into seconds
+  SIGNAL_AGE_SECONDS="$(echo "$SIGNAL_AGE*3600" | bc 2>/dev/null)"
+
+  # signal age file
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order ]] &>/dev/null; then
+    echo "IDLING :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${SIGNAL_AGE:?}hr/${SIGNAL_AGE_SECONDS:?}sec :: $(date | xargs)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null
+  fi
+
+  # get signal order age (seconds)
+  SIGNAL_ORDER_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+}
+
+function signal_age_buying() {
+  # signal age
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order ]] &>/dev/null; then
+    echo "Buying :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${SIGNAL_AGE:?}hr :: $(date | xargs)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null
+  fi
+  # get signal order age (seconds)
+  SIGNAL_ORDER_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+}
+
+function signal_age_selling() {
+  # signal age
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order ]] &>/dev/null; then
+    echo "Selling :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${SIGNAL_AGE:?}hr :: $(date | xargs)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null
+  fi
+  # get signal order age (seconds)
+  SIGNAL_ORDER_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+}
+
+################################################################################
+
+function open_positions() {
+
+  # backup balances, prices
+  xgx_backup_balances
+  xgx_backup_prices
+
+  LISTING_OPEN_CURRENCY="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
+  LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+  LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
+
+  if [[ -z "$LISTING_OPEN_AMOUNT" ]] &>/dev/null; then
+    LISTING_OPEN_AMOUNT="0.00000000"
+  fi
+
+  ##############################################################################
+
+  REFERENCE_OPEN_CURRENCY="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
+  REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+  REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_OPEN_AMOUNT="$REFERENCE_AVAILABLE_BALANCE"
+
+  if [[ -z "$REFERENCE_OPEN_AMOUNT" ]] &>/dev/null; then
+    REFERENCE_OPEN_AMOUNT="0.00000000"
+  fi
+
+  ##############################################################################
+
+  # make sure prices, balances exist
+  if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+
+      # listing price null
+      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+        echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
+      fi
+      # listing cost null
+      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+        echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null
+      fi
+
+      ##########################################################################
+
+      # reference price null
+      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+        echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
+      fi
+      # reference cost null
+      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+        echo "$REFERENCE_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null
+      fi
+    fi
+  fi
+
+  ##############################################################################
+
+  LISTING_OPEN_PRICE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null | head -1)"
+  LISTING_OPEN_BALANCE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null | head -1)"
+
+  if [[ -z "$LISTING_OPEN_PRICE" ]] &>/dev/null; then
+    LISTING_OPEN_PRICE="0.00000000"
+  fi
+  if [[ -z "$LISTING_OPEN_BALANCE" ]] &>/dev/null; then
+    LISTING_OPEN_BALANCE="0.00000000"
+  fi
+
+  ##############################################################################
+
+  LISTING_OPEN_RESULT="$(echo "$(echo "100/$LISTING_OPEN_PRICE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  if [[ -z "$LISTING_OPEN_RESULT" ]] &>/dev/null; then
+    LISTING_OPEN_RESULT="0.00"
+  fi
+
+  ##############################################################################
+
+  # listing age (seconds)
+  if [[ -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price ]] &>/dev/null; then
+    LISTING_OPEN_AMOUNT_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    if [[ -z "$LISTING_OPEN_AMOUNT_SECONDS" ]] &>/dev/null; then
+      LISTING_OPEN_AMOUNT_SECONDS="0"
+    fi
+    LISTING_OPEN_AMOUNT_AGE=$(printf '%dh:%dm:%ds\n' $(("$LISTING_OPEN_AMOUNT_SECONDS/3600")) $(("$LISTING_OPEN_AMOUNT_SECONDS%3600/60")) $(("$LISTING_OPEN_AMOUNT_SECONDS%60")))
+  fi
+
+  ##############################################################################
+
+  # reference age (seconds)
+  if [[ -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price ]] &>/dev/null; then
+    REFERENCE_OPEN_AMOUNT_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    if [[ -z "$REFERENCE_OPEN_AMOUNT_SECONDS" ]] &>/dev/null; then
+      REFERENCE_OPEN_AMOUNT_SECONDS="0"
+    fi
+    REFERENCE_OPEN_AMOUNT_AGE=$(printf '%dh:%dm:%ds\n' $(("$REFERENCE_OPEN_AMOUNT_SECONDS/3600")) $(("$REFERENCE_OPEN_AMOUNT_SECONDS%3600/60")) $(("$REFERENCE_OPEN_AMOUNT_SECONDS%60")))
+  fi
+
+  ##############################################################################
+
+  # make sure prices, balances exist
+  if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+
+      # is this an open position?
+      if [[ "$(echo "$LISTING_OPEN_AMOUNT" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+        # currency amount cost result age
+        echo "$STRATEGY_TYPE $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
+        echo "$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/pool 2>/dev/null
+      else
+        rm "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".* &>/dev/null
+      fi
+    fi
+  fi
+}
+
+################################################################################
+
+function save_orders() {
+  TRADE_TIMER="60"
+  if [[ ! -f "${SYS_DIR:?}"/robot/orders ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/orders &>/dev/null
+    TRADE_TIMER="0"
+    sleep 1
+  fi
+  TRADE_HISTORY_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  if [[ "$TRADE_HISTORY_SECONDS" -gt "$TRADE_TIMER" ]] &>/dev/null; then
+    # keep orders, remove empty lines
+    TRADE_HISTORY="$(cat "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | sed '/^$/d')"
+    echo "$TRADE_HISTORY" >>"${SYS_DIR:?}"/robot/orders 2>/dev/null
+  fi
+}
+
+################################################################################
+
+function last_orders {
+  # keep n lines
+  if [[ "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
+    echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>/dev/null)" "${SYS_DIR:?}"/robot/orders 2>/dev/null)" >"${SYS_DIR:?}"/robot/orders 2>/dev/null
+  fi
+}
+
+################################################################################
+
+function robot_Log_cleanup() {
+  NEW_LOG="$(echo "$MAX_LOG/3" | bc 2>/dev/null)"
+  # keep n lines
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
+    echo "$(tail -"$NEW_LOG" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    echo "$LOG_DATE : LogReset : $MAX_LOG lines down to > $NEW_LOG lines." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  fi
+}
+
+# setup manual market order - ##################################################
+
+function setup_market_order {
+  LISTING_CURRENCY=$(
+    dialog --title "Listing Currency (BTC)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+
+  if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+
+    REFERENCE_CURRENCY=$(
+      dialog --title "Reference Currency (USDT)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+
+    if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+
+      LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+      REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+
+      LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }')"
+      REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }')"
+
+      AMOUNT=$(
+        dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+          --inputbox "Enter amount:
+$LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
+          3>&1 1>&2 2>&3 3>&-
+      )
+    fi
+  fi
+}
+
+# setup manual limit order #####################################################
+
+function setup_limit_order {
+  LISTING_CURRENCY=$(
+    dialog --title "Listing Currency (BTC)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+
+  if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+
+    REFERENCE_CURRENCY=$(
+      dialog --title "Reference Currency (USDT)" \
+        --inputbox "Enter name:" 8 40 \
+        3>&1 1>&2 2>&3 3>&-
+    )
+
+    if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+
+      LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+      REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
+
+      LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }')"
+      REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }')"
+      LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }' | head -1)"
+      REFERENCE_CURRENCY_PRICE="$REFERENCE_CURRENCY: $(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }' | head -1)"
+
+      AMOUNT=$(
+        dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+          --inputbox "Enter amount:
+$LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
+          3>&1 1>&2 2>&3 3>&-
+      )
+      PRICE=$(
+        dialog --title "Price $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
+          --inputbox "Enter price:
+$LISTING_CURRENCY_PRICE $REFERENCE_CURRENCY_PRICE" 8 40 \
+          3>&1 1>&2 2>&3 3>&-
+      )
+    fi
+  fi
+}
+
+################################################################################
 
 # END
