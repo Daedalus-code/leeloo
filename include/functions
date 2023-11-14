@@ -674,6 +674,77 @@ $MARKET_RESULT"
   fi
 }
 
+# last log #####################################################################
+
+function last_log {
+
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/broker.log ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/broker.log &>/dev/null
+  fi
+
+  LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null)"
+  WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/broker.log | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
+  LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')+5" | bc 2>/dev/null)"
+
+  if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+    LOG_LENGTH="7"
+  fi
+  if [[ -z "$LENGTH" ]] &>/dev/null; then
+    LENGTH="7"
+  elif [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+    LENGTH="$LOG_LENGTH"
+  fi
+
+  if [[ -z "$WIDTH" ]] &>/dev/null; then
+    WIDTH="77"
+  elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
+    WIDTH="77"
+  fi
+
+  display_result() {
+    dialog --title "Broker Log: $LOG_COUNT" \
+      --no-collapse \
+      --tailbox "$RESULT" "$LENGTH" "$WIDTH"
+  }
+  RESULT="${LOG_DIR:?}/leeloo/broker.log"
+  display_result 2>/dev/null
+
+  if dialog --stdout --title "Reset broker.log?" \
+    --backtitle "Reset data?" \
+    --yesno "Yes: Reset! No: Go back!" 5 32; then
+    truncate -s 0 "${LOG_DIR:?}"/leeloo/broker.log &>/dev/null
+  fi
+}
+
+# last log robot ###############################################################
+
+function last_log_robot {
+  LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
+  WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+  if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+    LENGTH="21"
+  else
+    LENGTH="$LOG_LENGTH"
+  fi
+  if [[ -z "$LENGTH" ]] &>/dev/null; then
+    LENGTH="21"
+  elif [[ "$LENGTH" -lt "21" ]] &>/dev/null; then
+    LENGTH="21"
+  fi
+  if [[ -z "$WIDTH" ]] &>/dev/null; then
+    WIDTH="89"
+  elif [[ "$WIDTH" -lt "89" ]] &>/dev/null; then
+    WIDTH="89"
+  fi
+  display_result() {
+    dialog --title "Robot Log: $LOG_COUNT" \
+      --no-collapse \
+      --tailbox "$RESULT" "$LENGTH" "$WIDTH"
+  }
+  RESULT="${LOG_DIR:?}/leeloo/robot.log"
+  display_result 2>/dev/null
+}
+
 # open orders ##################################################################
 
 function open_orders {
@@ -747,71 +818,6 @@ function open_orders {
     PLACE_ORDER_ID="$(echo "$PLACE_ORDER" | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
     PLACE_ORDER_PRICE="$(echo "$PLACE_ORDER" | egrep -wo "price:[0-9]+.[0-9]+" | awk -F: '{ print $2 }' | tail -1)"
     PLACE_ORDER="$PLACE_ORDER_ID$PLACE_ORDER_PRICE"
-  }
-
-  # last log #####################################################################
-
-  function last_log {
-
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/broker.log ]] &>/dev/null; then
-      touch "${LOG_DIR:?}"/leeloo/broker.log &>/dev/null
-    fi
-
-    LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null)"
-    WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/broker.log | wc -L | awk '{ print $1 }')+4" | bc 2>/dev/null)"
-    LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')+5" | bc 2>/dev/null)"
-
-    if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
-      LOG_LENGTH="7"
-    fi
-    if [[ -z "$LENGTH" ]] &>/dev/null; then
-      LENGTH="7"
-    elif [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
-      LENGTH="$LOG_LENGTH"
-    fi
-
-    if [[ -z "$WIDTH" ]] &>/dev/null; then
-      WIDTH="77"
-    elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
-      WIDTH="77"
-    fi
-
-    display_result() {
-      dialog --title "Broker Log: $LOG_COUNT" \
-        --no-collapse \
-        --tailbox "$RESULT" "$LENGTH" "$WIDTH"
-    }
-    RESULT="${LOG_DIR:?}/leeloo/broker.log"
-    display_result 2>/dev/null
-  }
-
-  # last log robot ###############################################################
-
-  function last_log_robot {
-    LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
-    WIDTH="$(echo "$(tail -19 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
-    if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
-      LENGTH="21"
-    else
-      LENGTH="$LOG_LENGTH"
-    fi
-    if [[ -z "$LENGTH" ]] &>/dev/null; then
-      LENGTH="21"
-    elif [[ "$LENGTH" -lt "21" ]] &>/dev/null; then
-      LENGTH="21"
-    fi
-    if [[ -z "$WIDTH" ]] &>/dev/null; then
-      WIDTH="89"
-    elif [[ "$WIDTH" -lt "89" ]] &>/dev/null; then
-      WIDTH="89"
-    fi
-    display_result() {
-      dialog --title "Robot Log: $LOG_COUNT" \
-        --no-collapse \
-        --tailbox "$RESULT" "$LENGTH" "$WIDTH"
-    }
-    RESULT="${LOG_DIR:?}/leeloo/robot.log"
-    display_result 2>/dev/null
   }
 
   ##############################################################################
