@@ -693,7 +693,10 @@ function setup_limit_order {
           --inputbox "Enter amount:
 $LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
           3>&1 1>&2 2>&3 3>&-
+      )
 
+      # if not zero
+      if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
         # ask price
         PRICE=$(
           dialog --title "Price $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
@@ -701,7 +704,7 @@ $LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
 $LISTING_CURRENCY: $AMOUNT $LISTING_REFERENCE_CURRENCY_PRICE" 8 40 \
             3>&1 1>&2 2>&3 3>&-
         )
-      )
+      fi
     fi
   fi
 }
