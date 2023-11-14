@@ -642,9 +642,10 @@ function setup_market_order {
 
     if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
+      # currency
       LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
       REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
-
+      # amount
       LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }')"
       REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }')"
 
@@ -677,11 +678,13 @@ function setup_limit_order {
 
     if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
+      # currency
       LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
       REFERENCE_CURRENCY="$(echo "$REFERENCE_CURRENCY" | tr '[:lower:]' '[:upper:]')"
-
+      # amount
       LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }')"
       REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }')"
+      # price
       LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(egrep -w "$LISTING_CURRENCY.$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }')"
       REFERENCE_CURRENCY_PRICE="$REFERENCE_CURRENCY: $(egrep -w "$LISTING_CURRENCY.$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }')"
 
