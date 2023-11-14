@@ -765,7 +765,7 @@ function open_orders {
     WIDTH=23
     CHOICE_HEIGHT=2
     BACKTITLE="Leeloo (Multipass)"
-    TITLE="Buy Order Menu"
+    TITLE="$ORDER_EXCHANGE Buy Order Menu"
     AMOUNT_IN_REFERENCE_CURRENCY="true"
     MENU="$(date | xargs | awk '{ print $4,$5,$6 }')"
 
@@ -791,7 +791,15 @@ function open_orders {
       if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
         if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
           if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-            PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+            # if southxchange
+            if [[ "$ORDER_EXCHANGE" == "SouthXchange" ]] &>/dev/null; then
+              PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+            fi
+            # if zero api
+            if [[ -z "$PLACE_ORDER" ]] &>/dev/null; then
+              echo "No API configuration!"
+              exit
+            fi
             echo "$LOG_DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
             echo "$LOG_DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
           fi
@@ -808,7 +816,15 @@ function open_orders {
         if [[ ! -z "$PRICE" ]] &>/dev/null; then
           if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
             if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-              PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              # if southxchange
+              if [[ "$ORDER_EXCHANGE" == "SouthXchange" ]] &>/dev/null; then
+                PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              fi
+              # if zero api
+              if [[ -z "$PLACE_ORDER" ]] &>/dev/null; then
+                echo "No API configuration!"
+                exit
+              fi
               echo "$LOG_DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
               echo "$LOG_DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
             fi
@@ -831,7 +847,7 @@ function open_orders {
     WIDTH=23
     CHOICE_HEIGHT=2
     BACKTITLE="Leeloo (Multipass)"
-    TITLE="Sell Order Menu"
+    TITLE="$ORDER_EXCHANGE Sell Order Menu"
     AMOUNT_IN_REFERENCE_CURRENCY="false"
     MENU="$(date | xargs | awk '{ print $4,$5,$6 }')"
 
@@ -857,7 +873,15 @@ function open_orders {
       if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
         if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
           if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-            PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+            # if southxchange
+            if [[ "$ORDER_EXCHANGE" == "SouthXchange" ]] &>/dev/null; then
+              PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+            fi
+            # if zero api
+            if [[ -z "$PLACE_ORDER" ]] &>/dev/null; then
+              echo "No API configuration!"
+              exit
+            fi
             echo "$LOG_DATE :: Manual $TYPE :: Market Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
             echo "$LOG_DATE :: Output: $PLACE_ORDER" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
           fi
@@ -874,7 +898,15 @@ function open_orders {
         if [[ ! -z "$PRICE" ]] &>/dev/null; then
           if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
             if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-              PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              # if southxchange
+              if [[ "$ORDER_EXCHANGE" == "SouthXchange" ]] &>/dev/null; then
+                PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              fi
+              # if zero api
+              if [[ -z "$PLACE_ORDER" ]] &>/dev/null; then
+                echo "No API configuration!"
+                exit
+              fi
               echo "$LOG_DATE :: Manual $TYPE :: Limit Order :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $AMOUNT :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
               echo "$LOG_DATE :: Output: $PLACE_ORDER :: $PRICE" >>"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
             fi
