@@ -680,6 +680,8 @@ function open_orders {
 
   # poloniex data
   if [[ "$EXCHANGE_API" == "POL" ]] &>/dev/null; then
+    # set orders format
+    ORDERS_FORMAT="OrderID: Type Amount Original LimitPrice List Ref DateAdded"
     # set exchange template
     EXCHANGE_API="POL"
     exchange_template
@@ -692,6 +694,8 @@ function open_orders {
 
   # southxchange data
   if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+    # set orders format
+    ORDERS_FORMAT="OrderID: Type Amount Original LimitPrice List Ref DateAdded"
     # set exchange template
     EXCHANGE_API="SXC"
     exchange_template
@@ -704,6 +708,8 @@ function open_orders {
 
   # stakecube data
   if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
+    # set orders format
+    ORDERS_FORMAT="OrderID: Type Amount Original LimitPrice List Ref DateAdded"
     # set exchange template
     EXCHANGE_API="SCE"
     exchange_template
@@ -716,13 +722,15 @@ function open_orders {
 
   # xeggex data
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+    # set orders format
+    ORDERS_FORMAT="OrderID Type Amount LimitPrice List.Ref DateAdded"
     # set exchange template
     EXCHANGE_API="XGX"
     exchange_template
     ORDER_EXCHANGE="XeggeX"
     # open orders function
     function result_orders {
-      getOrders | jq -r '.[] | "\(.id): \(.side) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' 2>/dev/null | column -t | sort -r >"${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null
+      getOrders | jq -r '.[] | "\(.id): \(.side) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s\n", $1, $2, $3, $4, $5, strftime("%Y-%m-%dT%H:%M:%S", $6/1000)}' 2>/dev/null | column -t | sort -r >"${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null
     }
   fi
 
@@ -903,6 +911,9 @@ function open_orders {
     fi
 
     ORDER_TOTAL="$(wc -l "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null | awk '{ print $1 }')"
+    ORDER_TOTAL_WIDTH="$(echo "$(echo "$ORDERS_FORMAT
+    $(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)" | column -t | wc -L)+6" | bc 2>/dev/null)"
+    ORDER_TOTAL_LENGTH="$(echo "$ORDER_TOTAL+6" | bc 2>/dev/null)"
     ORDER_TOTAL_BUY="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
     ORDER_TOTAL_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
     ORDER_PERCENTAGE_BUY="$(echo "100/$ORDER_TOTAL*$ORDER_TOTAL_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
@@ -911,10 +922,10 @@ function open_orders {
     display_result() {
       dialog --title "Open Orders: +$ORDER_TOTAL :: Buy: $ORDER_TOTAL_BUY (${ORDER_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_TOTAL_SELL (${ORDER_PERCENTAGE_SELL:?}%)" \
         --no-collapse \
-        --msgbox "$(echo "$RESULT" | column -t)" 0 0
+        --msgbox "$(echo "$RESULT" | column -t)" "$ORDER_TOTAL_LENGTH" "$ORDER_TOTAL_WIDTH"
     }
 
-    RESULT="OrderID: Type Amount Original LimitPrice List Ref DateAdded
+    RESULT="$ORDERS_FORMAT
 $(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null | sort -r 2>/dev/null)"
     display_result 2>/dev/null
 
