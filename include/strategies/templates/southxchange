@@ -684,20 +684,22 @@ function setup_limit_order {
       # amount
       LISTING_CURRENCY_AMOUNT="$LISTING_CURRENCY: $(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
       REFERENCE_CURRENCY_AMOUNT="$REFERENCE_CURRENCY: $(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }')"
-      # price
-      LISTING_CURRENCY_PRICE="$LISTING_CURRENCY: $(egrep -w "$LISTING_CURRENCY.$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
-      REFERENCE_CURRENCY_PRICE="$REFERENCE_CURRENCY: $(egrep -w "$LISTING_CURRENCY.$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
+      # listing/reference price
+      LISTING_REFERENCE_CURRENCY_PRICE="$REFERENCE_CURRENCY: $(egrep -w "$LISTING_CURRENCY.$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
 
+      # ask amount
       AMOUNT=$(
         dialog --title "Amount $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
           --inputbox "Enter amount:
 $LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
           3>&1 1>&2 2>&3 3>&-
       )
+
+      # ask price
       PRICE=$(
         dialog --title "Price $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
           --inputbox "Enter price:
-$LISTING_CURRENCY_PRICE $REFERENCE_CURRENCY_PRICE" 8 40 \
+$LISTING_CURRENCY $AMOUNT $LISTING_REFERENCE_CURRENCY_PRICE" 8 40 \
           3>&1 1>&2 2>&3 3>&-
       )
     fi
