@@ -39,7 +39,7 @@ echo "$(cat "${LOG_DIR:?}"/leeloo/robots 2>/dev/null | awk '!a[$1]++')" >"${LOG_
 
 ################################################################################
 
-function sxc_backup_balances() {
+function backup_balances() {
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/balances "${LOG_DIR:?}"/leeloo/southxchange/balances.bkp &>/dev/null
   fi
@@ -50,7 +50,7 @@ function sxc_backup_balances() {
 
 ################################################################################
 
-function sxc_backup_prices() {
+function backup_prices() {
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.bkp &>/dev/null
   fi
@@ -61,7 +61,7 @@ function sxc_backup_prices() {
 
 ################################################################################
 
-function sxc_backup_orders() {
+function backup_orders() {
   if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/orders "${LOG_DIR:?}"/leeloo/southxchange/orders.bkp &>/dev/null
   fi
@@ -105,8 +105,8 @@ function delisted() {
 function listing_data() {
 
   # backup balances, prices
-  sxc_backup_balances
-  sxc_backup_prices
+  backup_balances
+  backup_prices
 
   # get available listing data
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
@@ -147,8 +147,8 @@ function listing_data() {
 function reference_data() {
 
   # backup balances, prices
-  sxc_backup_balances
-  sxc_backup_prices
+  backup_balances
+  backup_prices
 
   # get available reference data
   REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
@@ -294,8 +294,8 @@ function cost_price() {
   echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
 
   # backup balances, prices
-  sxc_backup_balances
-  sxc_backup_prices
+  backup_balances
+  backup_prices
 
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
@@ -351,8 +351,8 @@ function incoming_listing() {
       echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
 
       # backup balances, prices
-      sxc_backup_balances
-      sxc_backup_prices
+      backup_balances
+      backup_prices
 
       LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
       LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
@@ -410,8 +410,8 @@ function incoming_reference() {
       echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
 
       # backup balances, prices
-      sxc_backup_balances
-      sxc_backup_prices
+      backup_balances
+      backup_prices
 
       REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
       REFERENCE_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
@@ -473,8 +473,8 @@ function signal_age_selling() {
 function open_positions() {
 
   # backup balances, prices
-  sxc_backup_balances
-  sxc_backup_prices
+  backup_balances
+  backup_prices
 
   LISTING_OPEN_CURRENCY="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
   LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
