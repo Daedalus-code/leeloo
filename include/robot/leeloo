@@ -27,6 +27,12 @@ for (( ; ; )); do
 
   # get active bots
   LEELOO_RUNNING_BOTS="$(cat "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
+  # bot timer api
+  BOT_TIMER_API="$(echo "$BOT_TIMER-5" | bc 2>/dev/null)"
+  # if zero
+  if [[ "$BOT_TIMER_API" -lt "5" ]] &>/dev/null; then
+    BOT_TIMER_API="5"
+  fi
 
   ##############################################################################
   # southxchange
@@ -39,7 +45,7 @@ for (( ; ; )); do
       echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null
     }
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
       result_balances
       # update data if missing
     elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/balances ]] &>/dev/null; then
@@ -60,7 +66,7 @@ for (( ; ; )); do
       echo "$(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
     }
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
       result_orders
       # update data if missing
     elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/orders ]] &>/dev/null; then
@@ -81,7 +87,7 @@ for (( ; ; )); do
       echo "$(prices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
     }
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
       result_prices
       # update data if missing
     elif [[ ! -f "${LOG_DIR:?}"/leeloo/southxchange/prices ]] &>/dev/null; then
@@ -103,7 +109,7 @@ for (( ; ; )); do
       echo "$(getPrices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
     }
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
       result_prices
       # update data if missing
     elif [[ ! -f "${LOG_DIR:?}"/leeloo/poloniex/prices ]] &>/dev/null; then
@@ -125,7 +131,7 @@ for (( ; ; )); do
       echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null
     }
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
       result_balances
       # update data if missing
     elif [[ ! -f "${LOG_DIR:?}"/leeloo/xeggex/balances ]] &>/dev/null; then
@@ -146,7 +152,7 @@ for (( ; ; )); do
       echo "$(getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sort -r)" >"${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null
     }
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
       result_orders
       # update data if missing
     elif [[ ! -f "${LOG_DIR:?}"/leeloo/xeggex/orders ]] &>/dev/null; then
@@ -167,7 +173,7 @@ for (( ; ; )); do
       echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
     }
     # update data every n seconds
-    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+    if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
       result_prices
       # update data if missing
     elif [[ ! -f "${LOG_DIR:?}"/leeloo/xeggex/prices ]] &>/dev/null; then
