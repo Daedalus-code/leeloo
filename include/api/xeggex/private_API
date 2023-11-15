@@ -23,7 +23,13 @@ function CreateOrder {
   PRICE="$6"
   STRICT_VALIDATE="$7"
   API_XEGGEX_NONCE=$(($(date +%s) * 10))
-  JSON_DATA="{\"nonce\":\"$API_XEGGEX_NONCE\",\"userProvidedId\":\"$USER_PROVIDED_ID\",\"symbol\":\"$SYMBOL\",\"side\":\"$SIDE\",\"type\":\"$TYPE\",\"quantity\":\"$QUANTITY\",\"price\":\"$PRICE\",\"strictValidate\":$STRICT_VALIDATE}"
+
+  if [ "$TYPE" == "market" ]; then
+    JSON_DATA="{\"nonce\":\"$API_XEGGEX_NONCE\",\"userProvidedId\":\"$USER_PROVIDED_ID\",\"symbol\":\"$SYMBOL\",\"side\":\"$SIDE\",\"type\":\"$TYPE\",\"quantity\":\"$QUANTITY\",\"strictValidate\":$STRICT_VALIDATE}"
+  else
+    JSON_DATA="{\"nonce\":\"$API_XEGGEX_NONCE\",\"userProvidedId\":\"$USER_PROVIDED_ID\",\"symbol\":\"$SYMBOL\",\"side\":\"$SIDE\",\"type\":\"$TYPE\",\"quantity\":\"$QUANTITY\",\"price\":\"$PRICE\",\"strictValidate\":$STRICT_VALIDATE}"
+  fi
+
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_XEGGEX_SECRET" | awk '{print $NF}')
   curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" -d "$JSON_DATA" "https://api.xeggex.com/api/v2/createorder"
 }
