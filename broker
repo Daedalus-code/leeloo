@@ -1251,21 +1251,21 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         # if zero
         if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
           STRATEGY_NAME="$INSTALL_ROBOT_CONFIG"
-        else
-
-          # install new strategy.robot_id
-          mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".config
-          mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".strategy
-
-          # output
-          RESULT="$INSTALL_ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
-          # display output
-          display_result 2>/dev/null
         fi
+
+        # install new strategy.robot_id
+        cp "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".config &>/dev/null
+        cp "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".strategy &>/dev/null
+
+        # output
+        RESULT="$INSTALL_ROBOT_CONFIG strategy installed!
+$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
+        # display output
+        display_result 2>/dev/null
       else
         remove_temp
       fi
+      remove_temp
     }
 
     ############################################################################
@@ -1400,7 +1400,6 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
     else
       no_key_no_secret
     fi
-    remove_temp
 
     ;;
 
