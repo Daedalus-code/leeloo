@@ -81,8 +81,27 @@ txid_null             # txid null
 
 ################################################################################
 
+# listing
 LISTING_AVAILABLE_BALANCE_NR="$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')"
 LISTING_TRIGGER_NR="$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')"
+# reference
+REFERENCE_AVAILABLE_BALANCE_NR="$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')"
+REFERENCE_TRIGGER_NR="$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')"
+
+# default
+LISTING_NO_BALANCE="1"
+REFERENCE_NO_BALANCE="1"
+
+if [[ "$LISTING_AVAILABLE_BALANCE_NR" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+  # no balance trigger
+  LISTING_NO_BALANCE="0"
+fi
+if [[ "$REFERENCE_AVAILABLE_BALANCE_NR" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+  # no balance trigger
+  REFERENCE_NO_BALANCE="0"
+fi
+
+################################################################################
 
 # listing trigger
 if [[ "$(echo "$LISTING_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
@@ -99,9 +118,6 @@ if [[ -z "$TRIGGER_L" ]] &>/dev/null; then
 fi
 
 ################################################################################
-
-REFERENCE_AVAILABLE_BALANCE_NR="$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')"
-REFERENCE_TRIGGER_NR="$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')"
 
 # reference trigger
 if [[ "$(echo "$REFERENCE_TRIGGER" | egrep "[0-9]+" | tr -d '.' | sed 's/^0*//' | wc -l)" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
@@ -295,29 +311,33 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           ######################################################################
           ######################################################################
 
-          # if southxchange order
-          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-            # placeOrder market ################################################
-            PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          # balance check
+          if [[ ! "$LISTING_NO_BALANCE" -eq "0" || "$REFERENCE_NO_BALANCE" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+
+            # if southxchange order
+            if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+              # placeOrder market ##############################################
+              PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              ##################################################################
+            fi
+            # if xeggex order
+            if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+              # CreateOrder market #############################################
+              PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              ##################################################################
+            fi
+
             ####################################################################
-          fi
-          # if xeggex order
-          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-            # CreateOrder market ###############################################
-            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
             ####################################################################
+
+            echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+            tx_id
+            cost_price
+            echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+            # remove duplicates
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
           fi
-
-          ######################################################################
-          ######################################################################
-
-          echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-          tx_id
-          cost_price
-          echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-
-          # remove duplicates
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
           # limit
         elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
@@ -325,29 +345,33 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           ######################################################################
           ######################################################################
 
-          # if southxchange order
-          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-            # placeOrder limit #################################################
-            PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          # balance check
+          if [[ "$LISTING_NO_BALANCE" -eq "0" || "$REFERENCE_NO_BALANCE" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+
+            # if southxchange order
+            if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+              # placeOrder limit ###############################################
+              PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              ##################################################################
+            fi
+            # if xeggex order
+            if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+              # CreateOrder limit ##############################################
+              PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              ##################################################################
+            fi
+
             ####################################################################
-          fi
-          # if xeggex order
-          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-            # CreateOrder limit ################################################
-            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "$AMOUNT_IN_REFERENCE_CURRENCY")"
             ####################################################################
+
+            echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+            tx_id
+            cost_price
+            echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+            # remove duplicates
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
           fi
-
-          ######################################################################
-          ######################################################################
-
-          echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-          tx_id
-          cost_price
-          echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-
-          # remove duplicates
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
         fi
       fi
 
@@ -361,29 +385,33 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           ######################################################################
           ######################################################################
 
-          # if southxchange order
-          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-            # placeOrder market ################################################
-            PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          # balance check
+          if [[ "$LISTING_NO_BALANCE" -eq "0" || "$REFERENCE_NO_BALANCE" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+
+            # if southxchange order
+            if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+              # placeOrder market ##############################################
+              PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              ##################################################################
+            fi
+            # if xeggex order
+            if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+              # CreateOrder market #############################################
+              PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              ##################################################################
+            fi
+
             ####################################################################
-          fi
-          # if xeggex order
-          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-            # CreateOrder market ###############################################
-            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
             ####################################################################
+
+            echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+            tx_id
+            cost_price
+            echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+            # remove duplicates
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
           fi
-
-          ######################################################################
-          ######################################################################
-
-          echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-          tx_id
-          cost_price
-          echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-
-          # remove duplicates
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
           # limit
         elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
@@ -391,29 +419,33 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           ######################################################################
           ######################################################################
 
-          # if southxchange order
-          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-            # placeOrder limit #################################################
-            PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          # balance check
+          if [[ "$LISTING_NO_BALANCE" -eq "0" || "$REFERENCE_NO_BALANCE" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+
+            # if southxchange order
+            if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+              # placeOrder limit ###############################################
+              PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              ##################################################################
+            fi
+            # if xeggex order
+            if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+              # CreateOrder limit ##############################################
+              PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+              ##################################################################
+            fi
+
             ####################################################################
-          fi
-          # if xeggex order
-          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-            # CreateOrder limit ################################################
-            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "$AMOUNT_IN_REFERENCE_CURRENCY")"
             ####################################################################
+
+            echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+            tx_id
+            cost_price
+            echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+            # remove duplicates
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
           fi
-
-          ######################################################################
-          ######################################################################
-
-          echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-          tx_id
-          cost_price
-          echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-
-          # remove duplicates
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
         fi
       fi
     fi
