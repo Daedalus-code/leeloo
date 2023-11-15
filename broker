@@ -1221,9 +1221,11 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       # copy configuration and strategy
       cp "${HOME_DIR:?}"/leeloo/include/strategies/"$INSTALL_CONFIG" "${LOG_DIR:?}"/stgc.tmp &>/dev/null
       cp "${HOME_DIR:?}"/leeloo/include/strategies/"$INSTALL_STRATEGY" "${LOG_DIR:?}"/stgt.tmp &>/dev/null
+
       # edit configuration
       nano "${LOG_DIR:?}"/stgc.tmp
       clear
+
       # dialog menu
       DIALOG_OPTIONS=(
         --backtitle "Leeloo (Multipass)"
@@ -1233,6 +1235,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       )
       dialog "${DIALOG_OPTIONS[@]}"
       DIALOG_RESULT=$?
+
       # if zero
       if [ $DIALOG_RESULT -eq "0" ] &>/dev/null; then
         # installing strategy
@@ -1241,20 +1244,25 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
             --no-collapse \
             --msgbox "$RESULT" 0 0
         }
+
         # enter strategy name
         enter_strategy_name
+
         # if zero
         if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
           STRATEGY_NAME="$INSTALL_ROBOT_CONFIG"
-        fi
-        # install new strategy.robot_id
-        cp "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".config
-        cp "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".strategy
-        # output
-        RESULT="$INSTALL_ROBOT_CONFIG strategy installed!
+        else
+
+          # install new strategy.robot_id
+          mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".config
+          mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".strategy
+
+          # output
+          RESULT="$INSTALL_ROBOT_CONFIG strategy installed!
 $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
-        # display output
-        display_result 2>/dev/null
+          # display output
+          display_result 2>/dev/null
+        fi
       else
         remove_temp
       fi
