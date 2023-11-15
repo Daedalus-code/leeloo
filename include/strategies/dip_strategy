@@ -930,11 +930,13 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # reset sold file
           truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
 
-          # setup limit buy order ##############################################
-          placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-          sleep 1
-          ######################################################################
+          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+            # setup limit buy order ############################################
+            placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+            ####################################################################
+          fi
 
+          sleep 1
           # track non txid
           txid_null
 
@@ -1498,11 +1500,13 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
         log_date
 
-        # setup limit sell order ###############################################
-        placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_ASK" "$LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-        sleep 1
-        ########################################################################
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          # setup limit sell order #############################################
+          placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_ASK" "$LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+          ######################################################################
+        fi
 
+        sleep 1
         # track non txid
         txid_null
 
@@ -1967,8 +1971,12 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   # dump output (log)
   DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING (Delisted)"
   echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  # setup market sell order
-  placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$DUMP_LISTING_BALANCE" "false" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+
+  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+    # setup market sell order
+    placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$DUMP_LISTING_BALANCE" "false" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+  fi
+
   # keep n lines
   echo "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump 2>/dev/null | tr -d '"'): $DIP_DUMP_LISTING/$REFERENCE_CURRENCY -> Sold $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
   sleep 1

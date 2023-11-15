@@ -192,9 +192,11 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
 
       if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
 
-        # placeOrder market ####################################################
-        PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        ########################################################################
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          # placeOrder market ##################################################
+          PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          ######################################################################
+        fi
 
         # buy market order
         echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -208,9 +210,11 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
 
       elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
 
-        # placeOrder limit #####################################################
-        PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        ########################################################################
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          # placeOrder limit ###################################################
+          PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          ######################################################################
+        fi
 
         # buy limit order
         echo "$BUY_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -249,9 +253,11 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
 
       if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
 
-        # placeOrder market ####################################################
-        PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        ########################################################################
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          # placeOrder market ##################################################
+          PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          ######################################################################
+        fi
 
         # sell order
         echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -265,9 +271,11 @@ if [[ ! -z "$TRADE" ]] &>/dev/null; then
 
       elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
 
-        # placeOrder limit #####################################################
-        PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-        ########################################################################
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          # placeOrder limit ###################################################
+          PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
+          ######################################################################
+        fi
 
         # sell order
         echo "$SELL_LZN_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"

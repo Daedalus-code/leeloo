@@ -128,12 +128,16 @@ if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] 2>>"${LOG_ERROR:?}"; then
       # overbought, sell
       if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
-        PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
+        fi
         rsi_sell_order
         cost_price
       elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
-        PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
+        fi
         rsi_sell_order
         cost_price
       fi
@@ -149,12 +153,16 @@ if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] 2>>"${LOG_ERROR:?}"; then
       # oversold, buy
       if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
-        PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
+        fi
         rsi_buy_order
         cost_price
       elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
-        PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
+        fi
         rsi_buy_order
         cost_price
       fi
