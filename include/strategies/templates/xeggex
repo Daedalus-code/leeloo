@@ -40,10 +40,10 @@ echo "$(cat "${LOG_DIR:?}"/leeloo/robots 2>/dev/null | awk '!a[$1]++')" >"${LOG_
 ################################################################################
 
 function backup_balances() {
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/xeggex/balances "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp &>/dev/null
   fi
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -eq "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp "${LOG_DIR:?}"/leeloo/xeggex/balances &>/dev/null
   fi
 }
