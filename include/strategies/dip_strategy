@@ -938,7 +938,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           ######################################################################
           ######################################################################
 
-          # if southxchange
+          # if southxchange order
           if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
             # setup limit buy order ############################################
             placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
@@ -1521,13 +1521,13 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         ########################################################################
         ########################################################################
 
-        # if southxchange
+        # if southxchange order
         if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
           # setup limit sell order #############################################
           placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_ASK" "$LISTING_BALANCE" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
           ######################################################################
         fi
-        # if xeggex
+        # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder limit ##################################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
@@ -2012,13 +2012,13 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   ##############################################################################
   ##############################################################################
 
-  # if southxchange
+  # if southxchange order
   if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
     # setup market sell order ##################################################
     placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$DUMP_LISTING_BALANCE" "false" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
     ############################################################################
   fi
-  # if xeggex
+  # if xeggex order
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
     # CreateOrder limit ########################################################
     PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$DUMP_LISTING_BALANCE" "false")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
