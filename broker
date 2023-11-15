@@ -1211,10 +1211,11 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
     ############################################################################
 
-    function install_config_strategy {
-      # install new strategy.robot_id
-      mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".config
-      mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".strategy
+    function setup_strategy {
+      # copy configuration and strategy
+      cp "${HOME_DIR:?}"/leeloo/include/strategies/"$INSTALL_CONFIG" "${LOG_DIR:?}"/stgc.tmp &>/dev/null
+      cp "${HOME_DIR:?}"/leeloo/include/strategies/"$INSTALL_STRATEGY" "${LOG_DIR:?}"/stgt.tmp &>/dev/null
+
     }
 
     ############################################################################
@@ -1228,9 +1229,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     ############################################################################
 
     function install_strategy() {
-      # copy configuration and strategy
-      cp "${HOME_DIR:?}"/leeloo/include/strategies/"$INSTALL_CONFIG" "${LOG_DIR:?}"/stgc.tmp &>/dev/null
-      cp "${HOME_DIR:?}"/leeloo/include/strategies/"$INSTALL_STRATEGY" "${LOG_DIR:?}"/stgt.tmp &>/dev/null
 
       # edit configuration
       nano "${LOG_DIR:?}"/stgc.tmp
@@ -1257,7 +1255,10 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
         # enter strategy name
         enter_strategy_name
-        install_config_strategy
+
+        # install new strategy.robot_id
+        mv "${LOG_DIR:?}"/stgc.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".config
+        mv "${LOG_DIR:?}"/stgt.tmp "${SYS_DIR:?}"/robot/"$INSTALL_ROBOT_CONFIG".strategy
 
         # if zero
         if [[ -z "$STRATEGY_NAME" ]] &>/dev/null; then
@@ -1266,7 +1267,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
         # output
         RESULT="$INSTALL_ROBOT_CONFIG strategy installed!
-$(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
+$(ls -lSah "${SYS_DIR:?}"/robot/"$STRATEGY_NAME"* 2>/dev/null | column -t)"
         # display output
         display_result 2>/dev/null
         remove_temp
@@ -1313,6 +1314,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|TYPE|BST_COOLDOWN|BST_TAKE_PROFIT|LISTING_TRIGGER|REFERENCE_TRIGGER" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | grep -v "(" | xargs | tr -d ' ')"
 
         # install strategy
+        setup_strategy
         install_strategy
 
         ;;
@@ -1327,6 +1329,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|EMA_SHORT|EMA_LONG|ROGUE_PROFIT" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | grep -v "(" | xargs | tr -d ' ')"
 
         # install strategy
+        setup_strategy
         install_strategy
 
         ;;
@@ -1341,6 +1344,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|RSI_VALUE|RSI_OVERBOUGHT|RSI_OVERSOLD|RSI_COOLDOWN|RSI_MAX_DAY" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | grep -v "(" | xargs | tr -d ' ')"
 
         # install strategy
+        setup_strategy
         install_strategy
 
         ;;
@@ -1355,6 +1359,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|LZN_LAMBDA|LZN_BUY_THRESHOLD|LZN_SELL_THRESHOLD" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | grep -v "(" | xargs | tr -d ' ')"
 
         # install strategy
+        setup_strategy
         install_strategy
 
         ;;
@@ -1369,6 +1374,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | grep -v "(" | xargs | tr -d ' ')"
 
         # install strategy
+        setup_strategy
         install_strategy
 
         ;;
@@ -1383,6 +1389,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|MIN_DIP_PERCENTAGE|MIN_SPREAD_PERCENTAGE|DIP_MARKETS|DIP_MAX_ORDERS" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".()' | grep -v "(" | xargs | tr -d ' ')"
 
         # install strategy
+        setup_strategy
         install_strategy
 
         ;;
@@ -1397,6 +1404,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot* 2>/dev/null | column -t)"
         INSTALL_ROBOT_CONFIG="$STRATEGY_NAME$(egrep "EXCHANGE_API|MARKET_LIMIT|REFERENCE_STATUS|LISTING_CURRENCY|REFERENCE_CURRENCY|LISTING_ALLOCATED|REFERENCE_ALLOCATED|TYPE|CST_COOLDOWN|LISTING_TRIGGER|REFERENCE_TRIGGER" "${LOG_DIR:?}"/stgc.tmp | awk -F= '{ print $2 }' | awk '{ print $1 }' | tr -d '".' | grep -v "(" | xargs | tr -d ' ')"
 
         # install strategy
+        setup_strategy
         install_strategy
 
         ;;
