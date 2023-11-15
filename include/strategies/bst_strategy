@@ -226,6 +226,10 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] 2>>"${LOG_ERROR:?}"; then
   # calculate percentage
   BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+  if [[ -z "$BST_DIFF_PERCENTAGE" ]] &>/dev/null; then
+    BST_DIFF_PERCENTAGE="0"
+  fi
+
   # bst spread without decimal (n%)
   BST_SPREAD="$(echo "$BST_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')"
   # profit without decimal (n%)
