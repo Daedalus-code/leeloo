@@ -28,8 +28,8 @@ log_date
 ################################################################################
 
 # report active bot
-if [[ ! "$(grep -c "SXC" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)" -gt "0" ]] &>/dev/null; then
-  if [[ "$(echo "$(ls -l "${SYS_DIR:?}"/robot/)" | egrep -c "SXC.*.strategy")" -gt "0" ]] &>/dev/null; then
+if [[ ! "$(grep -c "SXC" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(echo "$(ls -l "${SYS_DIR:?}"/robot/)" | egrep -c "SXC.*.strategy" || true)" -gt "0" ]] &>/dev/null; then
     echo "SXC Running bots @ $(date | xargs)" >>"${LOG_DIR:?}"/leeloo/robots
   fi
 fi
@@ -77,7 +77,7 @@ function delisted() {
   DELISTED_FILE="${SYS_DIR:?}/delisted_southxchange"
   PRICES_COPY_FILE="${PRICES_FILE}.copy"
 
-  if [[ "$(egrep -c "[0-9]+|[A-Z]+" "$DELISTED_FILE")" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[0-9]+|[A-Z]+" "$DELISTED_FILE" || true)" -gt "0" ]] &>/dev/null; then
 
     # make a copy of the prices file
     cp "$PRICES_FILE" "$PRICES_COPY_FILE" &>/dev/null
@@ -241,7 +241,7 @@ function reference_allocated() {
 ################################################################################
 
 function last_tx() {
-  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid || true)" -eq "0" ]] &>/dev/null; then
     echo "null" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
   # last tx
@@ -501,26 +501,26 @@ function open_positions() {
   ##############################################################################
 
   # make sure prices, balances exist
-  if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -gt "0" ]] &>/dev/null; then
-    if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
 
       # listing price null
-      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
         echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
       fi
       # listing cost null
-      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
         echo "$LISTING_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null
       fi
 
       ##########################################################################
 
       # reference price null
-      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
         echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
       fi
       # reference cost null
-      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(egrep -c "[0-9]+.[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
         echo "$REFERENCE_AVAILABLE_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_cost 2>/dev/null
       fi
     fi
@@ -571,8 +571,8 @@ function open_positions() {
   ##############################################################################
 
   # make sure prices, balances exist
-  if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -gt "0" ]] &>/dev/null; then
-    if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(egrep -c "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
 
       # is this an open position?
       if [[ "$(echo "$LISTING_OPEN_AMOUNT" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
