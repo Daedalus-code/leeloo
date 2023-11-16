@@ -1136,16 +1136,28 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     else
       ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
       MAX_PROGRESS="100"
-      ORDERS_AGE_PERCENTAGE=$((ORDERS_AGE * MAX_PROGRESS / ORDERS_AGE_LIMIT))
-      if [ $ORDERS_AGE_PERCENTAGE -gt $MAX_PROGRESS ]; then
-        ORDERS_AGE_PERCENTAGE=$MAX_PROGRESS
-      fi
 
-      RESULT="Fetching history from ${ROBOT_COUNT:?} bots.. ($ORDERS_AGE/$ORDERS_AGE_LIMIT)"
       display_result() {
-        dialog --title "Please wait" \
-          --no-collapse \
-          --gauge "$RESULT" 5 "$ORDERS_AGE_PERCENTAGE"
+        while true; do
+          ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
+          ORDERS_AGE_PERCENTAGE=$((ORDERS_AGE * MAX_PROGRESS / ORDERS_AGE_LIMIT))
+
+          if [ $ORDERS_AGE_PERCENTAGE -gt $MAX_PROGRESS ]; then
+            ORDERS_AGE_PERCENTAGE=$MAX_PROGRESS
+          fi
+
+          RESULT="Fetching history from ${ROBOT_COUNT:?} bots.. ($ORDERS_AGE/$ORDERS_AGE_LIMIT)"
+
+          dialog --title "Please wait" \
+            --no-collapse \
+            --gauge "$RESULT" 7 "$ORDERS_AGE_PERCENTAGE" 30 # adjust the width value (last argument)
+
+          sleep 1
+
+          if [ "$ORDERS_AGE" -ge "$ORDERS_AGE_LIMIT" ]; then
+            break
+          fi
+        done
       }
       display_result 2>/dev/null
     fi
