@@ -233,12 +233,6 @@ function reference_allocated() {
 ################################################################################
 
 function last_tx() {
-  # xeggex order id format
-  PLACE_ORDER_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
-  if [[ "$(echo "$PLACE_ORDER_ID" | wc -l)" -gt "0" ]] &>/dev/null; then
-    echo "$PLACE_ORDER_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-  fi
-
   # get txid age (seconds)
   TXID_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -258,6 +252,11 @@ function last_tx() {
 ################################################################################
 
 function txid_null() {
+  # xeggex order id format
+  PLACE_ORDER_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
+  if [[ "$(echo "$PLACE_ORDER_ID" | wc -l)" -gt "0" ]] &>/dev/null; then
+    echo "$PLACE_ORDER_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  fi
   # if words is found
   if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | wc -w)" -gt "1" ]] &>/dev/null; then
     # output words
