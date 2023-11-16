@@ -252,11 +252,6 @@ function last_tx() {
 ################################################################################
 
 function txid_null() {
-  # xeggex order id format
-  PLACE_ORDER_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
-  if [[ "$(echo "$PLACE_ORDER_ID" | wc -l)" -gt "0" ]] &>/dev/null; then
-    echo "$PLACE_ORDER_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-  fi
   # if several words is found
   if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | wc -w)" -gt "1" ]] &>/dev/null; then
     # output words
@@ -267,6 +262,11 @@ function txid_null() {
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '!a[$3]++' | tail -10 | egrep -v "Error|Unavailable|text/html|null|DOCTYPE")" | sed -r '/^\s*$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
     # remove empty lines
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | sed -r '/^\s*$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  fi
+  # xeggex order id format
+  PLACE_ORDER_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
+  if [[ "$(echo "$PLACE_ORDER_ID" | wc -l)" -gt "0" ]] &>/dev/null; then
+    echo "$PLACE_ORDER_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
 }
 
