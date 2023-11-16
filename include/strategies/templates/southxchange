@@ -567,7 +567,7 @@ function open_positions() {
       # is this an open position?
       if [[ "$(echo "$LISTING_OPEN_AMOUNT" | awk -F. '{ print $2 }' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
         # currency amount cost result age
-        echo "$STRATEGY_TYPE $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
+        echo "$EXCHANGE_API $STRATEGY_TYPE $LISTING_OPEN_CURRENCY $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE" >>"${SYS_DIR:?}"/robot/pool 2>/dev/null
         echo "$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/pool 2>/dev/null
       else
         rm "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".* &>/dev/null
