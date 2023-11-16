@@ -260,8 +260,8 @@ function txid_null() {
     echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   fi
 
-  # remove duplicates, keep n lines, remove html error data, remove empty lines
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '!a[$3]++' | tail -10 | sed -r '/^\s*$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  # keep n lines, remove empty lines, remove duplicates
+  echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | sed -r '/^\s*$/d' | awk '!a[$3]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
 
   # remove possible double quotes
   if [[ "$(grep '"' -c "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
