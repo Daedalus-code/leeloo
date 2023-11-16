@@ -257,14 +257,10 @@ function txid_null() {
   if [[ "$(echo "$PLACE_ORDER_ID" | wc -l)" -gt "0" ]] &>/dev/null; then
     echo "$PLACE_ORDER_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
-  # if words is found
+  # if several words is found
   if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | wc -w)" -gt "1" ]] &>/dev/null; then
     # output words
-    DIP_NULL_TXID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')"
-    # if zero
-    if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
-      DIP_NULL_TXID="null"
-    fi
+    DIP_NULL_TXID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
     # track non txid
     echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
     # keep n lines, remove html error data
