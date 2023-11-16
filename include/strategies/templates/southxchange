@@ -236,12 +236,6 @@ function last_tx() {
   if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid || true)" -eq "0" ]] &>/dev/null; then
     echo "null" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
-  # last tx
-  TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
-  if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
-    # last tx (default)
-    TX_ID_LAST="null"
-  fi
   # remove possible double quotes
   if [[ "$(grep '"' -c "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
