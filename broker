@@ -1052,7 +1052,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     # if fetching history
     if [[ ! "$ORDERS_AGE" -lt "$ORDERS_AGE_LIMIT" ]] &>/dev/null; then
 
-      ############################################################################
+      ##########################################################################
 
       key_secret_set
 
@@ -1062,7 +1062,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '!a[$0]++')"
         ORDERS_COUNT="$(echo "$ORDERS_TAC" | awk '!a[$0]++' | sed -r '/^\s*$/d' | wc -l)"
 
-        WIDTH="$(echo "$(echo "$ORDERS_TAC" | head -100 | column -t | wc -L)+11" | bc 2>/dev/null)"
+        WIDTH="$(echo "$(echo "$ORDERS_TAC" | head -100 | column -t | wc -L)+12" | bc 2>/dev/null)"
         LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+7" | bc 2>/dev/null)"
         RESULT="$(echo "$ORDERS_TAC" 2>/dev/null | column -t | head -100)"
 
@@ -1139,7 +1139,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       display_result() {
         dialog --title "Please wait" \
           --no-collapse \
-          --msgbox "$RESULT" 5 "$(echo "42+$(echo "$ROBOT_COUNT" | wc -L)" | bc 2>/dev/null)"
+          --gauge "$RESULT" 5 "$(echo "42+$(echo "$ROBOT_COUNT" | wc -L)" | bc 2>/dev/null)"
       }
       display_result 2>/dev/null
     fi
