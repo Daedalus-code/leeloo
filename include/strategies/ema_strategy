@@ -219,7 +219,7 @@ function rogue_buying() {
     # if southxchange order
     if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
       # place buy market order #################################################
-      placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
       ##########################################################################
       # vanish text
       rogue_vanish
@@ -227,7 +227,7 @@ function rogue_buying() {
     # if xeggex order
     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
       # CreateOrder market #####################################################
-      CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$REFERENCE_AMOUNT" "" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$REFERENCE_AMOUNT" "" "true")"
       ##########################################################################
       # vanish text
       rogue_vanish
@@ -235,6 +235,8 @@ function rogue_buying() {
 
     ############################################################################
     ############################################################################
+
+    tx_id
 
     # if limit order
   elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
@@ -245,7 +247,7 @@ function rogue_buying() {
     # if southxchange order
     if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
       # place buy limit order ##################################################
-      placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
       ##########################################################################
       # vanish text
       rogue_vanish
@@ -253,11 +255,14 @@ function rogue_buying() {
     # if xeggex order
     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
       # CreateOrder limit ######################################################
-      CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "true")"
       ##########################################################################
       # vanish text
       rogue_vanish
     fi
+
+    tx_id
+
     ############################################################################
     ############################################################################
   fi
@@ -278,7 +283,7 @@ function rogue_selling() {
     # southxchange
     if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
       # place sell market order ################################################
-      placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
       ##########################################################################
       # vanish text
       rogue_vanish
@@ -286,11 +291,13 @@ function rogue_selling() {
     # if xeggex
     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
       # CreateOrder market #####################################################
-      CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AMOUNT" "" "false" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AMOUNT" "" "false")"
       ##########################################################################
       # vanish text
       rogue_vanish
     fi
+
+    tx_id
 
     ############################################################################
     ############################################################################
@@ -304,7 +311,7 @@ function rogue_selling() {
     # if southxchange order
     if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
       # place sell limit order #################################################
-      placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$LISTING_AMOUNT" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$LISTING_AMOUNT" "true")"
       ##########################################################################
       # vanish text
       rogue_vanish
@@ -312,11 +319,14 @@ function rogue_selling() {
     # if xeggex order
     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
       # CreateOrder limit ######################################################
-      CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_AMOUNT" "$REFERENCE_PRICE" "true" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+      PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_AMOUNT" "$REFERENCE_PRICE" "true")"
       ##########################################################################
       # vanish text
       rogue_vanish
     fi
+
+    tx_id
+
     ############################################################################
     ############################################################################
   fi
