@@ -258,11 +258,6 @@ function last_tx() {
   TXID_AGE=$(printf '%dh:%dm:%ds\n' $(("$TXID_AGE_SECONDS/3600")) $(("$TXID_AGE_SECONDS%3600/60")) $(("$TXID_AGE_SECONDS%60")))
   # calculate txid days
   TXID_AGE_DAYS=$(echo "$TXID_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
-
-  # if zero data
-  if [[ "$(egrep -c "[A-Za-z0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid || true)" -eq "0" ]] &>/dev/null; then
-    echo "null" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-  fi
 }
 
 ################################################################################
