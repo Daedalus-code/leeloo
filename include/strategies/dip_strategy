@@ -74,6 +74,28 @@ delisted  # delisted markets
 
 ################################################################################
 
+# latest and oldest dip order data
+function dip_order_data {
+  # order data
+  DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | tail -1)"
+  DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | head -1)"
+  # order id
+  DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
+  DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
+
+  # order type
+  DIP_LATEST_ORDER_TYPE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
+  DIP_OLDEST_ORDER_TYPE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
+  # order listing
+  DIP_LATEST_ORDER_LISTING="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
+  DIP_OLDEST_ORDER_LISTING="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
+  # order reference
+  DIP_LATEST_ORDER_REFERENCE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
+  DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
+}
+
+################################################################################
+
 # amount to buy sell
 function amount_to_buy_sell() {
 
@@ -887,13 +909,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # max active orders, set by configuration
     if [[ "$DIP_ORDERS_FILE_COUNT" -gt "$DIP_MAX_ORDERS" ]] &>/dev/null; then
 
-      # order data
-      DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | tail -1)"
-      DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | head -1)"
-      # order id
-      DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
-      DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
-
       log_date
 
       # log max orders output
@@ -1127,22 +1142,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
-  # order data
-  DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | tail -1)"
-  DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | head -1)"
-  # order id
-  DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
-  DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
+  dip_order_data
 
-  # order type
-  DIP_LATEST_ORDER_TYPE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
-  DIP_OLDEST_ORDER_TYPE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
-  # order listing
-  DIP_LATEST_ORDER_LISTING="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
-  DIP_OLDEST_ORDER_LISTING="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $6 }')"
-  # order reference
-  DIP_LATEST_ORDER_REFERENCE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
-  DIP_OLDEST_ORDER_REFERENCE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $7 }')"
   # order age (bought,seconds)
   DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
