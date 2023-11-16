@@ -959,12 +959,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             # CreateOrder market ###############################################
             PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$DIP_TARGET_BID" "true")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
             ####################################################################
+            sleep 1
           fi
 
           ######################################################################
           ######################################################################
 
-          sleep 1
           # track non txid
           txid_null
 
@@ -1533,12 +1533,12 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           # CreateOrder limit ##################################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
           ######################################################################
+          sleep 1
         fi
 
         ########################################################################
         ########################################################################
 
-        sleep 1
         # track non txid
         txid_null
 
@@ -2032,7 +2032,6 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
   # keep n lines
   echo "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump 2>/dev/null | tr -d '"'): $DIP_DUMP_LISTING/$REFERENCE_CURRENCY -> Sold $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
-  sleep 1
 fi
 
 ################################################################################

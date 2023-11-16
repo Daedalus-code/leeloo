@@ -307,6 +307,8 @@ function cost_price() {
 
 function tx_id {
   echo "$(echo "$PLACE_ORDER" | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  PLACE_ORDER_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
+  echo "$PLACE_ORDER_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
 
 ################################################################################
