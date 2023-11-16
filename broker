@@ -1058,17 +1058,11 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
       if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-        display_result() {
-          dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT Profit: High ${PROFIT_HIGH:?}% Low ${PROFIT_LOW:?}% Average ${PROFIT_AVERAGE:?}%" \
-            --no-collapse \
-            --msgbox "$RESULT" "$LENGTH" "$WIDTH"
-        }
-
         # output orders
         ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '!a[$0]++')"
         ORDERS_COUNT="$(echo "$ORDERS_TAC" | awk '!a[$0]++' | sed -r '/^\s*$/d' | wc -l)"
 
-        WIDTH="$(echo "$(echo "$ORDERS_TAC" | head -100 | column -t | wc -L)+10" | bc 2>/dev/null)"
+        WIDTH="$(echo "$(echo "$ORDERS_TAC" | head -100 | column -t | wc -L)+11" | bc 2>/dev/null)"
         LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+7" | bc 2>/dev/null)"
         RESULT="$(echo "$ORDERS_TAC" 2>/dev/null | column -t | head -100)"
 
@@ -1118,6 +1112,12 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
           WIDTH="77"
         fi
+
+        display_result() {
+          dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT Profit: High ${PROFIT_HIGH:?}% Low ${PROFIT_LOW:?}% Average ${PROFIT_AVERAGE:?}%" \
+            --no-collapse \
+            --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+        }
 
         display_result 2>/dev/null
 
