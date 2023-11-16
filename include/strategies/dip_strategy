@@ -337,8 +337,22 @@ function remove_old_dca() {
       if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
         # if listing, reference already exist as dca order
         if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
-          # remove old dca order
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+
+          ######################################################################
+          ######################################################################
+
+          # if southxchange
+          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          fi
+          # if xeggex
+          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          fi
+
+          ######################################################################
+          ######################################################################
+
         fi
       fi
     fi
@@ -356,8 +370,24 @@ function cancel_DCA() {
       if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
         # if no active exist
         if [[ "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "0" ]] &>/dev/null; then
-          # remove obsolete dca
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+
+          ######################################################################
+          ######################################################################
+
+          # if southxchange
+          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+            # remove obsolete dca
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          fi
+          # if xeggex
+          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+            # remove obsolete dca
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}")" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          fi
+
+          ######################################################################
+          ######################################################################
+
           # if no_dca exist
           if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -eq "1" ]] &>/dev/null; then
             # remove old no_dca
@@ -375,8 +405,23 @@ function clean_DCA() {
 
   # remove market duplicates
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk '!a[$1]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
-  # remove listing duplicates, column
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk -F/ '!a[$1]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+
+  ##############################################################################
+  ##############################################################################
+
+  # if southxchange
+  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+    # remove listing duplicates, column
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk -F/ '!a[$1]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+  fi
+  # if xeggex
+  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+    # remove listing duplicates, column
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | awk -F_ '!a[$1]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+  fi
+
+  ##############################################################################
+  ##############################################################################
 
   # if active has data
   if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
@@ -786,8 +831,23 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
               # remove old dca order
               remove_old_dca
 
-              # create/update dca list
-              echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+              ##################################################################
+              ##################################################################
+
+              # if southxchange
+              if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+                # create/update dca list
+                echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+              fi
+              # if xeggex
+              if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+                # create/update dca list
+                echo "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?} Deposited: $LISTING_BALANCE_DEPOSITED $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+              fi
+
+              ##################################################################
+              ##################################################################
+
             fi
           fi
         else
@@ -824,10 +884,22 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # order id found
         if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
 
+          ######################################################################
+          ######################################################################
+
+          # if southxchange
           if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
             # cancel old order (buy)
             cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
           fi
+          # if xeggex
+          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+            # cancel old order (buy)
+            cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+          fi
+
+          ######################################################################
+          ######################################################################
 
           sleep 1
 
