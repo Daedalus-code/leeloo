@@ -233,8 +233,10 @@ function reference_allocated() {
 ################################################################################
 
 function last_tx() {
-  # default
-  TX_ID_LAST="0"
+  # if not found
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  fi
 
   # last txid
   TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
