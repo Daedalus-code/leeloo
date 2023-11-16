@@ -517,7 +517,7 @@ fi
 ################################################################################
 
 # create specific dip_markets list
-echo "$(echo "$CAT_PRICES_DIP_FILE" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/$EXCHANGE_DIR_NAME/prices.$DIP_MARKETS" 2>/dev/null
+echo "$(echo "$CAT_PRICES_DIP_FILE" | egrep "/$DIP_MARKETS|_$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/$EXCHANGE_DIR_NAME/prices.$DIP_MARKETS" 2>/dev/null
 
 ################################################################################
 
@@ -538,7 +538,7 @@ if [[ -z "$CAT_MARKET_LIST_FILE" ]] &>/dev/null; then
   DIP_MARKET_L_FILE_COUNT="0"
 else
   # market.list target found
-  DIP_MARKET_L_FILE_COUNT="$(echo "$CAT_MARKET_LIST_FILE" | grep -c "/$DIP_MARKETS" || true)"
+  DIP_MARKET_L_FILE_COUNT="$(echo "$CAT_MARKET_LIST_FILE" | egrep -c "/$DIP_MARKETS|_$DIP_MARKETS" || true)"
 fi
 
 # if zero
@@ -549,7 +549,7 @@ else
 fi
 
 # specific prices count
-DIP_PRICES_FILE_COUNT="$(echo "$CAT_PRICES_DIP_FILE" | grep -c "/$DIP_MARKETS" || true)"
+DIP_PRICES_FILE_COUNT="$(echo "$CAT_PRICES_DIP_FILE" | egrep -c "/$DIP_MARKETS|_$DIP_MARKETS" || true)"
 
 # if zero
 if [[ -z "$DIP_PRICES_FILE_COUNT" || "$DIP_PRICES_FILE_COUNT" -eq "0" ]] &>/dev/null; then
