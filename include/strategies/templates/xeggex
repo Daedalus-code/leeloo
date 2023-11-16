@@ -260,10 +260,8 @@ function txid_null() {
     echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   fi
 
-  # remove duplicates, keep n lines, remove html error data
+  # remove duplicates, keep n lines, remove html error data, remove empty lines
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '!a[$3]++' | tail -10 | egrep -v "Error|Unavailable|text/html|null|DOCTYPE")" | sed -r '/^\s*$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-  # remove empty lines
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | sed -r '/^\s*$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
 
   # xeggex order id format
   PLACE_ORDER_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
