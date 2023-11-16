@@ -243,6 +243,10 @@ function last_tx() {
 
   # last txid
   TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+  # if zero
+  if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
+    TX_ID_LAST="N/A"
+  fi
   # txid age format
   TXID_AGE=$(printf '%dh:%dm:%ds\n' $(("$TXID_AGE_SECONDS/3600")) $(("$TXID_AGE_SECONDS%3600/60")) $(("$TXID_AGE_SECONDS%60")))
   # calculate txid days
