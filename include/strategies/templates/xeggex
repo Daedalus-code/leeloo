@@ -233,11 +233,6 @@ function reference_allocated() {
 ################################################################################
 
 function last_tx() {
-  # remove possible double quotes
-  if [[ "$(grep '"' -c "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-  fi
-
   # xeggex order id format
   PLACE_ORDER_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
   if [[ "$(echo "$PLACE_ORDER_ID" | wc -l)" -gt "0" ]] &>/dev/null; then
