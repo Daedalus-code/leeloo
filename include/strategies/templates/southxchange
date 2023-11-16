@@ -261,7 +261,7 @@ function txid_null() {
   fi
 
   # remove duplicates, keep n lines, remove html error data, remove empty lines
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '!a[$3]++' | tail -10 | egrep -v "Error|Unavailable|text/html|null|DOCTYPE")" | sed -r '/^\s*$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '!a[$3]++' | tail -10 | sed -r '/^\s*$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
 
   # remove possible double quotes
   if [[ "$(grep '"' -c "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid)" -gt "0" ]] &>/dev/null; then
