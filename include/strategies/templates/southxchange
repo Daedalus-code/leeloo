@@ -237,7 +237,7 @@ function last_tx() {
   TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 
   # if zero
-  if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
+  if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed -r '/^\s*$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
     TX_ID_LAST="0"
   fi
 
