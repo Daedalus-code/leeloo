@@ -262,12 +262,6 @@ function txid_null() {
 
   # keep n lines, remove empty lines, remove duplicates
   echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | sed -r '/^\s*$/d' | awk '!a[$3]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-
-  # xeggex order id format
-  PLACE_ORDER_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
-  if [[ "$(echo "$PLACE_ORDER_ID" | wc -l)" -gt "0" ]] &>/dev/null; then
-    echo "$PLACE_ORDER_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-  fi
 }
 
 ################################################################################
@@ -298,7 +292,7 @@ function cost_price() {
 ################################################################################
 
 function tx_id {
-  echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  echo "$(echo "$PLACE_ORDER" | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
 
 ################################################################################
