@@ -530,11 +530,22 @@ if [[ -z "$CAT_ORDERS_FILE" ]] &>/dev/null; then
 fi
 
 # market.list file output
-CAT_MARKET_LIST_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null)"
+CAT_MARKET_LIST_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | sed '/^$/d')"
 
 # if zero
 if [[ -z "$CAT_MARKET_LIST_FILE" ]] &>/dev/null; then
   CAT_MARKET_LIST_FILE="0"
+  DIP_MARKET_L_FILE_COUNT="0"
+else
+  # market.list target found
+  DIP_MARKET_L_FILE_COUNT="$(echo "$CAT_MARKET_LIST_FILE" | grep -c "/$DIP_MARKETS" || true)"
+fi
+
+# if zero
+if [[ -z "$DIP_MARKET_L_FILE_COUNT" || "$DIP_MARKET_L_FILE_COUNT" -eq "0" ]] &>/dev/null; then
+  DIP_MARKET_L_FILE_COUNT="0"
+else
+  DIP_MARKET_L_FILE_COUNT="+$DIP_MARKET_L_FILE_COUNT"
 fi
 
 # specific prices count
@@ -545,16 +556,6 @@ if [[ -z "$DIP_PRICES_FILE_COUNT" || "$DIP_PRICES_FILE_COUNT" -eq "0" ]] &>/dev/
   DIP_PRICES_FILE_COUNT="0"
 else
   DIP_PRICES_FILE_COUNT="+$DIP_PRICES_FILE_COUNT"
-fi
-
-# market.list target found
-DIP_MARKET_L_FILE_COUNT="$(echo "$CAT_MARKET_LIST_FILE" | grep -c "/$DIP_MARKETS" || true)"
-
-# if zero
-if [[ -z "$DIP_MARKET_L_FILE_COUNT" || "$DIP_MARKET_L_FILE_COUNT" -eq "0" ]] &>/dev/null; then
-  DIP_MARKET_L_FILE_COUNT="0"
-else
-  DIP_MARKET_L_FILE_COUNT="+$DIP_MARKET_L_FILE_COUNT"
 fi
 
 # orders found
