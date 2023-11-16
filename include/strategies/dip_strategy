@@ -159,6 +159,19 @@ function amount_to_buy_sell() {
 
 ################################################################################
 
+# if not found
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
+  # create active file
+  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+fi
+# if not found
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target ]] &>/dev/null; then
+  # create target file
+  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+fi
+
+################################################################################
+
 function cat_active_target() {
   # cat active data
   CAT_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
@@ -251,14 +264,6 @@ function target_data() {
 ################################################################################
 
 txid_null
-
-################################################################################
-
-# if not found
-if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active ]] &>/dev/null; then
-  # create active file
-  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-fi
 
 ################################################################################
 function bought_sold_age() {
