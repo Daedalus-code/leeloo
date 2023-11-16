@@ -523,6 +523,12 @@ echo "$(echo "$CAT_PRICES_DIP_FILE" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG
 
 # cat order data
 CAT_ORDERS_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
+
+# if zero
+if [[ -z "$CAT_ORDERS_FILE" ]] &>/dev/null; then
+  CAT_ORDERS_FILE="0"
+fi
+
 # market.list file output
 CAT_MARKET_LIST_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null)"
 
