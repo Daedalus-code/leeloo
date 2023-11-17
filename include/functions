@@ -355,8 +355,8 @@ function exchange_balance() {
   $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
   fi
 
-  # asset count
-  EXCHANGE_ASSETS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | wc -l)"
+  # asset count, disregard zeros
+  EXCHANGE_ASSETS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)"
 
   ##############################################################################
 
