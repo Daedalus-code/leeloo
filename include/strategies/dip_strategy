@@ -1027,8 +1027,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           fi
           # if xeggex order
           if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-            # xeggex decimal
-            DIP_BUY_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_REFERENCE" | awk '{ printf "%.2f\n", $1 }')"
             # CreateOrder market ###############################################
             PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$DIP_BUY_AMOUNT_LISTING" "$DIP_TARGET_BID" "false")"
             ####################################################################
@@ -1617,8 +1615,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         fi
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-          # xeggex decimal
-          DIP_BUY_AMOUNT_REFERENCE="$(echo "$LISTING_BALANCE" | awk '{ printf "%.2f\n", $1 }')"
           # CreateOrder limit ##################################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
           ######################################################################
