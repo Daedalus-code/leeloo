@@ -1102,15 +1102,15 @@ fi
 
 ################################################################################
 
+# create strategy directory
+if [[ ! -d "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" ]] &>/dev/null; then
+  mkdir "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" &>/dev/null
+fi
+
+################################################################################
+
 # if active file has any orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
-
-  # create strategy directory
-  if [[ ! -d "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" ]] &>/dev/null; then
-    mkdir "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY" &>/dev/null
-  fi
-
-  ##############################################################################
 
   # active market pairs
   ACTIVE_MARKET_PAIRS="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n | awk '!a[$0]++' | xargs)"
