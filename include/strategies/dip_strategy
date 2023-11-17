@@ -76,8 +76,8 @@ delisted # delisted markets
 # latest and oldest dip order data
 function dip_order_data {
   # order data
-  DIP_OLDEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | tail -1)"
-  DIP_LATEST_ORDER_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | head -1)"
+  DIP_OLDEST_ORDER_DATA="$(echo "$CAT_ORDERS_FILE" | tail -1)"
+  DIP_LATEST_ORDER_DATA="$(echo "$CAT_ORDERS_FILE" | head -1)"
   # order id
   DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
   DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
@@ -579,8 +579,8 @@ echo "$(echo "$CAT_PRICES_DIP_FILE" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG
 
 ################################################################################
 
-# cat order data
-CAT_ORDERS_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
+# cat order data, remove / between symbols
+CAT_ORDERS_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | sed 's/\// /g')"
 
 # if zero
 if [[ -z "$CAT_ORDERS_FILE" ]] &>/dev/null; then
