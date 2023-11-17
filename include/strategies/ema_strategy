@@ -198,15 +198,6 @@ function rogue_stealth() {
 
 ################################################################################
 
-function rogue_vanish() {
-  echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Rogue used Vanishing Powder!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-  sleep 1
-  # vanish the vanishing line
-  echo "$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -v "Vanishing")" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-}
-
-################################################################################
-
 function rogue_buying() {
   # buy output
   echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
@@ -221,16 +212,12 @@ function rogue_buying() {
       # place buy market order #################################################
       PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
       ##########################################################################
-      # vanish text
-      rogue_vanish
     fi
     # if xeggex order
     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
       # CreateOrder market #####################################################
       PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$REFERENCE_AMOUNT" "" "true")"
       ##########################################################################
-      # vanish text
-      rogue_vanish
     fi
 
     ############################################################################
@@ -247,16 +234,12 @@ function rogue_buying() {
       # place buy limit order ##################################################
       PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
       ##########################################################################
-      # vanish text
-      rogue_vanish
     fi
     # if xeggex order
     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
       # CreateOrder limit ######################################################
       PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "true")"
       ##########################################################################
-      # vanish text
-      rogue_vanish
     fi
     ############################################################################
     ############################################################################
@@ -280,16 +263,12 @@ function rogue_selling() {
       # place sell market order ################################################
       PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
       ##########################################################################
-      # vanish text
-      rogue_vanish
     fi
     # if xeggex
     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
       # CreateOrder market #####################################################
       PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AMOUNT" "" "false")"
       ##########################################################################
-      # vanish text
-      rogue_vanish
     fi
     ############################################################################
     ############################################################################
@@ -305,16 +284,12 @@ function rogue_selling() {
       # place sell limit order #################################################
       PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$LISTING_AMOUNT" "true")"
       ##########################################################################
-      # vanish text
-      rogue_vanish
     fi
     # if xeggex order
     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
       # CreateOrder limit ######################################################
       PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_AMOUNT" "$REFERENCE_PRICE" "true")"
       ##########################################################################
-      # vanish text
-      rogue_vanish
     fi
     ############################################################################
     ############################################################################
