@@ -1227,7 +1227,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # total active profit
-  DIP_ACTIVE_FILE_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+  DIP_ACTIVE_FILE_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | awk '{ print $5 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
 
   ##############################################################################
 
@@ -1243,7 +1243,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # lowest active profit (spread)
-  DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $5 }' | tr -d '%' | sort -n | head -1)"
+  DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | awk '{ print $5 }' | tr -d '%' | sort -n | head -1)"
   # lowest profit (spread) data
   DIP_LOW_ACTIVE_PROFIT="$(grep -w -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null || true)"
   # lowest profit (spread) market
@@ -1327,7 +1327,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # total order time (hours)
-  DIP_ACTIVE_FILE_TOTAL_TIME="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | awk '{ print $NF }' | awk -Fh '{ print $1 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.0f\n", $1 }')"
+  DIP_ACTIVE_FILE_TOTAL_TIME="$(echo "$CAT_POOL_FILE" | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | awk '{ print $NF }' | awk -Fh '{ print $1 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.0f\n", $1 }')"
   # calculate average order age
   DIP_ACTIVE_FILE_AVERAGE_TIME="$(echo "$DIP_ACTIVE_FILE_TOTAL_TIME/$DIP_ACTIVE_FILE_PROFIT" | bc -l 2>/dev/null)"
   # calculate average order age into seconds
