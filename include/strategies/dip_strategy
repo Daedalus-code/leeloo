@@ -81,7 +81,6 @@ function dip_order_data {
   # order id
   DIP_LATEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
   DIP_OLDEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
-
   # order type
   DIP_LATEST_ORDER_TYPE="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
   DIP_OLDEST_ORDER_TYPE="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $2 }')"
@@ -1138,6 +1137,15 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # calculate sell count percentage
   DIP_ORDER_PERCENTAGE_SELL="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_ORDER_SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+  # if zero
+  if [[ -z "$DIP_ORDER_PERCENTAGE_BUY" ]] &>/dev/null; then
+    DIP_ORDER_PERCENTAGE_BUY="0.00"
+  fi
+  # if zero
+  if [[ -z "$DIP_ORDER_PERCENTAGE_SELL" ]] &>/dev/null; then
+    DIP_ORDER_PERCENTAGE_SELL="0.00"
+  fi
+
   ##############################################################################
 
   # total active dip
@@ -1147,6 +1155,11 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # calculate average dip
   DIP_ACTIVE_FILE_AVERAGE_DIP="$(echo "$DIP_ACTIVE_FILE_DIP/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  # if zero
+  if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_DIP" ]] &>/dev/null; then
+    DIP_ACTIVE_FILE_AVERAGE_DIP="0.00"
+  fi
 
   ##############################################################################
 
