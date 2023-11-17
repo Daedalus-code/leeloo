@@ -92,7 +92,9 @@ function delisted() {
 
     # loop through the delisted markets and remove them from the prices copy file
     for MARKET in "${DELISTED_MARKETS[@]}"; do
-      sed -i "/^${MARKET//\//\\/}/d" "$PRICES_COPY_FILE"
+      # replace slashes with underscores to match both formats
+      MARKET_UNDERSCORE="${MARKET//\//_}"
+      sed -i "/^${MARKET_UNDERSCORE//\//\\/}/d" "$PRICES_COPY_FILE"
     done
 
     # remove duplicates, sort
