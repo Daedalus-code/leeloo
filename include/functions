@@ -355,6 +355,9 @@ function exchange_balance() {
   $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
   fi
 
+  # asset count
+  EXCHANGE_ASSETS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | wc -l)"
+
   ##############################################################################
 
   if [[ "$EXCHANGE_BALANCE" == "stakecube" ]] &>/dev/null; then
@@ -374,7 +377,7 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
     fi
 
     display_result() {
-      dialog --title "$FILE_TIME :: $EXCHANGE_API Account Balance ($SCE_NONCE_COUNTER)" \
+      dialog --title "$FILE_TIME :: +$EXCHANGE_ASSETS :: $EXCHANGE_API Account Balance ($SCE_NONCE_COUNTER)" \
         --no-collapse \
         --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
     }
@@ -412,7 +415,7 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
     fi
 
     display_result() {
-      dialog --title "$FILE_TIME :: $EXCHANGE_API Account Balance" \
+      dialog --title "$FILE_TIME :: +$EXCHANGE_ASSETS :: $EXCHANGE_API Account Balance" \
         --no-collapse \
         --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
     }
