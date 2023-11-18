@@ -797,7 +797,7 @@ function open_orders {
     ORDER_EXCHANGE="SouthXchange"
     # open orders function
     function result_orders {
-      listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t | sort -r >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
+      listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
     }
   fi
 
@@ -1111,7 +1111,7 @@ function open_orders {
     }
 
     RESULT="$ORDERS_FORMAT
-$(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null | sort -r 2>/dev/null)"
+$(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
     display_result 2>/dev/null
 
     ;;
