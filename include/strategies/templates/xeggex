@@ -74,40 +74,21 @@ function backup_orders() {
 
 function delisted() {
   # check if delisted_xeggex file exists, create it if not
-  if [[ ! -f "${SYS_DIR:?}"/delisted_xeggex ]] &>/dev/null; then
-    touch "${SYS_DIR:?}"/delisted_xeggex
+  if [[ ! -f "${SYS_DIR:?}/delisted_xeggex" ]] &>/dev/null; then
+    touch "${SYS_DIR:?}/delisted_xeggex"
   fi
 
   # define file paths
   PRICES_FILE="${LOG_DIR:?}/leeloo/xeggex/prices"
   DELISTED_FILE="${SYS_DIR:?}/delisted_xeggex"
-  PRICES_COPY_FILE="${PRICES_FILE}.copy"
 
   # check if there are delisted markets
-  if [[ "$(egrep -c "[0-9]+|[A-Z]+" "$DELISTED_FILE" || true)" -gt "0" ]] &>/dev/null; then
-    # make a copy of the prices file
-    cp "$PRICES_FILE" "$PRICES_COPY_FILE" &>/dev/null
-
-    # read the delisted markets from the file into an array
-    mapfile -t DELISTED_MARKETS <"$DELISTED_FILE"
-
-    # loop through the delisted markets and remove them from the prices copy file
-    for MARKET in "${DELISTED_MARKETS[@]}"; do
-      # replace slashes with underscores to match both formats
-      MARKET_UNDERSCORE="${MARKET//\//_}"
-
+  if [[ -s "$DELISTED_FILE" ]] &>/dev/null; then
+    # loop through the delisted markets and remove them from the prices file
+    while IFS= read -r MARKET; do
       # remove the market in both formats
-      sed -i "/^${MARKET_UNDERSCORE//\//\\/}/d" "$PRICES_COPY_FILE"
-      sed -i "/^${MARKET//\//\\/}/d" "$PRICES_COPY_FILE"
-    done
-
-    # remove duplicates, sort, and update the delisted file
-    sort -u "$DELISTED_FILE" -o "$DELISTED_FILE"
-
-    # use the updated file if there is any data
-    if [[ -s "$PRICES_COPY_FILE" ]] &>/dev/null; then
-      mv "$PRICES_COPY_FILE" "$PRICES_FILE"
-    fi
+      sed -i "/${MARKET//\//\\/}/d" "$PRICES_FILE"
+    done <"$DELISTED_FILE"
   fi
 }
 
