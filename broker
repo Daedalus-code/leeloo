@@ -1049,114 +1049,115 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       ORDERS_AGE_LIMIT="0"
     fi
 
-    # if fetching history
-    if [[ ! "$ORDERS_AGE" -lt "$ORDERS_AGE_LIMIT" ]] &>/dev/null; then
+    ############################################################################
 
-      ##########################################################################
+    key_secret_set
 
-      key_secret_set
+    if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
+      # if fetching history
+      if [[ "$ORDERS_AGE" -lt "$ORDERS_AGE_LIMIT" ]] &>/dev/null; then
 
-      if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
-
-        # output orders
-        ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '!a[$0]++')"
-        ORDERS_COUNT="$(echo "$ORDERS_TAC" | awk '!a[$0]++' | sed -r '/^\s*$/d' | wc -l)"
-
-        WIDTH="$(echo "$(echo "$ORDERS_TAC" | head -100 | column -t | wc -L)+12" | bc 2>/dev/null)"
-        LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+7" | bc 2>/dev/null)"
-        RESULT="$(echo "$ORDERS_TAC" 2>/dev/null | column -t | head -100)"
-
-        # sell count
-        SELL_COUNT="$(echo "$ORDERS_TAC" | grep -c "sell")"
-        if [[ -z "$SELL_COUNT" ]] &>/dev/null; then
-          SELL_COUNT="0"
-        fi
-        # buy count
-        BUY_COUNT="$(echo "$ORDERS_TAC" | grep -c "buy")"
-        if [[ -z "$BUY_COUNT" ]] &>/dev/null; then
-          BUY_COUNT="0"
-        fi
-        # profit high
-        PROFIT_HIGH="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | tail -1)"
-        if [[ -z "$PROFIT_HIGH" ]] &>/dev/null; then
-          PROFIT_HIGH="0"
-        fi
-        # profit low
-        PROFIT_LOW="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | head -1)"
-        if [[ -z "$PROFIT_LOW" ]] &>/dev/null; then
-          PROFIT_LOW="0"
-        fi
-        # profit sum
-        PROFIT_SUM="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | awk '{ SUM += $1} END { print SUM }')"
-        if [[ -z "$PROFIT_SUM" ]] &>/dev/null; then
-          PROFIT_SUM="0"
-        fi
-        # profit average
-        PROFIT_AVERAGE="$(echo "$PROFIT_SUM/$SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-        if [[ -z "$PROFIT_AVERAGE" ]] &>/dev/null; then
-          PROFIT_AVERAGE="0"
-        fi
-
-        if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
-          LOG_LENGTH="7"
-        fi
-
-        if [[ -z "$LENGTH" ]] &>/dev/null; then
-          LENGTH="7"
-        elif [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
-          LENGTH="$LOG_LENGTH"
-        fi
-
-        if [[ -z "$WIDTH" ]] &>/dev/null; then
-          WIDTH="77"
-        elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
-          WIDTH="77"
-        fi
+        ########################################################################
 
         display_result() {
-          dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT Profit: High ${PROFIT_HIGH:?}% Low ${PROFIT_LOW:?}% Average ${PROFIT_AVERAGE:?}%" \
-            --no-collapse \
-            --msgbox "$RESULT" "$LENGTH" "$WIDTH"
-        }
+          {
+            while true; do
+              ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
+              ORDERS_AGE_PERCENTAGE=$((ORDERS_AGE * 100 / ORDERS_AGE_LIMIT))
 
-        display_result 2>/dev/null
+              if [ "$ORDERS_AGE_PERCENTAGE" -ge 100 ]; then
+                break
+              fi
 
-        if [[ "$ORDERS_COUNT" -gt "0" ]] &>/dev/null; then
-          # keep history, delete history
-          if ! dialog --stdout --title "Keep history? +$ORDERS_COUNT" \
-            --backtitle "Keep history?" \
-            --yesno "Yes: Keep! No: Delete!" 5 30; then
-            truncate -s 0 "${SYS_DIR:?}"/robot/orders &>/dev/null
-            truncate -s 0 "${SYS_DIR:?}"/robot/*.orders &>/dev/null
-          fi
-        fi
-      else
-        no_key_no_secret
-      fi
-    else
-      display_result() {
-        {
-          while true; do
-            ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
-            ORDERS_AGE_PERCENTAGE=$((ORDERS_AGE * 100 / ORDERS_AGE_LIMIT))
-
-            if [ "$ORDERS_AGE_PERCENTAGE" -ge 100 ]; then
-              break
-            fi
+              echo "XXX"
+              echo "$ORDERS_AGE_PERCENTAGE"
+              echo "Compiling history from ${ROBOT_COUNT:?} robots.. ($ORDERS_AGE/$ORDERS_AGE_LIMIT)"
+              sleep 1
+            done
 
             echo "XXX"
-            echo "$ORDERS_AGE_PERCENTAGE"
-            echo "Fetching history from ${ROBOT_COUNT:?} bots.. ($ORDERS_AGE/$ORDERS_AGE_LIMIT)"
-            sleep 1
-          done
+            echo "100"
+            echo "Trade history ready!"
+            sleep 2
+          } | dialog --gauge "Please wait" 7 50 0
+        }
+        display_result 2>/dev/null
+      fi
 
-          echo "XXX"
-          echo "100"
-          echo "History fetched!"
-          sleep 1
-        } | dialog --gauge "Please wait" 7 50 0
+      # output orders
+      ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '!a[$0]++')"
+      ORDERS_COUNT="$(echo "$ORDERS_TAC" | awk '!a[$0]++' | sed -r '/^\s*$/d' | wc -l)"
+
+      WIDTH="$(echo "$(echo "$ORDERS_TAC" | head -100 | column -t | wc -L)+12" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+      RESULT="$(echo "$ORDERS_TAC" 2>/dev/null | column -t | head -100)"
+
+      # sell count
+      SELL_COUNT="$(echo "$ORDERS_TAC" | grep -c "sell")"
+      if [[ -z "$SELL_COUNT" ]] &>/dev/null; then
+        SELL_COUNT="0"
+      fi
+      # buy count
+      BUY_COUNT="$(echo "$ORDERS_TAC" | grep -c "buy")"
+      if [[ -z "$BUY_COUNT" ]] &>/dev/null; then
+        BUY_COUNT="0"
+      fi
+      # profit high
+      PROFIT_HIGH="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | tail -1)"
+      if [[ -z "$PROFIT_HIGH" ]] &>/dev/null; then
+        PROFIT_HIGH="0"
+      fi
+      # profit low
+      PROFIT_LOW="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | head -1)"
+      if [[ -z "$PROFIT_LOW" ]] &>/dev/null; then
+        PROFIT_LOW="0"
+      fi
+      # profit sum
+      PROFIT_SUM="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | awk '{ SUM += $1} END { print SUM }')"
+      if [[ -z "$PROFIT_SUM" ]] &>/dev/null; then
+        PROFIT_SUM="0"
+      fi
+      # profit average
+      PROFIT_AVERAGE="$(echo "$PROFIT_SUM/$SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+      if [[ -z "$PROFIT_AVERAGE" ]] &>/dev/null; then
+        PROFIT_AVERAGE="0"
+      fi
+
+      if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+        LOG_LENGTH="7"
+      fi
+
+      if [[ -z "$LENGTH" ]] &>/dev/null; then
+        LENGTH="7"
+      elif [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+        LENGTH="$LOG_LENGTH"
+      fi
+
+      if [[ -z "$WIDTH" ]] &>/dev/null; then
+        WIDTH="77"
+      elif [[ "$WIDTH" -lt "77" ]] &>/dev/null; then
+        WIDTH="77"
+      fi
+
+      display_result() {
+        dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT Profit: High ${PROFIT_HIGH:?}% Low ${PROFIT_LOW:?}% Average ${PROFIT_AVERAGE:?}%" \
+          --no-collapse \
+          --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
+
       display_result 2>/dev/null
+
+      if [[ "$ORDERS_COUNT" -gt "0" ]] &>/dev/null; then
+        # keep history, delete history
+        if ! dialog --stdout --title "Keep history? +$ORDERS_COUNT" \
+          --backtitle "Keep history?" \
+          --yesno "Yes: Keep! No: Delete!" 5 30; then
+          truncate -s 0 "${SYS_DIR:?}"/robot/orders &>/dev/null
+          truncate -s 0 "${SYS_DIR:?}"/robot/*.orders &>/dev/null
+        fi
+      fi
+    else
+      no_key_no_secret
     fi
 
     ;;
