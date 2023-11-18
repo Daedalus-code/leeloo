@@ -73,17 +73,18 @@ function backup_orders() {
 ################################################################################
 
 function delisted() {
-  # if not found
+  # check if delisted_xeggex file exists, create it if not
   if [[ ! -f "${SYS_DIR:?}"/delisted_xeggex ]] &>/dev/null; then
     touch "${SYS_DIR:?}"/delisted_xeggex
   fi
 
+  # define file paths
   PRICES_FILE="${LOG_DIR:?}/leeloo/xeggex/prices"
   DELISTED_FILE="${SYS_DIR:?}/delisted_xeggex"
   PRICES_COPY_FILE="${PRICES_FILE}.copy"
 
+  # check if there are delisted markets
   if [[ "$(egrep -c "[0-9]+|[A-Z]+" "$DELISTED_FILE" || true)" -gt "0" ]] &>/dev/null; then
-
     # make a copy of the prices file
     cp "$PRICES_FILE" "$PRICES_COPY_FILE" &>/dev/null
 
@@ -94,16 +95,17 @@ function delisted() {
     for MARKET in "${DELISTED_MARKETS[@]}"; do
       # replace slashes with underscores to match both formats
       MARKET_UNDERSCORE="${MARKET//\//_}"
+
+      # remove the market in both formats
       sed -i "/^${MARKET_UNDERSCORE//\//\\/}/d" "$PRICES_COPY_FILE"
-      # remove the original format with slashes
       sed -i "/^${MARKET//\//\\/}/d" "$PRICES_COPY_FILE"
     done
 
-    # remove duplicates, sort
-    echo "$(cat "$DELISTED_FILE" 2>/dev/null | awk '!a[$0]++' | sort)" >"$DELISTED_FILE"
+    # remove duplicates, sort, and update the delisted file
+    sort -u "$DELISTED_FILE" -o "$DELISTED_FILE"
 
-    # use file if any data
-    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/xeggex/prices.copy | awk '{ print $1 }')" ]] &>/dev/null; then
+    # use the updated file if there is any data
+    if [[ -s "$PRICES_COPY_FILE" ]] &>/dev/null; then
       mv "$PRICES_COPY_FILE" "$PRICES_FILE"
     fi
   fi
