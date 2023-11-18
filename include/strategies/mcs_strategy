@@ -52,13 +52,15 @@ exchange_template
 # data
 ################################################################################
 
-last_tx               # last tx
-listing_data          # get available listing data
-reference_data        # get available reference data
-listing_total_value   # calculate total listing values
-reference_total_value # calculate total reference values
-listing_allocated     # total listing allocated
-reference_allocated   # total reference allocated
+last_tx                 # last tx
+listing_data            # get available listing data
+reference_data          # get available reference data
+listing_total_value     # calculate total listing values
+reference_total_value   # calculate total reference values
+listing_allocated       # total listing allocated
+reference_allocated     # total reference allocated
+listing_balance_check   # check for listing balance
+reference_balance_check # check for reference balance
 
 ################################################################################
 
@@ -182,29 +184,33 @@ if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
     ############################################################################
     ############################################################################
 
-    # if southxchange order
-    if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-      # placeOrder market ######################################################
-      PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
+    # balance check
+    if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
+
+      # if southxchange order
+      if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+        # placeOrder market ####################################################
+        PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
+        ########################################################################
+      fi
+      # if xeggex order
+      if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+        # CreateOrder market ###################################################
+        PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$LISTING_AMOUNT" "" "false")"
+        ########################################################################
+      fi
+
       ##########################################################################
-    fi
-    # if xeggex order
-    if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-      # CreateOrder market #####################################################
-      PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$LISTING_AMOUNT" "" "false")"
       ##########################################################################
+
+      echo "$MARKET_MCS_EXECUTE :: buy" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      tx_id
+      cost_price
+      echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+      # remove duplicates
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
     fi
-
-    ############################################################################
-    ############################################################################
-
-    echo "$MARKET_MCS_EXECUTE :: buy" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    tx_id
-    cost_price
-    echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-
-    # remove duplicates
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
   fi
 fi
 

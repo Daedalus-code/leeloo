@@ -64,13 +64,15 @@ exchange_template
 # data
 ################################################################################
 
-last_tx               # last tx
-listing_data          # get available listing data
-reference_data        # get available reference data
-listing_total_value   # calculate total listing values
-reference_total_value # calculate total reference values
-listing_allocated     # total listing allocated
-reference_allocated   # total reference allocated
+last_tx                 # last tx
+listing_data            # get available listing data
+reference_data          # get available reference data
+listing_total_value     # calculate total listing values
+reference_total_value   # calculate total reference values
+listing_allocated       # total listing allocated
+reference_allocated     # total reference allocated
+listing_balance_check   # check for listing balance
+reference_balance_check # check for reference balance
 
 ################################################################################
 
@@ -131,48 +133,56 @@ if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] 2>>"${LOG_ERROR:?}"; then
         ########################################################################
         ########################################################################
 
-        # if southxchange order
-        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-          # placeOrder market ##################################################
-          PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
-          ######################################################################
-        fi
-        # if xeggex order
-        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-          # CreateOrder market #################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AMOUNT" "" "false")"
-          ######################################################################
-        fi
+        # balance check
+        if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
-        ########################################################################
-        ########################################################################
+          # if southxchange order
+          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+            # placeOrder market ################################################
+            PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
+            ####################################################################
+          fi
+          # if xeggex order
+          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+            # CreateOrder market ###############################################
+            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AMOUNT" "" "false")"
+            ####################################################################
+          fi
 
-        rsi_sell_order
-        cost_price
+          ######################################################################
+          ######################################################################
+
+          rsi_sell_order
+          cost_price
+        fi
       elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
 
         ########################################################################
         ########################################################################
 
-        # if southxchange order
-        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-          # placeOrder market ##################################################
-          PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
-          ######################################################################
-        fi
-        # if xeggex order
-        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-          # CreateOrder limit ##################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
-          ######################################################################
-        fi
+        # balance check
+        if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
-        ########################################################################
-        ########################################################################
+          # if southxchange order
+          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+            # placeOrder market ################################################
+            PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_PRICE" "$LISTING_AMOUNT" "false")"
+            ####################################################################
+          fi
+          # if xeggex order
+          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+            # CreateOrder limit ################################################
+            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+            ####################################################################
+          fi
 
-        rsi_sell_order
-        cost_price
+          ######################################################################
+          ######################################################################
+
+          rsi_sell_order
+          cost_price
+        fi
       fi
     fi
   fi
@@ -190,48 +200,56 @@ if [[ "$RSI_COOLDOWN_NOW" -gt "$RSI_COOLDOWN_HOURS" ]] 2>>"${LOG_ERROR:?}"; then
         ########################################################################
         ########################################################################
 
-        # if southxchange order
-        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-          # placeOrder market ##################################################
-          PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
-          ######################################################################
-        fi
-        # if xeggex order
-        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-          # CreateOrder market #################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$REFERENCE_AMOUNT" "" "false")"
-          ######################################################################
-        fi
+        # balance check
+        if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
-        ########################################################################
-        ########################################################################
+          # if southxchange order
+          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+            # placeOrder market ################################################
+            PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_AMOUNT" "true")"
+            ####################################################################
+          fi
+          # if xeggex order
+          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+            # CreateOrder market ###############################################
+            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$REFERENCE_AMOUNT" "" "false")"
+            ####################################################################
+          fi
 
-        rsi_buy_order
-        cost_price
+          ######################################################################
+          ######################################################################
+
+          rsi_buy_order
+          cost_price
+        fi
       elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
         rsi_timer_check
 
         ########################################################################
         ########################################################################
 
-        # if southxchange order
-        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-          # placeOrder market ##################################################
-          PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
-          ######################################################################
-        fi
-        # if xeggex order
-        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-          # CreateOrder limit ##################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "false")"
-          ######################################################################
-        fi
+        # balance check
+        if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
-        ########################################################################
-        ########################################################################
+          # if southxchange order
+          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+            # placeOrder market ################################################
+            PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$REFERENCE_PRICE" "$REFERENCE_AMOUNT" "true")"
+            ####################################################################
+          fi
+          # if xeggex order
+          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+            # CreateOrder limit ################################################
+            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "false")"
+            ####################################################################
+          fi
 
-        rsi_buy_order
-        cost_price
+          ######################################################################
+          ######################################################################
+
+          rsi_buy_order
+          cost_price
+        fi
       fi
     fi
   fi

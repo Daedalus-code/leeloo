@@ -70,35 +70,22 @@ exchange_template
 # data
 ################################################################################
 
-last_tx               # last tx
-listing_data          # get available listing data
-reference_data        # get available reference data
-listing_total_value   # calculate total listing values
-reference_total_value # calculate total reference values
-listing_allocated     # total listing allocated
-reference_allocated   # total reference allocated
+last_tx                 # last tx
+listing_data            # get available listing data
+reference_data          # get available reference data
+listing_total_value     # calculate total listing values
+reference_total_value   # calculate total reference values
+listing_allocated       # total listing allocated
+reference_allocated     # total reference allocated
+listing_balance_check   # check for listing balance
+reference_balance_check # check for reference balance
 
 ################################################################################
 
 # listing
-LISTING_AVAILABLE_BALANCE_NR="$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')"
 LISTING_TRIGGER_NR="$(echo "$LISTING_TRIGGER" | tr -d '.' | sed 's/^0*//')"
 # reference
-REFERENCE_AVAILABLE_BALANCE_NR="$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')"
 REFERENCE_TRIGGER_NR="$(echo "$REFERENCE_TRIGGER" | tr -d '.' | sed 's/^0*//')"
-
-# default
-LISTING_NO_BALANCE="1"
-REFERENCE_NO_BALANCE="1"
-
-if [[ "$LISTING_AVAILABLE_BALANCE_NR" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
-  # no balance trigger
-  LISTING_NO_BALANCE="0"
-fi
-if [[ "$REFERENCE_AVAILABLE_BALANCE_NR" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
-  # no balance trigger
-  REFERENCE_NO_BALANCE="0"
-fi
 
 ################################################################################
 
@@ -311,7 +298,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           ######################################################################
 
           # balance check
-          if [[ ! "$LISTING_NO_BALANCE" -eq "0" || "$REFERENCE_NO_BALANCE" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+          if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
             # if southxchange order
             if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
@@ -345,7 +332,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           ######################################################################
 
           # balance check
-          if [[ "$LISTING_NO_BALANCE" -eq "0" || "$REFERENCE_NO_BALANCE" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+          if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
             # if southxchange order
             if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
@@ -385,7 +372,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           ######################################################################
 
           # balance check
-          if [[ "$LISTING_NO_BALANCE" -eq "0" || "$REFERENCE_NO_BALANCE" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+          if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
             # if southxchange order
             if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
@@ -419,7 +406,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           ######################################################################
 
           # balance check
-          if [[ "$LISTING_NO_BALANCE" -eq "0" || "$REFERENCE_NO_BALANCE" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+          if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
 
             # if southxchange order
             if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
