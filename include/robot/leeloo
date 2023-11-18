@@ -63,7 +63,7 @@ for (( ; ; )); do
   if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "SXC")" -gt "0" ]] &>/dev/null; then
     # get southxchange orders
     function result_orders() {
-      echo "$(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
+      echo "$(listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | column -t | sort -r)" >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
     }
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
