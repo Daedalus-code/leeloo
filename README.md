@@ -21,7 +21,7 @@ API Status:
 SouthXchange : Balance, Search market, Trade, Autotrade
 StakeCube    : Balance, Search market
 Poloniex     : Search market
-XeggeX       : Balance, Search market
+XeggeX       : Balance, Search market, Trade, Autotrade
 ```
 [SouthXchange](https://main.southxchange.com)  
 [StakeCube](https://stakecube.net)  
