@@ -269,8 +269,13 @@ function last_tx() {
 ################################################################################
 
 function txid_null() {
-  # if several words is found
-  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | wc -w)" -gt "1" ]] &>/dev/null; then
+  # search for words
+  TXID_NULL_WORDS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | wc -w)"
+  # search for symbols other than normal txid
+  TXID_NULL_SYMBOLS="$(grep -oE '[^a-fA-F0-9]' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -w)"
+
+  # if several words is found, if symbols is found
+  if [[ "$TXID_NULL_WORDS" -gt "1" || "$TXID_NULL_SYMBOLS" -gt "0" ]] &>/dev/null; then
     # output words
     DIP_NULL_TXID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
     # track non txid
