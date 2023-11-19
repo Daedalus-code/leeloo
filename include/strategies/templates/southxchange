@@ -291,6 +291,10 @@ function txid_null() {
   if [[ "$TXID_NULL_WORDS" -gt "1" || "$TXID_NULL_SYMBOLS" -gt "0" ]] &>/dev/null; then
     # output words
     DIP_NULL_TXID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+    # if zero
+    if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
+      DIP_NULL_TXID="null"
+    fi
     # track non txid
     echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   fi
