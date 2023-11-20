@@ -204,6 +204,9 @@ for (( ; ; )); do
 
     # execute the script and log only the error lines
     {
+      if [[ ! -f "${LOG_DIR:?}"/loop ]] &>/dev/null; then
+        touch "${LOG_DIR:?}"/loop
+      fi
       # reset loop file
       truncate -s 0 "${LOG_DIR:?}"/loop &>/dev/null
       # run strategies
