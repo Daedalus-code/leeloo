@@ -1099,8 +1099,10 @@ function open_orders {
     ORDER_TOTAL_WIDTH="$(echo "$(echo "$ORDERS_FORMAT
     $(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)" | column -t | wc -L)+5" | bc 2>/dev/null)"
 
+    EXCHANGE_ORDERS_FORMAT="$("$CAT_TAC" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
+
     RESULT="$(echo "$ORDERS_FORMAT
-    $("$CAT_TAC" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)")"
+    $EXCHANGE_ORDERS_FORMAT")"
 
     ORDER_TOTAL_LENGTH="$(echo "$ORDER_TOTAL+5" | bc 2>/dev/null)"
     ORDER_TOTAL_BUY="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
