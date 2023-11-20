@@ -251,31 +251,35 @@ function reference_balance_check {
 
 ################################################################################
 
-function last_tx() {
-  # search for words
-  TX_ID_NULL_WORDS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | wc -w)"
-  # search for symbols other than normal txid
-  TX_ID_NULL_SYMBOLS="$(grep -oE '[^a-fA-F0-9]' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -w)"
-
+function tx_id {
   # if not found
   if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
     touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
 
+  echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+
   # last txid (raw)
-  TX_ID_LAST_TEMP="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+  TX_ID_LAST_RAW="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 
   # if txid exist
-  if [[ "$(echo "$TX_ID_LAST_TEMP" | egrep -c "[A-Za-z0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(echo "$TX_ID_LAST_RAW" | egrep -c "[A-Za-z0-9]+" || true)" -gt "0" ]] &>/dev/null; then
     # update txid
-    echo "$(echo "$TX_ID_LAST_TEMP" | egrep -wo "[A-Za-z0-9]+")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+    echo "$(echo "$TX_ID_LAST_RAW" | egrep -wo "[A-Za-z0-9]+")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
+
+  # search for words ###########################################################
+  TX_ID_NULL_WORDS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | wc -w)"
+  # search for symbols other than normal txid
+  TX_ID_NULL_SYMBOLS="$(grep -oE '[^a-fA-F0-9]' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -w)"
 
   # if several words is found, if symbols is found
   if [[ "$TX_ID_NULL_WORDS" -gt "1" || "$TX_ID_NULL_SYMBOLS" -gt "0" ]] &>/dev/null; then
     # update txid
-    echo "$TX_ID_LAST_TEMP" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-  fi
+    echo "$TX_ID_LAST_RAW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    # clean up null
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -v "id:[A-Za-z0-9]+" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".nulla
+  fi ###########################################################################
 
   # last txid
   TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
@@ -297,12 +301,6 @@ function last_tx() {
   TX_ID_AGE=$(printf '%dh:%dm:%ds\n' $(("$TX_ID_AGE_SECONDS/3600")) $(("$TX_ID_AGE_SECONDS%3600/60")) $(("$TX_ID_AGE_SECONDS%60")))
   # calculate txid days
   TX_ID_AGE_DAYS=$(echo "$TX_ID_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
-}
-
-################################################################################
-
-function tx_id {
-  echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
 
 ################################################################################
