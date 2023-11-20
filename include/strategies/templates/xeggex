@@ -249,24 +249,27 @@ function last_tx() {
     touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
 
-  # last txid
-  TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+  # last txid (raw)
+  TX_ID_LAST_TEMP="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 
   # if txid exist
-  if [[ "$(echo "$TX_ID_LAST" | egrep -c "id:[A-Za-z0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(echo "$TX_ID_LAST_TEMP" | egrep -c "id:[A-Za-z0-9]+" || true)" -gt "0" ]] &>/dev/null; then
     # update txid
-    echo "$(echo "$TX_ID_LAST" | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+    echo "$(echo "$TX_ID_LAST_TEMP" | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
 
   # if several words is found, if symbols is found
   if [[ "$TX_ID_NULL_WORDS" -gt "1" || "$TX_ID_NULL_SYMBOLS" -gt "0" ]] &>/dev/null; then
     # update txid
-    echo "$TX_ID_LAST" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    echo "$TX_ID_LAST_TEMP" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   fi
+
+  # last txid
+  TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 
   # if zero
   if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed -r '/^\s*$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
-    TX_ID_LAST="0"
+    TX_ID_LAST="null"
   fi
 
   # get txid age (seconds)
