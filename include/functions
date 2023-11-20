@@ -773,6 +773,8 @@ function open_orders {
 
   # poloniex data
   if [[ "$EXCHANGE_API" == "POL" ]] &>/dev/null; then
+    # cat or tac
+    CAT_TAC="tac"
     # set orders format
     ORDERS_FORMAT="OrderID: Type Amount Original LimitPrice List Ref DateAdded"
     # set exchange template
@@ -789,6 +791,8 @@ function open_orders {
 
   # southxchange data
   if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+    # cat or tac
+    CAT_TAC="tac"
     # set orders format
     ORDERS_FORMAT="OrderID: Type Amount Original LimitPrice List Ref DateAdded"
     # set exchange template
@@ -805,6 +809,8 @@ function open_orders {
 
   # stakecube data
   if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
+    # cat or tac
+    CAT_TAC="tac"
     # set orders format
     ORDERS_FORMAT="OrderID: Type Amount Original LimitPrice List Ref DateAdded"
     # set exchange template
@@ -821,6 +827,8 @@ function open_orders {
 
   # xeggex data
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+    # cat or tac
+    CAT_TAC="cat"
     # set orders format
     ORDERS_FORMAT="OrderID Type Amount Original LimitPrice List Ref DateAdded"
     # set exchange template
@@ -1087,8 +1095,13 @@ function open_orders {
     fi
 
     ORDER_TOTAL="$(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null | sed '/^$/d' | wc -l)"
+
     ORDER_TOTAL_WIDTH="$(echo "$(echo "$ORDERS_FORMAT
     $(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)" | column -t | wc -L)+5" | bc 2>/dev/null)"
+
+    RESULT="$(echo "$ORDERS_FORMAT
+    $("$CAT_TAC" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)")"
+
     ORDER_TOTAL_LENGTH="$(echo "$ORDER_TOTAL+5" | bc 2>/dev/null)"
     ORDER_TOTAL_BUY="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
     ORDER_TOTAL_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
@@ -1110,8 +1123,6 @@ function open_orders {
         --msgbox "$(echo "$RESULT" | column -t)" "$ORDER_TOTAL_LENGTH" "$ORDER_TOTAL_WIDTH"
     }
 
-    RESULT="$ORDERS_FORMAT
-$(tac "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null)"
     display_result 2>/dev/null
 
     ;;
