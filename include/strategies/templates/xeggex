@@ -239,6 +239,11 @@ function reference_balance_check {
 ################################################################################
 
 function last_tx() {
+  # search for words
+  TX_ID_NULL_WORDS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | wc -w)"
+  # search for symbols other than normal txid
+  TX_ID_NULL_SYMBOLS="$(grep -oE '[^a-fA-F0-9]' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -w)"
+
   # if not found
   if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
     touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
@@ -247,47 +252,41 @@ function last_tx() {
   # last txid
   TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 
+  # if txid exist
+  if [[ "$(echo "$TX_ID_LAST" | egrep -c "id:[A-Za-z0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+    # update txid
+    echo "$TX_ID_LAST" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  fi
+
+  # if several words is found, if symbols is found
+  if [[ "$TX_ID_NULL_WORDS" -gt "1" || "$TX_ID_NULL_SYMBOLS" -gt "0" ]] &>/dev/null; then
+    # update txid
+    echo "$TX_ID_LAST" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  fi
+
   # if zero
   if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed -r '/^\s*$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
     TX_ID_LAST="0"
   fi
 
   # get txid age (seconds)
-  TXID_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  TX_ID_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
   # if zero
-  if [[ -z "$TXID_AGE_SECONDS" ]] &>/dev/null; then
-    TXID_AGE_SECONDS="0"
+  if [[ -z "$TX_ID_AGE_SECONDS" ]] &>/dev/null; then
+    TX_ID_AGE_SECONDS="0"
   fi
 
   # txid age format
-  TXID_AGE=$(printf '%dh:%dm:%ds\n' $(("$TXID_AGE_SECONDS/3600")) $(("$TXID_AGE_SECONDS%3600/60")) $(("$TXID_AGE_SECONDS%60")))
+  TX_ID_AGE=$(printf '%dh:%dm:%ds\n' $(("$TX_ID_AGE_SECONDS/3600")) $(("$TX_ID_AGE_SECONDS%3600/60")) $(("$TX_ID_AGE_SECONDS%60")))
   # calculate txid days
-  TXID_AGE_DAYS=$(echo "$TXID_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
+  TX_ID_AGE_DAYS=$(echo "$TX_ID_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
 }
 
 ################################################################################
 
-function txid_null() {
-  # search for words
-  TXID_NULL_WORDS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | wc -w)"
-  # search for symbols other than normal txid
-  TXID_NULL_SYMBOLS="$(grep -oE '[^a-fA-F0-9]' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid | wc -w)"
-
-  # if several words is found, if symbols is found
-  if [[ "$TXID_NULL_WORDS" -gt "1" || "$TXID_NULL_SYMBOLS" -gt "0" ]] &>/dev/null; then
-    # output words
-    DIP_NULL_TXID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
-    # if zero
-    if [[ -z "$DIP_NULL_TXID" ]] &>/dev/null; then
-      DIP_NULL_TXID="null"
-    fi
-    # track non txid
-    echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_NULL_TXID" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-  fi
-
-  # keep n lines, remove empty lines, remove duplicates
-  echo "$(tail -10 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | sed -r '/^\s*$/d' | awk '!a[$3]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+function tx_id {
+  echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
 
 ################################################################################
@@ -313,12 +312,6 @@ function cost_price() {
     # listing output
     echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Updating cost! $LISTING_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   fi
-}
-
-################################################################################
-
-function tx_id {
-  echo "$(echo "$PLACE_ORDER" | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
 
 ################################################################################
