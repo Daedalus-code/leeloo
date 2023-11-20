@@ -97,16 +97,17 @@ fi
 
 ################################################################################
 
+# price last equals price last (without decimal)
 if [[ "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.' | sed 's/^0*//')" == "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.' | sed 's/^0*//')" ]] 2>>"${LOG_ERROR:?}"; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST-$REFERENCE_MCS_PRICE_ASK"
   MCS_POSITION_STATUS="OK"
 fi
-
+# price last less than price ask (without decimal)
 if [[ "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$REFERENCE_MCS_PRICE_ASK" | tr -d '.' | sed 's/^0*//')" ]] 2>>"${LOG_ERROR:?}"; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST>$REFERENCE_MCS_PRICE_ASK"
   MCS_POSITION_STATUS="->"
 fi
-
+# price last greater than ask (without decimal)
 if [[ "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$REFERENCE_MCS_PRICE_ASK" | tr -d '.' | sed 's/^0*//')" ]] 2>>"${LOG_ERROR:?}"; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST*$REFERENCE_MCS_PRICE_ASK"
   MCS_POSITION_STATUS="<>"
@@ -175,7 +176,7 @@ MARKET_MCS_NO_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_OPE
 
 # skip if data is null
 if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
-  # last is less than ask
+  # last is less than ask (without decimal)
   if [[ "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$REFERENCE_MCS_PRICE_ASK" | tr -d '.' | sed 's/^0*//')" ]] 2>>"${LOG_ERROR:?}"; then
 
     # random order amount
