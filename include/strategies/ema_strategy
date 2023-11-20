@@ -579,9 +579,11 @@ RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/
     if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
       # overbought, pick pocket at top!
       if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
+        rogue_selling
+
         tx_id
         cost_price
-        rogue_selling
+
         rogue_shadow_output
         echo "$MARKET_RGP_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
         echo "$MARKET_RGP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
@@ -601,9 +603,11 @@ RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/
     if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -lt "30" ]] &>/dev/null; then
       # oversold, cheap shot at bottom!
       if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
+        rogue_buying
+
         tx_id
         cost_price
-        rogue_buying
+
         rogue_shadow_output
         echo "$MARKET_RGP_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
         echo "$MARKET_RGP_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null
