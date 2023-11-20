@@ -204,11 +204,16 @@ for (( ; ; )); do
 
     # execute the script and log only the error lines
     {
+      # delete loop file
+      rm "${LOG_DIR:?}"/loop &>/dev/null
+      # run strategies
       while IFS= read -r line; do
         if echo "$line" | grep -Ei "error|exit status|command not found|syntax error|not found|is empty|permission denied|= ''|\${[A-Za-z0-9_]*}|unbound variable|\$()" >/dev/null; then
           echo "$line"
         fi
       done < <(bash "$f" 2>&1) > >(grep -Ei "error|exit status|command not found|syntax error|not found|is empty|permission denied|= ''|\${[A-Za-z0-9_]*}|unbound variable|\$()" >>"$STRATEGY_LOG_FILE")
+      # create loop file
+      echo "$(date | xargs)" >"${LOG_DIR:?}"/loop
     }
 
     # check the exit status of the script

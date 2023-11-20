@@ -1042,7 +1042,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
   "H")
 
     ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
-    ORDERS_AGE_LIMIT="$(echo "2*$ROBOT_COUNT" | bc 2>/dev/null)"
+    ORDERS_AGE_LIMIT="$(echo "0.5*$ROBOT_COUNT" | bc 2>/dev/null)"
 
     # if zero
     if [[ -z "$ORDERS_AGE_LIMIT" ]] &>/dev/null; then
@@ -1062,7 +1062,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         display_result() {
           {
             while true; do
-              ORDERS_AGE=$(stat -c '%n %Y' "${SYS_DIR:?}"/robot/orders 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
+              ORDERS_AGE=$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/loop 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
               ORDERS_AGE_PERCENTAGE=$((ORDERS_AGE * 100 / ORDERS_AGE_LIMIT))
 
               if [ "$ORDERS_AGE_PERCENTAGE" -ge 100 ]; then
@@ -1089,7 +1089,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
       ORDERS_COUNT="$(echo "$ORDERS_TAC" | awk '!a[$0]++' | sed '/^$/d' | wc -l)"
 
       WIDTH="$(echo "$(echo "$ORDERS_TAC" | head -100 | column -t | wc -L)+14" | bc 2>/dev/null)"
-      LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
       RESULT="$(echo "$ORDERS_TAC" 2>/dev/null | column -t | head -100)"
 
       # sell count
