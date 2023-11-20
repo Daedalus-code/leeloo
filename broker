@@ -1063,14 +1063,13 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
           {
             while true; do
               ORDERS_AGE=$(stat -c '%n %Y' "${LOG_DIR:?}"/loop 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
-              ORDERS_AGE_PERCENTAGE=$((ORDERS_AGE * 100 / ORDERS_AGE_LIMIT))
 
-              if [ "$ORDERS_AGE_PERCENTAGE" -ge 100 ]; then
+              if [ "$ORDERS_AGE" -ge "$ORDERS_AGE_LIMIT" ]; then
                 break
               fi
 
               echo "XXX"
-              echo "$ORDERS_AGE_PERCENTAGE"
+              echo "$ORDERS_AGE"
               echo "Compiling history from ${ROBOT_COUNT:?} robots.. ($ORDERS_AGE/$ORDERS_AGE_LIMIT)"
               sleep 1
             done
