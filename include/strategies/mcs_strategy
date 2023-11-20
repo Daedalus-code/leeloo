@@ -102,12 +102,12 @@ if [[ "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.')" == "$(echo "$REFERENCE_M
   MCS_POSITION_STATUS="OK"
 fi
 
-if [[ "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.')" < "$(echo "$REFERENCE_MCS_PRICE_ASK" | tr -d '.')" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.')" -lt "$(echo "$REFERENCE_MCS_PRICE_ASK" | tr -d '.')" ]] 2>>"${LOG_ERROR:?}"; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST>$REFERENCE_MCS_PRICE_ASK"
   MCS_POSITION_STATUS="->"
 fi
 
-if [[ "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.')" > "$(echo "$REFERENCE_MCS_PRICE_ASK" | tr -d '.')" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ "$(echo "$REFERENCE_MCS_PRICE_LAST" | tr -d '.')" -gt "$(echo "$REFERENCE_MCS_PRICE_ASK" | tr -d '.')" ]] 2>>"${LOG_ERROR:?}"; then
   MCS_POSITION_VALUE="$REFERENCE_MCS_PRICE_LAST*$REFERENCE_MCS_PRICE_ASK"
   MCS_POSITION_STATUS="<>"
 fi
