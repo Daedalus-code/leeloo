@@ -567,7 +567,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   fi
 
   # strategy output
-  STRATEGY_DATA="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed -r '/^\s*$/d' | wc -l)"
+  STRATEGY_DATA="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed '/^$/d' | wc -l)"
   # time format
   STRATEGY_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$STRATEGY_SECONDS/3600")) $(("$STRATEGY_SECONDS%3600/60")) $(("$STRATEGY_SECONDS%60")))
   # uptime in days
@@ -1086,7 +1086,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
       # output orders
       ORDERS_TAC="$(tac "${SYS_DIR:?}"/robot/orders 2>/dev/null | awk '!a[$0]++')"
-      ORDERS_COUNT="$(echo "$ORDERS_TAC" | awk '!a[$0]++' | sed -r '/^\s*$/d' | wc -l)"
+      ORDERS_COUNT="$(echo "$ORDERS_TAC" | awk '!a[$0]++' | sed '/^$/d' | wc -l)"
 
       WIDTH="$(echo "$(echo "$ORDERS_TAC" | head -100 | column -t | wc -L)+14" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+7" | bc 2>/dev/null)"

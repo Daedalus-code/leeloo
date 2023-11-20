@@ -262,13 +262,15 @@ function last_tx() {
   if [[ "$TX_ID_NULL_WORDS" -gt "1" || "$TX_ID_NULL_SYMBOLS" -gt "0" ]] &>/dev/null; then
     # update txid
     echo "$TX_ID_LAST_TEMP" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    # clean up null
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -v "id:[A-Za-z0-9]+" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".nulla
   fi
 
   # last txid
   TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
 
   # if zero
-  if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed -r '/^\s*$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
     TX_ID_LAST="null"
   fi
 
