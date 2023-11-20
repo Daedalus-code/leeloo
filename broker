@@ -1042,11 +1042,10 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
   "H")
 
     ORDERS_AGE=$(stat -c '%n %Y' "${LOG_DIR:?}"/loop 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
-    ORDERS_AGE_LIMIT="$(echo "0.369*$ROBOT_COUNT" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
     # if zero
-    if [[ -z "$ORDERS_AGE_LIMIT" ]] &>/dev/null; then
-      ORDERS_AGE_LIMIT="0"
+    if [[ -z "$ROBOT_COUNT" ]] &>/dev/null; then
+      ROBOT_COUNT="0"
     fi
 
     ############################################################################
@@ -1055,7 +1054,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
       # if fetching history
-      if [[ "$ORDERS_AGE" -lt "$ORDERS_AGE_LIMIT" ]] &>/dev/null; then
+      if [[ "$ORDERS_AGE" -lt "$ROBOT_COUNT" ]] &>/dev/null; then
 
         ########################################################################
 
@@ -1063,7 +1062,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
           {
             while true; do
               ORDERS_AGE=$(stat -c '%n %Y' "${LOG_DIR:?}"/loop 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
-              ORDERS_AGE_PERCENTAGE=$((ORDERS_AGE * 100 / ORDERS_AGE_LIMIT))
+              ORDERS_AGE_PERCENTAGE=$((ORDERS_AGE * 100 / ROBOT_COUNT))
 
               if [ "$ORDERS_AGE" -ge "100" ]; then
                 break
@@ -1071,7 +1070,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
               echo "XXX"
               echo "$ORDERS_AGE"
-              echo "Compiling history from ${ROBOT_COUNT:?} robots.. ($ORDERS_AGE/$ORDERS_AGE_LIMIT)"
+              echo "Compiling history from ${ROBOT_COUNT:?} robots.. ($ORDERS_AGE/$ROBOT_COUNT)"
               sleep 1
             done
 
