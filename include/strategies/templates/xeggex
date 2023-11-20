@@ -275,7 +275,11 @@ function tx_id {
   if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
     TX_ID_LAST="null"
   fi
+}
 
+################################################################################
+
+function tx_id_age {
   # get txid age (seconds)
   TX_ID_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
