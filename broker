@@ -1041,8 +1041,8 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
   "H")
 
-    ORDERS_AGE=$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/loop 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
-    ORDERS_AGE_LIMIT="$(echo "1.5*$ROBOT_COUNT" | bc 2>/dev/null)"
+    ORDERS_AGE=$(stat -c '%n %Y' "${LOG_DIR:?}"/loop 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
+    ORDERS_AGE_LIMIT="$(echo "1.23*$ROBOT_COUNT" | bc 2>/dev/null)"
 
     # if zero
     if [[ -z "$ORDERS_AGE_LIMIT" ]] &>/dev/null; then
@@ -1062,7 +1062,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
         display_result() {
           {
             while true; do
-              ORDERS_AGE=$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/loop 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
+              ORDERS_AGE=$(stat -c '%n %Y' "${LOG_DIR:?}"/loop 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | awk '{ print $NF }')
               ORDERS_AGE_PERCENTAGE=$((ORDERS_AGE * 100 / ORDERS_AGE_LIMIT))
 
               if [ "$ORDERS_AGE_PERCENTAGE" -ge 100 ]; then
