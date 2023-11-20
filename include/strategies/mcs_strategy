@@ -97,17 +97,21 @@ fi
 
 ################################################################################
 
-if (($(bc <<<"$REFERENCE_MCS_PRICE_LAST == $REFERENCE_MCS_PRICE_ASK"))); then
+compare_float() {
+  echo "$1 $2" | awk '{if ($1 == $2) print 0; else if ($1 < $2) print -1; else print 1}'
+}
+
+if [[ "$(compare_float "$REFERENCE_MCS_PRICE_LAST" "$REFERENCE_MCS_PRICE_ASK")" -eq 0 ]]; then
   MCS_POSITION_VALUE=$(bc <<<"$REFERENCE_MCS_PRICE_LAST - $REFERENCE_MCS_PRICE_ASK")
   MCS_POSITION_STATUS="OK"
 fi
 
-if (($(bc <<<"$REFERENCE_MCS_PRICE_LAST < $REFERENCE_MCS_PRICE_ASK"))); then
+if [[ "$(compare_float "$REFERENCE_MCS_PRICE_LAST" "$REFERENCE_MCS_PRICE_ASK")" -lt 0 ]]; then
   MCS_POSITION_VALUE=$(bc <<<"$REFERENCE_MCS_PRICE_LAST * $REFERENCE_MCS_PRICE_ASK")
   MCS_POSITION_STATUS="<>"
 fi
 
-if (($(bc <<<"$REFERENCE_MCS_PRICE_LAST > $REFERENCE_MCS_PRICE_ASK"))); then
+if [[ "$(compare_float "$REFERENCE_MCS_PRICE_LAST" "$REFERENCE_MCS_PRICE_ASK")" -gt 0 ]]; then
   MCS_POSITION_VALUE=$(bc <<<"$REFERENCE_MCS_PRICE_LAST * $REFERENCE_MCS_PRICE_ASK")
   MCS_POSITION_STATUS="->"
 fi
