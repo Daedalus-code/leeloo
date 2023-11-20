@@ -255,7 +255,7 @@ function last_tx() {
   # if txid exist
   if [[ "$(echo "$TX_ID_LAST" | egrep -c "id:[A-Za-z0-9]+" || true)" -gt "0" ]] &>/dev/null; then
     # update txid
-    echo "$(echo "$TX_ID_LAST" | egrep -wo "id:[A-Za-z0-9]+")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+    echo "$(echo "$TX_ID_LAST" | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
 
   # if several words is found, if symbols is found
