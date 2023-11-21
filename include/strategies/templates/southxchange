@@ -80,12 +80,18 @@ function insufficient_funds {
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
     # listing output
     echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Insufficient funds! $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    # keep record of insufficient funds
+    echo "$REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >"${LOG_DIR:?}"/leeloo/southxchange/insufficient_$BASENAME_STRATEGY
   fi
 
-  # keep record of insufficient funds
-  echo "$REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >"${LOG_DIR:?}"/leeloo/southxchange/insufficient_$BASENAME_STRATEGY
   # insufficient limit
   INSUFFICIENT_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/insufficient_$BASENAME_STRATEGY | awk '{ print $2 }' | tr -d '.' | sed 's/^0*//')"
+
+  # if zero
+  if [[ -z "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
+    INSUFFICIENT_LIMIT="0"
+  fi
+
   # if greater than limit
   if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
     # limit is broken
