@@ -85,7 +85,7 @@ function insufficient_funds {
   fi
 
   # insufficient limit
-  INSUFFICIENT_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/insufficient_$BASENAME_STRATEGY 2>/dev/null | awk '{ print $2 }' | tr -d '.' | sed 's/^0*//')"
+  INSUFFICIENT_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/insufficient_$BASENAME_STRATEGY 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   # if zero
   if [[ -z "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
@@ -93,7 +93,7 @@ function insufficient_funds {
   fi
 
   # if greater than limit
-  if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
+  if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')" -gt "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
     # limit is broken (trade)
     NO_FUNDS="0"
   else
@@ -153,25 +153,25 @@ function listing_data() {
   LISTING_UNCONFIRMED_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   if [[ -z "$LISTING_AVAILABLE_BALANCE" ]] &>/dev/null; then
-    LISTING_AVAILABLE_BALANCE="0.00000000"
+    LISTING_AVAILABLE_BALANCE="0.000000000"
   fi
   if [[ -z "$LISTING_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
-    LISTING_UNCONFIRMED_BALANCE="0.00000000"
+    LISTING_UNCONFIRMED_BALANCE="0.000000000"
   fi
   if [[ -z "$LISTING_AMOUNT" ]] &>/dev/null; then
-    LISTING_AMOUNT="0.00000000"
+    LISTING_AMOUNT="0.000000000"
   fi
   if [[ -z "$LISTING_PRICE" ]] &>/dev/null; then
-    LISTING_PRICE="0.00000000"
+    LISTING_PRICE="0.000000000"
   fi
   if [[ -z "$LISTING_AMOUNT_VALUED" ]] &>/dev/null; then
-    LISTING_AMOUNT_VALUED="0.00000000"
+    LISTING_AMOUNT_VALUED="0.000000000"
   fi
   if [[ -z "$LISTING_AVAILABLE_VALUED" ]] &>/dev/null; then
-    LISTING_AVAILABLE_VALUED="0.00000000"
+    LISTING_AVAILABLE_VALUED="0.000000000"
   fi
   if [[ -z "$LISTING_UNCONFIRMED_VALUED" ]] &>/dev/null; then
-    LISTING_UNCONFIRMED_VALUED="0.00000000"
+    LISTING_UNCONFIRMED_VALUED="0.000000000"
   fi
 }
 
@@ -191,25 +191,25 @@ function reference_data() {
   REFERENCE_UNCONFIRMED_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   if [[ -z "$REFERENCE_AVAILABLE_BALANCE" ]] &>/dev/null; then
-    REFERENCE_AVAILABLE_BALANCE="0.00000000"
+    REFERENCE_AVAILABLE_BALANCE="0.000000000"
   fi
   if [[ -z "$REFERENCE_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
-    REFERENCE_UNCONFIRMED_BALANCE="0.00000000"
+    REFERENCE_UNCONFIRMED_BALANCE="0.000000000"
   fi
   if [[ -z "$REFERENCE_AMOUNT" ]] &>/dev/null; then
-    REFERENCE_AMOUNT="0.00000000"
+    REFERENCE_AMOUNT="0.000000000"
   fi
   if [[ -z "$REFERENCE_PRICE" ]] &>/dev/null; then
-    REFERENCE_PRICE="0.00000000"
+    REFERENCE_PRICE="0.000000000"
   fi
   if [[ -z "$REFERENCE_AMOUNT_VALUED" ]] &>/dev/null; then
-    REFERENCE_AMOUNT_VALUED="0.00000000"
+    REFERENCE_AMOUNT_VALUED="0.000000000"
   fi
   if [[ -z "$REFERENCE_AVAILABLE_VALUED" ]] &>/dev/null; then
-    REFERENCE_AVAILABLE_VALUED="0.00000000"
+    REFERENCE_AVAILABLE_VALUED="0.000000000"
   fi
   if [[ -z "$REFERENCE_UNCONFIRMED_VALUED" ]] &>/dev/null; then
-    REFERENCE_UNCONFIRMED_VALUED="0.00000000"
+    REFERENCE_UNCONFIRMED_VALUED="0.000000000"
   fi
 }
 
@@ -308,7 +308,7 @@ function tx_id {
   # if several words is found, if symbols is found
   if [[ "$TX_ID_NULL_WORDS" -gt "1" || "$TX_ID_NULL_SYMBOLS" -gt "0" ]] &>/dev/null; then
     # update null
-    echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY : $TX_ID_LAST_RAW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY : $TX_ID_LAST_RAW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   fi ###########################################################################
 
   # cleanup null
@@ -376,7 +376,7 @@ function incoming_listing() {
   fi
 
   if [[ -z "$LISTING_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
-    LISTING_UNCONFIRMED_BALANCE="0.000000000"
+    LISTING_UNCONFIRMED_BALANCE="0.0000000000"
   fi
 
   # create list from listing unconfirmed balance
@@ -435,7 +435,7 @@ function incoming_reference() {
   fi
 
   if [[ -z "$REFERENCE_UNCONFIRMED_BALANCE" ]] &>/dev/null; then
-    REFERENCE_UNCONFIRMED_BALANCE="0.000000000"
+    REFERENCE_UNCONFIRMED_BALANCE="0.0000000000"
   fi
 
   # create list from reference unconfirmed balance
@@ -529,7 +529,7 @@ function open_positions() {
   LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
 
   if [[ -z "$LISTING_OPEN_AMOUNT" ]] &>/dev/null; then
-    LISTING_OPEN_AMOUNT="0.00000000"
+    LISTING_OPEN_AMOUNT="0.000000000"
   fi
 
   ##############################################################################
@@ -541,7 +541,7 @@ function open_positions() {
   REFERENCE_OPEN_AMOUNT="$REFERENCE_AVAILABLE_BALANCE"
 
   if [[ -z "$REFERENCE_OPEN_AMOUNT" ]] &>/dev/null; then
-    REFERENCE_OPEN_AMOUNT="0.00000000"
+    REFERENCE_OPEN_AMOUNT="0.000000000"
   fi
 
   ##############################################################################
@@ -578,10 +578,10 @@ function open_positions() {
   LISTING_OPEN_BALANCE="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null | head -1)"
 
   if [[ -z "$LISTING_OPEN_PRICE" ]] &>/dev/null; then
-    LISTING_OPEN_PRICE="0.00000000"
+    LISTING_OPEN_PRICE="0.000000000"
   fi
   if [[ -z "$LISTING_OPEN_BALANCE" ]] &>/dev/null; then
-    LISTING_OPEN_BALANCE="0.00000000"
+    LISTING_OPEN_BALANCE="0.000000000"
   fi
 
   ##############################################################################
