@@ -72,6 +72,19 @@ function backup_orders() {
 
 ################################################################################
 
+function insufficient_funds {
+  NO_FUNDS="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null || true)"
+  # if no funds
+  if [[ "$NO_FUNDS" -gt "0" ]] &>/dev/null; then
+    # cleanup null
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    # listing output
+    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $REFERENCE_CURRENCY has insufficient_funds!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  fi
+}
+
+################################################################################
+
 function delisted() {
   # check if delisted_xeggex file exists, create it if not
   if [[ ! -f "${SYS_DIR:?}/delisted_xeggex" ]] &>/dev/null; then
@@ -266,9 +279,9 @@ function tx_id {
     echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY : $TX_ID_LAST_RAW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   fi ###########################################################################
 
-  # clean up null
+  # cleanup null
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | egrep -v "id:[A-Za-z0-9]+" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-  # clean up txid
+  # cleanup txid
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | egrep -v "error|null" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
   # last txid
