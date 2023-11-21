@@ -81,6 +81,19 @@ function insufficient_funds {
     # listing output
     echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Insufficient funds! $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   fi
+
+  # keep record of insufficient funds
+  echo "$REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >"${LOG_DIR:?}"/leeloo/southxchange/insufficient_$BASENAME_STRATEGY
+  # insufficient limit
+  INSUFFICIENT_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/southxchange/insufficient_$BASENAME_STRATEGY | awk '{ print $2 }' | tr -d '.' | sed 's/^0*//')"
+  # if greater than limit
+  if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
+    # limit is broken
+    NO_FUNDS="0"
+  else
+    # not greater
+    NO_FUNDS="1"
+  fi
 }
 
 ################################################################################
