@@ -352,9 +352,32 @@ function cost_price() {
   backup_balances
   backup_prices
 
+  # listing available balance
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  # listing price
   LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
+  # listing value
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  ##############################################################################
+
+  # average listing price
+  echo "$LISTING_PRICE" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
+  # keep n lines
+  echo "$(tail -1440 "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price)" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price
+
+  # average count
+  LISTING_AVERAGE_PRICE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price | awk '{ print $1 }')"
+  # average total
+  LISTING_AVERAGE_PRICE_TOTAL="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+  # average price
+  LISTING_AVERAGE_PRICE="$(echo "$LISTING_AVERAGE_PRICE_TOTAL/$LISTING_AVERAGE_PRICE_COUNT" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  # average data
+  echo "$LISTING_AVERAGE_PRICE" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price
+  # original order data
+  echo "$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null)" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price
+
+  ##############################################################################
 
   if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
     # listing
