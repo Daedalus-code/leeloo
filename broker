@@ -1052,10 +1052,11 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $ROBOT_POSITION_COUNT"
             dialog --title "$FILE_TIME :: Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
               --no-collapse \
               --keep-window \
-              --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+              --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
           }
 
-          RESULT="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
+          RESULT="Exchange Strategy Currency Amount Cost Result Age
+$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
           # if zero
           if [[ -z "$RESULT" ]] &>/dev/null; then
             RESULT="No data"
