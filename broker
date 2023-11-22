@@ -1052,11 +1052,10 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $ROBOT_POSITION_COUNT"
             dialog --title "$FILE_TIME :: Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
               --no-collapse \
               --keep-window \
-              --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+              --msgbox "$RESULT" "$LENGTH" "$WIDTH"
           }
 
-          RESULT="Exchange Strategy Currency Amount Cost Result Age
-$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
+          RESULT="$(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
           # if zero
           if [[ -z "$RESULT" ]] &>/dev/null; then
             RESULT="No data"
@@ -1075,7 +1074,8 @@ $(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
 
       order_position_search
       # position search
-      RESULT="$(grep "$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')" "${SYS_DIR:?}"/robot/pool | column -t)"
+      RESULT="Exchange Strategy Currency Amount Cost Result Age
+$(grep "$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')" "${SYS_DIR:?}"/robot/pool)"
       RESULT_COUNT="$(echo "$RESULT" | wc -l)"
       WIDTH="$(echo "$(echo "$RESULT" | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$RESULT" | wc -l | awk '{ print $1 }')+4" | bc 2>/dev/null)"
@@ -1103,7 +1103,7 @@ $(cat "${SYS_DIR:?}"/robot/pool 2>/dev/null)"
         dialog --title "Open Positions Data +$RESULT_COUNT" \
           --no-collapse \
           --keep-window \
-          --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+          --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
       }
       display_result 2>/dev/null
 
