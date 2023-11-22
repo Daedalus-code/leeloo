@@ -1075,9 +1075,14 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $ROBOT_POSITION_COUNT"
       order_position_search
       # position search
       RESULT="$(grep "$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')" "${SYS_DIR:?}"/robot/pool | column -t)"
-
+      RESULT_COUNT="$(echo "$RESULT" | wc -l)"
       WIDTH="$(echo "$(echo "$RESULT" | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$RESULT" | wc -l | awk '{ print $1 }')+4" | bc 2>/dev/null)"
+
+      # if zero
+      if [[ -z "$RESULT" ]] &>/dev/null; then
+        RESULT="No data found"
+      fi
 
       if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
         LOG_LENGTH="7"
@@ -1094,7 +1099,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $ROBOT_POSITION_COUNT"
       fi
 
       display_result() {
-        dialog --title "Open Positions Data" \
+        dialog --title "Open Positions Data +$RESULT_COUNT" \
           --no-collapse \
           --keep-window \
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
