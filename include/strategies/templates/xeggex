@@ -276,6 +276,7 @@ function tx_id {
     touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
   fi
 
+  # execute order in strategy, create txid file
   echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
   # last txid (raw)
@@ -302,22 +303,20 @@ function tx_id {
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | egrep -v "id:[A-Za-z0-9]+" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
   # cleanup txid
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | egrep -v "error|null" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-
-  # last txid
-  TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
-
-  # if zero
-  if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
-    TX_ID_LAST="null"
-  fi
 }
 
 ################################################################################
 
-function tx_id_age {
+function tx_id_data {
+  # last txid
+  TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+  # if zero
+  if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
+    TX_ID_LAST="N/A"
+  fi
+
   # get txid age (seconds)
   TX_ID_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
   # if zero
   if [[ -z "$TX_ID_AGE_SECONDS" ]] &>/dev/null; then
     TX_ID_AGE_SECONDS="0"
