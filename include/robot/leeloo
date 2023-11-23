@@ -245,7 +245,16 @@ for (( ; ; )); do
 
   ##############################################################################
 
-  sleep "$BOT_TIMER"
+  # strategies running equals more time
+  STRAT_TIMED="$(ls -l "${SYS_DIR:?}"/robot/*.strategy | wc -l)"
+
+  # if zero
+  if [[ -z "$STRAT_TIMED" ]] &>/dev/null; then
+    STRAT_TIMED="0"
+  fi
+
+  # ruled by configuration and strategies
+  sleep "$BOT_TIMER+$STRAT_TIMED"
 done
 
 # END
