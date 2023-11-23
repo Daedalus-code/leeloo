@@ -75,9 +75,10 @@ delisted   # delisted markets
 
 # latest and oldest dip order data
 function dip_order_data {
-  # order data
-  DIP_OLDEST_ORDER_DATA="$(echo "$CAT_ORDERS_FILE" | tail -1)"
-  DIP_LATEST_ORDER_DATA="$(echo "$CAT_ORDERS_FILE" | head -1)"
+  # order data, sort by date
+  DIP_LATEST_ORDER_DATA="$(echo "$CAT_ORDERS_FILE" | sort -n -k 8 | head -1)"
+  DIP_OLDEST_ORDER_DATA="$(echo "$CAT_ORDERS_FILE" | sort -n -k 8 | tail -1)"
+
   # order id
   DIP_LATEST_ORDER_ID="$(echo "$DIP_LATEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
   DIP_OLDEST_ORDER_ID="$(echo "$DIP_OLDEST_ORDER_DATA" 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
