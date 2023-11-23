@@ -919,6 +919,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # average market spread
     POTENTIAL_MARKET_AVERAGE_SPREAD="$(echo "$POTENTIAL_MARKET_TOTAL_SPREAD/$POTENTIAL_MARKET_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+    # if zero
+    if [[ -z "$POTENTIAL_MARKET_AVERAGE_SPREAD" ]] &>/dev/null; then
+      POTENTIAL_MARKET_AVERAGE_SPREAD="0"
+    fi
+
     ############################################################################
 
     # total price movement
