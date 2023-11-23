@@ -1252,6 +1252,10 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   dip_order_data
 
+  # order age (bought,seconds)
+  DIP_LATEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  DIP_OLDEST_ORDER_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_OLDEST_ORDER_LISTING:?}"_"${DIP_OLDEST_ORDER_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
   # if latest sold has data
   if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_LATEST_ORDER_LISTING:?}"_"${DIP_LATEST_ORDER_REFERENCE:?}".sold || true)" -gt "0" ]] &>/dev/null; then
     # order age (sold,seconds)
