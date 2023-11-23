@@ -841,16 +841,20 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
 
   ##############################################################################
 
-  # if fear of missing out is true
-  if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
-    # ready to sell (signal age)
-    if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
-      # is this bullish signal allocated correctly? (without decimal)
-      if [[ "$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -lt "$(echo "$REFERENCE_ALLOCATED" | awk -F. '{ print $1 }')" ]] &>/dev/null; then
-        # trigger a sell for fear of missing out
-        echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-        echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-        echo "Bearish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+  # check if balances exist
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+
+    # if fear of missing out is true
+    if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
+      # ready to sell (signal age)
+      if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
+        # is this bullish signal allocated correctly? (without decimal)
+        if [[ "$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')" -lt "$(echo "$REFERENCE_ALLOCATED" | awk -F. '{ print $1 }')" ]] &>/dev/null; then
+          # trigger a sell for fear of missing out
+          echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+          echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+          echo "Bearish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+        fi
       fi
     fi
   fi
