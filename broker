@@ -643,11 +643,11 @@ error.log.....: $STRATEGY_ERROR"
 
 "7")
 
-  HEIGHT=13
+  HEIGHT=14
   WIDTH=48
-  CHOICE_HEIGHT=6
+  CHOICE_HEIGHT=7
   BACKTITLE="Leeloo (Multipass)"
-  TITLE="Configurations Menu"
+  TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
 
   OPTIONS=(
@@ -656,7 +656,8 @@ error.log.....: $STRATEGY_ERROR"
     3 "Reset            All Configurations!"
     4 "Reset            Leeloo Config"
     5 "Reset            Secret & Key config"
-    6 "Delist           Delisting Markets")
+    6 "Reset            Insufficient limit"
+    0 "Delist           Delisting Markets")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -726,9 +727,22 @@ error.log.....: $STRATEGY_ERROR"
 
     ;;
 
-    # delist markets
+    # reset insufficient limit
 
   "6")
+
+    if dialog --stdout --title "Reset insufficient limits?" \
+      --backtitle "Reset limits?" \
+      --yesno "Yes: Reset! No: Go back!" 5 33; then
+      rm "${LOG_DIR:?}"/leeloo/*/insufficient_* &>/dev/null
+      clear
+    fi
+
+    ;;
+
+    # delist markets
+
+  "0")
 
     HEIGHT=11
     WIDTH=40
