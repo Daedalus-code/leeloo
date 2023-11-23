@@ -589,7 +589,7 @@ function open_positions() {
   # if average price exist
   if [[ -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price ]] &>/dev/null; then
     # use average price from last buys
-    LISTING_OPEN_AVG_PRICE_SUM="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+    LISTING_OPEN_AVG_PRICE_SUM="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
     LISTING_OPEN_PRICE="$(echo "$LISTING_OPEN_AVG_PRICE_SUM/$(wc -l "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price | awk '{ print $1 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
   fi
 
