@@ -137,6 +137,17 @@ if [[ -z "$TX_ID_LAST" ]] &>/dev/null; then
   TX_ID_LAST="N/A"
 fi
 
+# if average price exist
+if [[ -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price ]] &>/dev/null; then
+  # use average price from last buys
+  LISTING_OPEN_AVG_PRICE_SUM="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_PRICE_AVG_BUY="$(echo "$LISTING_OPEN_AVG_PRICE_SUM/$(wc -l "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price | awk '{ print $1 }')" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+fi
+
+if [[ -z "$LISTING_PRICE_AVG_BUY" ]] &>/dev/null; then
+  LISTING_PRICE_AVG_BUY="N/A"
+fi
+
 ################################################################################
 
 # get data
@@ -147,6 +158,7 @@ MCS_Position..........: $MCS_POSITION_STATUS $MCS_POSITION_VALUE
 MCS_Bid/Ask/Last......: $REFERENCE_MCS_PRICE_BID/$REFERENCE_MCS_PRICE_ASK/$REFERENCE_MCS_PRICE_LAST
 
 Price.................: $LISTING_PRICE $REFERENCE_CURRENCY
+Average_Buy_Price.....: $LISTING_PRICE_AVG_BUY $REFERENCE_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL:?}%/${LISTING_ALLOCATED:?}%
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY $LISTING_AVAILABLE_VALUED $REFERENCE_CURRENCY
