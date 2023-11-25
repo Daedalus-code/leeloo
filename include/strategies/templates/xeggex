@@ -73,8 +73,9 @@ function backup_orders() {
 ################################################################################
 
 function insufficient_funds {
+  EXCHANGE_NULL_KEYWORD="Insufficient funds"
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-    NO_FUNDS="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null || true)"
+    NO_FUNDS="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null | grep -c "$EXCHANGE_NULL_KEYWORD" || true)"
     # if no funds
     if [[ "$NO_FUNDS" -gt "0" ]] &>/dev/null; then
       # cleanup null
