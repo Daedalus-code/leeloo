@@ -375,12 +375,10 @@ function cost_price() {
       # if any market chasers (mcs) has any price average available, use it
       MCS_AVG_PRICE_DATA="$(cat "${SYS_DIR:?}"/robot/open.MCS*"$EXCHANGE_API"*"$LISTING_CURRENCY"*"$REFERENCE_CURRENCY"*.list_avg_price 2>/dev/null | tail -1)"
       # if not zero
-      if [[ ! -z "$MCS_AVG_PRICE_DATA" ]] &>/dev/null; then
+      if [[ ! -n "$MCS_AVG_PRICE_DATA" ]] &>/dev/null; then
         # if average price has data
-        if [[ "$(echo "$MCS_AVG_PRICE_DATA" | wc -l)" -gt "0" ]] &>/dev/null; then
-          # use market chaser average price
-          echo "$MCS_AVG_PRICE_DATA" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
-        fi
+        # use market chaser average price
+        echo "$MCS_AVG_PRICE_DATA" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
       fi
     fi
   fi
