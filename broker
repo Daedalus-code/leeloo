@@ -736,6 +736,11 @@ error.log.....: $STRATEGY_ERROR"
     # count insufficient funds using find
     INSUFFICIENT_FUNDS_COUNT=$(grep -c "insufficient_" "$INSUFFICIENT_FUNDS_FOUND" || true)
 
+    # if zero
+    if [[ -z "$INSUFFICIENT_FUNDS_COUNT" ]] &>/dev/null; then
+      INSUFFICIENT_FUNDS_COUNT="0"
+    fi
+
     if dialog --stdout --title "Reset $INSUFFICIENT_FUNDS_COUNT limits?" \
       --yes-label "Reset" \
       --no-label "Cancel" \
