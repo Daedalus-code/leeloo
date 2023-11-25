@@ -266,7 +266,7 @@ if [[ "$BST_TAKE_PROFIT" == "1" ]] 2>>"${LOG_ERROR:?}"; then
       # if not zero
       if [[ ! -z "$BST_MCS_AVG_PRICE" ]] &>/dev/null; then
         # if average price has data
-        if [[ "$(echo "$BST_MCS_AVG_PRICE" | wc -l)" -gt "0" ]] &>/dev/null; then
+        if [[ "$(wc -l "$BST_MCS_AVG_PRICE" | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
           # use market chaser average price
           cp "$BST_MCS_AVG_PRICE" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price &>/dev/null
         fi
