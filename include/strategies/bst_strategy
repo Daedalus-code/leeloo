@@ -207,15 +207,15 @@ if [[ "$MCS_AVERAGE_PRICE" == "1" ]] &>/dev/null; then
   # if not zero
   if [[ ! -z "$EXCHANGE_API" || ! -z "$LISTING_CURRENCY" || ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # if any market chasers (mcs) has any price average available, use it
-    BST_MCS_AVG_PRICE="$(echo "$(ls -l "${SYS_DIR:?}"/robot/open.*.list_avg_price)" | grep "MCS" | grep "$EXCHANGE_API" | grep "$LISTING_CURRENCY" | grep "$REFERENCE_CURRENCY" | awk '{ print $NF }')"
+    BST_MCS_AVG_PRICE="$(cat "${SYS_DIR:?}"/robot/open.MCS*"$EXCHANGE_API"*"$LISTING_CURRENCY"*"$REFERENCE_CURRENCY".list_avg_price 2>/dev/null)"
     # mcs data
-    MCS_AVG_PRICE_DATA="$(tail -100 "$BST_MCS_AVG_PRICE")"
+    MCS_AVG_PRICE_DATA="$(tail -1 "$BST_MCS_AVG_PRICE")"
     # if not zero
     if [[ ! -z "$MCS_AVG_PRICE_DATA" ]] &>/dev/null; then
       # if average price has data
       if [[ "$(echo "$MCS_AVG_PRICE_DATA" | wc -l)" -gt "0" ]] &>/dev/null; then
         # use market chaser average price
-        echo "$MCS_AVG_PRICE_DATA" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price
+        echo "$MCS_AVG_PRICE_DATA" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
       fi
     fi
   fi
