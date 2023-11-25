@@ -734,7 +734,7 @@ error.log.....: $STRATEGY_ERROR"
     # find insufficient files
     INSUFFICIENT_FUNDS_FOUND=$(find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_*' -printf "%P\n" 2>/dev/null)
     # count insufficient funds using find
-    INSUFFICIENT_FUNDS_COUNT=$(echo "$INSUFFICIENT_FUNDS_FOUND" | wc -l)
+    INSUFFICIENT_FUNDS_COUNT=$(grep -c "insufficient_" "$INSUFFICIENT_FUNDS_FOUND" || true)
 
     if dialog --stdout --title "Reset $INSUFFICIENT_FUNDS_COUNT limits?" \
       --yes-label "Reset" \
