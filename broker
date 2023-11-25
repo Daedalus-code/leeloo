@@ -731,10 +731,16 @@ error.log.....: $STRATEGY_ERROR"
 
   "6")
 
-    if dialog --stdout --title "Reset insufficient limits?" \
-      --backtitle "Reset limits?" \
-      --yesno "Yes: Reset! No: Go back!" 5 33; then
-      rm "${LOG_DIR:?}"/leeloo/*/insufficient_* &>/dev/null
+    # find insufficient files
+    INSUFFICIENT_FUNDS_FOUND=$(find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_*' -printf "%P\n" 2>/dev/null)
+    # count insufficient funds using find
+    INSUFFICIENT_FUNDS_COUNT=$(echo "$INSUFFICIENT_FUNDS_FOUND" | wc -l)
+
+    if dialog --stdout --title "Reset $INSUFFICIENT_FUNDS_COUNT limits?" \
+      --yes-label "Reset" \
+      --no-label "Cancel" \
+      --yesno "Reset insufficient limits?\n$INSUFFICIENT_FUNDS_FOUND" 8 38; then
+      find "${LOG_DIR:?}"/leeloo/ -maxdepth 1 -name 'insufficient_*' -exec rm {} \; &>/dev/null
       clear
     fi
 
