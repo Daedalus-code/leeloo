@@ -197,30 +197,6 @@ incoming_reference
 
 ################################################################################
 
-# if zero
-if [[ -z "$MCS_AVERAGE_PRICE" ]] &>/dev/null; then
-  MCS_AVERAGE_PRICE="0"
-fi
-
-# if enabled
-if [[ "$MCS_AVERAGE_PRICE" == "1" ]] &>/dev/null; then
-  # if not zero
-  if [[ ! -z "$EXCHANGE_API" || ! -z "$LISTING_CURRENCY" || ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-    # if any market chasers (mcs) has any price average available, use it
-    MCS_AVG_PRICE_DATA="$(cat "${SYS_DIR:?}"/robot/open.MCS*"$EXCHANGE_API"*"$LISTING_CURRENCY"*"$REFERENCE_CURRENCY".list_avg_price 2>/dev/null | tail -1)"
-    # if not zero
-    if [[ ! -z "$MCS_AVG_PRICE_DATA" ]] &>/dev/null; then
-      # if average price has data
-      if [[ "$(echo "$MCS_AVG_PRICE_DATA" | wc -l)" -gt "0" ]] &>/dev/null; then
-        # use market chaser average price
-        echo "$MCS_AVG_PRICE_DATA" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
-      fi
-    fi
-  fi
-fi
-
-################################################################################
-
 if [[ "$REFERENCE_STATUS" == "false" ]] 2>>"${LOG_ERROR:?}"; then
   MARKET_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market $LISTING_AMOUNT"
   LIMIT_BST_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Limit $LISTING_PRICE $LISTING_AMOUNT"
