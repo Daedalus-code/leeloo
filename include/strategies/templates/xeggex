@@ -73,32 +73,34 @@ function backup_orders() {
 ################################################################################
 
 function insufficient_funds {
-  NO_FUNDS="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null || true)"
-  # if no funds
-  if [[ "$NO_FUNDS" -gt "0" ]] &>/dev/null; then
-    # cleanup null
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
-    # listing output
-    echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Insufficient funds! $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-    # keep record of insufficient funds
-    echo "$REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >"${LOG_DIR:?}"/leeloo/xeggex/insufficient_$BASENAME_STRATEGY
-  fi
+  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    NO_FUNDS="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null || true)"
+    # if no funds
+    if [[ "$NO_FUNDS" -gt "0" ]] &>/dev/null; then
+      # cleanup null
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+      # listing output
+      echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Insufficient funds! $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      # keep record of insufficient funds
+      echo "$REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >"${LOG_DIR:?}"/leeloo/xeggex/insufficient_$BASENAME_STRATEGY
+    fi
 
-  # insufficient limit
-  INSUFFICIENT_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/xeggex/insufficient_$BASENAME_STRATEGY 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+    # insufficient limit
+    INSUFFICIENT_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/xeggex/insufficient_$BASENAME_STRATEGY 2>/dev/null | awk '{ print $1 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
-  # if zero
-  if [[ -z "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
-    INSUFFICIENT_LIMIT="0"
-  fi
+    # if zero
+    if [[ -z "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
+      INSUFFICIENT_LIMIT="0"
+    fi
 
-  # if available balance is greater than insufficient limit
-  if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')" -gt "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
-    # funds available (trade)
-    NO_FUNDS="0"
-  else
-    # funds too small (wait)
-    NO_FUNDS="1"
+    # if available balance is greater than insufficient limit
+    if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')" -gt "$INSUFFICIENT_LIMIT" ]] &>/dev/null; then
+      # funds available (trade)
+      NO_FUNDS="0"
+    else
+      # funds too small (wait)
+      NO_FUNDS="1"
+    fi
   fi
 }
 
