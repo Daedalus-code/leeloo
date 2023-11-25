@@ -156,24 +156,28 @@ fi
 
 ################################################################################
 
-# if zero
-if [[ -z "$MCS_AVERAGE_PRICE" ]] &>/dev/null; then
-  MCS_AVERAGE_PRICE="0"
-fi
+function average_price {
+  # if zero
+  if [[ -z "$MCS_AVERAGE_PRICE" ]] &>/dev/null; then
+    MCS_AVERAGE_PRICE="0"
+  fi
 
-# if enabled
-if [[ "$MCS_AVERAGE_PRICE" == "1" ]] &>/dev/null; then
-  # if not zero
-  if [[ ! -z "$EXCHANGE_API" || ! -z "$LISTING_CURRENCY" || ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-    # if any market chasers (mcs) has any price average available, use it
-    MCS_AVG_PRICE_DATA="$(cat "${SYS_DIR:?}"/robot/open.MCS*"$EXCHANGE_API"*"$LISTING_CURRENCY"*"$REFERENCE_CURRENCY"*.list_avg_price 2>/dev/null | tail -1)"
-    # if average price has data
-    if [[ -n "$MCS_AVG_PRICE_DATA" ]] &>/dev/null; then
-      # use market chaser average price
-      echo "$MCS_AVG_PRICE_DATA" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
+  # if enabled
+  if [[ "$MCS_AVERAGE_PRICE" == "1" ]] &>/dev/null; then
+    # if not zero
+    if [[ ! -z "$EXCHANGE_API" || ! -z "$LISTING_CURRENCY" || ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      # if any market chasers (mcs) has any price average available, use it
+      MCS_AVG_PRICE_DATA="$(cat "${SYS_DIR:?}"/robot/open.MCS*"$EXCHANGE_API"*"$LISTING_CURRENCY"*"$REFERENCE_CURRENCY"*.list_avg_price 2>/dev/null | tail -1)"
+      # if average price has data
+      if [[ -n "$MCS_AVG_PRICE_DATA" ]] &>/dev/null; then
+        # use market chaser average price
+        echo "$MCS_AVG_PRICE_DATA" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
+      fi
     fi
   fi
-fi
+}
+
+################################################################################
 
 # if average price exist
 if [[ -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price ]] &>/dev/null; then
@@ -362,6 +366,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
               echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               tx_id
               cost_price
+              average_price
               echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
               # remove duplicates
@@ -398,6 +403,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
               echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               tx_id
               cost_price
+              average_price
               echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
               # remove duplicates
@@ -441,6 +447,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
               echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               tx_id
               cost_price
+              average_price
               echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
               # remove duplicates
@@ -477,6 +484,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
               echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               tx_id
               cost_price
+              average_price
               echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
               # remove duplicates
