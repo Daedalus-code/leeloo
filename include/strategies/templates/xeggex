@@ -134,7 +134,7 @@ function listing_data() {
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_UNCONFIRMED_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-  LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+  LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }')"
   LISTING_PRICE_ASK="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $3 }')"
   LISTING_PRICE_LAST="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }')"
   LISTING_AMOUNT_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
@@ -344,7 +344,7 @@ function cost_price() {
   # listing available balance
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   # listing price
-  LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+  LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }')"
   # listing value
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
@@ -532,7 +532,7 @@ function signal_age_selling() {
 function open_positions() {
 
   LISTING_OPEN_CURRENCY="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
-  LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $2 }')"
+  LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices | awk '{ print $4 }')"
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"

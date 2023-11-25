@@ -357,7 +357,7 @@ function cost_price() {
   # listing available balance
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   # listing price
-  LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
+  LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
   # listing value
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
@@ -427,7 +427,7 @@ function incoming_listing() {
       backup_prices
 
       LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
-      LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
+      LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
       LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
       if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
@@ -545,7 +545,7 @@ function signal_age_selling() {
 function open_positions() {
 
   LISTING_OPEN_CURRENCY="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
-  LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $2 }')"
+  LISTING_PRICE="$(grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/prices | awk '{ print $4 }')"
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
