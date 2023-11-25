@@ -367,12 +367,12 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
 
     # if lines are less than n
     if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances | awk '{ print $1 }')" -lt "1" ]] &>/dev/null; then
-      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | wc -L)+11" | bc 2>/dev/null)"
-      LENGTH="$(echo "$(echo "$RESULT_FORMAT" | wc -l)+4" | bc 2>/dev/null)"
+      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | column -t | wc -L)+11" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$RESULT_FORMAT" | column -t | wc -l)+4" | bc 2>/dev/null)"
       RESULT="No Balance available"
     else
-      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | wc -L)+11" | bc 2>/dev/null)"
-      LENGTH="$(echo "$(echo "$RESULT_FORMAT" | wc -l)+4" | bc 2>/dev/null)"
+      WIDTH="$(echo "$(echo "$RESULT_FORMAT" | column -t | wc -L)+4" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$RESULT_FORMAT" | column -t | wc -l)+4" | bc 2>/dev/null)"
       RESULT="$RESULT_FORMAT"
     fi
 
@@ -402,16 +402,16 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
       # keep lines with n
       RESULT="Coins: Deposited Available Unconfirmed
     $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
-      WIDTH="$(echo "$(echo "$RESULT" | wc -L)+2" | bc 2>/dev/null)"
-      LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)"
+      WIDTH="$(echo "$(echo "$RESULT" | column -t | wc -L)+4" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$RESULT" | column -t | wc -l)+4" | bc 2>/dev/null)"
     fi
 
     if [[ "$EXCHANGE_BALANCE" == "southxchange" ]] &>/dev/null; then
       # keep lines with n
       RESULT="Coins: Deposited Available Unconfirmed
     $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
-      WIDTH="$(echo "$(echo "$RESULT" | wc -L)+1" | bc 2>/dev/null)"
-      LENGTH="$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)"
+      WIDTH="$(echo "$(echo "$RESULT" | column -t | wc -L)+4" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$RESULT" | column -t | wc -l)+4" | bc 2>/dev/null)"
     fi
 
     display_result() {
