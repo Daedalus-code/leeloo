@@ -35,6 +35,8 @@ STRATEGY_TYPE="DIP"
 EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # minimum dip percentage (default 5%)
 DIP_MIN_DIP="$(egrep "DIP_MIN_DIP=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# maximum dip percentage (default 5%)
+DIP_MAX_DIP="$(egrep "DIP_MAX_DIP=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # minimum spread percentage (default 10%)
 DIP_MIN_SPREAD="$(egrep "DIP_MIN_SPREAD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # maximum spread percentage (default 50%)
@@ -696,10 +698,17 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     DIP=$(echo "$line" | awk '{print $5}' | sed 's/%//')
     VOLUME_PERCENTAGE=$(echo "$line" | awk '{print $6}' | sed 's/%//')
 
+    # if zero
+    if [[ -z "$DIP_MAX_DIP" ]] &>/dev/null; then
+      DIP_MAX_DIP="50"
+    fi
+
     # if the symbol matches the specified market
     if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] &&
+      # if the dip is greater than minimum limit
+      (($(echo "$DIP > $DIP_MIN_DIP" | bc -l 2>/dev/null))) &&
       # if the dip is less than minimum limit
-      (($(echo "$DIP < -$DIP_MIN_DIP" | bc -l 2>/dev/null))) &&
+      (($(echo "$DIP < $DIP_MAX_DIP" | bc -l 2>/dev/null))) &&
       # if the volume is greater than minimum limit
       (($(echo "$VOLUME_PERCENTAGE > $DIP_MIN_VOLUME" | bc -l 2>/dev/null))); then
       # check if bid is neither "0" nor "0.000000000"
@@ -718,9 +727,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         fi
 
         # if spread is greater than minimum limit
-        if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l))); then
+        if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l 2>/dev/null))); then
           # if spread is less than maximum limit
-          if (($(echo "$SPREAD < $DIP_MAX_SPREAD" | bc -l))); then
+          if (($(echo "$SPREAD < $DIP_MAX_SPREAD" | bc -l 2>/dev/null))); then
 
             # price movement
             PRICE_MOVEMENT=$(awk -v last="$LAST" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
