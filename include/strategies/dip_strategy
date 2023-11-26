@@ -696,8 +696,13 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     DIP=$(echo "$line" | awk '{print $5}' | sed 's/%//')
     VOLUME_PERCENTAGE=$(echo "$line" | awk '{print $6}' | sed 's/%//')
 
-    # if the symbol matches the specified market and if the spread, dip, and volume meet the criteria
-    if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] && (($(echo "$DIP < -$DIP_MIN_DIP" | bc -l 2>/dev/null))) && (($(echo "$VOLUME_PERCENTAGE > $DIP_MIN_VOLUME" | bc -l 2>/dev/null))); then
+    # if the symbol matches the specified market
+    if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] &&
+      # if the dip is less than minimum limit
+      (($(echo "$DIP < -$DIP_MIN_DIP" | bc -l 2>/dev/null))) &&
+      # if the volume is greater than minimum limit
+      (($(echo "$VOLUME_PERCENTAGE > $DIP_MIN_VOLUME" | bc -l 2>/dev/null))); then
+      # check if bid is neither "0" nor "0.000000000"
       if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]] &>/dev/null; then
 
         # spread
