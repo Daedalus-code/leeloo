@@ -173,12 +173,15 @@ if [[ "$MCS_AVERAGE_PRICE" == "1" ]] &>/dev/null; then
       if [[ ! "$MCS_AVG_PRICE_DATA" == "$(tail -1 "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null)" ]] &>/dev/null; then
         # track market chaser average price
         echo "$MCS_AVG_PRICE_DATA" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
-        # keep n lines
-        echo "$(tail -36 "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price)" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
       fi
     fi
   fi
 fi
+
+function cleanup_avg_price {
+  # keep n lines
+  echo "$(tail -18 "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price)" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
+}
 
 ################################################################################
 
@@ -369,6 +372,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
               echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               tx_id
               cost_price
+              cleanup_avg_price
               echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
               # remove duplicates
@@ -405,6 +409,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
               echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               tx_id
               cost_price
+              cleanup_avg_price
               echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
               # remove duplicates
@@ -448,6 +453,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
               echo "$MARKET_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               tx_id
               cost_price
+              cleanup_avg_price
               echo "$MARKET_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
               # remove duplicates
@@ -484,6 +490,7 @@ if [[ "$TX_TIME" -gt "$COOLDOWN_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
               echo "$LIMIT_BST_OUTPUT :: $TYPE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               tx_id
               cost_price
+              cleanup_avg_price
               echo "$LIMIT_BST_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
               # remove duplicates

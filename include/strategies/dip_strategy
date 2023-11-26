@@ -727,9 +727,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         fi
 
         # if spread is greater than minimum limit
-        if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l 2>/dev/null))); then
+        if (($(echo "$SPREAD > -$DIP_MIN_SPREAD" | bc -l 2>/dev/null))); then
           # if spread is less than maximum limit
-          if (($(echo "$SPREAD < $DIP_MAX_SPREAD" | bc -l 2>/dev/null))); then
+          if (($(echo "$SPREAD < -$DIP_MAX_SPREAD" | bc -l 2>/dev/null))); then
 
             # price movement
             PRICE_MOVEMENT=$(awk -v last="$LAST" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
