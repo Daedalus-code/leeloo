@@ -937,6 +937,17 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
 
   "2")
 
+    function until_pool_age {
+      # until age is met
+      until [[ "$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "1" ]] &>/dev/null; do
+        echo "Please wait.."
+        sleep 1
+        clear
+      done
+    }
+
+    until_pool_age
+
     HEIGHT=10
     WIDTH=45
     CHOICE_HEIGHT=2
@@ -962,13 +973,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
     "1")
 
       key_secret_set
-
-      # until age is met
-      until [[ "$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "1" ]] &>/dev/null; do
-        echo "Please wait.."
-        sleep 1
-        clear
-      done
+      until_pool_age
 
       if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
         if [[ -f "${SYS_DIR:?}"/robot/pool.view ]] &>/dev/null; then
@@ -1048,13 +1053,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
     "2")
 
       order_position_search
-
-      # until age is met
-      until [[ "$(stat -c '%Y' "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "1" ]] &>/dev/null; do
-        echo "Please wait.."
-        sleep 1
-        clear
-      done
+      until_pool_age
 
       # position search
       RESULT="Exchange Strategy Currency Amount Cost Result Age
