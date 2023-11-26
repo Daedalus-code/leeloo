@@ -263,6 +263,12 @@ function target_data() {
 
     ############################################################################
 
+    function random_active_market {
+      # random active target
+      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
+    }
+
+    random_active_market
     # if active has more lines than n
     if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
       # if search has more lines than n
@@ -278,13 +284,15 @@ function target_data() {
   if [[ -n "$MISSING_MARKETS" ]] &>/dev/null; then
     # random n
     RANDOM_MARKETS=$((((RANDOM % 2) + 1)))
-    if [[ "$RANDOM_MARKETS" == "1" ]]; then
+    if [[ "$RANDOM_MARKETS" == "1" ]] &>/dev/null; then
       # missing active target
       DIP_TARGET_FILE_OUTPUT="$(grep -w "$MISSING_MARKETS" "$CAT_ACTIVE_FILE" 2>/dev/null | head -1)"
+    else
+      random_active_market
     fi
   else
     # random active target
-    DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
+    random_active_market
   fi
 
   ##############################################################################
