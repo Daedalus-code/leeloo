@@ -261,22 +261,30 @@ function target_data() {
     # random missing market
     MISSING_MARKETS="$(echo "$MISSING_MARKETS" | tr ' ' '\n' | shuf -n 1)"
 
-    if [[ -n "$MISSING_MARKETS" ]] &>/dev/null; then
-      # missing active target
-      DIP_TARGET_FILE_OUTPUT="$(grep -w "$MISSING_MARKETS" "$CAT_ACTIVE_FILE" 2>/dev/null | head -1)"
-    else
-      # random active target
-      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
+    ############################################################################
 
-      # if active has more lines than n
-      if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
-        # if search has more lines than n
-        if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
-          # disregard with already searched markets
-          DIP_TARGET_FILE_OUTPUT="$(grep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | shuf | tail -1)"
-        fi
+    # if active has more lines than n
+    if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
+      # if search has more lines than n
+      if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
+        # disregard with already searched markets
+        DIP_TARGET_FILE_OUTPUT="$(grep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | shuf | tail -1)"
       fi
     fi
+  fi
+
+  ##############################################################################
+
+  if [[ -n "$MISSING_MARKETS" ]] &>/dev/null; then
+    # random n
+    RANDOM_MARKETS=$((((RANDOM % 2) + 1)))
+    if [[ "$RANDOM_MARKETS" == "1" ]]; then
+      # missing active target
+      DIP_TARGET_FILE_OUTPUT="$(grep -w "$MISSING_MARKETS" "$CAT_ACTIVE_FILE" 2>/dev/null | head -1)"
+    fi
+  else
+    # random active target
+    DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
   fi
 
   ##############################################################################
