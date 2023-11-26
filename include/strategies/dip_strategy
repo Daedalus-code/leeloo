@@ -718,8 +718,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # if the symbol matches the specified market and if the dip, spread, and volume meet the criteria
     if [[ "$SYMBOL" == *"$DIP_MARKETS"* ]] &&
+      # if dip minimum limit is met
       (($(echo "$DIP < -$DIP_MIN_DIP" | bc -l 2>/dev/null))) &&
+      # if dip maximum limit is met
       (($(echo "$DIP > -$DIP_MAX_DIP" | bc -l 2>/dev/null))) &&
+      # if volume minimum limit is met
       (($(echo "$VOLUME > $DIP_MIN_VOLUME" | bc -l 2>/dev/null))); then
 
       # check if bid is neither "0" nor "0.000000000"
@@ -728,9 +731,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # spread
         SPREAD=$(awk -v ask="$ASK" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((ask - bid) / bid * 100) }')
 
-        # if spread is greater than minimum limit
+        # if spread minimum limit is met
         if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l 2>/dev/null))); then
-          # if spread is less than maximum limit
+          # if spread maximum limit is met
           if (($(echo "$SPREAD < $DIP_MAX_SPREAD" | bc -l 2>/dev/null))); then
 
             # price movement
