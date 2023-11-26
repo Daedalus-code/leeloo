@@ -258,6 +258,9 @@ function target_data() {
       fi
     done <<<"$ACTIVE_MARKETS"
 
+    # random missing market
+    MISSING_MARKETS="$(echo "$MISSING_MARKETS" | tr ' ' '\n' | shuf -n 1)"
+
     if [[ -n "$MISSING_MARKETS" ]] &>/dev/null; then
       # missing active target
       DIP_TARGET_FILE_OUTPUT="$(grep -w "$MISSING_MARKETS" "$CAT_ACTIVE_FILE" 2>/dev/null | head -1)"
