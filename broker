@@ -734,8 +734,8 @@ error.log.....: $STRATEGY_ERROR"
     # find insufficient files
     INSUFFICIENT_FUNDS_FOUND=$(find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_*' -printf "%P\n" 2>/dev/null)
     # count insufficient funds using find
-    INSUFFICIENT_FUNDS_COUNT=$(grep -c "insufficient_" "$INSUFFICIENT_FUNDS_FOUND" || true)
-    LENGTH="8"
+    INSUFFICIENT_FUNDS_COUNT=$(echo "$INSUFFICIENT_FUNDS_FOUND" | grep -c "insufficient_" || true)
+    LENGTH=$(echo "5+$INSUFFICIENT_FUNDS_COUNT" | bc 2>/dev/null)
 
     # if zero
     if [[ -z "$INSUFFICIENT_FUNDS_COUNT" ]] &>/dev/null; then
