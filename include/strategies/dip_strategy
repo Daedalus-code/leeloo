@@ -37,6 +37,8 @@ EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".
 DIP_MIN_DIP="$(egrep "DIP_MIN_DIP=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # minimum spread percentage (default 10%)
 DIP_MIN_SPREAD="$(egrep "DIP_MIN_SPREAD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# maximum spread percentage (default 50%)
+DIP_MAX_SPREAD="$(egrep "DIP_MAX_SPREAD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # minimum volume percentage (default 0.5%)
 DIP_MIN_VOLUME="$(egrep "DIP_MIN_VOLUME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # markets to consider
@@ -701,38 +703,51 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # spread
         SPREAD=$(awk -v ask="$ASK" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((ask - bid) / bid * 100) }')
 
+        # if zero
+        if [[ -z "$DIP_MIN_SPREAD" ]] &>/dev/null; then
+          DIP_MIN_SPREAD="10"
+        fi
+        # if zero
+        if [[ -z "$DIP_MAX_SPREAD" ]] &>/dev/null; then
+          DIP_MAX_SPREAD="50"
+        fi
+
+        # if spread is greater than minimum limit
         if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l))); then
+          # if spread is less than maximum limit
+          if (($(echo "$SPREAD < $DIP_MAX_SPREAD" | bc -l))); then
 
-          # price movement
-          PRICE_MOVEMENT=$(awk -v last="$LAST" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
-          # volume percentage (configuration)
-          VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
+            # price movement
+            PRICE_MOVEMENT=$(awk -v last="$LAST" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
+            # volume percentage (configuration)
+            VOLUME_PERCENTAGE="$(echo "$VOLUME_PERCENTAGE" | awk '{ printf "%.2f\n", $1 }')"
 
-          # create market file
-          echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+            # create market file
+            echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
-          # if zero
-          if [[ -z "$DIP_MIN_MOVEMENT" ]] &>/dev/null; then
-            # use default
-            DIP_MIN_MOVEMENT="0"
-          fi
+            # if zero
+            if [[ -z "$DIP_MIN_MOVEMENT" ]] &>/dev/null; then
+              # use default
+              DIP_MIN_MOVEMENT="0"
+            fi
 
-          # price movement check (without decimal)
-          PRICE_MOVEMENT_CHECK="$(echo "$PRICE_MOVEMENT" | tr -d '.' | sed 's/^0*//')"
+            # price movement check (without decimal)
+            PRICE_MOVEMENT_CHECK="$(echo "$PRICE_MOVEMENT" | tr -d '.' | sed 's/^0*//')"
 
-          # if the symbol meets the potential buy criteria, ruled by configuration
-          if (($(echo "$PRICE_MOVEMENT_CHECK > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
-            if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+            # if the symbol meets the potential buy criteria, ruled by configuration
+            if (($(echo "$PRICE_MOVEMENT_CHECK > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
+              if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
-              # potential symbol, bid, ask, last
-              POTENTIAL_BUY_SYMBOL="$SYMBOL"
-              POTENTIAL_BUY_BID="$BID"
-              POTENTIAL_BUY_ASK="$ASK"
-              POTENTIAL_BUY_LAST="$LAST"
+                # potential symbol, bid, ask, last
+                POTENTIAL_BUY_SYMBOL="$SYMBOL"
+                POTENTIAL_BUY_BID="$BID"
+                POTENTIAL_BUY_ASK="$ASK"
+                POTENTIAL_BUY_LAST="$LAST"
 
-              # create target file
-              POTENTIAL_TARGET_FOUND="$POTENTIAL_BUY_SYMBOL | Bid: $POTENTIAL_BUY_BID | Ask: $POTENTIAL_BUY_ASK | Last: $POTENTIAL_BUY_LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE"
-              echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+                # create target file
+                POTENTIAL_TARGET_FOUND="$POTENTIAL_BUY_SYMBOL | Bid: $POTENTIAL_BUY_BID | Ask: $POTENTIAL_BUY_ASK | Last: $POTENTIAL_BUY_LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME_PERCENTAGE"
+                echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+              fi
             fi
           fi
         fi
