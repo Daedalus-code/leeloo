@@ -202,6 +202,16 @@ fi
 
 ################################################################################
 
+# cat order data
+CAT_ORDERS_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
+
+# if zero
+if [[ -z "$CAT_ORDERS_FILE" ]] &>/dev/null; then
+  CAT_ORDERS_FILE="0"
+fi
+
+################################################################################
+
 function cat_active_target() {
   # cat active data
   CAT_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
@@ -233,8 +243,30 @@ function target_data() {
     # use active list
   elif [[ "$TARGET_ACTIVE" == "ACTIVE" ]] &>/dev/null; then ####################
 
-    # random active target
-    DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
+    # extract markets from order list (assuming columns 6 and 7)
+    ORDER_MARKETS=$(awk '{ print $6"/"$7 }' <<<"$CAT_ORDERS_FILE" | sort -u)
+    # extract markets from active list
+    ACTIVE_MARKETS=$(awk -F: '{ print $1 }' <<<"$CAT_ACTIVE_FILE")
+    # initialize the variable to store missing markets
+    MISSING_MARKETS=""
+
+    # iterate through each line in ACTIVE_MARKETS
+    while IFS= read -r ACTIVE_MARKET; do
+      # check if the active market is not in the order markets
+      if ! grep -qwF "$ACTIVE_MARKET" <<<"$ORDER_MARKETS"; then
+        MISSING_MARKETS+=" $ACTIVE_MARKET"
+      fi
+    done <<<"$ACTIVE_MARKETS"
+
+    if [[ -n "$MISSING_MARKETS" ]] &>/dev/null; then
+      # missing active target
+      DIP_TARGET_FILE_OUTPUT="$(grep -w "$MISSING_MARKETS" "$CAT_ACTIVE_FILE" 2>/dev/null | head -1)"
+    else
+      # random active target
+      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
+    fi
+
+    ############################################################################
 
     # if active has more lines than n
     if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
@@ -584,14 +616,6 @@ fi
 echo "$(echo "$CAT_PRICES_DIP_FILE" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/$EXCHANGE_DIR_NAME/prices.$DIP_MARKETS" 2>/dev/null
 
 ################################################################################
-
-# cat order data
-CAT_ORDERS_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
-
-# if zero
-if [[ -z "$CAT_ORDERS_FILE" ]] &>/dev/null; then
-  CAT_ORDERS_FILE="0"
-fi
 
 # market.list file output
 CAT_MARKET_LIST_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | sed '/^$/d')"
