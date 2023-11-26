@@ -33,29 +33,29 @@ STRATEGY_TYPE="DIP"
 
 # exchange template
 EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# minimum dip percentage (default 5%)
+# minimum dip percentage
 DIP_MIN_DIP="$(egrep "DIP_MIN_DIP=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# maximum dip percentage (default 5%)
+# maximum dip percentage
 DIP_MAX_DIP="$(egrep "DIP_MAX_DIP=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# minimum spread percentage (default 10%)
+# minimum spread percentage
 DIP_MIN_SPREAD="$(egrep "DIP_MIN_SPREAD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# maximum spread percentage (default 50%)
+# maximum spread percentage
 DIP_MAX_SPREAD="$(egrep "DIP_MAX_SPREAD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# minimum volume percentage (default 0.5%)
+# minimum volume
 DIP_MIN_VOLUME="$(egrep "DIP_MIN_VOLUME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # markets to consider
 DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk '{ print $1 }' | awk -F= '{ print $2 }' | tr -d '"#')"
 # dip allocated (1% of balance)
 DIP_ALLOCATED="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# max open orders (default 10)
+# max open orders
 DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# dip margin (default 1)
+# dip margin
 DIP_MARGIN="$(egrep "DIP_MARGIN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # dca (default false) 100=100%
 DIP_DCA="$(egrep "DIP_DCA=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # disregard reference as targets
 DIP_ALL_IN="$(egrep "DIP_ALL_IN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# dip max age (default 600 seconds)
+# dip max age
 DIP_MAX_AGE="$(egrep "DIP_MAX_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # disregard other markets run by other bots
 DIP_DISREGARD_BOTS="$(egrep "DIP_DISREGARD_BOTS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
@@ -737,7 +737,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
             # price movement
             PRICE_MOVEMENT=$(awk -v last="$LAST" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
-            # volume percentage (configuration)
+            # volume (configuration)
             VOLUME="$(echo "$VOLUME" | awk '{ printf "%.2f\n", $1 }')"
 
             # create market file
