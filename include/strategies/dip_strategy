@@ -233,8 +233,44 @@ function target_data() {
     # use active list
   elif [[ "$TARGET_ACTIVE" == "ACTIVE" ]] &>/dev/null; then ####################
 
-    # random active target
-    DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
+    # extract markets from order list (assuming columns 6 and 7)
+    ORDER_MARKETS=$(awk '{ print $6"/"$7 }' <<<"$CAT_ORDERS_FILE" | sort -u)
+    # extract markets from active list
+    ACTIVE_MARKETS=$(awk -F: '{ print $1 }' <<<"$CAT_ACTIVE_FILE")
+    # initialize the variable to store missing markets
+    MISSING_MARKETS=""
+    # iterate through each line in ACTIVE_MARKETS
+    while IFS= read -r ACTIVE_MARKET; do
+      # check if the active market is not in the order markets
+      if ! grep -qwF "$ACTIVE_MARKET" <<<"$ORDER_MARKETS"; then
+        MISSING_MARKETS+=" $ACTIVE_MARKET"
+      fi
+    done <<<"$ACTIVE_MARKETS"
+
+    # random missing market
+    MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS" | tr ' ' '\n' | shuf -n 1)"
+
+    # if data
+    if [[ -n "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
+      # random n
+      RANDOM_MISSING_MARKET=$((((RANDOM % 2) + 1)))
+    else
+      RANDOM_MISSING_MARKET="2"
+    fi
+
+    # if random
+    if [[ "$RANDOM_MISSING_MARKET" == "2" ]] &>/dev/null; then
+      # target missing orders from active list
+      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" | grep "$MISSING_MARKETS_RANDOM")"
+    fi
+
+    ############################################################################
+
+    # if random
+    if [[ "$RANDOM_MISSING_MARKET" == "1" ]] &>/dev/null; then
+      # random active target
+      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
+    fi
 
     # if active has more lines than n
     if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
