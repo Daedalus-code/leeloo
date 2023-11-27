@@ -1593,6 +1593,29 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_BS_STATUS="Trading"
   fi
 
+  ##############################################################################
+
+  # if still trading
+  if [[ "$DIP_BS_STATUS" == "Trading" ]] &>/dev/null; then
+    # check age of bought file
+    DIP_BS_STATUS_BOUGHT_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    # check age of sold file
+    DIP_BS_STATUS_SOLD_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+    # if bought and sold are too old
+    if [[ "$DIP_BS_STATUS_BOUGHT_AGE" -gt "86400" && "$DIP_BS_STATUS_SOLD_AGE" -gt "86400" ]] &>/dev/null; then
+      # reset sold file
+      truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
+      # if not zero, remove active order
+      if [[ ! -z "$REFERENCE_CURRENCY" && ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      fi
+      DIP_BS_STATUS="Removing.."
+    fi
+  fi
+
+  ##############################################################################
+
   # if zero
   if [[ -z "$DIP_BS_STATUS" ]] &>/dev/null; then
     DIP_BS_STATUS="null"
