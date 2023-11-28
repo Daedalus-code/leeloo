@@ -1003,8 +1003,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     ############################################################################
 
+    # total price dip
+    POTENTIAL_MARKET_TOTAL_DIP="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '{ print $10 }' | awk '{ SUM += $1} END { print SUM }')"
+    # average dip
+    POTENTIAL_MARKET_AVERAGE_DIP="$(echo "$POTENTIAL_MARKET_TOTAL_DIP/$POTENTIAL_MARKET_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    ############################################################################
+
     # log target output
-    DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Found: $POTENTIAL_MARKET_COUNT Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}% Price movement: ${POTENTIAL_MARKET_AVERAGE_MOVEMENT:?}%"
+    DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Found: $POTENTIAL_MARKET_COUNT Dip: $POTENTIAL_MARKET_AVERAGE_DIP Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}% Price Movement: ${POTENTIAL_MARKET_AVERAGE_MOVEMENT:?}%"
     echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
     ############################################################################
