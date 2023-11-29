@@ -247,6 +247,8 @@ function target_data() {
       fi
     done <<<"$ACTIVE_MARKETS"
 
+    # missing markets
+    echo "$MISSING_MARKETS" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
     # random missing market
     MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS" | tr ' ' '\n' | shuf -n 1)"
 
@@ -2320,6 +2322,26 @@ if [[ -z "$DIP_HIGH_DAY" || -z "$DIP_HIGH_TARGETS" || -z "$DIP_HIGH_MOVEMENTS" ]
 fi
 
 ################################################################################
+
+# missing markets
+DIP_MISSING_MARKETS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null)"
+# market count
+DIP_MISSING_MARKETS_COUNT="$(echo "$DIP_MISSING_MARKETS" | sed '/^$/d' | wc -l)"
+
+# if zero
+if [[ -z "$DIP_MISSING_MARKETS_COUNT" ]] &>/dev/null; then
+  DIP_MISSING_MARKETS_COUNT="0"
+fi
+
+# missing markets percentage
+DIP_MISSING_MARKETS_PERCENTAGE="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_MISSING_MARKETS_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# if zero
+if [[ -z "$DIP_MISSING_MARKETS_PERCENTAGE" ]] &>/dev/null; then
+  DIP_MISSING_MARKETS_PERCENTAGE="0"
+fi
+
+################################################################################
 # profits & gains
 ################################################################################
 
@@ -2400,6 +2422,7 @@ DCA................: $DIP_DCA_DATA Orders: $DIP_DCA_COUNT
 All_In.............: $DIP_ALL_IN_DATA
 Buying.............: $DIP_ORDER_BUY_COUNT (${DIP_ORDER_PERCENTAGE_BUY:?}%)
 Selling............: $DIP_ORDER_SELL_COUNT (${DIP_ORDER_PERCENTAGE_SELL:?}%)
+Missing............: $DIP_MISSING_MARKETS_COUNT (${DIP_MISSING_MARKETS_PERCENTAGE:?}%)
 Average_Order_Age..: $DIP_ACTIVE_FILE_AVERAGE_AGE | Days: $DIP_ACTIVE_FILE_AVERAGE_DAYS
 Top_Volume.........: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?} $DIP_TOP_VOLUME_LISTING
 Top_Amount.........: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
