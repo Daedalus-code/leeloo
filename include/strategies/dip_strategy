@@ -2043,8 +2043,15 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/
 
       log_date
 
+      # order n greater than n
+      if [[ "$(echo "$DIP_ORDER_ID" | wc -L)" -gt "9" ]] &>/dev/null; then
+        DIP_ORDER_ID_DOTS=".."
+      else
+        DIP_ORDER_ID_DOTS=""
+      fi
+
       # removing output (log)
-      DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing: $DIP_ORDER_ID Age: $DIP_BOUGHT_AGE_OUTPUT (old) Spread: ${DIP_TARGET_SPREAD:?}%"
+      DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing: ${DIP_ORDER_ID:0:9} Age: $DIP_BOUGHT_AGE_OUTPUT (old) Spread: ${DIP_TARGET_SPREAD:?}%"
       echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
   fi
