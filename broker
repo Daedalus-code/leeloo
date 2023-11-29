@@ -1006,9 +1006,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
             HOURS=$(echo "$HOURS" | tr -d 'h')
             MINUTES=$(echo "$MINUTES" | tr -d 'm')
             SECONDS=$(echo "$SECONDS" | tr -d 's')
-            # using awk for floating-point arithmetic
-            SECONDS_SUM=$(awk "BEGIN { printf \"%.9f\", $HOURS * 3600 + $MINUTES * 60 + $SECONDS }")
-            TOTAL_SECONDS=$(echo "$TOTAL_SECONDS + $SECONDS_SUM" | bc)
+            TOTAL_SECONDS=$((TOTAL_SECONDS + (HOURS * 3600) + (MINUTES * 60) + SECONDS))
           done <"$DURATIONS_FILE"
 
           OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
