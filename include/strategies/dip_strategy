@@ -243,7 +243,7 @@ function target_data() {
     while IFS= read -r ACTIVE_MARKET; do
       # check if the active market is not in the order markets
       if ! grep -qwF "$ACTIVE_MARKET" <<<"$ORDER_MARKETS"; then
-        MISSING_MARKETS+=" $ACTIVE_MARKET"
+        MISSING_MARKETS+="$ACTIVE_MARKET"
       fi
     done <<<"$ACTIVE_MARKETS"
 
@@ -256,7 +256,10 @@ function target_data() {
     if [[ -n "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
       # random n
       RANDOM_MISSING_MARKET=$((((RANDOM % 2) + 1)))
-    else
+    fi
+    # if zero
+    if [[ -z "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
+      # default
       RANDOM_MISSING_MARKET="1"
     fi
 
