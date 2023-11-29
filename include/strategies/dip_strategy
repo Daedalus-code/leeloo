@@ -1099,11 +1099,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
       # order id found
       if [[ -n "$DIP_OLDEST_ORDER_ID" ]] &>/dev/null; then
-
-        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-          # cancel old order (buy/sell)
-          cancelOrder "$DIP_OLDEST_ORDER_ID" 2>>"${LOG_ERROR:?}"
-        fi
+        # cancel old order (buy/sell)
+        cancelOrder "$DIP_OLDEST_ORDER_ID" 2>>"${LOG_ERROR:?}"
         sleep 1
       fi
     fi
@@ -2026,10 +2023,8 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_OLD_ORDER_MAX_SECONDS" ]] &>/dev/
     # order id found
     if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
 
-      if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-        # cancel old order (buy)
-        cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
-      fi
+      # cancel old order (buy)
+      cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
 
       sleep 1
       # remove old order
@@ -2216,10 +2211,8 @@ fi
 # if order id found
 if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
 
-  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-    # cancel delisted market
-    cancelOrder "$DIP_DUMP_LISTING_ORDER_ID"
-  fi
+  # cancel delisted market
+  cancelOrder "$DIP_DUMP_LISTING_ORDER_ID" 2>>"${LOG_ERROR:?}"
 
   sleep 1
   log_date
