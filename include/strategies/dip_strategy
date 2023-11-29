@@ -243,12 +243,12 @@ function target_data() {
     while IFS= read -r ACTIVE_MARKET; do
       # check if the active market is not in the order markets
       if ! grep -qwF "$ACTIVE_MARKET" <<<"$ORDER_MARKETS"; then
-        MISSING_MARKETS+="$ACTIVE_MARKET"
+        MISSING_MARKETS+=" $ACTIVE_MARKET"
       fi
     done <<<"$ACTIVE_MARKETS"
 
     # missing markets
-    echo "$MISSING_MARKETS" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
+    echo "$MISSING_MARKETS" | xargs >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
     # random missing market
     MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS" | tr ' ' '\n' | shuf -n 1)"
 
