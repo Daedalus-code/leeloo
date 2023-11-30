@@ -489,7 +489,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   display_result() {
     dialog --title "Leeloo/Strategy Debug" \
       --no-collapse \
-      --msgbox "$RESULT" 16 "$WIDTH"
+      --msgbox "$RESULT" 14 "$WIDTH"
   }
 
   ##############################################################################
@@ -578,49 +578,60 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   STRATEGY_ERRORS="$STRATEGY_DATA"
 
   if [[ "$STRATEGY_DATA" -eq "0" ]] &>/dev/null; then
-    WIDTH="$(echo "$(echo "$SYSTEM_UPTIME" | wc -L)+30" | bc 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$SYSTEM_UPTIME" | wc -L)+35" | bc 2>/dev/null)"
     STRATEGY_CLOCK="None"
     STRATEGY_ERROR="None"
     STRATEGY_ERRORS="None"
   else
-    WIDTH="$(echo "$(echo "$STRATEGY_ERROR" | wc -L)+25" | bc 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$STRATEGY_ERROR" | wc -L)+35" | bc 2>/dev/null)"
   fi
 
   ##############################################################################
 
   RESULT="
-System:
-Uptime........: (${SYSTEM_UPTIME_DAYS:?}d) $SYSTEM_UPTIME
-Idle..........: (${SYSTEM_IDLE_DAYS:?}d) $SYSTEM_IDLE_TIME
+System Uptime......: (${SYSTEM_UPTIME_DAYS:?}d) $SYSTEM_UPTIME
+System Idle........: (${SYSTEM_IDLE_DAYS:?}d) $SYSTEM_IDLE_TIME
 
-Strategy:
-Last Error....: (${STRATEGY_UPTIME_DAYS:?}d) $STRATEGY_LOG_TIME
-Robot Restart.: $STRATEGY_RESTART_COUNT
-Error Count...: $STRATEGY_ERRORS
-Error Time....: $STRATEGY_CLOCK
+Strategy Last......: (${STRATEGY_UPTIME_DAYS:?}d) $STRATEGY_LOG_TIME
+Strategy Restart...: $STRATEGY_RESTART_COUNT
+Strategy Errors....: $STRATEGY_ERRORS
+Strategy Time......: $STRATEGY_CLOCK
 
-error.log.....: $STRATEGY_ERROR"
+Strategy error.log.: ${STRATEGY_ERROR:0:21}"
   display_result 2>/dev/null
 
   ##############################################################################
 
   # data exist, check
   if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
-    if dialog --stdout --title "Check data?" \
+    if dialog --stdout --title "Read error.log?" \
       --backtitle "Check data?" \
-      --yesno "Yes: Check! No: Go back!" 5 30; then
-      # remove duplicates
-      echo "$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
-      # strategy data exist, edit
-      nano "$LOG_DIR"/leeloo/error.log
-      clear
+      --yesno "Yes: Check! No: Go back!" 5 28; then
+
+      # strategy data exist, copy temp file
+      cat "$LOG_DIR"/leeloo/error.log >/tmp/readlog 2>/dev/null
+      # read temp file
+      nano /tmp/readlog
+      # remove temp file
+      rm /tmp/readlog &>/dev/null
+
+      # if any duplicates
+      if awk '!seen[$0]++' "$STRATEGY_DATA"; then
+        # remove duplicates?
+        if dialog --stdout --title "Remove duplicates?" \
+          --backtitle "Cleanup data?" \
+          --yesno "Yes: Clean! No: Go back!" 5 28; then
+          # remove duplicates
+          echo "$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
+        fi
+      fi
     fi
 
     # strategy data exist, keep, delete
     if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
-      if ! dialog --stdout --title "Keep data (error.log)?" \
+      if ! dialog --stdout --title "Keep error.log?" \
         --backtitle "Keep data (error.log)?" \
-        --yesno "Yes: Keep! No: Delete!" 5 30; then
+        --yesno "Yes: Keep! No: Delete!" 5 28; then
         truncate -s 0 "$LOG_DIR"/leeloo/error.log &>/dev/null
       fi
     fi
@@ -630,7 +641,7 @@ error.log.....: $STRATEGY_ERROR"
   if [[ "$STRATEGY_RESTART_COUNT" -gt "0" ]] &>/dev/null; then
     if ! dialog --stdout --title "Keep restart data?" \
       --backtitle "Keep restart data?" \
-      --yesno "Yes: Keep! No: Delete!" 5 30; then
+      --yesno "Yes: Keep! No: Delete!" 5 28; then
       truncate -s 0 "$SYS_DIR"/robot/restart &>/dev/null
     fi
   fi
