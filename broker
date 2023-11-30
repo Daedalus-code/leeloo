@@ -602,11 +602,12 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   ##############################################################################
 
-  # data exist, check
+  # data exist, read
   if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
+    # prompt user to read data
     if dialog --stdout --title "Read error.log?" \
-      --backtitle "Check data?" \
-      --yesno "Yes: Check! No: Go back!" 5 28; then
+      --backtitle "Read data?" \
+      --yesno "Yes: Read! No: Go back!" 5 28; then
 
       # strategy data exist, copy temp file
       cat "$LOG_DIR"/leeloo/error.log >/tmp/readlog 2>/dev/null
@@ -616,19 +617,21 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
       rm /tmp/readlog &>/dev/null
 
       # if any duplicates
-      if awk '!seen[$0]++' "$STRATEGY_DATA"; then
-        # remove duplicates?
+      if awk '!seen[$0]++' "${LOG_DIR:?}"/leeloo/error.log | grep -q '.'; then
+        # prompt user to remove duplicates
         if dialog --stdout --title "Remove duplicates?" \
           --backtitle "Cleanup data?" \
           --yesno "Yes: Clean! No: Go back!" 5 28; then
           # remove duplicates
-          echo "$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/error.log
+          awk '!a[$0]++' "${LOG_DIR:?}"/leeloo/error.log >"${LOG_DIR:?}"/leeloo/error.log.tmp
+          mv "${LOG_DIR:?}"/leeloo/error.log.tmp "${LOG_DIR:?}"/leeloo/error.log
         fi
       fi
     fi
 
     # strategy data exist, keep, delete
     if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
+      # prompt user to keep data
       if ! dialog --stdout --title "Keep error.log?" \
         --backtitle "Keep data (error.log)?" \
         --yesno "Yes: Keep! No: Delete!" 5 28; then
@@ -639,6 +642,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   # restart data exist, keep, delete
   if [[ "$STRATEGY_RESTART_COUNT" -gt "0" ]] &>/dev/null; then
+    # prompt user to remove restart data
     if ! dialog --stdout --title "Keep restart data?" \
       --backtitle "Keep restart data?" \
       --yesno "Yes: Keep! No: Delete!" 5 28; then
