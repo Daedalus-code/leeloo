@@ -1677,11 +1677,15 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       # default leftover size limit (0.005000000%)
       DIP_LEFTOVER_SIZE_LIMIT="0.005000000"
 
+      ##########################################################################
+
       # if market fail at selling (null)
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null || true)" -gt "0" ]] &>/dev/null; then
         # increase leftover size limit to (1.000000000%)
         DIP_LEFTOVER_SIZE_LIMIT="1.000000000"
       fi
+
+      ##########################################################################
 
       # if leftover size is greater than leftover size limit
       if [[ "$(echo "$DIP_LEFTOVER_SIZE" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_LEFTOVER_SIZE_LIMIT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
