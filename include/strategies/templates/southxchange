@@ -345,8 +345,11 @@ function tx_id {
     echo "$(tail -1024 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
   fi ###########################################################################
 
-  # cleanup null
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  # reset at midnight
+  if [[ "$(date '+%R')" == "00:00" ]] &>/dev/null; then
+    # cleanup null
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+  fi
   # cleanup txid
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | egrep -v "error|null|Amount|below|minimum" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
