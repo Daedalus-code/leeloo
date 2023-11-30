@@ -119,11 +119,13 @@ function delisted() {
 
   # check if there are delisted markets
   if [[ -s "$DELISTED_FILE" ]] &>/dev/null; then
-    # loop through the delisted markets and remove them from the prices file
-    while IFS= read -r MARKET; do
-      # remove the market in both formats
-      sed -i "/${MARKET//\//\\/}/d" "$PRICES_FILE"
-    done <"$DELISTED_FILE"
+    if [[ "$(egrep -c "[0-9]+|[A-Z]+" "$DELISTED_FILE" || true)" -gt "0" ]] &>/dev/null; then
+      # loop through the delisted markets and remove them from the prices file
+      while IFS= read -r MARKET; do
+        # remove the market in both formats
+        sed -i "/${MARKET//\//\\/}/d" "$PRICES_FILE"
+      done <"$DELISTED_FILE"
+    fi
   fi
 }
 
@@ -325,7 +327,7 @@ function tx_id {
     # update null
     echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY : $TX_ID_LAST_RAW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
     # keep null
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | sed '/^$/d')" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
     # keep n lines
     echo "$(tail -1024 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
   fi ###########################################################################
