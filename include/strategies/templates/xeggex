@@ -324,6 +324,10 @@ function tx_id {
   if [[ "$TX_ID_NULL_WORDS" -gt "1" || "$TX_ID_NULL_SYMBOLS" -gt "0" ]] &>/dev/null; then
     # update null
     echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY : $TX_ID_LAST_RAW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
+    # keep null
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
+    # keep n lines
+    echo "$(tail -1024 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
   fi ###########################################################################
 
   # cleanup null
