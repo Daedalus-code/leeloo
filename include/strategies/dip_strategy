@@ -2208,8 +2208,15 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
   # removing output (log)
   DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Removing order! $DIP_DUMP_LISTING_ORDER_ID. (Delisted)"
   echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  # update balances
-  echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null
+  # if southxchange order
+  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+    # update balances
+    echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null
+  fi
+  # if xeggex order
+  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+    echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null
+  fi
 fi
 
 # dump listing balance
