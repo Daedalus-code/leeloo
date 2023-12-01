@@ -486,152 +486,170 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
 
   update_screen
 
-  display_result() {
-    dialog --title "Leeloo/Strategy Debug" \
-      --no-collapse \
-      --msgbox "$RESULT" 14 "$WIDTH"
-  }
+  ##############################################################################
+
+  # strategy error output
+  STRATEGY_ERROR_DATA="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null)"
+  # strategy error count
+  STRATEGY_ERROR_DATA_COUNT="$(echo "$STRATEGY_ERROR_DATA" 2>/dev/null | sed '/^$/d' | wc -l)"
+
+  # txid null error output
+  TXID_NULL_DATA="$(echo "$(cat "${SYS_DIR:?}"/robot/*null.log 2>/dev/null)")"
+  # txid null error count
+  TXID_NULL_DATA_COUNT="$(echo "$TXID_NULL_DATA" 2>/dev/null | sed '/^$/d' | wc -l)"
 
   ##############################################################################
 
-  # system uptime
-  function system_uptime() {
-    if [[ -f /proc/uptime ]] &>/dev/null; then
+  HEIGHT=10
+  WIDTH=37
+  CHOICE_HEIGHT=3
+  BACKTITLE="Leeloo (Multipass)"
+  TITLE="Debug Menu"
+  MENU="Multipass $DATE_XARGS"
 
-      # get uptime, idletime
-      echo "$(cat /proc/uptime 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/system
-      CAT_SYSTEM="$(cat "${LOG_DIR:?}"/leeloo/system 2>/dev/null)"
+  OPTIONS=(1 "Debug           Status"
+    2 "Strategy        error.log"
+    3 "TXid            null.log")
 
-      # system files
-      FILE_SYSTEM_UPTIME="${LOG_DIR:?}/leeloo/system.uptime"
-      FILE_SYSTEM_IDLE="${LOG_DIR:?}/leeloo/system.idle"
+  CHOICE=$(dialog --clear \
+    --backtitle "$BACKTITLE" \
+    --title "$TITLE" \
+    --menu "$MENU" \
+    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${OPTIONS[@]}" \
+    2>&1 >/dev/tty)
 
-      # get uptime
-      echo "$(echo "$CAT_SYSTEM" | awk '{ print $1 }')" >"$FILE_SYSTEM_UPTIME"
-      # get idletime
-      echo "$(echo "$CAT_SYSTEM" | awk '{ print $2 }')" >"$FILE_SYSTEM_IDLE"
-    else
-      # set uptime
-      echo "0.0" >"$FILE_SYSTEM_UPTIME"
-      # set idletime
-      echo "0.0" >"$FILE_SYSTEM_IDLE"
-    fi
-  }
+  clear
+  case $CHOICE in
 
-  # not found
-  if [[ ! -f "$FILE_SYSTEM_UPTIME" || ! -f "$FILE_SYSTEM_IDLE" ]] &>/dev/null; then
-    system_uptime
-  fi
+  "1")
 
-  # both found
-  if [[ -f "$FILE_SYSTEM_UPTIME" && -f "$FILE_SYSTEM_IDLE" ]] &>/dev/null; then
-    # greater than n seconds
-    SYSTEM_FILE_SECONDS="$(stat -c '%Y' "$FILE_SYSTEM_UPTIME" 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-    if [[ "$SYSTEM_FILE_SECONDS" -gt "60" ]] &>/dev/null; then
+    display_result() {
+      dialog --title "Leeloo/Strategy Debug" \
+        --no-collapse \
+        --msgbox "$RESULT" 14 "$WIDTH"
+    }
+
+    ############################################################################
+
+    # system uptime
+    function system_uptime() {
+      if [[ -f /proc/uptime ]] &>/dev/null; then
+
+        # get uptime, idletime
+        echo "$(cat /proc/uptime 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/system
+        CAT_SYSTEM="$(cat "${LOG_DIR:?}"/leeloo/system 2>/dev/null)"
+
+        # system files
+        FILE_SYSTEM_UPTIME="${LOG_DIR:?}/leeloo/system.uptime"
+        FILE_SYSTEM_IDLE="${LOG_DIR:?}/leeloo/system.idle"
+
+        # get uptime
+        echo "$(echo "$CAT_SYSTEM" | awk '{ print $1 }')" >"$FILE_SYSTEM_UPTIME"
+        # get idletime
+        echo "$(echo "$CAT_SYSTEM" | awk '{ print $2 }')" >"$FILE_SYSTEM_IDLE"
+      else
+        # set uptime
+        echo "0.0" >"$FILE_SYSTEM_UPTIME"
+        # set idletime
+        echo "0.0" >"$FILE_SYSTEM_IDLE"
+      fi
+    }
+
+    # not found
+    if [[ ! -f "$FILE_SYSTEM_UPTIME" || ! -f "$FILE_SYSTEM_IDLE" ]] &>/dev/null; then
       system_uptime
     fi
-  fi
 
-  # system uptime, in seconds
-  SYSTEM_UPTIME_SECONDS="$(cat "$FILE_SYSTEM_UPTIME" 2>/dev/null | awk -F. '{ print $1 }')"
-  # time format (uptime)
-  SYSTEM_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%60")))
-  # uptime in days
-  SYSTEM_UPTIME_DAYS="$(echo "$SYSTEM_UPTIME_SECONDS/86400" | bc 2>/dev/null)"
+    # both found
+    if [[ -f "$FILE_SYSTEM_UPTIME" && -f "$FILE_SYSTEM_IDLE" ]] &>/dev/null; then
+      # greater than n seconds
+      SYSTEM_FILE_SECONDS="$(stat -c '%Y' "$FILE_SYSTEM_UPTIME" 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+      if [[ "$SYSTEM_FILE_SECONDS" -gt "60" ]] &>/dev/null; then
+        system_uptime
+      fi
+    fi
 
-  # system idle, in seconds
-  SYSTEM_IDLE_SECONDS="$(cat "$FILE_SYSTEM_IDLE" 2>/dev/null | awk -F. '{ print $1 }')"
-  # time format (idle)
-  SYSTEM_IDLE_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%60")))
-  # idle in days
-  SYSTEM_IDLE_DAYS="$(echo "$SYSTEM_IDLE_SECONDS/86400" | bc 2>/dev/null)"
+    # system uptime, in seconds
+    SYSTEM_UPTIME_SECONDS="$(cat "$FILE_SYSTEM_UPTIME" 2>/dev/null | awk -F. '{ print $1 }')"
+    # time format (uptime)
+    SYSTEM_UPTIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_UPTIME_SECONDS:?}" 2>&1)%60")))
+    # uptime in days
+    SYSTEM_UPTIME_DAYS="$(echo "$SYSTEM_UPTIME_SECONDS/86400" | bc 2>/dev/null)"
 
-  # restarts
-  STRATEGY_RESTART_COUNT="$(wc -l "${SYS_DIR:?}"/robot/restart 2>/dev/null | awk '{ print $1 }')"
+    # system idle, in seconds
+    SYSTEM_IDLE_SECONDS="$(cat "$FILE_SYSTEM_IDLE" 2>/dev/null | awk -F. '{ print $1 }')"
+    # time format (idle)
+    SYSTEM_IDLE_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${SYSTEM_IDLE_SECONDS:?}" 2>&1)%60")))
+    # idle in days
+    SYSTEM_IDLE_DAYS="$(echo "$SYSTEM_IDLE_SECONDS/86400" | bc 2>/dev/null)"
 
-  if [[ -z "$STRATEGY_RESTART_COUNT" ]] &>/dev/null; then
-    STRATEGY_RESTART_COUNT="None"
-  fi
+    # restarts
+    STRATEGY_RESTART_COUNT="$(wc -l "${SYS_DIR:?}"/robot/restart 2>/dev/null | awk '{ print $1 }')"
 
-  if [[ -z "$SYSTEM_UPTIME" ]] &>/dev/null; then
-    SYSTEM_UPTIME="0h:00m:00s"
-  fi
+    if [[ -z "$STRATEGY_RESTART_COUNT" ]] &>/dev/null; then
+      STRATEGY_RESTART_COUNT="None"
+    fi
 
-  ##############################################################################
+    if [[ -z "$SYSTEM_UPTIME" ]] &>/dev/null; then
+      SYSTEM_UPTIME="0h:00m:00s"
+    fi
 
-  # error log age in seconds
-  STRATEGY_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    ############################################################################
 
-  if [[ -z "$STRATEGY_SECONDS" ]] &>/dev/null; then
-    STRATEGY_SECONDS="0"
-  fi
+    # error log age in seconds
+    STRATEGY_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-  # strategy output
-  STRATEGY_DATA="$(cat "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $1 }' | sed '/^$/d' | wc -l)"
-  # time format
-  STRATEGY_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$STRATEGY_SECONDS/3600")) $(("$STRATEGY_SECONDS%3600/60")) $(("$STRATEGY_SECONDS%60")))
-  # uptime in days
-  STRATEGY_UPTIME_DAYS="$(echo "$STRATEGY_SECONDS/86400" | bc 2>/dev/null)"
+    if [[ -z "$STRATEGY_SECONDS" ]] &>/dev/null; then
+      STRATEGY_SECONDS="0"
+    fi
 
-  STRATEGY_CLOCK="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $8 }')")"
-  STRATEGY_ERROR="$(tail -1 "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null)"
-  STRATEGY_ERRORS="$STRATEGY_DATA"
+    # time format
+    STRATEGY_LOG_TIME=$(printf '%dh:%dm:%ds\n' $(("$STRATEGY_SECONDS/3600")) $(("$STRATEGY_SECONDS%3600/60")) $(("$STRATEGY_SECONDS%60")))
+    # uptime in days
+    STRATEGY_UPTIME_DAYS="$(echo "$STRATEGY_SECONDS/86400" | bc 2>/dev/null)"
 
-  # default
-  WIDTH="48"
+    STRATEGY_CLOCK="$(echo "$(ls -l "${LOG_DIR:?}"/leeloo/error.log 2>/dev/null | awk '{ print $8 }')")"
+    STRATEGY_ERROR="$(echo "$STRATEGY_ERROR_DATA" | tail -1)"
 
-  if [[ "$STRATEGY_DATA" -eq "0" ]] &>/dev/null; then
-    WIDTH="$(echo "$(echo "$SYSTEM_UPTIME" | wc -L)+35" | bc 2>/dev/null)"
-    STRATEGY_CLOCK="None"
-    STRATEGY_ERROR="None"
-    STRATEGY_ERRORS="None"
-  fi
+    # default
+    WIDTH="48"
 
-  ##############################################################################
+    if [[ "$STRATEGY_ERROR_DATA_COUNT" -eq "0" ]] &>/dev/null; then
+      WIDTH="$(echo "$(echo "$SYSTEM_UPTIME" | wc -L)+35" | bc 2>/dev/null)"
+      STRATEGY_CLOCK="None"
+      STRATEGY_ERROR="None"
+      STRATEGY_ERROR_DATA_COUNT="0"
+    fi
 
-  RESULT="
+    ############################################################################
+
+    RESULT="
 System Uptime......: (${SYSTEM_UPTIME_DAYS:?}d) $SYSTEM_UPTIME
 System Idle........: (${SYSTEM_IDLE_DAYS:?}d) $SYSTEM_IDLE_TIME
 
 Strategy Last......: (${STRATEGY_UPTIME_DAYS:?}d) $STRATEGY_LOG_TIME
 Strategy Restart...: $STRATEGY_RESTART_COUNT
-Strategy Errors....: $STRATEGY_ERRORS
+Strategy Errors....: $STRATEGY_ERROR_DATA_COUNT
 Strategy Time......: $STRATEGY_CLOCK
 
-Strategy error.log.: ${STRATEGY_ERROR:0:21}"
-  display_result 2>/dev/null
+Strategy error.log.: ${STRATEGY_ERROR:0:26}"
+    display_result 2>/dev/null
 
-  ##############################################################################
+    ;;
 
-  # data exist, read
-  if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
-    # prompt user to read data
-    if dialog --stdout --title "Read error.log?" \
-      --backtitle "Read data?" \
-      --yesno "Yes: Read! No: Go back!" 5 28; then
+  "2")
+
+    # strategy data exist, keep, delete
+    if [[ "$STRATEGY_ERROR_DATA_COUNT" -gt "0" ]] &>/dev/null; then
 
       # strategy data exist, copy temp file
-      cat "$LOG_DIR"/leeloo/error.log >/tmp/readlog 2>/dev/null
+      cp "$LOG_DIR"/leeloo/error.log /tmp/readlog &>/dev/null
       # read temp file
       nano /tmp/readlog
       # remove temp file
       rm /tmp/readlog &>/dev/null
 
-      # if any duplicates
-      if awk '!seen[$0]++' "${LOG_DIR:?}"/leeloo/error.log | grep -q '.'; then
-        # prompt user to remove duplicates
-        if dialog --stdout --title "Remove duplicates?" \
-          --backtitle "Cleanup data?" \
-          --yesno "Yes: Clean! No: Go back!" 5 28; then
-          # remove duplicates
-          awk '!a[$0]++' "${LOG_DIR:?}"/leeloo/error.log >"${LOG_DIR:?}"/leeloo/error.log.tmp
-          mv "${LOG_DIR:?}"/leeloo/error.log.tmp "${LOG_DIR:?}"/leeloo/error.log
-        fi
-      fi
-    fi
-
-    # strategy data exist, keep, delete
-    if [[ "$STRATEGY_DATA" -gt "0" ]] &>/dev/null; then
       # prompt user to keep data
       if ! dialog --stdout --title "Keep error.log?" \
         --backtitle "Keep data (error.log)?" \
@@ -639,7 +657,51 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
         truncate -s 0 "$LOG_DIR"/leeloo/error.log &>/dev/null
       fi
     fi
-  fi
+
+    # if any duplicates
+    if awk '!seen[$0]++' "${LOG_DIR:?}"/leeloo/error.log | grep -q '.'; then
+      # prompt user to remove duplicates
+      if dialog --stdout --title "Remove duplicates?" \
+        --backtitle "Cleanup data?" \
+        --yesno "Yes: Clean! No: Go back!" 5 28; then
+        # remove duplicates
+        awk '!a[$0]++' "${LOG_DIR:?}"/leeloo/error.log >"${LOG_DIR:?}"/leeloo/error.log.tmp
+        mv "${LOG_DIR:?}"/leeloo/error.log.tmp "${LOG_DIR:?}"/leeloo/error.log
+      fi
+    fi
+
+    ;;
+
+  "3")
+
+    # strategy data exist, copy temp file
+    echo "$TXID_NULL_DATA" >/tmp/readlog 2>/dev/null
+    WIDTH="$(wc -L /tmp/readlog 2>/dev/null | awk '{ print $1 }')"
+    LENGTH="$(wc -l /tmp/readlog 2>/dev/null | awk '{ print $1 }')"
+
+    # if zero
+    if [[ -z "$WIDTH" ]] &>/dev/null; then
+      WIDTH="0"
+    fi
+
+    display_result() {
+      dialog --title "Leeloo/Strategy Debug" \
+        --no-collapse \
+        --msgbox "$RESULT" "$(echo "$LENGTH+4" | bc 2>/dev/null)" "$(echo "$WIDTH+4" | bc 2>/dev/null)"
+    }
+
+    RESULT="$(sort -t '/' -k 2.3,2.4n -k 2.1,2.2n /tmp/readlog 2>/dev/null)"
+
+    display_result 2>/dev/null
+
+    # remove temp file
+    rm /tmp/readlog &>/dev/null
+
+    ;;
+
+  esac
+
+  ##############################################################################
 
   # restart data exist, keep, delete
   if [[ "$STRATEGY_RESTART_COUNT" -gt "0" ]] &>/dev/null; then
