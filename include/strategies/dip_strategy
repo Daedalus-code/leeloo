@@ -2397,6 +2397,15 @@ fi
 # default error status
 ERROR_STATUS=0
 
+if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
+  DIP_TOTAL_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $NF }' | awk '{ SUM += $1} END { print SUM }')"
+  DIP_PROFIT_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')"
+  DIP_AVERAGE_PROFIT="$(echo "$DIP_TOTAL_PROFIT/$DIP_PROFIT_COUNT" | bc -l 2>/dev/null)"
+else
+  DIP_PROFIT_COUNT="0"
+  DIP_AVERAGE_PROFIT="0"
+fi
+
 ################################################################################
 
 # format and display output
@@ -2418,6 +2427,7 @@ Top_Spread.........: $DIP_TOP_PROFIT ${DIP_TOP_PROFIT_AMOUNT:?}%
 Low_Spread.........: $DIP_LOW_PROFIT ${DIP_LOW_PROFIT_AMOUNT:?}%
 Top_Dip............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
+Average_Profit.....: ${DIP_AVERAGE_PROFIT:?}% ($DIP_PROFIT_COUNT)
 Low_Activity.......: $DIP_LOW_DAY Targets: ${DIP_LOW_TARGETS:?} Movement: ${DIP_LOW_MOVEMENTS:?}
 High_Activity......: $DIP_HIGH_DAY Targets: ${DIP_HIGH_TARGETS:?} Movement: ${DIP_HIGH_MOVEMENTS:?}
 Old_Order.txid.....: $DIP_OLDEST_ORDER_ID ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_AGE ($DIP_OLDEST_ORDER_TYPE) $DIP_OLDEST_ORDER_SPREAD
