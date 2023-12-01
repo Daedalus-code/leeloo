@@ -659,7 +659,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:26}"
     fi
 
     # if any duplicates
-    if awk '!seen[$0]++' "${LOG_DIR:?}"/leeloo/error.log | grep -q '.'; then
+    if cat "${LOG_DIR:?}"/leeloo/error.log | awk 'seen[$0]++' | grep -q '.'; then
       # prompt user to remove duplicates
       if dialog --stdout --title "Remove duplicates?" \
         --backtitle "Cleanup data?" \
