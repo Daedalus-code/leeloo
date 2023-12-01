@@ -1861,8 +1861,11 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/o
 
       ##########################################################################
 
-      # use original percentage profit value from bought
-      DIP_GET_RATIO_PROFIT="$(grep "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $NF }' | tr -d '%')"
+      # if data exist
+      if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | wc -l)" -gt "0" ]] &>/dev/null; then
+        # use original percentage profit value from bought
+        DIP_GET_RATIO_PROFIT="$(grep "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $NF }' | tr -d '%')"
+      fi
 
       # if zero
       if [[ -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
