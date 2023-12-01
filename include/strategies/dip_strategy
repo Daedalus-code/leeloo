@@ -2400,7 +2400,7 @@ ERROR_STATUS=0
 if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   DIP_TOTAL_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $NF }' | awk '{ SUM += $1} END { print SUM }')"
   DIP_PROFIT_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')"
-  DIP_AVERAGE_PROFIT="$(echo "$DIP_TOTAL_PROFIT/$DIP_PROFIT_COUNT" | bc -l 2>/dev/null)"
+  DIP_AVERAGE_PROFIT="$(echo "$DIP_TOTAL_PROFIT/$DIP_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 else
   DIP_PROFIT_COUNT="0"
   DIP_AVERAGE_PROFIT="0"
