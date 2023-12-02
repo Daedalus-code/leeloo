@@ -1810,6 +1810,8 @@ fi
 # sold order
 ################################################################################
 
+bought_sold_age
+
 # listing balances check (deposited)
 DIP_LISTING_DEPOSITED_CHECK=$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $2 }')
 # total sum (confirmed sell)
@@ -1864,7 +1866,7 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/o
       # if data exist
       if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
         # use original percentage profit value from bought
-        DIP_GET_RATIO_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | sed '/^$/d' | awk '{ print $NF }' | tr -d '%')"
+        DIP_GET_RATIO_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | sed '/^$/d' | awk '{ print $NF }')"
       fi
 
       # if zero
@@ -1874,7 +1876,7 @@ if [[ "$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/o
 
       # if zero
       if [[ -z "$DIP_BOUGHT_FILE_AGE" ]] &>/dev/null; then
-        DIP_BOUGHT_FILE_AGE="0h:0m:0s"
+        DIP_BOUGHT_FILE_AGE="N/A"
       fi
 
       ##########################################################################
