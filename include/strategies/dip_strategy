@@ -437,7 +437,7 @@ function cancel_DCA() {
     # if dca exist
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
       # if no order exist
-      if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
         # if no active exist
         if [[ "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "0" ]] &>/dev/null; then
 
@@ -839,7 +839,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   ##############################################################################
 
   # if listing, reference dont exist in orders
-  if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
     # remove old dca order
     remove_old_dca
   fi
@@ -863,7 +863,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # update target
     if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target || true)" -gt "0" ]] &>/dev/null; then
       # order status
-      if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$LISTING_CURRENCY" || true)" -gt "0" ]] &>/dev/null; then
+      if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -gt "0" ]] &>/dev/null; then
         # if old order
         if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
           # track old amount (listing)
@@ -896,7 +896,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # if dca enabled
           if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
             # if listing is single inside active
-            if [[ "$(grep -c "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+            if [[ "$(grep -w "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | wc -l)" -eq "1" ]] &>/dev/null; then
 
               # ruled by configuration
               DIP_DCA_RAW="$DIP_DCA"
@@ -1053,7 +1053,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     ############################################################################
 
     # active target status
-    if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$LISTING_CURRENCY" || true)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -gt "0" ]] &>/dev/null; then
 
       log_date
 
@@ -1092,7 +1092,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     ############################################################################
 
     # if any orders with reference, listing currency does not exist
-    if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
       # if positive profit
       if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -gt "0" ]] &>/dev/null; then
         # has buying power (balance)
@@ -1180,7 +1180,7 @@ bought_sold_age
 ################################################################################
 
 # if listing, reference dont exist in orders
-if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$LISTING_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
   # remove old dca order
   remove_old_dca
 fi
@@ -1515,7 +1515,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # sell order count
   DIP_SELL_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
   # total order check
-  DIP_TOTAL_ORDER_CHECK="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -c "$LISTING_CURRENCY" 2>/dev/null || true)"
+  DIP_TOTAL_ORDER_CHECK="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -c "$REFERENCE_CURRENCY" 2>/dev/null || true)"
 
   # if zero
   if [[ -z "$DIP_BUY_ORDER_COUNT" ]] &>/dev/null; then
