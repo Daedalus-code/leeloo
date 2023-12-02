@@ -583,17 +583,6 @@ function observe_all_market() {
   # observe markets
   USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
-  # update data every n seconds
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)))" 2>/dev/null)" -gt "$USER_TIMER" ]] &>/dev/null; then
-    result_prices
-    # update data if missing
-  elif [[ ! -f "${LOG_DIR:?}"/leeloo/prices.all ]] &>/dev/null; then
-    result_prices
-    # update data if empty
-  elif [[ ! -s "${LOG_DIR:?}"/leeloo/prices.all ]] &>/dev/null; then
-    result_prices
-  fi
-
   CAT_EXCHANGE_PRICES="$(cat "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)"
 
   # 450 max before dialog breaks
