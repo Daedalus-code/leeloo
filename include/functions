@@ -573,7 +573,7 @@ function observe_all_market() {
   ##############################################################################
 
   # update data every n seconds
-  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/prices.all || "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
     # all markets
     echo "$(cat "${LOG_DIR:?}"/leeloo/*/prices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null
   fi
