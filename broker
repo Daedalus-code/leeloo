@@ -1103,30 +1103,37 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
           fi
 
           OPEN_TOTAL_SECONDS="$(echo "$TOTAL_SECONDS/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
+          # if zero
           if [[ -z "$OPEN_TOTAL_SECONDS" ]] &>/dev/null; then
             OPEN_TOTAL_SECONDS="0"
           fi
+
           OPEN_TOTAL_AGE=$(printf '%dh:%dm:%ds\n' $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%60")))
           OPEN_TOTAL_AGE_DAYS="$(echo "$OPEN_TOTAL_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
           OPEN_PERCENTAGE="$(cat "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | awk '{ print $6 }' | grep -v "Result" | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
           OPEN_PERCENTAGE_AVERAGE="$(echo "$OPEN_PERCENTAGE/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-          WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+          WIDTH="$(echo "$(tail -10 "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
           LENGTH="$(echo "$(tail -"$LOG_LENGTH" "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | wc -l | awk '{ print $1 }')+4" | bc 2>/dev/null)"
 
+          # if zero
           if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
             LOG_LENGTH="7"
           fi
+
+          # if length is greater than n
           if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
             LENGTH="$LOG_LENGTH"
           fi
 
+          # if zero
           if [[ -z "$WIDTH" ]] &>/dev/null; then
-            WIDTH="68"
+            WIDTH="65"
           fi
-          if [[ "$WIDTH" -lt "68" ]] &>/dev/null; then
-            WIDTH="68"
+
+          # if width is less than n
+          if [[ "$WIDTH" -lt "65" ]] &>/dev/null; then
+            WIDTH="65"
           fi
 
           display_result() {
@@ -1160,28 +1167,35 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
       RESULT="Exchange Strategy Currency Amount Cost Result Age
 $(grep -w "$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')" "${SYS_DIR:?}"/robot/pool.view)"
       RESULT_COUNT="$(echo "$(echo "$RESULT" | grep -v "Exchange")" | wc -l)"
-      WIDTH="$(echo "$(echo "$(echo "$RESULT" | column -t)" | wc -L | awk '{ print $1 }')+7" | bc 2>/dev/null)"
+      WIDTH="$(echo "$(echo "$(echo "$RESULT" | column -t)" | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$RESULT" | wc -l | awk '{ print $1 }')+4" | bc 2>/dev/null)"
 
       # if zero
-      if [[ -z "$(echo "$RESULT" | tail -1)" || -z "$COIN_TOKEN" ]] &>/dev/null; then
-        RESULT="No data found"
-        RESULT_COUNT="0"
-        LENGTH=5
-      fi
-
       if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
         LOG_LENGTH="7"
       fi
+
+      # if length greater than n
       if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
         LENGTH="$LOG_LENGTH"
       fi
 
+      # if zero
       if [[ -z "$WIDTH" ]] &>/dev/null; then
-        WIDTH="68"
+        WIDTH="65"
       fi
-      if [[ "$WIDTH" -lt "68" ]] &>/dev/null; then
-        WIDTH="68"
+
+      # if width less than n
+      if [[ "$WIDTH" -lt "65" ]] &>/dev/null; then
+        WIDTH="65"
+      fi
+
+      # if zero
+      if [[ -z "$(echo "$RESULT" | tail -1)" || -z "$COIN_TOKEN" ]] &>/dev/null; then
+        RESULT="No data found!"
+        RESULT_COUNT="0"
+        WIDTH="26"
+        LENGTH="5"
       fi
 
       display_result() {
