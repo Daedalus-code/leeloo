@@ -2474,6 +2474,7 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   DIP_PROFIT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_PROFIT_FILE_AGE_SECONDS/3600")) $(("$DIP_PROFIT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_PROFIT_FILE_AGE_SECONDS%60")))
 
   DIP_CAT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)"
+  DIP_LAST_PROFIT_AMOUNT="$(echo "$DIP_CAT_PROFIT" | tail -1 | awk '{ print $5,$6 }')"
   DIP_LAST_PROFIT="$(echo "$DIP_CAT_PROFIT" | tail -1 | awk '{ print $3,$NF }')"
   DIP_HIGH_PROFIT="$(echo "$DIP_CAT_PROFIT" | sort -n -k 7 | tail -1 | awk '{ print $3,$NF }')"
   DIP_LOW_PROFIT="$(echo "$DIP_CAT_PROFIT" | sort -n -k 7 | head -1 | awk '{ print $3,$NF }')"
@@ -2481,6 +2482,7 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   DIP_PROFIT_COUNT="$(echo "$DIP_CAT_PROFIT" | wc -l)"
   DIP_AVERAGE_PROFIT="$(echo "$DIP_TOTAL_PROFIT/$DIP_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 else
+  DIP_LAST_PROFIT_AMOUNT="0"
   DIP_PROFIT_COUNT="0"
   DIP_AVERAGE_PROFIT="0"
   DIP_LAST_PROFIT="0"
@@ -2510,7 +2512,7 @@ Low_Spread.........: $DIP_LOW_PROFIT ${DIP_LOW_PROFIT_AMOUNT:?}%
 Top_Dip............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
 Average_Profit.....: ${DIP_AVERAGE_PROFIT:?}% ($DIP_PROFIT_COUNT)
-Last_Profit........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
+Last_Profit........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE | +$DIP_PROFIT_COUNT
 High_Profit........: $DIP_HIGH_PROFIT
 Low_Profit.........: $DIP_LOW_PROFIT
 Low_Activity.......: $DIP_LOW_DAY Targets: ${DIP_LOW_TARGETS:?} Movement: ${DIP_LOW_MOVEMENTS:?}
