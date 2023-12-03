@@ -575,11 +575,25 @@ function observe_all_market() {
   # update data every n seconds
   if [[ ! -f "${LOG_DIR:?}"/leeloo/prices.all || "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
     # exchange balances
-    echo "Updating prices"
-    echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
-    echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
-    echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
-    echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+    echo "Updating prices (1/4)"
+    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "2" ]]; then
+      echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
+    fi
+    clear
+    echo "Updating prices (2/4)"
+    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "2" ]]; then
+      echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
+    fi
+    clear
+    echo "Updating prices (3/4)"
+    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "2" ]]; then
+      echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
+    fi
+    clear
+    echo "Updating prices (4/4)"
+    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "2" ]]; then
+      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+    fi
     # all markets
     echo "$(cat "${LOG_DIR:?}"/leeloo/*/prices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null
   fi
