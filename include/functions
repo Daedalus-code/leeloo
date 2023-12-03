@@ -574,13 +574,18 @@ function observe_all_market() {
 
   # update data every n seconds
   if [[ ! -f "${LOG_DIR:?}"/leeloo/prices.all || "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
+    # exchange balances
+    echo "Updating prices"
+    echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
+    echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
+    echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
+    echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
     # all markets
     echo "$(cat "${LOG_DIR:?}"/leeloo/*/prices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null
   fi
 
   ##############################################################################
 
-  # observe markets
   USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
   CAT_EXCHANGE_PRICES="$(cat "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)"
