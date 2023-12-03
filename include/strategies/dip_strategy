@@ -1925,6 +1925,20 @@ if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/
 fi
 
 ################################################################################
+# yearly profit
+################################################################################
+
+# if not found
+if [[ ! -f "$SYS_DIR"/robot/year ]] &>/dev/null; then
+  echo "$(date '+%Y')" >"$SYS_DIR"/robot/year
+fi
+
+# if not equal
+if [[ ! "$(date '+%Y')" == "$(head -1 "$SYS_DIR"/robot/year 2>/dev/null)" ]] &>/dev/null; then
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit)" >>"$SYS_DIR"/robot/year
+fi
+
+################################################################################
 # open positions
 ################################################################################
 
