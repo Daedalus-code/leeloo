@@ -1622,8 +1622,11 @@ $(ls -lSah "${SYS_DIR:?}"/robot/"$STRATEGY_NAME"* 2>/dev/null | column -t)"
         fi
 
         # logs age in seconds
-        RESULT="Strategies Seconds
-$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done)
+        RESULT="Running time
+$LEELOO_UPTIME
+
+Strategies Seconds
+$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | column -t | awk -F. '{ print $2 }')
 
 Average / Limit
 $ROBOT_LOG_AVERAGE / $ROBOT_LOG_MAX_AGE Seconds - $ROBOT_LOG_AVERAGE_AGE_MINUTES / $ROBOT_LOG_MAX_AGE_MINUTES Minutes
