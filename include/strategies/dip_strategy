@@ -2477,9 +2477,9 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   # last
   DIP_LAST_PROFIT="$(echo "$DIP_CAT_PROFIT" | tail -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
   # high
-  DIP_HIGH_PROFIT="$(echo "$DIP_CAT_PROFIT" | sort -n -k 7 | tail -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
+  DIP_HIGHEST_PROFIT="$(echo "$DIP_CAT_PROFIT" | sort -n -k 7 | tail -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
   # low
-  DIP_LOW_PROFIT="$(echo "$DIP_CAT_PROFIT" | sort -n -k 7 | head -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
+  DIP_LOWEST_PROFIT="$(echo "$DIP_CAT_PROFIT" | sort -n -k 7 | head -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
   # total profit
   DIP_TOTAL_PROFIT="$(echo "$DIP_CAT_PROFIT" | awk '{ print $NF }' | awk '{ SUM += $1} END { print SUM }')"
   # profit count
@@ -2490,8 +2490,8 @@ else
   DIP_PROFIT_COUNT="0"
   DIP_AVERAGE_PROFIT="0"
   DIP_LAST_PROFIT="0"
-  DIP_HIGH_PROFIT="0"
-  DIP_LOW_PROFIT="0"
+  DIP_HIGHEST_PROFIT="0"
+  DIP_LOWEST_PROFIT="0"
 fi
 
 ################################################################################
@@ -2517,8 +2517,8 @@ Top_Dip............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
 Average_Profit.....: ${DIP_AVERAGE_PROFIT:?}% ($DIP_PROFIT_COUNT)
 Last_Profit........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
-High_Profit........: $DIP_HIGH_PROFIT
-Low_Profit.........: $DIP_LOW_PROFIT
+High_Profit........: $DIP_HIGHEST_PROFIT
+Low_Profit.........: $DIP_LOWEST_PROFIT
 Low_Activity.......: $DIP_LOW_DAY Targets: ${DIP_LOW_TARGETS:?} Movement: ${DIP_LOW_MOVEMENTS:?}
 High_Activity......: $DIP_HIGH_DAY Targets: ${DIP_HIGH_TARGETS:?} Movement: ${DIP_HIGH_MOVEMENTS:?}
 Old_Order.txid.....: $DIP_OLDEST_ORDER_ID ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_AGE ($DIP_OLDEST_ORDER_TYPE) $DIP_OLDEST_ORDER_SPREAD
