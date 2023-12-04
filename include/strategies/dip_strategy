@@ -1932,19 +1932,36 @@ if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/
 fi
 
 ################################################################################
-# yearly profit
+# annual revenue
 ################################################################################
+
+# new year
+DIP_NEW_YEAR="$(date '+%Y')"
+# old year
+DIP_OLD_YEAR="$(echo "$DIP_NEW_YEAR-1" | bc)"
 
 # if not found
 if [[ ! -f "$SYS_DIR"/robot/year ]] &>/dev/null; then
-  echo "$(date '+%Y')" >"$SYS_DIR"/robot/year
+  echo "$DIP_NEW_YEAR" >"$SYS_DIR"/robot/year
 fi
 
 # if not equal
-if [[ ! "$(date '+%Y')" == "$(cat "$SYS_DIR"/robot/year 2>/dev/null)" ]] &>/dev/null; then
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)" >"$SYS_DIR"/robot/profit."$(date '+%Y')"
+if [[ ! "$DIP_NEW_YEAR" == "$(cat "$SYS_DIR"/robot/year 2>/dev/null)" ]] &>/dev/null; then
+
+  # track annual revenue
+  echo "$DIP_OLD_YEAR Profits:
+$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)
+
+$DIP_OLD_YEAR Gains:
+$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null)" >"$SYS_DIR"/robot/"$BASENAME_STRATEGY".revenue."$(date '+%Y')"
+
   # reset last year
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains &>/dev/null
+
+  # new year output (happy new year)
+  DIP_HAPPY_NEW_YEAR="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : ${DIP_OLD_YEAR:?} > ${DIP_NEW_YEAR:?} : Happy New Year?!"
+  echo "$DIP_HAPPY_NEW_YEAR" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
@@ -2271,6 +2288,8 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
     echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null
   fi
 fi
+
+backup_balances
 
 # dump listing balance
 DUMP_LISTING_BALANCE="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $3 }')"

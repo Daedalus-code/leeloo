@@ -652,9 +652,13 @@ EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | grep "EMA_Long" | awk '{ print $2 }')"
 # if zero, skip signal
 if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
   if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
-    echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>>"${LOG_ERROR:?}"
+    if [[ -n "$EMA_REAL_SHORT" && -n "$EMA_REAL_LONG" ]] 2>>"${LOG_ERROR:?}"; then
+      echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>>"${LOG_ERROR:?}"
+    fi
   fi
 fi
+
+################################################################################
 
 # keep n lines
 echo "$(tail -21 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>>"${LOG_ERROR:?}"
@@ -702,6 +706,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
 
   # check if balances exist
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+
+    backup_balances
 
     # if fear of missing out is true
     if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
@@ -842,6 +848,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
 
   # check if balances exist
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
+
+    backup_balances
 
     # if fear of missing out is true
     if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
