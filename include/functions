@@ -268,6 +268,33 @@ function no_irssi_no_access() {
   display_result 2>/dev/null
 }
 
+# install graphs ###############################################################
+
+function install_graphs {
+  # rrdtool setup (graphs, round robin database)
+  if ! [ -x "$(command -v rrdtool)" ] &>/dev/null; then
+    sudo mkdir /var/lib/rrd &>/dev/null
+    sudo chown -R "${WHOAMI:?}":"${WHOAMI:?}" /var/lib/rrd
+    sudo apt-get install librrds-perl rrdtool -y 2>&1
+  fi
+
+  # apache2 setup (webserver, php)
+  if ! [ -x "$(command -v apache2)" ] &>/dev/null; then
+    sudo apt-get install apache2 php libapache2-mod-php -y 2>&1
+    sudo chown -R "${WHOAMI:?}":"${WHOAMI:?}" /var/www/html
+    rm /var/www/html/index.html &>/dev/null
+    printf '%b' "[${G1:?}OK${N0:?}] Restarting Apache\n"
+    sudo systemctl restart apache2 &>/dev/null
+  fi
+}
+
+# remove graphs ################################################################
+
+function remove_graphs {
+  sudo apt-get remove apache2 php libapache2-mod-php -y --purge
+  sudo apt-get remove rrdtool librrds-perl -y --purge
+}
+
 # exchange balance #############################################################
 
 function exchange_balance() {

@@ -862,7 +862,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "7")
 
-    HEIGHT=11
+    HEIGHT=14
     WIDTH=24
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Reference Graphs"
@@ -871,7 +871,10 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     OPTIONS=(1 "Poloniex"
       2 "SouthXchange"
       3 "StakeCube"
-      4 "XeggeX")
+      4 "XeggeX"
+      0 "Install"
+      x "Remove"
+      c "Crontab")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
@@ -888,8 +891,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     "1")
 
+      install_graphs
       GRAPH_EXCHANGE="poloniex"
-      rrdtool_graphs
+      bash "${SYS_DIR:?}"/graph
 
       ;;
 
@@ -897,8 +901,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     "2")
 
+      install_graphs
       GRAPH_EXCHANGE="southxchange"
-      rrdtool_graphs
+      bash "${SYS_DIR:?}"/graph
 
       ;;
 
@@ -906,8 +911,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     "3")
 
+      install_graphs
       GRAPH_EXCHANGE="stakecube"
-      rrdtool_graphs
+      bash "${SYS_DIR:?}"/graph
 
       ;;
 
@@ -915,8 +921,44 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     "4")
 
+      install_graphs
       GRAPH_EXCHANGE="xeggex"
-      rrdtool_graphs
+      bash "${SYS_DIR:?}"/graph
+
+      ;;
+
+    "0")
+
+      # prompt user to install rrdtool, apache2
+      if ! dialog --stdout --title "Install rrdtool, apache2 (Graphs, Web server)?" \
+        --backtitle "Install?" \
+        --yesno "Yes: Install! No: Go back!" 5 28; then
+        install_graphs
+      fi
+
+      ;;
+
+    "x")
+
+      # prompt user to remove rrdtool, apache2
+      if ! dialog --stdout --title "Remove rrdtool, apache2 (Graphs, Web server)?" \
+        --backtitle "Remove?" \
+        --yesno "Yes: Remove! No: Go back!" 5 28; then
+        remove_graphs
+      fi
+
+      ;;
+
+    "c")
+
+      # prompt user to add/remove/edit crontab
+      if ! dialog --stdout --title "Edit crontab?" \
+        --backtitle "Edit?" \
+        --yesno "Yes: Edit! No: Go back!" 5 28; then
+        echo "ADD/REMOVE/EDIT THIS LINE: */1 * * * * bash /usr/local/bin/include/graph"
+        read -r -p "Press Enter to continue (crontab)" </dev/tty
+        crontab -e
+      fi
 
       ;;
 
