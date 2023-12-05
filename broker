@@ -735,9 +735,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
 "7")
 
-  HEIGHT=14
+  HEIGHT=15
   WIDTH=48
-  CHOICE_HEIGHT=7
+  CHOICE_HEIGHT=8
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
@@ -749,6 +749,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     4 "Reset            Leeloo Config"
     5 "Reset            Secret & Key config"
     6 "Reset            Insufficient limit"
+    7 "Graph            Reference graphs"
     0 "Delist           Delisting Markets")
 
   CHOICE=$(dialog --clear \
@@ -854,6 +855,72 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
         clear
       fi
     fi
+
+    ;;
+
+    # reference graphs #########################################################
+
+  "7")
+
+    HEIGHT=11
+    WIDTH=24
+    BACKTITLE="Leeloo (Multipass)"
+    TITLE="Reference Graphs"
+    MENU="$DATE"
+
+    OPTIONS=(1 "Poloniex"
+      2 "SouthXchange"
+      3 "StakeCube"
+      4 "XeggeX")
+
+    CHOICE=$(dialog --clear \
+      --backtitle "$BACKTITLE" \
+      --title "$TITLE" \
+      --menu "$MENU" \
+      $HEIGHT $WIDTH $CHOICE_HEIGHT \
+      "${OPTIONS[@]}" \
+      2>&1 >/dev/tty)
+
+    clear
+    case $CHOICE in
+
+    # poloniex graphs ##########################################################
+
+    "1")
+
+      GRAPH_EXCHANGE="poloniex"
+      rrdtool_graphs
+
+      ;;
+
+      # southxchange graphs ####################################################
+
+    "2")
+
+      GRAPH_EXCHANGE="southxchange"
+      rrdtool_graphs
+
+      ;;
+
+      # stakecube graphs #######################################################
+
+    "3")
+
+      GRAPH_EXCHANGE="stakecube"
+      rrdtool_graphs
+
+      ;;
+
+      # xeggex graphs ##########################################################
+
+    "4")
+
+      GRAPH_EXCHANGE="xeggex"
+      rrdtool_graphs
+
+      ;;
+
+    esac
 
     ;;
 
