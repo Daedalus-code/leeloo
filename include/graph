@@ -7,7 +7,7 @@ EXCHANGE_DIR_NAME="$GRAPH_EXCHANGE"
 ################################################################################
 
 # create reference list based on exchange
-GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | egrep -o "_[A-Z,0-9]+" | tr -d '_' | awk '!a[$0]++')" /tmp/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0')"
+GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | egrep -o "_[A-Z,0-9]+" | tr -d '_' | awk '!a[$0]++')" /tmp/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0' | awk '{ print $1 }' | tr -d ':')"
 
 # if data
 if [[ -n "$GRAPH_REFERENCE_LIST" ]] &>/dev/null; then
@@ -39,7 +39,7 @@ fi
 
 # iterate over active references
 for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
-  GRAPH_DB_PATH="${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${GRAPH_REFERENCE_CURRENCY}.rrd"
+  GRAPH_DB_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.rrd"
   GRAPH_PNG_PATH="/var/www/html/${GRAPH_REFERENCE_CURRENCY}.png"
 
   # create graph based on found reference accounts with balance
