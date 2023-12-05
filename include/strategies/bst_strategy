@@ -176,6 +176,11 @@ if [[ "$MCS_AVERAGE_PRICE" == "1" ]] &>/dev/null; then
       fi
     fi
   fi
+  # if lines greater than n
+  if [[ "$(wc -l "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price | awk '{ print $1 }')" -gt "18" ]] &>/dev/null; then
+    # keep n lines
+    cleanup_avg_price_buy
+  fi
 fi
 
 ################################################################################

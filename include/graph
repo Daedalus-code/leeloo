@@ -1,0 +1,122 @@
+#!/bin/bash
+
+################################################################################
+
+# poloniex reference balances
+if [[ "$GRAPH_EXCHANGE" == "poloniex" ]] &>/dev/null; then
+  EXCHANGE_DIR_NAME="poloniex"
+fi
+
+# southxchange reference balances
+if [[ "$GRAPH_EXCHANGE" == "southxchange" ]] &>/dev/null; then
+  EXCHANGE_DIR_NAME="southxchange"
+fi
+
+# stakecube reference balances
+if [[ "$GRAPH_EXCHANGE" == "stakecube" ]] &>/dev/null; then
+  EXCHANGE_DIR_NAME="stakecube"
+fi
+
+# xeggex reference balances
+if [[ "$GRAPH_EXCHANGE" == "xeggex" ]] &>/dev/null; then
+  EXCHANGE_DIR_NAME="xeggex"
+fi
+
+################################################################################
+
+# if zero
+if [[ -z "$GRAPH_STATS" ]] &>/dev/null; then
+  GRAPH_STATS="0"
+fi
+
+if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
+  GRAPH_TIME="1d"
+  LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
+  LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
+
+  # time format
+  GRAPH_TIME="$(echo "$LEELOO_TIME/1440" | bc 2>/dev/null)d"
+
+  if [[ -z "$GRAPH_TIME" ]]; then
+    GRAPH_TIME=""
+  fi
+
+else
+  GRAPH_TIME="1d"
+fi
+
+################################################################################
+
+if [[ "$GRAPH_STATS" == "1" ]] &>/dev/null; then
+
+  # iterate over active references
+  for GRAPH_REFERENCE_CURRENCY in $ACTIVE_REFERENCES; do
+    GRAPH_DB_PATH="${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${GRAPH_REFERENCE_CURRENCY}.rrd"
+    GRAPH_PNG_PATH="/var/www/html/${GRAPH_REFERENCE_CURRENCY}.png"
+
+    # create graph based on found reference accounts with balance
+    if [ ! -f "${GRAPH_DB_PATH}" ]; then
+      printf '%b' '%s Status() rrdtoolStats() Creating %s.rrd! %s<>%s\n' "$(date "+%Y-%m-%d %H:%M:%S")" "${GRAPH_REFERENCE_CURRENCY}" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
+      rrdtool create "${GRAPH_DB_PATH}" \
+        --step=60 \
+        DS:deposited:GAUGE:300:U:U \
+        DS:available:GAUGE:300:U:U \
+        DS:unconfirmed:GAUGE:300:U:U \
+        RRA:AVERAGE:0.5:1:1051200
+    fi
+
+    ############################################################################
+
+    # update databases
+    rrdtool update "$GRAPH_DB_PATH" N:"$(grep -w "$GRAPH_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2, $3, $4 }' | awk '{ printf "%.9f:%.9f:%.9f\n", $1, $2, $3 }')" 2>/dev/null
+
+    ############################################################################
+
+    # reference balance
+    rrdtool graph "${GRAPH_PNG_PATH}" \
+      -w 400 -h 150 -a PNG \
+      --slope-mode \
+      --vertical-label "${GRAPH_REFERENCE_CURRENCY} Balance" \
+      --color BACK#565875 \
+      --color FONT#FFFFFF \
+      --color CANVAS#42445F \
+      --color GRID#565875 \
+      --color FRAME#565875 \
+      --color SHADEA#565875 \
+      --color SHADEB#565875 \
+      --end now --start end-"${GRAPH_TIME:?}" \
+      DEF:deposited="${GRAPH_DB_PATH}":deposited:MAX \
+      DEF:available="${GRAPH_DB_PATH}":available:MAX \
+      DEF:unconfirmed="${GRAPH_DB_PATH}":unconfirmed:MAX \
+      CDEF:total=deposited,available,unconfirmed,+,+ \
+      GPRINT:deposited:LAST:%.9lf \
+      GPRINT:available:LAST:%.9lf \
+      GPRINT:unconfirmed:LAST:%.9lf \
+      GPRINT:total:LAST:"Total: %.9lf" \
+      LINE1:deposited#45DC63:"Deposited" \
+      LINE2:available#FFE000:"Available" \
+      LINE3:unconfirmed#FF5100:"Unconfirmed" \
+      LINE4:total#0000FF:"Total"
+  done
+
+  ##############################################################################
+
+  # start generating index.php
+  echo "<div id=\"content\" align=\"center\">
+  <?php
+  header(\"refresh: 120;\");
+  ?>
+  <?php
+  // background color (dark blue)
+  echo \"<body style='background-color:2D3037'>\";
+  // graphs" >/var/www/html/index.php
+
+  for GRAPH_REFERENCE_CURRENCY in $ACTIVE_REFERENCES; do
+    GRAPH_PNG_PATH="/var/www/html/${GRAPH_REFERENCE_CURRENCY}.png"
+    # echo the dynamically generated php code for the loop
+    echo "echo \"<img src='$GRAPH_PNG_PATH' alt='$GRAPH_REFERENCE_CURRENCY Balance' />\";" >>/var/www/html/index.php
+  done
+  echo "?>" >>/var/www/html/index.php
+fi
+
+# END
