@@ -80,6 +80,7 @@ function insufficient_funds {
 
   # southxchange
   EXCHANGE_NULL_KEYWORD="Amount below minimum"
+
   # if data exist
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # null data
@@ -320,11 +321,6 @@ function reference_balance_check {
 ################################################################################
 
 function tx_id {
-  # if not found
-  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
-    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-  fi
-
   # execute order in strategy, create txid file
   echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 

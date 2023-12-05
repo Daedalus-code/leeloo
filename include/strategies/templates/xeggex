@@ -73,8 +73,14 @@ function backup_orders() {
 ################################################################################
 
 function insufficient_funds {
+  # if not found
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null &>/dev/null
+  fi
+
   # xeggex
   EXCHANGE_NULL_KEYWORD="Insufficient funds"
+
   # if data exist
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # null data
@@ -304,11 +310,6 @@ function reference_balance_check {
 ################################################################################
 
 function tx_id {
-  # if not found
-  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
-    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
-  fi
-
   # execute order in strategy, create txid file
   echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
@@ -348,8 +349,14 @@ function tx_id {
 ################################################################################
 
 function tx_id_data {
+  # if not found
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid ]] &>/dev/null; then
+    echo "N/A" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  fi
+
   # last txid
   TX_ID_LAST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null)"
+
   # if zero
   if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
     TX_ID_LAST="N/A"
