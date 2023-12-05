@@ -90,20 +90,24 @@ done
 ################################################################################
 
 # start generating index.php
-echo "<div id=\"content\" align=\"center\">
-  <?php
-  header(\"refresh: 120;\");
-  ?>
-  <?php
+cat >/var/www/html/"$EXCHANGE_DIR_NAME".php <<'EOF'
+<div id="content" align="center">
+<?php
+  header("refresh: 120;");
+?>
+<?php
   // background color (dark blue)
-  echo \"<body style='background-color:2D3037'>\";
-  // graphs" >/var/www/html/index.php
+  echo "<body style='background-color:2D3037'>";
+  // graphs
+EOF
 
 for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
   GRAPH_PNG_PATH="/var/www/html/${GRAPH_REFERENCE_CURRENCY}.png"
   # echo the dynamically generated php code for the loop
-  echo "echo \"<img src='$GRAPH_PNG_PATH' alt='$GRAPH_REFERENCE_CURRENCY Balance' />\";" >>/var/www/html/index.php
+  echo "  echo \"<img src='$GRAPH_PNG_PATH' alt='$GRAPH_REFERENCE_CURRENCY Balance' />\";" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
 done
-echo "?>" >>/var/www/html/index.php
+
+# close the PHP block
+echo "?>" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
 
 # END
