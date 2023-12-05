@@ -595,6 +595,12 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
     STRATEGY_RESTART_COUNT="$(wc -l "${SYS_DIR:?}"/robot/restart 2>/dev/null | awk '{ print $1 }')"
     # restarts log age in seconds
     STRATEGY_RESTART_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/restart 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+    # if zero
+    if [[ -z "$STRATEGY_RESTART_SECONDS" ]] &>/dev/null; then
+      STRATEGY_RESTART_SECONDS="0"
+    fi
+
     # time format
     STRATEGY_RESTART_TIME=$(printf '%dh:%dm:%ds\n' $(("$STRATEGY_RESTART_SECONDS/3600")) $(("$STRATEGY_RESTART_SECONDS%3600/60")) $(("$STRATEGY_RESTART_SECONDS%60")))
     # uptime in days
