@@ -1986,6 +1986,7 @@ extract_values() {
   CURRENCY=$1
   FIELD=$2
   VALUE=$(grep -w "$CURRENCY" <<<"$DIP_ACTIVE_LIST" | awk -F "| $FIELD: " '{print $2}' | awk '{print $1}')
+  echo "Debug: extract_values - CURRENCY: $CURRENCY, FIELD: $FIELD, VALUE: $VALUE" >/tmp/debug
   echo "$VALUE"
 }
 
@@ -2046,8 +2047,6 @@ while IFS= read -r line; do
   RESULT_PROFIT="$(echo "100/$COST_BUY*$RESULT_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
   # order age
   RESULT_AGE=$(calculate_sold_file_age "$CURRENCY")
-
-  echo "CURRENCY: $CURRENCY, AMOUNT: $AMOUNT, COST_BID: $COST_BID, COST_ASK: $COST_ASK, COST_BUY: $COST_BUY, RESULT_GET: $RESULT_GET, RESULT_DIFF: $RESULT_DIFF, RESULT_PROFIT: $RESULT_PROFIT, RESULT_AGE: $RESULT_AGE" >/tmp/debug
 
   ##############################################################################
   ##############################################################################
