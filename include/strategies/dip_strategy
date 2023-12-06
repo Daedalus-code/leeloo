@@ -2355,9 +2355,14 @@ DIP_TIME_CHECK="$(date +"%T" | egrep "23:55" | wc -l)"
 DIP_D_P_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # if greater than n seconds
-if [[ "$DIP_D_P_FILE_AGE_SECONDS" -gt "86369" ]] &>/dev/null; then
-  # trigger check
-  DIP_TIME_CHECK="1"
+if [[ -n "$DIP_D_P_FILE_AGE_SECONDS" ]] &>/dev/null; then
+  if [[ "$DIP_D_P_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
+    # trigger check
+    DIP_TIME_CHECK="1"
+  else
+    # default
+    DIP_TIME_CHECK="0"
+  fi
 fi
 
 # if time check exist
