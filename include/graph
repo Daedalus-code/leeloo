@@ -68,13 +68,17 @@ for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
 
   # create graph based on found reference accounts with balance
   if [ ! -f "${GRAPH_DB_PATH}" ]; then
+    # if zero
+    if [[ -z "$GRAPH_DATA" ]] &>/dev/null; then
+      GRAPH_DATA="525600" # 1 year with 1-minute interval
+    fi
     printf '%b' '%s Status() rrdtoolStats() Creating %s.rrd! %s<>%s\n' "$(date "+%Y-%m-%d %H:%M:%S")" "${GRAPH_REFERENCE_CURRENCY}" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
     rrdtool create "${GRAPH_DB_PATH}" \
       --step=60 \
       DS:deposited:GAUGE:300:U:U \
       DS:available:GAUGE:300:U:U \
       DS:unconfirmed:GAUGE:300:U:U \
-      RRA:AVERAGE:0.5:1:525600 # 1 year with 1-minute interval
+      RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
   fi
 
   ##############################################################################
@@ -113,7 +117,7 @@ for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
       GPRINT:total:LAST:"%.9lf\n"
   fi
 
-  ################################################################################
+  ##############################################################################
 
   # if southxchange
   if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
