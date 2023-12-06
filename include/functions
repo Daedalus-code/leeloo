@@ -275,16 +275,18 @@ function no_irssi_no_access() {
 # install graphs ###############################################################
 
 function install_graphs {
-  # rrdtool setup (graphs, round robin database)
-  sudo mkdir /var/lib/rrd &>/dev/null
-  sudo chown -R "${WHOAMI:?}":"${WHOAMI:?}" /var/lib/rrd
-  sudo apt-get install librrds-perl rrdtool -y 2>&1
-  # apache2 setup (webserver, php)
-  sudo apt-get install apache2 php libapache2-mod-php -y 2>&1
-  sudo chown -R "${WHOAMI:?}":"${WHOAMI:?}" /var/www/html
-  rm /var/www/html/index.html &>/dev/null
-  printf '%b' "[${G1:?}OK${N0:?}] Restarting Apache\n"
-  sudo systemctl restart apache2 &>/dev/null
+  if ! command -v rrdtool &>/dev/null || ! command -v apache2 &>/dev/null || ! command -v php &>/dev/null; then
+    # rrdtool setup (graphs, round robin database)
+    sudo mkdir /var/lib/rrd &>/dev/null
+    sudo chown -R "${WHOAMI:?}":"${WHOAMI:?}" /var/lib/rrd
+    sudo apt-get install librrds-perl rrdtool -y 2>&1
+    # apache2 setup (webserver, php)
+    sudo apt-get install apache2 php libapache2-mod-php -y 2>&1
+    sudo chown -R "${WHOAMI:?}":"${WHOAMI:?}" /var/www/html
+    rm /var/www/html/index.html &>/dev/null
+    printf '%b' "[${G1:?}OK${N0:?}] Restarting Apache\n"
+    sudo systemctl restart apache2 &>/dev/null
+  fi
 }
 
 # remove graphs ################################################################
