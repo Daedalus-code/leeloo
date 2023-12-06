@@ -2070,6 +2070,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 -"
 
       echo "$RESULT_RAW" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
+      RESULT_RAW="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null)"
 
       ##########################################################################
 
@@ -2105,10 +2106,10 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 
       ##########################################################################
 
-      BULLISH_SIGNAL="$(echo "$RESULT_RAW" | egrep "Short_EMA|Long_EMA" | grep -c "Bullish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
+      BULLISH_SIGNAL="$(echo "$RESULT_RAW" | egrep "Short_EMA|Long_EMA" | grep -c "Bullish" || true)"
       BULLISH_SIGNAL="$(echo "$BULLISH_SIGNAL$FOURTEEN_SIGNAL_RSI$TWENTYONE_SIGNAL_RSI" | bc 2>/dev/null)"
 
-      BEARISH_SIGNAL="$(echo "$RESULT_RAW" | egrep "Short_EMA|Long_EMA" | grep -c "Bearish" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp)"
+      BEARISH_SIGNAL="$(echo "$RESULT_RAW" | egrep "Short_EMA|Long_EMA" | grep -c "Bearish" || true)"
       BEARISH_SIGNAL="$(echo "$BEARISH_SIGNAL$FOURTEEN_SIGNAL_RSI$TWENTYONE_SIGNAL_RSI" | bc 2>/dev/null)"
 
       TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL$FOURTEEN_SIGNAL_RSI$TWENTYONE_SIGNAL_RSI" | bc 2>/dev/null)"
