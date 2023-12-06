@@ -73,31 +73,63 @@ for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
 
   ##############################################################################
 
-  # reference balance
-  rrdtool graph "${GRAPH_PNG_PATH}" \
-    -w 400 -h 150 -a PNG \
-    --slope-mode \
-    --vertical-label "${GRAPH_REFERENCE_CURRENCY} Balance" \
-    --color BACK#565875 \
-    --color FONT#FFFFFF \
-    --color CANVAS#42445F \
-    --color GRID#565875 \
-    --color FRAME#565875 \
-    --color SHADEA#565875 \
-    --color SHADEB#565875 \
-    --end now --start end-"${GRAPH_TIME:?}" \
-    DEF:deposited="${GRAPH_DB_PATH}":deposited:MAX \
-    DEF:available="${GRAPH_DB_PATH}":available:MAX \
-    DEF:unconfirmed="${GRAPH_DB_PATH}":unconfirmed:MAX \
-    CDEF:total=deposited,available,unconfirmed,+,+ \
-    GPRINT:deposited:LAST:"Deposited\: %.9lf" \
-    GPRINT:available:LAST:"Available\: %.9lf" \
-    GPRINT:unconfirmed:LAST:"Unconfirmed\: %.9lf" \
-    GPRINT:total:LAST:"Total\: %.9lf" \
-    LINE1:deposited#2970D6:"Deposited" \
-    LINE2:available#85bb65:"Available" \
-    LINE1:unconfirmed#EA7575:"Unconfirmed" \
-    LINE3:total#BFDACF:"Total $GRAPH_REFERENCE_CURRENCY"
+  # if xeggex
+  if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
+    # reference balance
+    rrdtool graph "${GRAPH_PNG_PATH}" \
+      -w 400 -h 150 -a PNG \
+      --slope-mode \
+      --vertical-label "${GRAPH_REFERENCE_CURRENCY} Balance" \
+      --color BACK#565875 \
+      --color FONT#FFFFFF \
+      --color CANVAS#42445F \
+      --color GRID#565875 \
+      --color FRAME#565875 \
+      --color SHADEA#565875 \
+      --color SHADEB#565875 \
+      --end now --start end-"${GRAPH_TIME:?}" \
+      DEF:deposited="${GRAPH_DB_PATH}":deposited:MAX \
+      DEF:available="${GRAPH_DB_PATH}":available:MAX \
+      DEF:unconfirmed="${GRAPH_DB_PATH}":unconfirmed:MAX \
+      CDEF:total=deposited,available,unconfirmed,+,+ \
+      GPRINT:deposited:LAST:"Deposited\: %.9lf" \
+      GPRINT:available:LAST:"Available\: %.9lf" \
+      GPRINT:unconfirmed:LAST:"Unconfirmed\: %.9lf" \
+      GPRINT:total:LAST:"Total\: %.9lf" \
+      LINE1:deposited#2970D6:"Deposited" \
+      LINE2:available#85bb65:"Available" \
+      LINE1:unconfirmed#EA7575:"Unconfirmed" \
+      LINE2:total#BFDACF:"Total $GRAPH_REFERENCE_CURRENCY"
+  fi
+
+  # if southxchange
+  if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
+    # reference balance
+    rrdtool graph "${GRAPH_PNG_PATH}" \
+      -w 400 -h 150 -a PNG \
+      --slope-mode \
+      --vertical-label "${GRAPH_REFERENCE_CURRENCY} Balance" \
+      --color BACK#565875 \
+      --color FONT#FFFFFF \
+      --color CANVAS#42445F \
+      --color GRID#565875 \
+      --color FRAME#565875 \
+      --color SHADEA#565875 \
+      --color SHADEB#565875 \
+      --end now --start end-"${GRAPH_TIME:?}" \
+      DEF:deposited="${GRAPH_DB_PATH}":deposited:MAX \
+      DEF:available="${GRAPH_DB_PATH}":available:MAX \
+      DEF:unconfirmed="${GRAPH_DB_PATH}":unconfirmed:MAX \
+      CDEF:total=deposited,+,+ \
+      GPRINT:deposited:LAST:"Deposited\: %.9lf" \
+      GPRINT:available:LAST:"Available\: %.9lf" \
+      GPRINT:unconfirmed:LAST:"Unconfirmed\: %.9lf" \
+      GPRINT:total:LAST:"Total\: %.9lf" \
+      LINE1:deposited#2970D6:"Deposited" \
+      LINE2:available#85bb65:"Available" \
+      LINE1:unconfirmed#EA7575:"Unconfirmed" \
+      LINE2:total#BFDACF:"Total $GRAPH_REFERENCE_CURRENCY"
+  fi
 done
 
 ################################################################################
