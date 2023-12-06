@@ -34,17 +34,16 @@ SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
 
 if [[ "$GRAPH_TIME" == "0" ]] &>/dev/null; then
   if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
-
     LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
     LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
-    # time format
-    GRAPH_TIME="$(echo "$LEELOO_TIME/86400" | bc 2>/dev/null)d"
+    # calculate hours (rounded up to the nearest hour)
+    GRAPH_TIME_HOURS="$(echo "($LEELOO_TIME + 3599) / 3600" | bc)"
+    GRAPH_TIME="${GRAPH_TIME_HOURS}h"
   fi
 fi
-
-# if zero
+# if still zero or empty
 if [[ -z "$GRAPH_TIME" ]] &>/dev/null; then
-  GRAPH_TIME="1d"
+  GRAPH_TIME="1h"
 fi
 
 ################################################################################
