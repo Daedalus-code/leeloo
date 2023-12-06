@@ -32,20 +32,19 @@ fi
 
 SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
 
-if [[ "$GRAPH_TIME" == "0" || -z "$GRAPH_TIME" ]] &>/dev/null; then
+if [[ "$GRAPH_TIME" == "0" ]] &>/dev/null; then
   if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
 
     LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
     LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
-
     # time format
     GRAPH_TIME="$(echo "$LEELOO_TIME/1440" | bc 2>/dev/null)d"
-
-    # if zero
-    if [[ -z "$GRAPH_TIME" ]] &>/dev/null; then
-      GRAPH_TIME="1d"
-    fi
   fi
+fi
+
+# if zero
+if [[ -z "$GRAPH_TIME" ]] &>/dev/null; then
+  GRAPH_TIME="1d"
 fi
 
 ################################################################################
