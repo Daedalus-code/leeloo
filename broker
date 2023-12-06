@@ -874,7 +874,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "7")
 
-    HEIGHT=14
+    HEIGHT=15
     WIDTH=24
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Reference Graphs"
@@ -886,6 +886,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
       4 "XeggeX"
       0 "Install"
       x "Remove"
+      r "Reset"
       c "Crontab")
 
     CHOICE=$(dialog --clear \
@@ -959,6 +960,18 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
         --yesno "Yes: Remove! No: Go back!" 5 45; then
         clear
         remove_graphs
+      fi
+
+      ;;
+
+    "r")
+
+      # prompt user to reset rrdtool databases
+      if dialog --stdout --title "Reset rrdtool data?" \
+        --backtitle "Reset?" \
+        --yesno "Yes: Reset! No: Go back!" 5 28; then
+        clear
+        reset_rrdtool_databass
       fi
 
       ;;
