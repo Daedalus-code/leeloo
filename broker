@@ -1931,10 +1931,12 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
     # if zero
     if [[ -z "$INSUFFICIENT_FUNDS_COUNT" || "$INSUFFICIENT_FUNDS_COUNT" == "0" ]] &>/dev/null; then
+
       LENGTH="5"
       WIDTH="38"
       INSUFFICIENT_FUNDS_COUNT="0"
       RESULT="${INSUFFICIENT_FUNDS_FOUND:?}"
+
       # message box
       display_result() {
         dialog --title "Files: $INSUFFICIENT_FUNDS_COUNT" \
@@ -1942,9 +1944,12 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
       display_result 2>/dev/null
+
     else
+
       LENGTH=$(echo "5+$INSUFFICIENT_FUNDS_COUNT" | bc 2>/dev/null)
-      WIDTH=$(echo "4+$(echo "$INSUFFICIENT_FUNDS_FOUND" | wc -L)" | bc 2>/dev/null)
+      WIDTH="34"
+
       # yes no menu
       if dialog --stdout --title "Reset $INSUFFICIENT_FUNDS_COUNT limits?" \
         --yes-label "Reset" \

@@ -103,10 +103,10 @@ function find_insufficient_files {
   if [[ "$INSUFFICIENT_FUNDS_AGE" -gt "30" || ! -f "${LOG_DIR:?}"/leeloo/buy_limit ]] &>/dev/null; then
     # find insufficient files
     INSUFFICIENT_FUNDS_FOUND=$(find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_*' -printf "%P\n" 2>/dev/null)
+    # keep temp file
+    echo "$INSUFFICIENT_FUNDS_FOUND" >"${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null
     # count insufficient funds using find
     INSUFFICIENT_FUNDS_COUNT=$(echo "$INSUFFICIENT_FUNDS_FOUND" | grep -c "insufficient_" || true)
-    # keep temp file
-    echo "$INSUFFICIENT_FUNDS_COUNT" >"${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null
   fi
 
   # limit found
