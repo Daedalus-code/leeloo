@@ -99,7 +99,7 @@ function find_insufficient_files {
   if [[ ! -f "${LOG_DIR:?}"/leeloo/buy_limit ]] &>/dev/null; then
     touch "${LOG_DIR:?}"/leeloo/buy_limit &>/dev/null
   else
-    INSUFFICIENT_FUNDS_COUNT="$(cat "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null)"
+    INSUFFICIENT_FUNDS_COUNT="$(cat "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null | wc -l)"
   fi
 
   # file age (seconds)
@@ -114,6 +114,7 @@ function find_insufficient_files {
     # keep temp file
     echo "$INSUFFICIENT_FUNDS_COUNT" >"${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null
   else
+    INSUFFICIENT_FUNDS_COUNT="$(cat "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null)"
     INSUFFICIENT_FUNDS_COUNT="$(cat "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null)"
   fi
 
