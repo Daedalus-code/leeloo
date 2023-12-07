@@ -113,10 +113,13 @@ function find_insufficient_files {
     INSUFFICIENT_FUNDS_COUNT=$(echo "$INSUFFICIENT_FUNDS_FOUND" | grep -c "insufficient_" || true)
     # keep temp file
     echo "$INSUFFICIENT_FUNDS_COUNT" >"${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null
+  else
+    INSUFFICIENT_FUNDS_COUNT="$(cat "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null)"
   fi
 
   # if zero
-  if [[ -z "$INSUFFICIENT_FUNDS_COUNT" ]] &>/dev/null; then
+  if [[ -z "$INSUFFICIENT_FUNDS_COUNT" || -z "$INSUFFICIENT_FUNDS_FOUND" ]] &>/dev/null; then
+    INSUFFICIENT_FUNDS_FOUND="No insufficient limit files found!"
     INSUFFICIENT_FUNDS_COUNT="0"
   fi
 }
