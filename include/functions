@@ -73,7 +73,7 @@ fi
 
 LOG_TIMER="$(echo "$LOG_LENGTH+1" | bc 2>/dev/null)" # log schedule, in lines
 
-# erro status ##################################################################
+# error status #################################################################
 
 # error status (default)
 ERROR_STATUS="0"
@@ -91,6 +91,35 @@ if [[ "$(grep "syntax error near unexpected token" "${LOG_DIR:?}"/leeloo/error.l
   truncate -s 0 "${LOG_DIR:?}"/leeloo/error.log &>/dev/null
   ERROR_STATUS="!"
 fi
+
+# insufficient status ##########################################################
+
+function find_insufficient_files {
+
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/buy_limit ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/buy_limit &>/dev/null
+  else
+    INSUFFICIENT_FUNDS_COUNT="$(cat "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null)"
+  fi
+
+  # file age (seconds)
+  INSUFFICIENT_FUNDS_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if age greater than n
+  if [[ "$INSUFFICIENT_FUNDS_AGE" -gt "30" ]] &>/dev/null; then
+    # find insufficient files
+    INSUFFICIENT_FUNDS_FOUND=$(find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_*' -printf "%P\n" 2>/dev/null)
+    # count insufficient funds using find
+    INSUFFICIENT_FUNDS_COUNT=$(echo "$INSUFFICIENT_FUNDS_FOUND" | grep -c "insufficient_" || true)
+    # keep temp file
+    echo "$INSUFFICIENT_FUNDS_COUNT" >"${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null
+  fi
+
+  # if zero
+  if [[ -z "$INSUFFICIENT_FUNDS_COUNT" ]] &>/dev/null; then
+    INSUFFICIENT_FUNDS_COUNT="0"
+  fi
+}
 
 # system #######################################################################
 

@@ -746,9 +746,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
 "7")
 
-  HEIGHT=16
+  HEIGHT=15
   WIDTH=51
-  CHOICE_HEIGHT=9
+  CHOICE_HEIGHT=8
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
@@ -759,8 +759,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     3 "Reset            All Configurations!"
     4 "Reset            Leeloo Config"
     5 "Reset            Secret & Key config"
-    6 "Reset            Insufficient limit"
-    7 "Graph            Reference graphs"
+    G "Graph            Reference graphs"
     8 "Locale           English (United States)"
     0 "Delist           Delisting Markets")
 
@@ -832,47 +831,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-    # reset insufficient limit
-
-  "6")
-
-    # find insufficient files
-    INSUFFICIENT_FUNDS_FOUND=$(find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_*' -printf "%P\n" 2>/dev/null)
-    # count insufficient funds using find
-    INSUFFICIENT_FUNDS_COUNT=$(echo "$INSUFFICIENT_FUNDS_FOUND" | grep -c "insufficient_" || true)
-
-    # if zero
-    if [[ -z "$INSUFFICIENT_FUNDS_COUNT" || "$INSUFFICIENT_FUNDS_COUNT" == "0" ]] &>/dev/null; then
-      LENGTH="5"
-      WIDTH="38"
-      INSUFFICIENT_FUNDS_COUNT="0"
-      INSUFFICIENT_FUNDS_FOUND="No insufficient limit files found!"
-      RESULT="$INSUFFICIENT_FUNDS_FOUND"
-      # message box
-      display_result() {
-        dialog --title "Files: $INSUFFICIENT_FUNDS_COUNT" \
-          --no-collapse \
-          --msgbox "$RESULT" "$LENGTH" "$WIDTH"
-      }
-      display_result 2>/dev/null
-    else
-      LENGTH=$(echo "5+$INSUFFICIENT_FUNDS_COUNT" | bc 2>/dev/null)
-      WIDTH=$(echo "4+$(echo "$INSUFFICIENT_FUNDS_FOUND" | wc -L)" | bc 2>/dev/null)
-      # yes no menu
-      if dialog --stdout --title "Reset $INSUFFICIENT_FUNDS_COUNT limits?" \
-        --yes-label "Reset" \
-        --no-label "Cancel" \
-        --yesno "Reset $INSUFFICIENT_FUNDS_COUNT insufficient limits?\n$INSUFFICIENT_FUNDS_FOUND" "$LENGTH" "$WIDTH"; then
-        find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_*' -exec rm {} \; &>/dev/null
-        clear
-      fi
-    fi
-
-    ;;
-
     # reference graphs #########################################################
 
-  "7")
+  "G")
 
     HEIGHT=15
     WIDTH=43
@@ -1121,9 +1082,15 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     LEELOO_UPTIME="0h:0m:0s"
   fi
 
-  HEIGHT=17
+  ##############################################################################
+
+  find_insufficient_files
+
+  ##############################################################################
+
+  HEIGHT=18
   WIDTH=45
-  CHOICE_HEIGHT=10
+  CHOICE_HEIGHT=11
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Robot Strategy Menu"
   MENU="Multipass $DATE_XARGS
@@ -1137,6 +1104,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     C "Control          Robot controller"
     L "Bots             robot.log"
     P "Logs             Specific log"
+    R "Reset            Buy limits ($INSUFFICIENT_FUNDS_COUNT)"
     0 "Delete           Remove strategy")
 
   CHOICE=$(dialog --clear \
@@ -1951,6 +1919,41 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
       done
     else
       no_key_no_secret
+    fi
+
+    ;;
+
+    # reset insufficient limit
+
+  "R")
+
+    find_insufficient_files
+
+    # if zero
+    if [[ -z "$INSUFFICIENT_FUNDS_COUNT" || "$INSUFFICIENT_FUNDS_COUNT" == "0" ]] &>/dev/null; then
+      LENGTH="5"
+      WIDTH="38"
+      INSUFFICIENT_FUNDS_COUNT="0"
+      INSUFFICIENT_FUNDS_FOUND="No insufficient limit files found!"
+      RESULT="$INSUFFICIENT_FUNDS_FOUND"
+      # message box
+      display_result() {
+        dialog --title "Files: $INSUFFICIENT_FUNDS_COUNT" \
+          --no-collapse \
+          --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+      }
+      display_result 2>/dev/null
+    else
+      LENGTH=$(echo "5+$INSUFFICIENT_FUNDS_COUNT" | bc 2>/dev/null)
+      WIDTH=$(echo "4+$(echo "$INSUFFICIENT_FUNDS_FOUND" | wc -L)" | bc 2>/dev/null)
+      # yes no menu
+      if dialog --stdout --title "Reset $INSUFFICIENT_FUNDS_COUNT limits?" \
+        --yes-label "Reset" \
+        --no-label "Cancel" \
+        --yesno "Reset $INSUFFICIENT_FUNDS_COUNT insufficient limits?\n$INSUFFICIENT_FUNDS_FOUND" "$LENGTH" "$WIDTH"; then
+        find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_*' -exec rm {} \; &>/dev/null
+        clear
+      fi
     fi
 
     ;;
