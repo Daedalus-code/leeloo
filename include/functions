@@ -198,6 +198,64 @@ function key_secret_set() {
 
 ################################################################################
 
+function pool_duration {
+
+  # if searching
+  if [[ "$POOL_SEARCHING" == "1" ]] &>/dev/null; then
+    DURATIONS_FILE="${SYS_DIR:?}/$COIN_TOKEN.durations.txt"
+  else
+    DURATIONS_FILE="${SYS_DIR:?}/durations.txt"
+  fi
+
+  TOTAL_SECONDS=0
+
+  # if searching
+  if [[ "$POOL_SEARCHING" == "1" ]] &>/dev/null; then
+    # fetch the list of time durations
+    grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | awk '{ print $NF }' | egrep -v "N/A|Age" >"$DURATIONS_FILE"
+  else
+    # fetch the list of time durations
+    cat "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | awk '{ print $NF }' | egrep -v "N/A|Age" >"$DURATIONS_FILE"
+  fi
+
+  while IFS=: read -r DURATION; do
+    # remove any non-numeric characters
+    DURATION_NUMERIC=$(echo "$DURATION" | tr -cd '0-9hms')
+    # parse the duration into HOURS, MINUTES, and SECONDS
+    HOURS=$(echo "$DURATION_NUMERIC" | sed 's/h.*//')
+    MINUTES=$(echo "$DURATION_NUMERIC" | sed 's/.*h//' | sed 's/m.*//')
+    SECONDS=$(echo "$DURATION_NUMERIC" | sed 's/.*m//' | sed 's/s.*//')
+    # check if the values are non-empty and numeric
+    if [[ -n "$HOURS" && -n "$MINUTES" && -n "$SECONDS" && \
+      "$HOURS" =~ ^[0-9]+$ && "$MINUTES" =~ ^[0-9]+$ && "$SECONDS" =~ ^[0-9]+$ ]]; then
+      TOTAL_SECONDS=$((TOTAL_SECONDS + HOURS * 3600 + MINUTES * 60 + SECONDS))
+    fi
+  done <"$DURATIONS_FILE"
+
+  # if searching
+  if [[ "$POOL_SEARCHING" == "1" ]] &>/dev/null; then
+    OPEN_COUNT="$(grep -wc "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view || true)"
+  else
+    OPEN_COUNT="$(echo "$(wc -l "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | awk '{ print $1 }')-1" | bc 2>/dev/null)"
+  fi
+
+  if [[ "$(echo "$OPEN_COUNT" | grep '[-]' 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+    OPEN_COUNT="0"
+  fi
+
+  OPEN_TOTAL_SECONDS="$(echo "$TOTAL_SECONDS/$OPEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
+  # if zero
+  if [[ -z "$OPEN_TOTAL_SECONDS" ]] &>/dev/null; then
+    OPEN_TOTAL_SECONDS="0"
+  fi
+
+  OPEN_TOTAL_AGE=$(printf '%dh:%dm:%ds\n' $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${OPEN_TOTAL_SECONDS:?}" 2>&1)%60")))
+  OPEN_TOTAL_AGE_DAYS="$(echo "$OPEN_TOTAL_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+}
+
+################################################################################
+
 function broker_conf_update() {
   LEELOO_CONFIG_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/broker.conf | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
 
@@ -1311,6 +1369,8 @@ function coin_token_search {
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
+  # upper case
+  COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
 }
 
 # position info ################################################################
@@ -1321,6 +1381,8 @@ function order_position_search {
       --inputbox "Enter name:" 8 40 \
       3>&1 1>&2 2>&3 3>&-
   )
+  # upper case
+  COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
 }
 
 # rsi value output #############################################################
