@@ -101,16 +101,28 @@ function find_insufficient_files {
 
   # if age greater than n
   if [[ "$INSUFFICIENT_FUNDS_AGE" -gt "30" || ! -f "${LOG_DIR:?}"/leeloo/buy_limit ]] &>/dev/null; then
+
     # find insufficient files
-    INSUFFICIENT_FUNDS_FOUND=$(find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_*' -printf "%P\n" 2>/dev/null)
-    # keep temp file
-    echo "$INSUFFICIENT_FUNDS_FOUND" >"${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null
+    INSUFFICIENT_FUNDS_FOUND=$(find "${LOG_DIR:?}"/leeloo/ -maxdepth 2 -name 'insufficient_*' -printf "%P\n" 2>/dev/null)
+
+    # iterate over each file and concatenate corresponding lines with file name
+    while IFS= read -r FILE; do
+      FILE_PATH="${LOG_DIR:?}/leeloo/$FILE"
+      if [ -f "$FILE_PATH" ]; then
+        echo -n "$FILE " >>"${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null
+        paste -d ' ' <(cat "$FILE_PATH" 2>/dev/null) <(echo) >>"${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null
+      fi
+    done <<<"$INSUFFICIENT_FUNDS_FOUND"
+
+    # remove duplicates, empty lines
+    echo "$(cat "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null
+
     # count insufficient funds using find
     INSUFFICIENT_FUNDS_COUNT=$(echo "$INSUFFICIENT_FUNDS_FOUND" | grep -c "insufficient_" || true)
   fi
 
   # limit found
-  INSUFFICIENT_FUNDS_FOUND="$(cat "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null)"
+  INSUFFICIENT_FUNDS_FOUND="$(cat "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null | tr -d 'insufficient_' | awk -F/ '{ print $2 }' | column -t)"
   # limit count
   INSUFFICIENT_FUNDS_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/buy_limit 2>/dev/null | awk '{ print $1 }')"
 

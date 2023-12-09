@@ -90,8 +90,11 @@ function insufficient_funds {
     if [[ "$NO_FUNDS" -gt "0" ]] &>/dev/null; then
       # listing output
       echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Insufficient funds! $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      # keep record of insufficient funds
+
+      # keep record of insufficient funds ######################################
       echo "$REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY" >"${LOG_DIR:?}"/leeloo/xeggex/insufficient_$BASENAME_STRATEGY
+      ##########################################################################
+
       # cleanup null
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
     fi
