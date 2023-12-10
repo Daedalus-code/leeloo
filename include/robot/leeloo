@@ -207,6 +207,24 @@ for (( ; ; )); do
 
   # run all shell strategies installed
   for f in "${SYS_DIR:?}"/robot/*.strategy; do
+
+    ############################################################################
+
+    # failing api
+    LEELOO_LOG_STATUS="$(egrep " : KEK : .*. is empty!" "${LOG_DIR:?}"/leeloo/robot.log | grep -v "LogReset")"
+    # skip failing exchanges strategies
+    if [[ -n "$LEELOO_LOG_STATUS" ]] &>/dev/null; then
+      LEELOO_LOG_EXCHANGE="$(echo "$LEELOO_LOG_STATUS" | awk '{ print $3 }')"
+      if [[ -n "$LEELOO_LOG_EXCHANGE" ]] &>/dev/null; then
+        if grep -q "$(echo "$LEELOO_LOG_STATUS" | awk '{ print $3 }')" "$f"; then
+          # pattern "exchange" is present in the error log, so exclude this file
+          continue
+        fi
+      fi
+    fi
+
+    ############################################################################
+
     # error log file
     STRATEGY_LOG_FILE="${LOG_DIR:?}/leeloo/error.log"
     LAST_ERROR=""
