@@ -10,7 +10,7 @@ function listBalances {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listBalances
 }
 
 # placeOrder_market ############################################################
@@ -27,7 +27,7 @@ function placeOrder_market {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"type\":\"$TYPE\",\"amount\":\"$AMOUNT\",\"amountInReferenceCurrency\":\"$AMOUNT_IN_REFERENCE_CURRENCY\",\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder
 }
 
 # placeOrder_limit #############################################################
@@ -45,7 +45,7 @@ function placeOrder_limit {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"type\":\"$TYPE\",\"amount\":\"$AMOUNT\",\"amountInReferenceCurrency\":\"$AMOUNT_IN_REFERENCE_CURRENCY\",\"limitPrice\":\"$PRICE\",\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/placeOrder
 }
 
 # cancelOrder ##################################################################
@@ -58,7 +58,7 @@ function cancelOrder {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"orderCode\":\"$ORDER_ID\",\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/cancelOrder
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/cancelOrder
 }
 
 # cancelMarketOrders ###########################################################
@@ -72,7 +72,7 @@ function cancelMarketOrders() {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/cancelMarketOrders
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/cancelMarketOrders
 }
 
 # listOrders ###################################################################
@@ -86,7 +86,7 @@ function listOrders {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"listingCurrency\":\"$LISTING_CURRENCY\",\"referenceCurrency\":\"$REFERENCE_CURRENCY\",\"key\":\"$API_SOUTHX_KEY\",\"Code\":\"\",\"Type\":\"\",\"Amount\":0,\"OriginalAmount\":0,\"LimitPrice\":0,\"ListingCurrency\":\"\",\"ReferenceCurrency\":\"\",\"DateAdded\":\"\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" -X POST https://www.southxchange.com/api/listOrders
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" -X POST https://www.southxchange.com/api/listOrders
 }
 
 # getOrder #####################################################################
@@ -99,7 +99,7 @@ function getOrder {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"code\":\"$ORDER_CODE\",\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getOrder
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getOrder
 }
 
 # getOrders ####################################################################
@@ -114,7 +114,7 @@ function getOrders {
   API_SOUTHX_NONCE=$(date +%s)
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"codes\":[\"$CODES\"],\"pageIndex\":\"$PAGE_INDEX\",\"pageSize\":$PAGE_SIZE,\"key\":\"$API_SOUTHX_KEY\",\"pageCount\":true}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" -X POST https://www.southxchange.com/api/getOrders
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" -X POST https://www.southxchange.com/api/getOrders
 }
 
 # generateNewAddress ###########################################################
@@ -127,7 +127,7 @@ function generateNewAddress() {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/generateNewAddress
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/generateNewAddress
 }
 
 # listAddresses ################################################################
@@ -142,7 +142,7 @@ function listAddresses {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"pageIndex\":$PAGE_INDEX,\"pageSize\":$PAGE_SIZE,\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listAddresses
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listAddresses
 }
 
 # getLNInvoice #################################################################
@@ -156,7 +156,7 @@ function getLNInvoice {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"amount\":$AMOUNT,\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getLNInvoice
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getLNInvoice
 }
 
 # withdraw #####################################################################
@@ -172,7 +172,7 @@ function withdraw {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"destination\":\"$DESTINATION\",\"destinationType\":$DESTINATION_TYPE,\"amount\":$AMOUNT,\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/withdraw
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/withdraw
 }
 
 # listTransactions #############################################################
@@ -191,7 +191,7 @@ function listTransactions {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"currency\":\"$CURRENCY\",\"transactionType\":\"$TRANSACTION_TYPE\",\"optionalFilter\":\"$OPTIONAL_FILTER\",\"pageIndex\":$PAGE_INDEX,\"pageSize\":$PAGE_SIZE,\"sortField\":\"$SORT_FIELD\",\"descending\":$DESCENDING,\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listTransactions
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/listTransactions
 }
 
 # getUserInfo ##################################################################
@@ -203,7 +203,7 @@ function getUserInfo {
   API_SOUTHX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_SOUTHX_NONCE\",\"key\":\"$API_SOUTHX_KEY\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_SOUTHX_SECRET" | awk '{print $NF}')
-  curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getUserInfo
+  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -d "$JSON_DATA" https://www.southxchange.com/api/getUserInfo
 }
 
 # END
