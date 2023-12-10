@@ -210,13 +210,11 @@ for (( ; ; )); do
 
     ############################################################################
 
-    # failing api
-    LEELOO_LOG_STATUS="$(egrep " : KEK : .*. is empty!" "${LOG_DIR:?}"/leeloo/robot.log | grep -v "LogReset")"
     # skip failing exchanges strategies
-    if [[ -n "$LEELOO_LOG_STATUS" ]] &>/dev/null; then
-      LEELOO_LOG_EXCHANGE="$(echo "$LEELOO_LOG_STATUS" | awk '{ print $3 }')"
+    if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/failing.api | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+      LEELOO_LOG_EXCHANGE="$(cat "${LOG_DIR:?}"/leeloo/failing.api 2>/dev/null | awk '{ print $1 }')"
       if [[ -n "$LEELOO_LOG_EXCHANGE" ]] &>/dev/null; then
-        if grep -q "$(echo "$LEELOO_LOG_STATUS" | awk '{ print $3 }')" "$f"; then
+        if grep -q "$LEELOO_LOG_EXCHANGE" "$f"; then
           # pattern "exchange" is present in the error log, so exclude this file
           continue
         fi
