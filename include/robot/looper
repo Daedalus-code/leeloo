@@ -175,10 +175,9 @@ fi
 ################################################################################
 
 # if no fails
-LEELOO_FAIL_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/failing.api 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-if [[ "$LEELOO_FAIL_AGE" -gt "180" ]] &>/dev/null; then
+if [[ "$(grep -c "is empty!" "${LOG_DIR:?}"/leeloo/robot.log || true)" -eq "0" ]] &>/dev/null; then
   # reset
-  truncate -s 0 "${LOG_DIR:?}"/leeloo/failing.api &>/dev/null
+  truncate -s 0 "${LOG_DIR:?}"/leeloo/failing.api
 fi
 
 ################################################################################
