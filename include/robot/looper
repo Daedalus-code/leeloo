@@ -178,9 +178,12 @@ fi
 ################################################################################
 
 # if no fails
-if [[ "$(grep -c "is empty!" "${LOG_DIR:?}"/leeloo/robot.log || true)" -eq "0" ]] &>/dev/null; then
-  # reset
-  truncate -s 0 "${LOG_DIR:?}"/leeloo/failing.api
+LEELOO_FAIL_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
+if [[ "$LEELOO_FAIL_AGE" -gt "180" ]] &>/dev/null; then
+  if [[ "$(grep -c "is empty!" "${LOG_DIR:?}"/leeloo/robot.log || true)" -eq "0" ]] &>/dev/null; then
+    # reset
+    truncate -s 0 "${LOG_DIR:?}"/leeloo/failing.api
+  fi
 fi
 
 ################################################################################
