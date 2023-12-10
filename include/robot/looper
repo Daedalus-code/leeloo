@@ -95,11 +95,6 @@ fi
 
 # southxchange #################################################################
 
-function failing_api {
-  echo "SXC" >"${LOG_DIR:?}"/leeloo/failing.api
-  echo "$(grep -v "$(cat "${LOG_DIR:?}"/leeloo/failing.api 2>/dev/null)" "${LOG_DIR:?}"/leeloo/robots)" >"${LOG_DIR:?}"/leeloo/robots
-}
-
 # get active robot
 SXC_ROBOT_API="$(grep -c "SXC" "${LOG_DIR:?}"/leeloo/robots)"
 
@@ -111,24 +106,16 @@ fi
 if [[ "$SXC_ROBOT_API" -gt "0" ]] &>/dev/null; then
   if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     echo "$LOG_DATE : SXC : KEK : Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    failing_api
   fi
   if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     echo "$LOG_DATE : SXC : KEK : Orders is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    failing_api
   fi
   if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     echo "$LOG_DATE : SXC : KEK : Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    failing_api
   fi
 fi
 
 # stakecube ####################################################################
-
-function failing_api {
-  echo "SCE" >"${LOG_DIR:?}"/leeloo/failing.api
-  echo "$(grep -v "$(cat "${LOG_DIR:?}"/leeloo/failing.api 2>/dev/null)" "${LOG_DIR:?}"/leeloo/robots)" >"${LOG_DIR:?}"/leeloo/robots
-}
 
 # get active robot
 SCE_ROBOT_API="$(grep -c "SCE" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
@@ -141,20 +128,13 @@ fi
 if [[ "$SCE_ROBOT_API" -gt "0" ]] &>/dev/null; then
   if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     echo "$LOG_DATE : SCE : KEK : Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    failing_api
   fi
   if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     echo "$LOG_DATE : SCE : KEK : Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    failing_api
   fi
 fi
 
 # xeggex #######################################################################
-
-function failing_api {
-  echo "XGX" >"${LOG_DIR:?}"/leeloo/failing.api
-  echo "$(grep -v "$(cat "${LOG_DIR:?}"/leeloo/failing.api 2>/dev/null)" "${LOG_DIR:?}"/leeloo/robots)" >"${LOG_DIR:?}"/leeloo/robots
-}
 
 # get active robot
 XGX_ROBOT_API="$(grep -c "XGX" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
@@ -167,22 +147,9 @@ fi
 if [[ "$XGX_ROBOT_API" -gt "0" ]] &>/dev/null; then
   if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     echo "$LOG_DATE : XGX : KEK : Balances is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    failing_api
   fi
   if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
     echo "$LOG_DATE : XGX : KEK : Prices is empty!" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    failing_api
-  fi
-fi
-
-################################################################################
-
-# if no fails
-LEELOO_FAIL_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/robot.*.log | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done | awk '{ SUM += $1} END { print SUM }')"
-if [[ "$LEELOO_FAIL_AGE" -gt "180" ]] &>/dev/null; then
-  if [[ "$(grep -c "is empty!" "${LOG_DIR:?}"/leeloo/robot.log || true)" -eq "0" ]] &>/dev/null; then
-    # reset
-    truncate -s 0 "${LOG_DIR:?}"/leeloo/failing.api
   fi
 fi
 

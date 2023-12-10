@@ -205,16 +205,8 @@ for (( ; ; )); do
 
   ##############################################################################
 
-  # skip failing exchanges strategies
-  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/failing.api | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
-    LEELOO_LOG_EXCHANGE="$(cat "${LOG_DIR:?}"/leeloo/failing.api 2>/dev/null)"
-    STRAT_DIR="$(echo "${SYS_DIR:?}"/robot/*.strategy | grep -v "$LEELOO_LOG_EXCHANGE")"
-  else
-    STRAT_DIR="${SYS_DIR:?}/robot/*.strategy"
-  fi
-
   # run all shell strategies installed
-  for f in $STRAT_DIR; do
+  for f in "${SYS_DIR:?}"/robot/*.strategy; do
 
     # error log file
     STRATEGY_LOG_FILE="${LOG_DIR:?}/leeloo/error.log"
