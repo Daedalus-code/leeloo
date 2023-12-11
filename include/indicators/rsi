@@ -22,17 +22,20 @@ get_rsi() {
     SOURCE="close"
     API_RSI_EXCHANGE="CCCAGG"
     TMP_FILE=$(mktemp)
+
     if [[ "$PROXY_INDICATOR_API" == "true" ]] &>/dev/null; then
-      curl -s --proxy socks5h://localhost:9050 "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE" 2>/dev/null
+      timeout "${API_TIMEOUT:?}" curl -s --proxy socks5h://localhost:9050 "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE" 2>/dev/null
     else
-      curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE" 2>/dev/null
+      timeout "${API_TIMEOUT:?}" curl -s "https://min-api.cryptocompare.com/data/v2/histoday?fsym=${SYMBOL}&tsym=USD&limit=$((PERIOD + 20))&aggregate=1&e=${API_RSI_EXCHANGE}" >"$TMP_FILE" 2>/dev/null
     fi
+
     PRICES=$(jq -r '.Data.Data[].'"$SOURCE" "$TMP_FILE" 2>/dev/null)
     CHANGE=$(echo "$PRICES" | awk '{if (NR>1) {print $1-prev} ; prev=$1 }' | tail -n+2)
     UP=$(echo "$CHANGE" | awk '{if ($1>=0) sum+= $1} END {printf "%.8f", sum}')
     DOWN=$(echo "$CHANGE" | awk '{if ($1<0) sum+= -$1} END {printf "%.8f", sum}')
     RS=$(echo "$UP/$DOWN" | bc -l 2>/dev/null)
     RSI=$(echo "100 - (100/(1+$RS))" | bc -l 2>/dev/null)
+
     if (($(echo "$RSI > 70" | bc -l 2>/dev/null))); then
       BEAR_BULL="Overbought"
     elif (($(echo "$RSI < 30" | bc -l 2>/dev/null))); then
@@ -40,6 +43,7 @@ get_rsi() {
     else
       BEAR_BULL="Neutral"
     fi
+
     RSI_OUTPUT="$BEAR_BULL RSI_$PERIOD $(echo "$RSI" | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')"
     echo "$RSI_OUTPUT" >"${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null
     echo "$RSI_OUTPUT"

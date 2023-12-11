@@ -6,7 +6,7 @@
 
 function Balances() {
   API_XEGGEX_NONCE=$(($(date +%s) * 10))
-  timeout 10s curl -s -X GET -H "accept: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" "https://api.xeggex.com/api/v2/balances?nonce=$API_XEGGEX_NONCE"
+  timeout "${API_TIMEOUT:?}" curl -s -X GET -H "accept: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" "https://api.xeggex.com/api/v2/balances?nonce=$API_XEGGEX_NONCE"
 }
 
 # CreateOrder ##################################################################
@@ -26,7 +26,7 @@ function CreateOrder {
   API_XEGGEX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_XEGGEX_NONCE\",\"userProvidedId\":\"$USER_PROVIDED_ID\",\"symbol\":\"$SYMBOL\",\"side\":\"$SIDE\",\"type\":\"$TYPE\",\"quantity\":\"$QUANTITY\",\"price\":\"$PRICE\",\"strictValidate\":$STRICT_VALIDATE}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_XEGGEX_SECRET" | awk '{print $NF}')
-  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" -d "$JSON_DATA" "https://api.xeggex.com/api/v2/createorder"
+  timeout "${API_TIMEOUT:?}" curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" -d "$JSON_DATA" "https://api.xeggex.com/api/v2/createorder"
 }
 
 # cancelOrder ##################################################################
@@ -39,7 +39,7 @@ function cancelOrder {
   API_XEGGEX_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_XEGGEX_NONCE\",\"id\":\"$ORDER_ID\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_XEGGEX_SECRET" | awk '{print $NF}')
-  timeout 10s curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" -d "$JSON_DATA" "https://api.xeggex.com/api/v2/cancelOrder"
+  timeout "${API_TIMEOUT:?}" curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET" -d "$JSON_DATA" "https://api.xeggex.com/api/v2/cancelOrder"
 }
 
 # getOrders ####################################################################
@@ -48,7 +48,7 @@ function cancelOrder {
 # Example: getOrders
 
 function getOrders {
-  timeout 10s curl -s -X 'GET' \
+  timeout "${API_TIMEOUT:?}" curl -s -X 'GET' \
     'https://xeggex.com/api/v2/getorders?status=active&limit=500&skip=0' \
     -H 'accept: application/json' \
     -u "$API_XEGGEX_KEY:$API_XEGGEX_SECRET"
