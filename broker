@@ -501,7 +501,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   STRATEGY_ERROR_DATA_COUNT="$(echo "$STRATEGY_ERROR_DATA" 2>/dev/null | sed '/^$/d' | wc -l)"
 
   # txid null error output
-  TXID_NULL_DATA="$(echo "$(cat "${SYS_DIR:?}"/robot/*null.log 2>/dev/null | column -t)")"
+  TXID_NULL_DATA="$(echo "$(cat "${SYS_DIR:?}"/robot/*null.log 2>/dev/null)")"
   # txid null error count
   TXID_NULL_DATA_COUNT="$(echo "$TXID_NULL_DATA" 2>/dev/null | sed '/^$/d' | wc -l)"
 
@@ -694,28 +694,37 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "3")
 
+    # if zero
+    if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+      LOG_LENGTH="7"
+    fi
+
     # strategy data exist, copy temp file
     echo "$TXID_NULL_DATA" >/tmp/readlog 2>/dev/null
-    WIDTH="$(wc -L /tmp/readlog 2>/dev/null | awk '{ print $1 }')"
-    LENGTH="$(wc -l /tmp/readlog 2>/dev/null | awk '{ print $1 }')"
+    TEMP_READLOG="$(sort -t '/' -k 2.3,2.4n -k 2.1,2.2n /tmp/readlog 2>/dev/null | tac 2>/dev/null)"
+    WIDTH="$(echo "$TEMP_READLOG" | head -"$LOG_LENGTH" | wc -L)"
+    LENGTH="$(echo "$TEMP_READLOG" 2>/dev/null | wc -l 2>/dev/null)"
+    # default length
+    LENGTH="$LOG_LENGTH"
 
-    # if zero
+    # if zero, less than
     if [[ -z "$WIDTH" || "$WIDTH" -lt "42" ]] &>/dev/null; then
       WIDTH="42"
     fi
 
-    # if zero
+    # if zero, less than
     if [[ -z "$LENGTH" || "$LENGTH" -lt "2" ]] &>/dev/null; then
-      LENGTH="2"
+      LENGTH="7"
     fi
 
     display_result() {
       dialog --title "Leeloo/Strategy txid Debug" \
         --no-collapse \
-        --msgbox "$RESULT" "$(echo "$LENGTH+4" | bc 2>/dev/null)" "$(echo "$WIDTH+4" | bc 2>/dev/null)"
+        --msgbox "$RESULT" "$(echo "$LENGTH" | bc 2>/dev/null)" "$(echo "$WIDTH+5" | bc 2>/dev/null)"
     }
 
-    RESULT="$(sort -t '/' -k 2.3,2.4n -k 2.1,2.2n /tmp/readlog 2>/dev/null | tac)"
+    # max headroom of 100
+    RESULT="$(echo "$TEMP_READLOG" | head -100)"
 
     display_result 2>/dev/null
 
