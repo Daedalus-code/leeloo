@@ -19,53 +19,55 @@ EXCHANGE_DIR_NAME="$GRAPH_EXCHANGE"
 
 ################################################################################
 
-# if xeggex
-if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
-  # create reference list based on exchange
-  GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | egrep -o "_[A-Z,0-9]+" | tr -d '_' | awk '!a[$0]++')" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0' | awk '{ print $1 }' | tr -d ':')"
-fi
-
-################################################################################
-
-# if southxchange
-if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
-  # create reference list based on exchange
-  GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | egrep -o "/[A-Z,0-9]+" | tr -d '/' | awk '!a[$0]++')" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0' | awk '{ print $1 }' | tr -d ':')"
-fi
-
-################################################################################
-
-# if data
-if [[ -n "$GRAPH_REFERENCE_LIST" ]] &>/dev/null; then
-  # keep data
-  echo "$GRAPH_REFERENCE_LIST" >"${SYS_DIR:?}"/robot/"$EXCHANGE_DIR_NAME".reference
-fi
-
-################################################################################
-
-SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
-
-if [[ "$GRAPH_TIME" == "0" ]] &>/dev/null; then
-  if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
-    LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
-    LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
-    # calculate hours (rounded up to the nearest hour)
-    GRAPH_TIME_HOURS="$(echo "($LEELOO_TIME + 3599) / 3600" | bc)"
-    GRAPH_TIME="${GRAPH_TIME_HOURS}h"
-  fi
-fi
-# if still zero or empty
-if [[ -z "$GRAPH_TIME" ]] &>/dev/null; then
-  GRAPH_TIME="1h"
-fi
-
-################################################################################
-
 # exchange balances
 WCL_BALANCES="$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $1 }')"
 
 # check balances
 if [[ "$WCL_BALANCES" -gt "1" ]] &>/dev/null; then
+
+  ##############################################################################
+
+  # if xeggex
+  if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
+    # create reference list based on exchange
+    GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | egrep -o "_[A-Z,0-9]+" | tr -d '_' | awk '!a[$0]++')" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0' | awk '{ print $1 }' | tr -d ':')"
+  fi
+
+  ##############################################################################
+
+  # if southxchange
+  if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
+    # create reference list based on exchange
+    GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | egrep -o "/[A-Z,0-9]+" | tr -d '/' | awk '!a[$0]++')" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0' | awk '{ print $1 }' | tr -d ':')"
+  fi
+
+  ##############################################################################
+
+  # if data
+  if [[ -n "$GRAPH_REFERENCE_LIST" ]] &>/dev/null; then
+    # keep data
+    echo "$GRAPH_REFERENCE_LIST" >"${SYS_DIR:?}"/robot/"$EXCHANGE_DIR_NAME".reference
+  fi
+
+  ##############################################################################
+
+  SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
+
+  if [[ "$GRAPH_TIME" == "0" ]] &>/dev/null; then
+    if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
+      LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
+      LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
+      # calculate hours (rounded up to the nearest hour)
+      GRAPH_TIME_HOURS="$(echo "($LEELOO_TIME + 3599) / 3600" | bc)"
+      GRAPH_TIME="${GRAPH_TIME_HOURS}h"
+    fi
+  fi
+  # if still zero or empty
+  if [[ -z "$GRAPH_TIME" ]] &>/dev/null; then
+    GRAPH_TIME="1h"
+  fi
+
+  ##############################################################################
 
   # iterate over active references
   for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
