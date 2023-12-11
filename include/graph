@@ -61,95 +61,101 @@ fi
 
 ################################################################################
 
-# iterate over active references
-for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
-  GRAPH_DB_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.rrd"
-  GRAPH_PNG_PATH="/var/www/html/${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.png"
+# exchange balances
+WCL_BALANCES="$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $1 }')"
 
-  # create graph based on found reference accounts with balance
-  if [ ! -f "${GRAPH_DB_PATH}" ]; then
-    # if zero
-    if [[ -z "$GRAPH_DATA" ]] &>/dev/null; then
-      GRAPH_DATA="525600" # 1 year with 1-minute interval
+# check balances
+if [[ "$WCL_BALANCES" -gt "1" ]] &>/dev/null; then
+
+  # iterate over active references
+  for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
+    GRAPH_DB_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.rrd"
+    GRAPH_PNG_PATH="/var/www/html/${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.png"
+
+    # create graph based on found reference accounts with balance
+    if [ ! -f "${GRAPH_DB_PATH}" ]; then
+      # if zero
+      if [[ -z "$GRAPH_DATA" ]] &>/dev/null; then
+        GRAPH_DATA="525600" # 1 year with 1-minute interval
+      fi
+      printf '%b' '%s Status() rrdtoolStats() Creating %s.rrd! %s<>%s\n' "$(date "+%Y-%m-%d %H:%M:%S")" "${GRAPH_REFERENCE_CURRENCY}" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
+      rrdtool create "${GRAPH_DB_PATH}" \
+        --step=60 \
+        DS:deposited:GAUGE:300:U:U \
+        DS:available:GAUGE:300:U:U \
+        DS:unconfirmed:GAUGE:300:U:U \
+        RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
     fi
-    printf '%b' '%s Status() rrdtoolStats() Creating %s.rrd! %s<>%s\n' "$(date "+%Y-%m-%d %H:%M:%S")" "${GRAPH_REFERENCE_CURRENCY}" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
-    rrdtool create "${GRAPH_DB_PATH}" \
-      --step=60 \
-      DS:deposited:GAUGE:300:U:U \
-      DS:available:GAUGE:300:U:U \
-      DS:unconfirmed:GAUGE:300:U:U \
-      RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
-  fi
+
+    ############################################################################
+
+    # update databases
+    rrdtool update "$GRAPH_DB_PATH" N:"$(grep -w "$GRAPH_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%.9f:%.9f:%.9f\n", $2, $3, $4 }')" 2>/dev/null
+
+    ############################################################################
+
+    # if xeggex
+    if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
+      # reference balance
+      rrdtool graph "${GRAPH_PNG_PATH}" \
+        -w 400 -h 150 -a PNG \
+        --slope-mode \
+        --vertical-label "${GRAPH_REFERENCE_CURRENCY} Balance" \
+        --color BACK#565875 \
+        --color FONT#FFFFFF \
+        --color CANVAS#42445F \
+        --color GRID#565875 \
+        --color FRAME#565875 \
+        --color SHADEA#565875 \
+        --color SHADEB#565875 \
+        --end now --start end-"${GRAPH_TIME:?}" \
+        DEF:deposited="${GRAPH_DB_PATH}":deposited:MAX \
+        DEF:available="${GRAPH_DB_PATH}":available:MAX \
+        DEF:unconfirmed="${GRAPH_DB_PATH}":unconfirmed:MAX \
+        CDEF:total=deposited,available,unconfirmed,+,+ \
+        LINE1:deposited#2970D6:"$GRAPH_REFERENCE_CURRENCY Deposited  " \
+        GPRINT:deposited:LAST:"%.9lf\n" \
+        LINE2:available#85bb65:"$GRAPH_REFERENCE_CURRENCY Available  " \
+        GPRINT:available:LAST:"%.9lf\n" \
+        LINE1:unconfirmed#EA7575:"$GRAPH_REFERENCE_CURRENCY Unconfirmed" \
+        GPRINT:unconfirmed:LAST:"%.9lf\n" \
+        LINE2:total#BFDACF:"$GRAPH_REFERENCE_CURRENCY Total      " \
+        GPRINT:total:LAST:"%.9lf\n"
+    fi
+
+    ############################################################################
+
+    # if southxchange
+    if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
+      # reference balance
+      rrdtool graph "${GRAPH_PNG_PATH}" \
+        -w 400 -h 150 -a PNG \
+        --slope-mode \
+        --vertical-label "${GRAPH_REFERENCE_CURRENCY} Balance" \
+        --color BACK#565875 \
+        --color FONT#FFFFFF \
+        --color CANVAS#42445F \
+        --color GRID#565875 \
+        --color FRAME#565875 \
+        --color SHADEA#565875 \
+        --color SHADEB#565875 \
+        --end now --start end-"${GRAPH_TIME:?}" \
+        DEF:deposited="${GRAPH_DB_PATH}":deposited:MAX \
+        DEF:available="${GRAPH_DB_PATH}":available:MAX \
+        DEF:unconfirmed="${GRAPH_DB_PATH}":unconfirmed:MAX \
+        LINE1:deposited#BFDACF:"$GRAPH_REFERENCE_CURRENCY Deposited  " \
+        GPRINT:deposited:LAST:"%.9lf\n" \
+        LINE2:available#85bb65:"$GRAPH_REFERENCE_CURRENCY Available  " \
+        GPRINT:available:LAST:"%.9lf\n" \
+        LINE1:unconfirmed#EA7575:"$GRAPH_REFERENCE_CURRENCY Unconfirmed" \
+        GPRINT:unconfirmed:LAST:"%.9lf\n"
+    fi
+  done
 
   ##############################################################################
 
-  # update databases
-  rrdtool update "$GRAPH_DB_PATH" N:"$(grep -w "$GRAPH_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%.9f:%.9f:%.9f\n", $2, $3, $4 }')" 2>/dev/null
-
-  ##############################################################################
-
-  # if xeggex
-  if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
-    # reference balance
-    rrdtool graph "${GRAPH_PNG_PATH}" \
-      -w 400 -h 150 -a PNG \
-      --slope-mode \
-      --vertical-label "${GRAPH_REFERENCE_CURRENCY} Balance" \
-      --color BACK#565875 \
-      --color FONT#FFFFFF \
-      --color CANVAS#42445F \
-      --color GRID#565875 \
-      --color FRAME#565875 \
-      --color SHADEA#565875 \
-      --color SHADEB#565875 \
-      --end now --start end-"${GRAPH_TIME:?}" \
-      DEF:deposited="${GRAPH_DB_PATH}":deposited:MAX \
-      DEF:available="${GRAPH_DB_PATH}":available:MAX \
-      DEF:unconfirmed="${GRAPH_DB_PATH}":unconfirmed:MAX \
-      CDEF:total=deposited,available,unconfirmed,+,+ \
-      LINE1:deposited#2970D6:"$GRAPH_REFERENCE_CURRENCY Deposited  " \
-      GPRINT:deposited:LAST:"%.9lf\n" \
-      LINE2:available#85bb65:"$GRAPH_REFERENCE_CURRENCY Available  " \
-      GPRINT:available:LAST:"%.9lf\n" \
-      LINE1:unconfirmed#EA7575:"$GRAPH_REFERENCE_CURRENCY Unconfirmed" \
-      GPRINT:unconfirmed:LAST:"%.9lf\n" \
-      LINE2:total#BFDACF:"$GRAPH_REFERENCE_CURRENCY Total      " \
-      GPRINT:total:LAST:"%.9lf\n"
-  fi
-
-  ##############################################################################
-
-  # if southxchange
-  if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
-    # reference balance
-    rrdtool graph "${GRAPH_PNG_PATH}" \
-      -w 400 -h 150 -a PNG \
-      --slope-mode \
-      --vertical-label "${GRAPH_REFERENCE_CURRENCY} Balance" \
-      --color BACK#565875 \
-      --color FONT#FFFFFF \
-      --color CANVAS#42445F \
-      --color GRID#565875 \
-      --color FRAME#565875 \
-      --color SHADEA#565875 \
-      --color SHADEB#565875 \
-      --end now --start end-"${GRAPH_TIME:?}" \
-      DEF:deposited="${GRAPH_DB_PATH}":deposited:MAX \
-      DEF:available="${GRAPH_DB_PATH}":available:MAX \
-      DEF:unconfirmed="${GRAPH_DB_PATH}":unconfirmed:MAX \
-      LINE1:deposited#BFDACF:"$GRAPH_REFERENCE_CURRENCY Deposited  " \
-      GPRINT:deposited:LAST:"%.9lf\n" \
-      LINE2:available#85bb65:"$GRAPH_REFERENCE_CURRENCY Available  " \
-      GPRINT:available:LAST:"%.9lf\n" \
-      LINE1:unconfirmed#EA7575:"$GRAPH_REFERENCE_CURRENCY Unconfirmed" \
-      GPRINT:unconfirmed:LAST:"%.9lf\n"
-  fi
-done
-
-################################################################################
-
-# start generating index.php
-cat >/var/www/html/"$EXCHANGE_DIR_NAME".php <<'EOF'
+  # start generating index.php
+  cat >/var/www/html/"$EXCHANGE_DIR_NAME".php <<'EOF'
 <div id="content" align="center">
 <?php
   header("refresh: 120;");
@@ -158,13 +164,14 @@ cat >/var/www/html/"$EXCHANGE_DIR_NAME".php <<'EOF'
   // Graphs
 EOF
 
-for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
-  GRAPH_PNG_PATH="${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.png"
-  # Echo the dynamically generated PHP code for the loop
-  echo "  echo '<img src=\"$GRAPH_PNG_PATH\" alt=\"$GRAPH_REFERENCE_CURRENCY Balance\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
-done
+  for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
+    GRAPH_PNG_PATH="${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.png"
+    # Echo the dynamically generated PHP code for the loop
+    echo "  echo '<img src=\"$GRAPH_PNG_PATH\" alt=\"$GRAPH_REFERENCE_CURRENCY Balance\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
+  done
 
-# Close the PHP block
-echo "?>" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
+  # Close the PHP block
+  echo "?>" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
+fi
 
 # END
