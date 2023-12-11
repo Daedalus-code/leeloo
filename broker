@@ -702,6 +702,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     # strategy data exist, copy temp file
     echo "$TXID_NULL_DATA" >/tmp/readlog 2>/dev/null
     TEMP_READLOG="$(sort -t '/' -k 2.3,2.4n -k 2.1,2.2n /tmp/readlog 2>/dev/null | tac 2>/dev/null)"
+    ERROR_CODES="$(echo "$TEMP_READLOG" | head -"$LOG_LENGTH" | egrep -o "error.code..[0-9]+" | tr ':' ' ' | awk '{ print $NF }' | awk '!a[$0]++' | xargs)"
     WIDTH="$(echo "$TEMP_READLOG" | head -"$LOG_LENGTH" | wc -L)"
     LENGTH="$(echo "$TEMP_READLOG" 2>/dev/null | wc -l 2>/dev/null)"
     # default length
@@ -718,7 +719,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     fi
 
     display_result() {
-      dialog --title "Leeloo/Strategy txid Debug" \
+      dialog --title "Leeloo/Strategy txid Debug :: Error Codes: $ERROR_CODES" \
         --no-collapse \
         --msgbox "$RESULT" "$(echo "$LENGTH" | bc 2>/dev/null)" "$(echo "$WIDTH+5" | bc 2>/dev/null)"
     }
