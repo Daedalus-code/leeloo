@@ -93,7 +93,7 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" ]] &>/dev/null; then
     fi
 
     # keep reference data logical (round robin databases)
-    comm -23 <(find "${SYS_DIR:?}/robot/" -name "${EXCHANGE_DIR_NAME}_*.rrd" -type f | sort) <(sort "${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME}.reference") | xargs -I {} rm -- "{}"
+    comm -23 <(ls "${SYS_DIR:?}"/robot/"$EXCHANGE_DIR_NAME"*.rrd | sort) <(cat "${SYS_DIR:?}"/robot/"$EXCHANGE_DIR_NAME".reference | sort) | xargs -I {} rm {}
 
     ############################################################################
 
