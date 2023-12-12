@@ -48,7 +48,7 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" ]] &>/dev/null; then
   if [[ -n "$GRAPH_REFERENCE_LIST" ]] &>/dev/null; then
     # keep reference data
     echo "$GRAPH_REFERENCE_LIST" >"${SYS_DIR:?}"/robot/"$EXCHANGE_DIR_NAME".reference
-    # keep reference data logical
+    # keep reference data logical (png graphs)
     comm -23 <(ls /var/www/html/"$EXCHANGE_DIR_NAME"*.png | sort) <(cat "${SYS_DIR:?}"/robot/"$EXCHANGE_DIR_NAME".reference | sort) | xargs -I {} rm {}
   fi
 
@@ -91,6 +91,9 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" ]] &>/dev/null; then
         DS:unconfirmed:GAUGE:300:U:U \
         RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
     fi
+
+    # keep reference data logical (round robin databases)
+    comm -23 <(find "${SYS_DIR:?}/robot/" -name "${EXCHANGE_DIR_NAME}_*.rrd" -type f | sort) <(sort "${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME}.reference") | xargs -I {} rm -- "{}"
 
     ############################################################################
 
