@@ -810,8 +810,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             # volume (configuration)
             VOLUME="$(echo "$VOLUME" | awk '{ printf "%.2f\n", $1 }')"
 
-            # create market file
-            echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+            # if price movement is positive (disregard negative)
+            if [[ "$(echo "$PRICE_MOVEMENT" | grep -c "-" || true)" -eq "0" ]] &>/dev/null; then
+              # create market file
+              echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+            fi
 
             # if zero
             if [[ -z "$DIP_MIN_MOVEMENT" ]] &>/dev/null; then
