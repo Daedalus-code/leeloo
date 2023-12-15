@@ -1039,12 +1039,22 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # average price movement
     POTENTIAL_MARKET_AVERAGE_MOVEMENT="$(echo "$POTENTIAL_MARKET_TOTAL_MOVEMENT/$POTENTIAL_MARKET_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+    # if zero
+    if [[ -z "$POTENTIAL_MARKET_AVERAGE_MOVEMENT" ]] &>/dev/null; then
+      POTENTIAL_MARKET_AVERAGE_MOVEMENT="0"
+    fi
+
     ############################################################################
 
     # total price dip
     POTENTIAL_MARKET_TOTAL_DIP="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | awk '{ print $10 }' | awk '{ SUM += $1} END { print SUM }')"
     # average dip
     POTENTIAL_MARKET_AVERAGE_DIP="$(echo "$POTENTIAL_MARKET_TOTAL_DIP/$POTENTIAL_MARKET_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    # if zero
+    if [[ -z "$POTENTIAL_MARKET_AVERAGE_DIP" ]] &>/dev/null; then
+      POTENTIAL_MARKET_AVERAGE_DIP="0"
+    fi
 
     ############################################################################
 
