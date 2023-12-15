@@ -336,8 +336,8 @@ function tx_id {
     echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY : $TX_ID_LAST_RAW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
     # keep null
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | sed '/^$/d')" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
-    # keep n lines
-    echo "$(tail -1024 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
+    # keep n lines, disregard <HTTP ERROR>
+    echo "$(tail -1024 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -v "META HTTP")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
   fi ###########################################################################
 
   # reset at midnight
