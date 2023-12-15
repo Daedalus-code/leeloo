@@ -500,8 +500,8 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # strategy error count
   STRATEGY_ERROR_DATA_COUNT="$(echo "$STRATEGY_ERROR_DATA" 2>/dev/null | sed '/^$/d' | wc -l)"
 
-  # txid null error output
-  TXID_NULL_DATA="$(echo "$(cat "${SYS_DIR:?}"/robot/*null.log 2>/dev/null)")"
+  # txid null error output, disregard <HTTP ERROR>
+  TXID_NULL_DATA="$(echo "$(cat "${SYS_DIR:?}"/robot/*null.log 2>/dev/null | grep -v "META HTTP")")"
   # txid null error count
   TXID_NULL_DATA_COUNT="$(echo "$TXID_NULL_DATA" 2>/dev/null | sed '/^$/d' | wc -l)"
 
@@ -719,7 +719,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     fi
 
     display_result() {
-      dialog --title "Leeloo/Strategy txid Debug :: Error Codes: $ERROR_CODES" \
+      dialog --title "Leeloo/Strategy txid Debug :: Error: $TXID_NULL_DATA_COUNT Codes: $ERROR_CODES" \
         --no-collapse \
         --msgbox "$RESULT" "$(echo "$LENGTH" | bc 2>/dev/null)" "$(echo "$WIDTH+5" | bc 2>/dev/null)"
     }
