@@ -760,6 +760,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   fi
 
   ##############################################################################
+  ##############################################################################
 
   # read the file line by line
   while IFS= read -r line; do
@@ -809,9 +810,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             PRICE_MOVEMENT=$(awk -v last="$LAST" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
             # volume (configuration)
             VOLUME="$(echo "$VOLUME" | awk '{ printf "%.2f\n", $1 }')"
+            # price movement check (without decimal)
+            PRICE_MOVEMENT_CHECK="$(echo "$PRICE_MOVEMENT" | tr -d '.' | sed 's/^0*//')"
 
-            # if price movement is positive (disregard negative)
-            if [[ "$(echo "$PRICE_MOVEMENT" | grep -c "-" || true)" -eq "0" ]] &>/dev/null; then
+            # if price movement greater than minimum price movement
+            if (($(echo "$PRICE_MOVEMENT_CHECK > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
               # create market file
               echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
             fi
@@ -822,11 +825,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
               DIP_MIN_MOVEMENT="0"
             fi
 
-            # price movement check (without decimal)
-            PRICE_MOVEMENT_CHECK="$(echo "$PRICE_MOVEMENT" | tr -d '.' | sed 's/^0*//')"
-
-            # if the symbol meets the potential buy criteria, ruled by configuration
+            # if price movement greater than minimum price movement
             if (($(echo "$PRICE_MOVEMENT_CHECK > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
+              # if the symbol meets the potential buy criteria, ruled by configuration
               if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
                 # potential symbol, bid, ask, last
@@ -846,6 +847,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
   done <"$DIP_PRICES_FILE" 2>/dev/null
 
+  ##############################################################################
   ##############################################################################
 
   # create market.list
