@@ -813,11 +813,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             # price movement check (without decimal)
             PRICE_MOVEMENT_CHECK="$(echo "$PRICE_MOVEMENT" | tr -d '.' | sed 's/^0*//')"
 
-            # if price movement greater than minimum price movement
-            if (($(echo "$PRICE_MOVEMENT_CHECK > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
-              # create market file
-              echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
-            fi
+            # create market file (everyone)
+            echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
             # if zero
             if [[ -z "$DIP_MIN_MOVEMENT" ]] &>/dev/null; then
