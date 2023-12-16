@@ -40,10 +40,10 @@ echo "$(cat "${LOG_DIR:?}"/leeloo/robots 2>/dev/null | awk '!a[$1]++')" >"${LOG_
 ################################################################################
 
 function backup_balances() {
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/balances "${LOG_DIR:?}"/leeloo/southxchange/balances.bkp &>/dev/null
   fi
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/southxchange/balances | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -eq "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/balances.bkp "${LOG_DIR:?}"/leeloo/southxchange/balances &>/dev/null
   fi
 }
@@ -51,10 +51,10 @@ function backup_balances() {
 ################################################################################
 
 function backup_prices() {
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/prices "${LOG_DIR:?}"/leeloo/southxchange/prices.bkp &>/dev/null
   fi
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/southxchange/prices | wc -l)" -eq "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/prices.bkp "${LOG_DIR:?}"/leeloo/southxchange/prices &>/dev/null
   fi
 }
@@ -62,10 +62,10 @@ function backup_prices() {
 ################################################################################
 
 function backup_orders() {
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/orders "${LOG_DIR:?}"/leeloo/southxchange/orders.bkp &>/dev/null
   fi
-  if [[ "$(egrep "[0-9]+.[0-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/southxchange/orders | wc -l)" -eq "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/southxchange/orders.bkp "${LOG_DIR:?}"/leeloo/southxchange/orders &>/dev/null
   fi
 }
@@ -352,8 +352,6 @@ function tx_id {
     echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY : $TX_ID_LAST_RAW" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null
     # keep null
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | sed '/^$/d')" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
-    # keep n lines, disregard <HTTP ERROR>
-    echo "$(tail -1024 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -v "META HTTP")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
   fi ###########################################################################
 
   # reset at midnight
@@ -361,6 +359,8 @@ function tx_id {
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null &>/dev/null
   fi
 
+  # keep n lines, disregard <HTTP ERROR>
+  echo "$(tail -1024 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -v "META HTTP")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
   # cleanup txid
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | egrep -v "error|null|Amount|below|minimum" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
