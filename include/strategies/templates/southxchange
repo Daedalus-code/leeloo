@@ -324,16 +324,16 @@ function reference_balance_check {
 ################################################################################
 
 function tx_id {
+  # if not found
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log &>/dev/null
+  fi
+
   # execute order in strategy, create txid file
   echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
   # last txid (raw)
   TX_ID_LAST_RAW="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | xargs)"
-
-  # if zero
-  if [[ -z "$TX_ID_LAST" || "$(echo "$TX_ID_LAST" | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
-    TX_ID_LAST="N/A"
-  fi
 
   # if txid exist
   if [[ "$(echo "$TX_ID_LAST_RAW" | egrep -c "[A-Za-z0-9]+" || true)" -gt "0" ]] &>/dev/null; then

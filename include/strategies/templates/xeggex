@@ -313,6 +313,11 @@ function reference_balance_check {
 ################################################################################
 
 function tx_id {
+  # if not found
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log &>/dev/null
+  fi
+
   # execute order in strategy, create txid file
   echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
