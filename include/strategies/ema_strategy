@@ -727,8 +727,16 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
         # ready to buy (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
+
+          REF_ALL_REAL="$(echo "${REFERENCE_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
+          REF_ALL="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+          # calculate difference
+          REF_ALL_DIFF="$(echo "$(echo "$REF_ALL-$REF_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+          # calculate new amount
+          REFERENCE_AMOUNT="$(echo "$REF_ALL_DIFF*$REFERENCE_AMOUNT" | bc -l 2>/dev/null)"
+
           # is this bullish signal allocated correctly? (without decimal)
-          if [[ "$(echo "$LISTING_ALLOCATED_REAL" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$LISTING_ALLOCATED" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+          if [[ "$REF_ALL_REAL" -lt "$REF_ALL" ]] &>/dev/null; then
             # trigger a buy for fear of missing out
             echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
             echo "Bearish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
@@ -871,8 +879,16 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
         # ready to sell (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
-          # is this bullish signal allocated correctly? (without decimal)
-          if [[ "$(echo "$REFERENCE_ALLOCATED_REAL" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$REFERENCE_ALLOCATED" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+
+          REF_ALL_REAL="$(echo "${REFERENCE_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
+          REF_ALL="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+          # calculate difference
+          REF_ALL_DIFF="$(echo "$(echo "$REF_ALL-$REF_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+          # calculate new amount
+          LISTING_AMOUNT="$(echo "$REF_ALL_DIFF*$LISTING_AMOUNT" | bc -l 2>/dev/null)"
+
+          # is this bearish signal allocated correctly? (without decimal)
+          if [[ "$REF_ALL_REAL" -gt "$REF_ALL" ]] &>/dev/null; then
             # trigger a sell for fear of missing out
             echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
             echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
