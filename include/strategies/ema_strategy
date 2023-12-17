@@ -82,8 +82,17 @@ insufficient_funds      # check for available funds
 
 ################################################################################
 
-# get data
+# get ema data
 GET_EMA_DATA="$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY")"
+
+# if data
+if [[ ! -z "$GET_EMA_DATA" ]] &>/dev/null; then
+  # update data
+  echo "$GET_EMA_DATA" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema
+fi
+
+GET_EMA_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema 2>/dev/null)"
+
 GET_EMA_SIGNAL="$(echo "$GET_EMA_DATA" | awk '{ print $1 }')"
 GET_EMA_CONFIG="$(echo "$GET_EMA_DATA" | awk '{ print $NF }')"
 GET_SHORT_DATA="$(echo "$GET_EMA_DATA" | awk '{ print $3 }')"
@@ -648,13 +657,14 @@ fi
 ################################################################################
 
 EMA_REAL_RAW="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_ERROR:?}")"
+
 EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | grep "EMA_Signal" | awk '{ print $2 }')"
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | grep "EMA_Short" | awk '{ print $2 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | grep "EMA_Long" | awk '{ print $2 }')"
 
 # if zero, skip signal
-if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
-  if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ ! -z "$EMA_REAL_SHORT" ]] 2>>"${LOG_ERROR:?}"; then
+  if [[ ! -z "$EMA_REAL_LONG" ]] 2>>"${LOG_ERROR:?}"; then
     if [[ -n "$EMA_REAL_SHORT" && -n "$EMA_REAL_LONG" ]] 2>>"${LOG_ERROR:?}"; then
       echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>>"${LOG_ERROR:?}"
     fi
