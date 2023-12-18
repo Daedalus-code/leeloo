@@ -733,7 +733,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
           # calculate difference
           REF_ALL_DIFF="$(echo "$(echo "$REF_ALL-$REF_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new amount
-          REFERENCE_AMOUNT="$(echo "$REF_ALL_DIFF*$REFERENCE_AMOUNT" | bc -l 2>/dev/null)"
+          REFERENCE_AMOUNT="$(echo "$REF_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
 
           # is this bullish signal allocated correctly? (without decimal)
           if [[ "$REF_ALL_REAL" -lt "$REF_ALL" ]] &>/dev/null; then
@@ -885,7 +885,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
           # calculate difference
           REF_ALL_DIFF="$(echo "$(echo "$REF_ALL-$REF_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new amount
-          LISTING_AMOUNT="$(echo "$REF_ALL_DIFF*$LISTING_AMOUNT" | bc -l 2>/dev/null)"
+          LISTING_AMOUNT="$(echo "$REF_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
 
           # is this bearish signal allocated correctly? (without decimal)
           if [[ "$REF_ALL_REAL" -gt "$REF_ALL" ]] &>/dev/null; then
@@ -975,7 +975,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
                 # if xeggex order
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # CreateOrder limit ##########################################
-                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$REFERENCE_PRICE" "false")"
                   ##############################################################
                 fi
 
