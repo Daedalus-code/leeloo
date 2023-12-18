@@ -172,8 +172,8 @@ ROGUE_MAX_DAY="3"       # n trades a day (default: 3)
 ROGUE_RSI="14"          # relative strength index (default: 14)
 
 # n% reference, listing amount
-REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }' | head -1)"
-LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.8f\n", $1 }' | head -1)"
+REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | head -1)"
+LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | head -1)"
 
 ################################################################################
 
@@ -733,7 +733,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
           # calculate difference
           REF_ALL_DIFF="$(echo "$(echo "$REF_ALL-$REF_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new amount
-          REFERENCE_AMOUNT="$(echo "$REF_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+          REFERENCE_AMOUNT="$(echo "$REF_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
           # is this bullish signal allocated correctly? (without decimal)
           if [[ "$REF_ALL_REAL" -lt "$REF_ALL" ]] &>/dev/null; then
@@ -885,7 +885,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
           # calculate difference
           REF_ALL_DIFF="$(echo "$(echo "$REF_ALL-$REF_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new amount
-          LISTING_AMOUNT="$(echo "$REF_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+          LISTING_AMOUNT="$(echo "$REF_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
           # is this bearish signal allocated correctly? (without decimal)
           if [[ "$REF_ALL_REAL" -gt "$REF_ALL" ]] &>/dev/null; then
