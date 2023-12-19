@@ -76,12 +76,12 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
   # iterate over active references
   for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
 
-    # path
+    # path references png
     GRAPH_DB_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.rrd"
-    GRAPH_DB_ORDERS_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_orders.rrd"
-
-    # graph png
     GRAPH_PNG_PATH="/var/www/html/${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.png"
+
+    # path orders png
+    GRAPH_DB_ORDERS_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_orders.rrd"
     GRAPH_PNG_ORDERS_PATH="/var/www/html/${EXCHANGE_DIR_NAME:?}_orders.png"
 
     # if zero
@@ -95,7 +95,7 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
 
     # create graph based on exchange orders
     if [ ! -f "${GRAPH_DB_ORDERS_PATH}" ]; then
-      printf '%b' '%s Status() rrdtoolStats() Creating %s.rrd! %s<>%s\n' "$(date "+%Y-%m-%d %H:%M:%S")" "Orders" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
+      printf '%b' '%s Status() rrdtoolStats() Creating "'"${EXCHANGE_DIR_NAME:?}_orders"'".rrd! <>\n' "$(date "+%Y-%m-%d %H:%M:%S")" "Orders" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
       rrdtool create "${GRAPH_DB_ORDERS_PATH}" \
         --step=60 \
         DS:buy:GAUGE:300:U:U \
@@ -112,7 +112,7 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
 
     # create graph based on found reference accounts with balance
     if [ ! -f "${GRAPH_DB_PATH}" ]; then
-      printf '%b' '%s Status() rrdtoolStats() Creating %s.rrd! %s<>%s\n' "$(date "+%Y-%m-%d %H:%M:%S")" "${GRAPH_REFERENCE_CURRENCY}" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
+      printf '%b' '%s Status() rrdtoolStats() Creating "'"${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}"'".rrd! <>\n' "$(date "+%Y-%m-%d %H:%M:%S")" "${GRAPH_REFERENCE_CURRENCY}" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
       rrdtool create "${GRAPH_DB_PATH}" \
         --step=60 \
         DS:deposited:GAUGE:300:U:U \
@@ -221,7 +221,8 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
 EOF
 
   # generate exchange orders at beginning
-  echo "echo '<img src="'"'"${GRAPH_PNG_ORDERS_PATH:?}"'"'" alt="'"'"${EXCHANGE_DIR_NAME} Orders"'"'" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
+  GRAPH_PNG_ORDERS_PATH="${EXCHANGE_DIR_NAME:?}_orders.png"
+  echo "  echo '<img src="'"'"${GRAPH_PNG_ORDERS_PATH:?}"'"'" alt="'"'"${EXCHANGE_DIR_NAME} Orders"'"'" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
 
   # generate rest of reference balances
   for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
