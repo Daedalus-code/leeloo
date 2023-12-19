@@ -71,6 +71,16 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
     GRAPH_TIME="1h"
   fi
 
+  # if southxchange
+  if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
+    HEIGHT="150"
+  fi
+
+  # if xeggex
+  if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
+    HEIGHT="164"
+  fi
+
   ##############################################################################
 
   # iterate over active references
@@ -185,15 +195,6 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
   done
 
   ##############################################################################
-
-  # if southxchange
-  if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
-    HEIGHT="150"
-  fi
-  # if xeggex
-  if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
-    HEIGHT="160"
-  fi
 
   rrdtool graph "${GRAPH_PNG_ORDERS_PATH}" \
     -w 400 -h "$HEIGHT" -a PNG \
