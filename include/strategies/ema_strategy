@@ -232,7 +232,7 @@ function rogue_buying() {
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder market #################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$REFERENCE_AMOUNT" "" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$LISTING_AMOUNT" "" "false")"
           ######################################################################
         fi
 
@@ -260,7 +260,7 @@ function rogue_buying() {
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder limit ##################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
           ######################################################################
         fi
         ########################################################################
@@ -728,15 +728,16 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
         # ready to buy (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-          LISTING_ALL_REAL="$(echo "${LISTING_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
-          LISTING_ALL="$(echo "${LISTING_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+          # reference
+          REFERENCE_ALL_REAL="$(echo "${REFERENCE_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
+          REFERENCE_ALL="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
           # calculate difference
-          LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALL-$LISTING_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+          REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALL-$REFERENCE_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new amount
-          LISTING_AMOUNT="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          REFERENCE_AMOUNT="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
           # is this bullish signal allocated correctly? (without decimal)
-          if [[ "$REF_ALL_REAL" -lt "$REF_ALL" ]] &>/dev/null; then
+          if [[ "$REFERENCE_ALL_REAL" -lt "$REFERENCE_ALL" ]] &>/dev/null; then
             # trigger a buy for fear of missing out
             echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
             echo "Bearish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
@@ -788,7 +789,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
                 # if xeggex order
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # CreateOrder market #########################################
-                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$REFERENCE_AMOUNT" "" "false")"
+                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "" "false")"
                   ##############################################################
                 fi
 
@@ -823,7 +824,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
                 # if xeggex order
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # CreateOrder limit ##########################################
-                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "false")"
+                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$REFERENCE_PRICE" "false")"
                   ##############################################################
                 fi
 
@@ -880,12 +881,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
         # ready to sell (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-          LISTING_ALL_REAL="$(echo "${LISTING_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
-          LISTING_ALL="$(echo "${LISTING_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+          # reference
+          REFERENCE_ALL_REAL="$(echo "${REFERENCE_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
+          REFERENCE_ALL="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
           # calculate difference
-          LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALL-$LISTING_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+          REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALL-$REFERENCE_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new amount
-          LISTING_AMOUNT="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          REFERENCE_AMOUNT="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
           # is this bearish signal allocated correctly? (without decimal)
           if [[ "$REF_ALL_REAL" -gt "$REF_ALL" ]] &>/dev/null; then
