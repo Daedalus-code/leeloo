@@ -22,9 +22,10 @@ EXCHANGE_DIR_NAME="$GRAPH_EXCHANGE"
 # exchange balances
 WCL_BALANCES="$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $1 }')"
 WCL_PRICES="$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | awk '{ print $1 }')"
+WCL_ORDERS="$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk '{ print $1 }')"
 
 # check balances, prices
-if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" ]] &>/dev/null; then
+if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" ]] &>/dev/null; then
 
   ##############################################################################
 
@@ -74,15 +75,43 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" ]] &>/dev/null; then
 
   # iterate over active references
   for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
+
+    # path
     GRAPH_DB_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.rrd"
+    GRAPH_DB_ORDERS_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_orders.rrd"
+
+    # graph png
     GRAPH_PNG_PATH="/var/www/html/${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.png"
+    GRAPH_PNG_ORDERS_PATH="/var/www/html/${EXCHANGE_DIR_NAME:?}_orders.png"
+
+    # if zero
+    if [[ -z "$GRAPH_DATA" ]] &>/dev/null; then
+      GRAPH_DATA="525600" # 1 year with 1-minute interval
+    fi
+
+    ############################################################################
+    # graph exchange orders buy and sell count
+    ############################################################################
+
+    # create graph based on exchange orders
+    if [ ! -f "${GRAPH_DB_ORDERS_PATH}" ]; then
+      printf '%b' '%s Status() rrdtoolStats() Creating %s.rrd! %s<>%s\n' "$(date "+%Y-%m-%d %H:%M:%S")" "Orders" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
+      rrdtool create "${GRAPH_DB_ORDERS_PATH}" \
+        --step=60 \
+        DS:buy:GAUGE:300:U:U \
+        DS:sell:GAUGE:300:U:U \
+        RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
+    fi
+
+    # update order databases
+    rrdtool update "$GRAPH_DB_ORDERS_PATH" N:"$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null || true)":"$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null || true)" 2>/dev/null
+
+    ############################################################################
+    # graph reference accounts with balance
+    ############################################################################
 
     # create graph based on found reference accounts with balance
     if [ ! -f "${GRAPH_DB_PATH}" ]; then
-      # if zero
-      if [[ -z "$GRAPH_DATA" ]] &>/dev/null; then
-        GRAPH_DATA="525600" # 1 year with 1-minute interval
-      fi
       printf '%b' '%s Status() rrdtoolStats() Creating %s.rrd! %s<>%s\n' "$(date "+%Y-%m-%d %H:%M:%S")" "${GRAPH_REFERENCE_CURRENCY}" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
       rrdtool create "${GRAPH_DB_PATH}" \
         --step=60 \
@@ -92,10 +121,32 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" ]] &>/dev/null; then
         RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
     fi
 
+    # update reference databases
+    rrdtool update "$GRAPH_DB_PATH" N:"$(grep -w "$GRAPH_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%.9f:%.9f:%.9f\n", $2, $3, $4 }')" 2>/dev/null
+
     ############################################################################
 
-    # update databases
-    rrdtool update "$GRAPH_DB_PATH" N:"$(grep -w "$GRAPH_REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%.9f:%.9f:%.9f\n", $2, $3, $4 }')" 2>/dev/null
+    rrdtool graph "${GRAPH_PNG_ORDERS_PATH}" \
+      -w 400 -h 150 -a PNG \
+      --slope-mode \
+      --vertical-label "${EXCHANGE_DIR_NAME} Orders" \
+      --color BACK#565875 \
+      --color FONT#FFFFFF \
+      --color CANVAS#42445F \
+      --color GRID#565875 \
+      --color FRAME#565875 \
+      --color SHADEA#565875 \
+      --color SHADEB#565875 \
+      --end now --start end-"${GRAPH_TIME:?}" \
+      DEF:buy="${GRAPH_DB_ORDERS_PATH}":buy:MAX \
+      DEF:sell="${GRAPH_DB_ORDERS_PATH}":sell:MAX \
+      CDEF:total=buy,sell,+,+ \
+      LINE1:buy#FA8A8A:"$GRAPH_REFERENCE_CURRENCY buy   " \
+      GPRINT:buy:LAST:"%.0lf\n" \
+      LINE2:sell#6EBB65:"$GRAPH_REFERENCE_CURRENCY sell  " \
+      GPRINT:sell:LAST:"%.0lf\n" \
+      LINE2:total#BFDACF:"$GRAPH_REFERENCE_CURRENCY Total " \
+      GPRINT:total:LAST:"%.0lf\n"
 
     ############################################################################
 
@@ -169,13 +220,17 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" ]] &>/dev/null; then
   // Graphs
 EOF
 
+  # generate exchange orders at beginning
+  echo "echo '<img src="'"'"${GRAPH_PNG_ORDERS_PATH:?}"'"'" alt="'"'"${EXCHANGE_DIR_NAME} Orders"'"'" />';" >>"$EXCHANGE_DIR_NAME".php
+
+  # generate rest of reference balances
   for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
     GRAPH_PNG_PATH="${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.png"
     # Echo the dynamically generated PHP code for the loop
     echo "  echo '<img src=\"$GRAPH_PNG_PATH\" alt=\"$GRAPH_REFERENCE_CURRENCY Balance\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
   done
 
-  # Close the PHP block
+  # close the php block
   echo "?>" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
 fi
 
