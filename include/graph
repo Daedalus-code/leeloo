@@ -126,30 +126,6 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
 
     ############################################################################
 
-    rrdtool graph "${GRAPH_PNG_ORDERS_PATH}" \
-      -w 400 -h 150 -a PNG \
-      --slope-mode \
-      --vertical-label "${EXCHANGE_DIR_NAME} Orders" \
-      --color BACK#565875 \
-      --color FONT#FFFFFF \
-      --color CANVAS#42445F \
-      --color GRID#565875 \
-      --color FRAME#565875 \
-      --color SHADEA#565875 \
-      --color SHADEB#565875 \
-      --end now --start end-"${GRAPH_TIME:?}" \
-      DEF:buy="${GRAPH_DB_ORDERS_PATH}":buy:MAX \
-      DEF:sell="${GRAPH_DB_ORDERS_PATH}":sell:MAX \
-      CDEF:total=buy,sell,+,+ \
-      LINE1:buy#FA8A8A:"$GRAPH_REFERENCE_CURRENCY buy   " \
-      GPRINT:buy:LAST:"%.0lf\n" \
-      LINE2:sell#6EBB65:"$GRAPH_REFERENCE_CURRENCY sell  " \
-      GPRINT:sell:LAST:"%.0lf\n" \
-      LINE2:total#BFDACF:"$GRAPH_REFERENCE_CURRENCY Total " \
-      GPRINT:total:LAST:"%.0lf\n"
-
-    ############################################################################
-
     # if xeggex
     if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
       # reference balance
@@ -207,6 +183,30 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
         GPRINT:unconfirmed:LAST:"%.9lf\n"
     fi
   done
+
+  ##############################################################################
+
+  rrdtool graph "${GRAPH_PNG_ORDERS_PATH}" \
+    -w 400 -h 150 -a PNG \
+    --slope-mode \
+    --vertical-label "${EXCHANGE_DIR_NAME} Orders" \
+    --color BACK#565875 \
+    --color FONT#FFFFFF \
+    --color CANVAS#42445F \
+    --color GRID#565875 \
+    --color FRAME#565875 \
+    --color SHADEA#565875 \
+    --color SHADEB#565875 \
+    --end now --start end-"${GRAPH_TIME:?}" \
+    DEF:buy="${GRAPH_DB_ORDERS_PATH}":buy:MAX \
+    DEF:sell="${GRAPH_DB_ORDERS_PATH}":sell:MAX \
+    CDEF:total=buy,sell,+,+ \
+    LINE1:buy#FA8A8A:"$GRAPH_REFERENCE_CURRENCY buy   " \
+    GPRINT:buy:LAST:"%.0lf\n" \
+    LINE2:sell#6EBB65:"$GRAPH_REFERENCE_CURRENCY sell  " \
+    GPRINT:sell:LAST:"%.0lf\n" \
+    LINE2:total#BFDACF:"$GRAPH_REFERENCE_CURRENCY Total " \
+    GPRINT:total:LAST:"%.0lf\n"
 
   ##############################################################################
 
