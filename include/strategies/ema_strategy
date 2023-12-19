@@ -728,12 +728,12 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
         # ready to buy (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-          REF_ALL_REAL="$(echo "${REFERENCE_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
-          REF_ALL="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+          LISTING_ALL_REAL="$(echo "${LISTING_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
+          LISTING_ALL="$(echo "${LISTING_ALLOCATED:?}" | awk -F. '{ print $1 }')"
           # calculate difference
-          REF_ALL_DIFF="$(echo "$(echo "$REF_ALL-$REF_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+          LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALL-$LISTING_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new amount
-          REFERENCE_AMOUNT="$(echo "$REF_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          LISTING_AMOUNT="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
           # is this bullish signal allocated correctly? (without decimal)
           if [[ "$REF_ALL_REAL" -lt "$REF_ALL" ]] &>/dev/null; then
@@ -880,12 +880,12 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
         # ready to sell (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-          REF_ALL_REAL="$(echo "${REFERENCE_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
-          REF_ALL="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+          LISTING_ALL_REAL="$(echo "${LISTING_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
+          LISTING_ALL="$(echo "${LISTING_ALLOCATED:?}" | awk -F. '{ print $1 }')"
           # calculate difference
-          REF_ALL_DIFF="$(echo "$(echo "$REF_ALL-$REF_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+          LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALL-$LISTING_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new amount
-          LISTING_AMOUNT="$(echo "$REF_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          LISTING_AMOUNT="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
           # is this bearish signal allocated correctly? (without decimal)
           if [[ "$REF_ALL_REAL" -gt "$REF_ALL" ]] &>/dev/null; then
