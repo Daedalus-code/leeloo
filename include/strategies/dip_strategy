@@ -2319,12 +2319,17 @@ fi
 
 # if order has balance
 if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
+
+  # get reference based on available
+  REFERENCE_CURRENCY="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices | tr '_/:' ' ' | awk '{ print $2 }' | grep -v "$LISTING_CURRENCY")"
+
   # no reference, use bitcoin as dumping ground
   if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     REFERENCE_CURRENCY="BTC"
   fi
+
   # dump output (log)
-  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING (Delisted)"
+  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
   echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   ##############################################################################
