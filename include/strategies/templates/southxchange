@@ -286,6 +286,11 @@ function listing_allocated() {
   if [[ -z "$LISTING_ALLOCATED_REAL_RAW" ]] &>/dev/null; then
     LISTING_ALLOCATED_REAL_RAW="0.00"
   fi
+  # calculate listing allocated
+  LISTING_ALL_REAL="$(echo "${LISTING_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
+  LISTING_ALL="$(echo "${LISTING_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+  # calculate difference
+  LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALL-$LISTING_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
 }
 
 ################################################################################
@@ -305,6 +310,11 @@ function reference_allocated() {
   if [[ -z "$REFERENCE_ALLOCATED_REAL_RAW" ]] &>/dev/null; then
     REFERENCE_ALLOCATED_REAL_RAW="0.00"
   fi
+  # calculate reference allocated
+  REFERENCE_ALL_REAL="$(echo "${REFERENCE_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
+  REFERENCE_ALL="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+  # calculate difference
+  REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALL-$REFERENCE_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
 }
 
 ################################################################################

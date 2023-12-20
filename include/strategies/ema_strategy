@@ -700,7 +700,7 @@ signal_age
 ################################################################################
 
 BULLISH_EMA_CROSS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : ${REFERENCE_ALLOCATED:?}% :: Bullish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $TYPE"
-BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Trigger :: Bullish+Signal :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${REFERENCE_ALLOCATED_REAL:?}% > ${REFERENCE_ALLOCATED:?}%"
+BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Trigger :: Bullish+Signal :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buying $(echo "$REFERENCE_ALL_DIFF" | awk '{ printf "%.2f\n", $1 }')% $LISTING_CURRENCY > ${REFERENCE_ALLOCATED:?}%"
 BULLISH_EMA_STATUS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT / $EMA_REAL_LONG / $(echo "$LISTING_PRICE" | awk '{ printf "%.9f\n", $1 }') Bullish ${EMA_PERCENTAGE:?}% ${ROGUE_PROFIT_INDICATOR:?}"
 
 ################################################################################
@@ -727,15 +727,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
         # ready to buy (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
-
-          # listing
-          LISTING_ALL_REAL="$(echo "${LISTING_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
-          LISTING_ALL="$(echo "${LISTING_ALLOCATED:?}" | awk -F. '{ print $1 }')"
-          # calculate difference
-          LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALL-$LISTING_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new listing amount
           LISTING_AMOUNT="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
           # is this bullish signal allocated correctly? (without decimal)
           if [[ "$LISTING_ALL_REAL" -lt "$LISTING_ALL" ]] &>/dev/null; then
             # trigger a buy for fear of missing out
@@ -853,7 +846,7 @@ fi
 ################################################################################
 
 BEARISH_EMA_CROSS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : ${LISTING_ALLOCATED:?}% :: Bearish+Cross :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $TYPE"
-BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Trigger :: Bearish+Signal :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: ${LISTING_ALLOCATED_REAL:?}% > ${LISTING_ALLOCATED:?}%"
+BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Trigger :: Bearish+Signal :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Selling $(echo "$LISTING_ALL_DIFF" | awk '{ printf "%.2f\n", $1 }')% $LISTING_CURRENCY > ${LISTING_ALLOCATED:?}%"
 BEARISH_EMA_STATUS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $EMA_REAL_SHORT / $EMA_REAL_LONG / $(echo "$LISTING_PRICE" | awk '{ printf "%.9f\n", $1 }') Bearish ${EMA_PERCENTAGE:?}% ${ROGUE_PROFIT_INDICATOR:?}"
 
 ################################################################################
@@ -880,15 +873,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
         # ready to sell (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
-
-          # reference
-          REFERENCE_ALL_REAL="$(echo "${REFERENCE_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
-          REFERENCE_ALL="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
-          # calculate difference
-          REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALL-$REFERENCE_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new listing amount
           LISTING_AMOUNT="$(echo "$REFERENCE_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
           # is this bearish signal allocated correctly? (without decimal)
           if [[ "$REFERENCE_ALL_REAL" -lt "$REFERENCE_ALL" ]] &>/dev/null; then
             # trigger a sell for fear of missing out
