@@ -881,16 +881,16 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
         # ready to sell (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-          # reference
-          REFERENCE_ALL_REAL="$(echo "${REFERENCE_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
-          REFERENCE_ALL="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+          # listing
+          LISTING_ALL_REAL="$(echo "${LISTING_ALLOCATED_REAL:?}" | awk -F. '{ print $1 }')"
+          LISTING_ALL="$(echo "${LISTING_ALLOCATED:?}" | awk -F. '{ print $1 }')"
           # calculate difference
-          REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALL-$REFERENCE_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+          LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALL-$LISTING_ALL_REAL" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
           # calculate new listing amount
-          LISTING_AMOUNT="$(echo "$REFERENCE_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          LISTING_AMOUNT="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
           # is this bearish signal allocated correctly? (without decimal)
-          if [[ "$REF_ALL_REAL" -gt "$REF_ALL" ]] &>/dev/null; then
+          if [[ "$LISTING_ALL_REAL" -lt "$LISTING_ALL" ]] &>/dev/null; then
             # trigger a sell for fear of missing out
             echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
             echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
