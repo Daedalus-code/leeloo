@@ -280,7 +280,7 @@ function listing_allocated() {
   # listing real value
   LISTING_ALLOCATED_REAL="$(echo "100/$TOTAL_EMA_VALUE*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null)"
   # listing real check
-  LISTING_ALLOCATED_REAL_CHECK="$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')"
+  LISTING_ALLOCATED_REAL_CHECK="$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
   # calculate difference
   LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALLOCATED_REAL_CHECK-$LISTING_ALLOCATED_CONFIG_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
 }
@@ -296,7 +296,7 @@ function reference_allocated() {
   # reference real value
   REFERENCE_ALLOCATED_REAL="$(echo "100/$TOTAL_EMA_VALUE*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null)"
   # reference real check
-  REFERENCE_ALLOCATED_REAL_CHECK="$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')"
+  REFERENCE_ALLOCATED_REAL_CHECK="$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')"
   # calculate difference
   REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALLOCATED_REAL_CHECK-$REFERENCE_ALLOCATED_CONFIG_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
 }
