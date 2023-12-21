@@ -261,49 +261,31 @@ function reference_total_value() {
 ################################################################################
 
 function listing_allocated() {
-  # total listing allocated based on reference total
-  LISTING_ALLOCATED_REAL="$(echo "100/$REFERENCE_TOTAL*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
   # listing allocated real check
-  LISTING_ALLOCATED_REAL_CHECK="$(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')"
-
-  # if greater than n
-  if [[ "$LISTING_ALLOCATED_REAL_CHECK" -gt "99" ]] &>/dev/null; then
-    LISTING_ALLOCATED_REAL="100"
-  fi
-
-  # if zero
-  if [[ -z "$LISTING_ALLOCATED_REAL" ]] &>/dev/null; then
-    LISTING_ALLOCATED_REAL="0.00"
-  fi
-
-  # listing allocated check
-  LISTING_ALLOCATED_CHECK="$(echo "${LISTING_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+  LISTING_ALLOCATED_CONFIG_CHECK="$(echo "$LISTING_ALLOCATED" | awk -F. '{ print $1 }')"
+  # total ema value
+  TOTAL_EMA_VALUE="$(echo "$LISTING_TOTAL_VALUED+$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null)"
+  # listing real value
+  LISTING_ALLOCATED_REAL="$(echo "100/$TOTAL_EMA_VALUE*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null)"
+  # listing real check
+  LISTING_ALLOCATED_REAL_CHECK="$(echo "100/$TOTAL_EMA_VALUE*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
   # calculate difference
-  LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALLOCATED_CHECK-$LISTING_ALLOCATED_REAL_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+  LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALLOCATED_REAL_CHECK-$LISTING_ALLOCATED_CONFIG_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
 }
 
 ################################################################################
 
 function reference_allocated() {
-  # total reference allocated based on listing total
-  REFERENCE_ALLOCATED_REAL="$(echo "100/$LISTING_TOTAL*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-  # reference allocated real check
-  REFERENCE_ALLOCATED_REAL_CHECK="$(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')"
-
-  # if greater than n
-  if [[ "$REFERENCE_ALLOCATED_REAL_CHECK" -gt "99" ]] &>/dev/null; then
-    REFERENCE_ALLOCATED_REAL="100"
-  fi
-
-  # if zero
-  if [[ -z "$REFERENCE_ALLOCATED_REAL" ]] &>/dev/null; then
-    REFERENCE_ALLOCATED_REAL="0.00"
-  fi
-
-  # reference allocated check
-  REFERENCE_ALLOCATED_CHECK="$(echo "${REFERENCE_ALLOCATED:?}" | awk -F. '{ print $1 }')"
+  # listing allocated real check
+  REFERENCE_ALLOCATED_CONFIG_CHECK="$(echo "$REFERENCE_ALLOCATED" | awk -F. '{ print $1 }')"
+  # total ema value
+  TOTAL_EMA_VALUE="$(echo "$LISTING_TOTAL_VALUED+$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null)"
+  # listing real value
+  REFERENCE_ALLOCATED_REAL="$(echo "100/$TOTAL_EMA_VALUE*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null)"
+  # listing real check
+  REFERENCE_ALLOCATED_REAL_CHECK="$(echo "100/$TOTAL_EMA_VALUE*$REFERENCE_TOTAL_VALUED" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
   # calculate difference
-  REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALLOCATED_CHECK-$REFERENCE_ALLOCATED_REAL_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+  REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALLOCATED_REAL_CHECK-$REFERENCE_ALLOCATED_CONFIG_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
 }
 
 ################################################################################
