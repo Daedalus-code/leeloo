@@ -874,9 +874,9 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
         # ready to sell (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           # calculate new listing amount
-          LISTING_AMOUNT="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          LISTING_AMOUNT="$(echo "$REFERENCE_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # is this bearish signal allocated correctly? (without decimal)
-          if [[ "$LISTING_ALL_REAL" -lt "$LISTING_ALL" ]] &>/dev/null; then
+          if [[ "$REFERENCE_ALL_REAL" -lt "$REFERENCE_ALL" ]] &>/dev/null; then
             # trigger a sell for fear of missing out
             echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
             echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
