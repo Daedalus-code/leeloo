@@ -232,7 +232,7 @@ function rogue_buying() {
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder market #################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$LISTING_AMOUNT" "" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$REFERENCE_AMOUNT" "" "false")"
           ######################################################################
         fi
 
@@ -260,7 +260,7 @@ function rogue_buying() {
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder limit ##################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "false")"
           ######################################################################
         fi
         ########################################################################
@@ -730,7 +730,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
         # ready to buy (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
           # calculate new listing amount
-          LISTING_AMOUNT="$(echo "$REFERENCE_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          REFERENCE_AMOUNT="$(echo "$LISTING_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # is this bullish signal allocated correctly? (without decimal)
           if [[ "$LISTING_ALLOCATED_REAL_CHECK" -lt "$LISTING_ALLOCATED_CHECK" ]] &>/dev/null; then
             # trigger a buy for fear of missing out
@@ -784,7 +784,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
                 # if xeggex order
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # CreateOrder market #########################################
-                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "" "false")"
+                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$REFERENCE_AMOUNT" "" "false")"
                   ##############################################################
                 fi
 
@@ -819,7 +819,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
                 # if xeggex order
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # CreateOrder limit ##########################################
-                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$REFERENCE_PRICE" "false")"
+                  PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$REFERENCE_AMOUNT" "$REFERENCE_PRICE" "false")"
                   ##############################################################
                 fi
 
