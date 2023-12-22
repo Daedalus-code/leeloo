@@ -274,7 +274,6 @@ function reference_total_value() {
 function listing_allocated() {
   # total ema value
   TOTAL_EMA_VALUE="$(echo "$LISTING_TOTAL_VALUED+$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
-
   # listing allocated real check
   LISTING_ALLOCATED_CONFIG_CHECK="$(echo "$LISTING_ALLOCATED" | awk '{ printf "%.0f\n", $1 }')"
   # listing real value
@@ -284,7 +283,7 @@ function listing_allocated() {
   # calculate difference
   LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALLOCATED_REAL_CHECK-$LISTING_ALLOCATED_CONFIG_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
   # missing based on difference
-  LISTING_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$LISTING_AMOUNT" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 }
 
 ################################################################################
@@ -292,7 +291,6 @@ function listing_allocated() {
 function reference_allocated() {
   # total ema value
   TOTAL_EMA_VALUE="$(echo "$LISTING_TOTAL_VALUED+$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
-
   # reference allocated real check
   REFERENCE_ALLOCATED_CONFIG_CHECK="$(echo "$REFERENCE_ALLOCATED" | awk '{ printf "%.0f\n", $1 }')"
   # reference real value
@@ -302,7 +300,7 @@ function reference_allocated() {
   # calculate difference
   REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALLOCATED_REAL_CHECK-$REFERENCE_ALLOCATED_CONFIG_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
   # missing based on difference
-  REFERENCE_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AMOUNT" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 }
 
 ################################################################################
