@@ -248,12 +248,12 @@ EOF
   done
 
   # exchange orders
-  echo "$(grep "$GRAPH_ORDERS_EXCHANGE" "${SYS_DIR:?}"/robot/orders.view 2>/dev/null)" >"${SYS_DIR:?}"/robot/orders.graphs
+  echo "$(grep "$GRAPH_ORDERS_EXCHANGE" "${SYS_DIR:?}"/robot/orders.view 2>/dev/null)" >"${SYS_DIR:?}"/robot/orders_"$EXCHANGE_DIR_NAME".graphs
 
   # generate last orders
   cat >>/var/www/html/"$EXCHANGE_DIR_NAME".php <<'EOF'
   // display last orders from the file with a limit of 100 orders
-  $ordersFilePath = '/usr/local/bin/include/leeloo/robot/orders.graphs';
+  $ordersFilePath = '/usr/local/bin/include/leeloo/robot/orders_${EXCHANGE_DIR_NAME}.graphs';
   $ordersContent = shell_exec('column -t ' . escapeshellarg($ordersFilePath));
   $ordersLines = array_reverse(explode("\n", $ordersContent)); // reverse the order
 
