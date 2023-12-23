@@ -33,6 +33,8 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
   if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
     # create reference list based on exchange
     GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | egrep -o "_[A-Z,0-9]+" | tr -d '_' | awk '!a[$0]++')" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0' | awk '{ print $1 }' | tr -d ':')"
+    # orders by exchange
+    GRAPH_ORDERS_EXCHANGE="XGX"
   fi
 
   ##############################################################################
@@ -41,6 +43,8 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
   if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
     # create reference list based on exchange
     GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | egrep -o "/[A-Z,0-9]+" | tr -d '/' | awk '!a[$0]++')" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0' | awk '{ print $1 }' | tr -d ':')"
+    # orders by exchange
+    GRAPH_ORDERS_EXCHANGE="SXC"
   fi
 
   ##############################################################################
@@ -243,10 +247,13 @@ EOF
     echo "  echo '<img src=\"$GRAPH_PNG_PATH\" alt=\"$GRAPH_REFERENCE_CURRENCY Balance\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
   done
 
+  # exchange orders
+  echo "$(grep "$GRAPH_ORDERS_EXCHANGE" "${SYS_DIR:?}"/robot/orders.view 2>/dev/null)" >"${SYS_DIR:?}"/robot/orders.graphs
+
   # generate last orders
   cat >>/var/www/html/"$EXCHANGE_DIR_NAME".php <<'EOF'
   // display last orders from the file with a limit of 100 orders
-  $ordersFilePath = '/usr/local/bin/include/leeloo/robot/orders.view';
+  $ordersFilePath = '/usr/local/bin/include/leeloo/robot/orders.graphs';
   $ordersContent = shell_exec('column -t ' . escapeshellarg($ordersFilePath));
   $ordersLines = array_reverse(explode("\n", $ordersContent)); // reverse the order
 
