@@ -201,6 +201,10 @@ function listing_data() {
   if [[ -z "$LISTING_UNCONFIRMED_VALUED" ]] &>/dev/null; then
     LISTING_UNCONFIRMED_VALUED="0.000000000"
   fi
+
+  # calculate listing total values
+  LISTING_TOTAL="$(echo "$LISTING_AVAILABLE_BALANCE+$LISTING_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_TOTAL_VALUED="$(echo "$LISTING_AVAILABLE_VALUED+$LISTING_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 }
 
 ################################################################################
@@ -251,20 +255,8 @@ function reference_data() {
   if [[ -z "$REFERENCE_UNCONFIRMED_VALUED" ]] &>/dev/null; then
     REFERENCE_UNCONFIRMED_VALUED="0.000000000"
   fi
-}
 
-################################################################################
-
-function listing_total_value() {
-  # calculate total values
-  LISTING_TOTAL="$(echo "$LISTING_AVAILABLE_BALANCE+$LISTING_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-  LISTING_TOTAL_VALUED="$(echo "$LISTING_AVAILABLE_VALUED+$LISTING_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-}
-
-################################################################################
-
-function reference_total_value() {
-  # calculate total values
+  # calculate reference total values
   REFERENCE_TOTAL="$(echo "$REFERENCE_AVAILABLE_BALANCE+$REFERENCE_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_TOTAL_VALUED="$(echo "$REFERENCE_AVAILABLE_VALUED+$REFERENCE_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 }
