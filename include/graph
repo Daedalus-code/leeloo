@@ -222,7 +222,7 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
 
   ##############################################################################
 
-  # start generating index.php
+  # start generating exchange_dir_name.php
   cat >/var/www/html/"$EXCHANGE_DIR_NAME".php <<'EOF'
 <div id="content" align="center">
 <?php
@@ -239,9 +239,49 @@ EOF
   # generate rest of reference balances
   for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
     GRAPH_PNG_PATH="${EXCHANGE_DIR_NAME:?}_${GRAPH_REFERENCE_CURRENCY}.png"
-    # Echo the dynamically generated PHP code for the loop
+    # echo the dynamically generated PHP code for the loop
     echo "  echo '<img src=\"$GRAPH_PNG_PATH\" alt=\"$GRAPH_REFERENCE_CURRENCY Balance\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
   done
+
+  # generate last orders
+  cat >>/var/www/html/"$EXCHANGE_DIR_NAME".php <<'EOF'
+  // display last orders from the file with a limit of 100 orders
+  $ordersFilePath = '/usr/local/bin/include/leeloo/robot/orders.view';
+  $ordersContent = shell_exec('column -t ' . escapeshellarg($ordersFilePath));
+  $ordersLines = array_reverse(explode("\n", $ordersContent)); // reverse the order
+
+  // set the font size and style for the entire row
+  $rowFontSize = 23; // adjust the font size for the entire row
+  $rowFontWeight = 'bold'; // adjust the font weight for the entire row
+  $rowColor = 'white'; // set the text color to white
+  $limit = 100; // set the limit for the number of orders to display
+
+  // counter for the number of orders displayed
+  $orderCount = 0;
+
+  // start a container table for the columnar layout
+  echo '<table class="columnar-layout" style="font-size: ' . $rowFontSize . 'px; font-weight: ' . $rowFontWeight . '; color: ' . $rowColor . ';">' . PHP_EOL;
+  foreach ($ordersLines as $orderLine) {
+      // Stop if the limit is reached
+      if ($orderCount >= $limit) {
+          break;
+      }
+      // increment the counter
+      $orderCount++;
+      // split the order into parts using the double colon (::) as a delimiter
+      $orderParts = preg_split('/\s+/', $orderLine);
+      // start a table row for each order line
+      echo '    <tr class="order-line">' . PHP_EOL;
+      // create a table cell for each part
+      foreach ($orderParts as $part) {
+          echo '        <td class="order-part">' . trim($part) . '</td>' . PHP_EOL;
+      }
+      // end the table row for each order line
+      echo '    </tr>' . PHP_EOL;
+  }
+  // end the container table for the columnar layout
+  echo '</table>' . PHP_EOL;
+EOF
 
   # close the php block
   echo "?>" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
