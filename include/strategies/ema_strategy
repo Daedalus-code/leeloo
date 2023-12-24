@@ -730,13 +730,14 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
 
       backup_balances
 
-      # rsi bullish check
-      RSI_BULLISH_CHECK="$(get_rsi 14 "$LISTING_CURRENCY" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
-
       # if fear of missing out is true
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
         # ready to buy (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
+
+          # rsi bullish check
+          RSI_BULLISH_CHECK="$(get_rsi 14 "$LISTING_CURRENCY" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+
           # rsi below bullish
           if [[ "$RSI_BULLISH_CHECK" -lt "70" ]] &>/dev/null; then
             # new listing amount (missing difference)
@@ -885,13 +886,14 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
 
       backup_balances
 
-      # rsi bearish check
-      RSI_BEARISH_CHECK="$(get_rsi 14 "$LISTING_CURRENCY" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
-
       # if fear of missing out is true
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
         # ready to sell (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
+
+          # rsi bearish check
+          RSI_BEARISH_CHECK="$(get_rsi 14 "$LISTING_CURRENCY" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+
           # rsi above bearish
           if [[ "$RSI_BEARISH_CHECK" -gt "30" ]] &>/dev/null; then
             # new reference amount (missing difference)
