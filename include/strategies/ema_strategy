@@ -667,12 +667,12 @@ EMA_REAL_SIGNAL="$(echo "$EMA_REAL_RAW" | grep "EMA_Signal" | awk '{ print $2 }'
 EMA_REAL_SHORT="$(echo "$EMA_REAL_RAW" | grep "EMA_Short" | awk '{ print $2 }')"
 EMA_REAL_LONG="$(echo "$EMA_REAL_RAW" | grep "EMA_Long" | awk '{ print $2 }')"
 
-# if zero, skip signal
-if [[ ! -z "$EMA_REAL_SHORT" ]] 2>>"${LOG_ERROR:?}"; then
-  if [[ ! -z "$EMA_REAL_LONG" ]] 2>>"${LOG_ERROR:?}"; then
-    if [[ -n "$EMA_REAL_SHORT" && -n "$EMA_REAL_LONG" ]] 2>>"${LOG_ERROR:?}"; then
-      echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>>"${LOG_ERROR:?}"
-    fi
+# if any data
+if [[ -n "$EMA_REAL_SHORT" && -n "$EMA_REAL_LONG" ]] 2>>"${LOG_ERROR:?}"; then
+  # if not zero n
+  if [[ ! "$EMA_REAL_SHORT" == "0.000000000" && ! "$EMA_REAL_LONG" == "0.000000000" ]] &>/dev/null; then
+    # create signal line based on ema values
+    echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>>"${LOG_ERROR:?}"
   fi
 fi
 
@@ -748,8 +748,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
             if [[ "$LISTING_ALLOCATED_REAL_CHECK" -lt "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
               # trigger a buy for fear of missing out
               echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-              echo "Bearish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-              echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+              echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+              echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
             fi
           fi
         fi
@@ -904,8 +904,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
             if [[ "$REFERENCE_ALLOCATED_REAL_CHECK" -lt "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
               # trigger a sell for fear of missing out
               echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-              echo "Bullish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-              echo "Bearish" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+              echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+              echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
             fi
           fi
         fi
