@@ -1488,7 +1488,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # top amount
-  DIP_TOP_ACTIVE_AMOUNT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $26 }' | sort -n | tail -1)"
+  DIP_TOP_ACTIVE_AMOUNT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | sort -n -k 26 | tail -1)"
   # top amount market
   DIP_TOP_AMOUNT_MARKET="$(grep -w -- "$DIP_TOP_ACTIVE_AMOUNT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
   # top amount reference
@@ -2607,8 +2607,8 @@ Buying.............: $DIP_ORDER_BUY_COUNT (${DIP_ORDER_PERCENTAGE_BUY:?}%)
 Selling............: $DIP_ORDER_SELL_COUNT (${DIP_ORDER_PERCENTAGE_SELL:?}%)
 Missing/Waiting....: $DIP_MISSING_MARKETS_COUNT (${DIP_MISSING_MARKETS_PERCENTAGE:?}%)
 Average_Order_Age..: $DIP_ACTIVE_FILE_AVERAGE_AGE | Days: $DIP_ACTIVE_FILE_AVERAGE_DAYS
-Top_Volume.........: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?} $DIP_TOP_VOLUME_LISTING
-Low_Volume.........: $DIP_LOW_VOLUME_MARKET ${DIP_LOW_VOLUME_AMOUNT:?} $DIP_LOW_VOLUME_LISTING
+Top_Volume.........: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?}
+Low_Volume.........: $DIP_LOW_VOLUME_MARKET ${DIP_LOW_VOLUME_AMOUNT:?}
 Top_Amount.........: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
 Top_Movement.......: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
 Top_Spread.........: $DIP_TOP_PROFIT ${DIP_TOP_PROFIT_AMOUNT:?}%
