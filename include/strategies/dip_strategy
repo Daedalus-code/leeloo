@@ -1476,6 +1476,17 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
+  # low volume
+  DIP_LOW_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $23 }' | sort -n | head -1)"
+  # low volume market
+  DIP_LOW_VOLUME_MARKET="$(grep -w -- "$DIP_LOW_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
+  # low volume listing
+  DIP_LOW_VOLUME_LISTING="$(echo "$DIP_LOW_VOLUME_MARKET" | awk -F/ '{ print $1 }')"
+  # low volume amount
+  DIP_LOW_VOLUME_AMOUNT="$(grep -w -- "$DIP_LOW_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $23}' | awk '{ printf "%.0f\n", $1 }' || true)"
+
+  ##############################################################################
+
   # top amount
   DIP_TOP_ACTIVE_AMOUNT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $26 }' | sort -n | tail -1)"
   # top amount market
@@ -2597,6 +2608,7 @@ Selling............: $DIP_ORDER_SELL_COUNT (${DIP_ORDER_PERCENTAGE_SELL:?}%)
 Missing/Waiting....: $DIP_MISSING_MARKETS_COUNT (${DIP_MISSING_MARKETS_PERCENTAGE:?}%)
 Average_Order_Age..: $DIP_ACTIVE_FILE_AVERAGE_AGE | Days: $DIP_ACTIVE_FILE_AVERAGE_DAYS
 Top_Volume.........: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?} $DIP_TOP_VOLUME_LISTING
+Low_Volume.........: $DIP_LOW_VOLUME_MARKET ${DIP_LOW_VOLUME_AMOUNT:?} $DIP_LOW_VOLUME_LISTING
 Top_Amount.........: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
 Top_Movement.......: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
 Top_Spread.........: $DIP_TOP_PROFIT ${DIP_TOP_PROFIT_AMOUNT:?}%
