@@ -1466,7 +1466,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # top volume
-  DIP_TOP_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $23 }' | sort -n | tail -1)"
+  DIP_TOP_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | sort -n -k 23 | tail -1)"
   # top volume market
   DIP_TOP_VOLUME_MARKET="$(grep -w -- "$DIP_TOP_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
   # top volume listing
@@ -1477,7 +1477,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # low volume
-  DIP_LOW_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $23 }' | sort -n | head -1)"
+  DIP_LOW_ACTIVE_VOLUME="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | sort -n -k 23 | head -1)"
   # low volume market
   DIP_LOW_VOLUME_MARKET="$(grep -w -- "$DIP_LOW_ACTIVE_VOLUME" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1}' | tr -d ':' || true)"
   # low volume listing
