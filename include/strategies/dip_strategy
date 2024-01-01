@@ -2585,11 +2585,22 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   DIP_PROFIT_COUNT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | wc -l)"
   # average profit
   DIP_AVERAGE_PROFIT="$(echo "$DIP_TOTAL_PROFIT/$DIP_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-else
+fi
+
+# if zero
+if [[ -z "$DIP_PROFIT_COUNT" ]] &>/dev/null; then
   DIP_PROFIT_COUNT="0"
+fi
+if [[ -z "$DIP_AVERAGE_PROFIT" ]] &>/dev/null; then
   DIP_AVERAGE_PROFIT="0"
+fi
+if [[ -z "$DIP_LAST_PROFIT" ]] &>/dev/null; then
   DIP_LAST_PROFIT="0"
+fi
+if [[ -z "$DIP_HIGHEST_PROFIT" ]] &>/dev/null; then
   DIP_HIGHEST_PROFIT="0"
+fi
+if [[ -z "$DIP_LOWEST_PROFIT" ]] &>/dev/null; then
   DIP_LOWEST_PROFIT="0"
 fi
 
