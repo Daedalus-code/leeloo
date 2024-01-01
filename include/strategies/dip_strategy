@@ -2569,17 +2569,17 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   # dip profit format
   DIP_PROFIT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_PROFIT_FILE_AGE_SECONDS/3600")) $(("$DIP_PROFIT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_PROFIT_FILE_AGE_SECONDS%60")))
   # cat profit
-  DIP_CAT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | sed '/^$/d')"
+  DIP_CAT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)"
   # last
-  DIP_LAST_PROFIT="$(echo "$DIP_CAT_PROFIT" | tail -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
+  DIP_LAST_PROFIT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | tail -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
   # high
-  DIP_HIGHEST_PROFIT="$(echo "$DIP_CAT_PROFIT" | sort -n -k 7 | tail -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
+  DIP_HIGHEST_PROFIT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | sort -n -k 7 | tail -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
   # low
-  DIP_LOWEST_PROFIT="$(echo "$DIP_CAT_PROFIT" | sort -n -k 7 | head -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
+  DIP_LOWEST_PROFIT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | sort -n -k 7 | head -1 | awk '{ print $3,$NF" | +"$5,$6 }')"
   # total profit
-  DIP_TOTAL_PROFIT="$(echo "$DIP_CAT_PROFIT" | awk '{ print $NF }' | awk '{ SUM += $1} END { print SUM }')"
+  DIP_TOTAL_PROFIT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | awk '{ print $NF }' | awk '{ SUM += $1} END { print SUM }')"
   # profit count
-  DIP_PROFIT_COUNT="$(echo "$DIP_CAT_PROFIT" | wc -l)"
+  DIP_PROFIT_COUNT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | wc -l)"
   # average profit
   DIP_AVERAGE_PROFIT="$(echo "$DIP_TOTAL_PROFIT/$DIP_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 fi
