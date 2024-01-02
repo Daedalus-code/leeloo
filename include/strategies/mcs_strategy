@@ -187,9 +187,12 @@ open_positions
 
 # random order amount
 RANDOM_ORDER_NUMBER=$((((RANDOM % 369369369) + 1)))
-RANDOM_ORDER_NUMBER="$(echo "$LISTING_AMOUNT" | awk '{ printf "%.1f\n", $1 }')${RANDOM_ORDER_NUMBER:?}"
+# listing available balance + random
+LISTING_AVAILABLE_BALANCE_RANDOM="$(echo "$LISTING_AVAILABLE_BALANCE+$RANDOM_ORDER_NUMBER" | bc -l 2>/dev/null)"
+# calculate new listing amount
+LISTING_AMOUNT_RANDOM="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE_RANDOM" | bc -l 2>/dev/null)"
 # new listing amount
-LISTING_AMOUNT="$(echo "$RANDOM_ORDER_NUMBER" | awk '{ printf "%.9f\n", $1 }')"
+LISTING_AMOUNT="$(echo "$LISTING_AMOUNT_RANDOM" | awk '{ printf "%.9f\n", $1 }')"
 
 ################################################################################
 
