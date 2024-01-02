@@ -187,17 +187,8 @@ open_positions
 
 # random order amount
 RANDOM_ORDER_NUMBER=$((((RANDOM % 36987654321) + 1)))
-
-# if listing allocated greater than 0
-if [[ "$(echo "$LISTING_ALLOCATED" | grep -c "[.]" || true)" -gt "0" ]] &>/dev/null; then
-  # listing allocated tweak
-  LISTING_ALLOCATED="$(echo "${LISTING_ALLOCATED:?}5${RANDOM_ORDER_NUMBER:?}" | awk '{ printf "%.9f\n", $1 }')"
-fi
-
-# calculate new listing amount
-LISTING_AMOUNT_RANDOM="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
 # new listing amount
-LISTING_AMOUNT="$(echo "$LISTING_AMOUNT_RANDOM" | awk '{ printf "%.9f\n", $1 }')"
+LISTING_AMOUNT="$(echo "${LISTING_AMOUNT:?}${RANDOM_ORDER_NUMBER:?}" | awk '{ printf "%.9f\n", $1 }')"
 
 ################################################################################
 
