@@ -2165,6 +2165,8 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
         LISTING_PRICE_PROFIT="$(echo "100/$DIP_OLD_ORDER_PRICE*$LISTING_PRICE-100" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
         # now price profit check
         LISTING_PRICE_PROFIT_CHECK="$(echo "$LISTING_PRICE_PROFIT" | tr -d '.' | sed 's/^0*//')"
+        # listing available balance check
+        LISTING_AVAILABLE_BALANCE_CHECK="$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')"
 
         # if sell order above average profit
         if [[ "$LISTING_PRICE_PROFIT_CHECK" -gt "-$DATA_AVERAGE_PROFIT_CHECK" ]] &>/dev/null; then
@@ -2185,31 +2187,35 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
             DIP_ORDER_ID_DOTS=""
           fi
 
-          ######################################################################
-          ######################################################################
+          # if there are dumping balance available
+          if [[ "$LISTING_AVAILABLE_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
-          # if southxchange order
-          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-            # setup market sell order ##########################################
-            PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AVAILABLE_BALANCE" "false")"
-            echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+            ####################################################################
+            ####################################################################
+
+            # if southxchange order
+            if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+              # setup market sell order ########################################
+              PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AVAILABLE_BALANCE" "false")"
+              echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+              ##################################################################
+            fi
+            # if xeggex order
+            if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+              # CreateOrder limit ##############################################
+              PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AVAILABLE_BALANCE" "" "false")"
+              echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+              ##################################################################
+              sleep 1
+            fi
+
+            # dump output (log)
+            DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Dumping order! ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old) ${LISTING_PRICE_PROFIT:?}% P/L"
+            echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+            ####################################################################
             ####################################################################
           fi
-          # if xeggex order
-          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-            # CreateOrder limit ################################################
-            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AVAILABLE_BALANCE" "" "false")"
-            echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
-            ####################################################################
-            sleep 1
-          fi
-
-          # dump output (log)
-          DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Dumping order! ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old) ${LISTING_PRICE_PROFIT:?}% P/L"
-          echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-          ######################################################################
-          ######################################################################
         fi
       fi
     fi
