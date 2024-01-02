@@ -2169,14 +2169,14 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
         # if southxchange order
         if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
           # setup market sell order ##################################################
-          PLACE_ORDER="$(placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$LISTING_AVAILABLE_BALANCE" "false")"
+          PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AVAILABLE_BALANCE" "false")"
           echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
           ############################################################################
         fi
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder limit ########################################################
-          PLACE_ORDER="$(CreateOrder "" "$DIP_DUMP_LISTING/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AVAILABLE_BALANCE" "" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AVAILABLE_BALANCE" "" "false")"
           echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
           ############################################################################
           sleep 1
