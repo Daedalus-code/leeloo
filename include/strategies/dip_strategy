@@ -975,7 +975,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       ##########################################################################
 
       # old order id (buy)
-      DIP_ORDER_ID="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | tail -1)"
+      DIP_ORDER_ID="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
       # last order profit
       DIP_LAST_ORDER_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | awk '{ print $NF }' | tail -1 | tr -d '%.' | sed 's/^0*//')"
 
@@ -2102,7 +2102,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
     # if specific market exist in orders file (buy)
     if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
       # old order id (buy)
-      DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | tail -1)"
+      DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
       # order id found
       if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
         # cancel old order (buy)
@@ -2172,7 +2172,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
         if [[ "$LISTING_PRICE_PROFIT_CHECK" -gt "-$DATA_AVERAGE_PROFIT_CHECK" ]] &>/dev/null; then
 
           # old order id (sell)
-          DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':' | tail -1)"
+          DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':' | head -1)"
 
           # order id found
           if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
@@ -2242,7 +2242,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
     # if specific market exist in orders file (sell)
     if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "sell" || true)" -eq "1" ]] &>/dev/null; then
       # old order id (sell)
-      DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':' | tail -1)"
+      DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':' | head -1)"
       # order id found
       if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
         # cancel old order (sell)
