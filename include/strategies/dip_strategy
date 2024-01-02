@@ -2123,7 +2123,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
           DIP_ORDER_ID_DOTS=""
         fi
         # removing buy order output (log)
-        DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing buy order: ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (old) Spread: ${DIP_TARGET_SPREAD:?}%"
+        DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing buy order: ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
         echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
     fi
@@ -2146,44 +2146,55 @@ DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
 # if older than n seconds (using max sell age limit on both)
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
   if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
+    # if data exist
     if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
 
       # data average profit
-      DATA_AVERAGE_PROFIT="$(grep "Average_Profit" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null | awk '{ print $2 }' | tr -d '%')"
+      DATA_AVERAGE_PROFIT="$(grep "Average_Profit" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null | awk '{ print $2 }' | tr -d '%' | awk '{ printf "%.9f\n", $1 }')"
+      # data average profit check
+      DATA_AVERAGE_PROFIT_CHECK="$(echo "$DATA_AVERAGE_PROFIT" | tr -d '.-' | sed 's/^0*//')"
 
-      # price directory
-      DIP_OLD_PRICE_DIR="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/*)" | grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}.bought" 2>/dev/null | awk '{ print $NF }')"
-      # original price bought last round
-      DIP_OLD_ORDER_PRICE="$(cat "$DIP_OLD_PRICE_DIR" | tail -1 | awk -F@ '{ print $2 }' | awk '{ print $1 }')"
-      # now price profit
-      LISTING_PRICE_PROFIT="$(echo "100/$LISTING_PRICE*$DIP_OLD_ORDER_PRICE-100" | bc -l 2>/dev/null)"
-      # listing dump balance
-      DUMP_LISTING_BALANCE=
+      # if average profit greater than n
+      if [[ "$(echo "$DATA_AVERAGE_PROFIT" | awk -F. '{ print $1 }')" -gt "0" ]] &>/dev/null; then
 
-      # are sell order above average profit
-      if [[ "$(echo "$LISTING_PRICE_PROFIT" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DATA_AVERAGE_PROFIT" | tr -d '.' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+        # price directory
+        DIP_OLD_PRICE_DIR="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/*)" | grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}.bought" 2>/dev/null | awk '{ print $NF }')"
+        # original price bought last round
+        DIP_OLD_ORDER_PRICE="$(cat "$DIP_OLD_PRICE_DIR" | tail -1 | awk -F@ '{ print $2 }' | awk '{ print $1 }')"
+        # now price profit
+        LISTING_PRICE_PROFIT="$(echo "100/$DIP_OLD_ORDER_PRICE*$LISTING_PRICE-100" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+        # now price profit check
+        LISTING_PRICE_PROFIT_CHECK="$(echo "$LISTING_PRICE_PROFIT" | tr -d '.' | sed 's/^0*//')"
 
-        ##############################################################################
-        ##############################################################################
+        # if sell order above average profit
+        if [[ "$LISTING_PRICE_PROFIT_CHECK" -gt "-$DATA_AVERAGE_PROFIT_CHECK" ]] &>/dev/null; then
 
-        # if southxchange order
-        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-          # setup market sell order ##################################################
-          PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AVAILABLE_BALANCE" "false")"
-          echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
-          ############################################################################
+          ######################################################################
+          ######################################################################
+
+          # if southxchange order
+          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+            # setup market sell order ##########################################
+            PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AVAILABLE_BALANCE" "false")"
+            echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+            ####################################################################
+          fi
+          # if xeggex order
+          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+            # CreateOrder limit ################################################
+            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AVAILABLE_BALANCE" "" "false")"
+            echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+            ####################################################################
+            sleep 1
+          fi
+
+          # dump output (log)
+          DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Dumping order! $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old)"
+          echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+          ######################################################################
+          ######################################################################
         fi
-        # if xeggex order
-        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-          # CreateOrder limit ########################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AVAILABLE_BALANCE" "" "false")"
-          echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
-          ############################################################################
-          sleep 1
-        fi
-
-        ##############################################################################
-        ##############################################################################
       fi
     fi
   fi
@@ -2229,7 +2240,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
           DIP_ORDER_ID_DOTS=""
         fi
         # removing sell order output (log)
-        DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing sell order: ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (old) Spread: ${DIP_TARGET_SPREAD:?}%"
+        DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing sell order: ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
         echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
     fi
