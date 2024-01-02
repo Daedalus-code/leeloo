@@ -2169,6 +2169,22 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
         # if sell order above average profit
         if [[ "$LISTING_PRICE_PROFIT_CHECK" -gt "-$DATA_AVERAGE_PROFIT_CHECK" ]] &>/dev/null; then
 
+          # old order id (sell)
+          DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
+          # order id found
+          if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
+            # cancel old order (sell)
+            cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+            sleep 1
+          fi
+
+          # order n greater than n
+          if [[ "$(echo "$DIP_ORDER_ID" | wc -L)" -gt "9" ]] &>/dev/null; then
+            DIP_ORDER_ID_DOTS=".."
+          else
+            DIP_ORDER_ID_DOTS=""
+          fi
+
           ######################################################################
           ######################################################################
 
@@ -2189,7 +2205,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
           fi
 
           # dump output (log)
-          DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Dumping order! $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old)"
+          DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY :: Dumping order! ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old)"
           echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
           ######################################################################
