@@ -188,7 +188,7 @@ open_positions
 # random order amount
 RANDOM_ORDER_NUMBER=$((((RANDOM % 36987654321) + 1)))
 # new listing amount
-LISTING_AMOUNT="$(echo "${LISTING_AMOUNT:?}+0.${RANDOM_ORDER_NUMBER:?}" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+LISTING_AMOUNT_RANDOM="$(echo "${LISTING_AMOUNT:?}+0.0${RANDOM_ORDER_NUMBER:?}" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
 ################################################################################
 
@@ -215,13 +215,13 @@ if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
         # if southxchange order
         if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
           # placeOrder market ##################################################
-          PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT" "false")"
+          PLACE_ORDER="$(placeOrder_market "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AMOUNT_RANDOM" "false")"
           ######################################################################
         fi
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder market #################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$LISTING_AMOUNT" "" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$LISTING_AMOUNT_RANDOM" "" "false")"
           ######################################################################
         fi
 
