@@ -2131,6 +2131,65 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
 fi
 
 ################################################################################
+# dumping old positions (single sell orders)
+################################################################################
+
+# if zero
+if [[ -z "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
+  # use default n days
+  DIP_MAX_SELL_AGE="14"
+fi
+
+# calculate days into seconds
+DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
+
+# if older than n seconds (using max sell age limit on both)
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
+  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
+    if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data ]] &>/dev/null; then
+
+      # data average profit
+      DATA_AVERAGE_PROFIT="$(grep "Average_Profit" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>/dev/null | awk '{ print $2 }' | tr -d '%')"
+
+      # price directory
+      DIP_OLD_PRICE_DIR="$(echo "$(ls -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/*)" | grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}.bought" 2>/dev/null | awk '{ print $NF }')"
+      # original price bought last round
+      DIP_OLD_ORDER_PRICE="$(cat "$DIP_OLD_PRICE_DIR" | tail -1 | awk -F@ '{ print $2 }' | awk '{ print $1 }')"
+      # now price profit
+      LISTING_PRICE_PROFIT="$(echo "100/$LISTING_PRICE*$DIP_OLD_ORDER_PRICE-100" | bc -l 2>/dev/null)"
+      # listing dump balance
+      DUMP_LISTING_BALANCE=
+
+      # are sell order above average profit
+      if [[ "$(echo "$LISTING_PRICE_PROFIT" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DATA_AVERAGE_PROFIT" | tr -d '.' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+
+        ##############################################################################
+        ##############################################################################
+
+        # if southxchange order
+        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
+          # setup market sell order ##################################################
+          PLACE_ORDER="$(placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$LISTING_AVAILABLE_BALANCE" "false")"
+          echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+          ############################################################################
+        fi
+        # if xeggex order
+        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+          # CreateOrder limit ########################################################
+          PLACE_ORDER="$(CreateOrder "" "$DIP_DUMP_LISTING/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AVAILABLE_BALANCE" "" "false")"
+          echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+          ############################################################################
+          sleep 1
+        fi
+
+        ##############################################################################
+        ##############################################################################
+      fi
+    fi
+  fi
+fi
+
+################################################################################
 # removing old positions (single sell orders)
 ################################################################################
 
