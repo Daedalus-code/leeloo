@@ -184,36 +184,6 @@ Last_Order.txid.......: $TX_ID_LAST $TX_ID_AGE (${TX_ID_AGE_DAYS:?}d)" | column 
 open_positions
 
 ################################################################################
-# market chaser tweaker
-################################################################################
-
-# default
-MCS_MARKET_TWEAK="4"
-
-# no funds
-if [[ "$NO_FUNDS" == "1" ]] &>/dev/null; then
-  # reset market chaser limits
-  find "${LOG_DIR:?}"/leeloo/*/ -maxdepth 1 -name 'insufficient_MCS*' -exec rm {} \; &>/dev/null
-  MCS_MARKET_TWEAK_LIMIT="$(grep "MCS" "${LOG_DIR:?}"/leeloo/buy_limit)"
-  if [[ -z "$MCS_MARKET_TWEAK_LIMIT" ]] &>/dev/null; then
-    MCS_MARKET_TWEAK_LIMIT="Searching.."
-  fi
-  # remove limit data
-  echo "$(grep -v "MCS" "${LOG_DIR:?}"/leeloo/buy_limit)" >"${LOG_DIR:?}"/leeloo/buy_limit
-  # new tweak limit
-  MCS_MARKET_TWEAK="9"
-  # tweak output
-  MARKET_MCS_TWEAK="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Reset limit $MCS_MARKET_TWEAK_LIMIT !"
-  echo "$MARKET_MCS_TWEAK" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-fi
-
-# if reset is around
-if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY :: Reset limit " "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log || true)" -gt "0" ]] &>/dev/null; then
-  # keep tweak limit
-  MCS_MARKET_TWEAK="9"
-fi
-
-################################################################################
 
 # random order amount
 RANDOM_ORDER_NUMBER=$((((RANDOM % 36987654321) + 1)))
@@ -221,7 +191,7 @@ RANDOM_ORDER_NUMBER=$((((RANDOM % 36987654321) + 1)))
 # if listing allocated greater than 0
 if [[ "$(echo "$LISTING_ALLOCATED" | grep -c "[.]" || true)" -gt "0" ]] &>/dev/null; then
   # listing allocated tweak
-  LISTING_ALLOCATED="$(echo "${LISTING_ALLOCATED:?}${MCS_MARKET_TWEAK:?}${RANDOM_ORDER_NUMBER:?}" | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_ALLOCATED="$(echo "${LISTING_ALLOCATED:?}5${RANDOM_ORDER_NUMBER:?}" | awk '{ printf "%.9f\n", $1 }')"
 fi
 
 # calculate new listing amount
