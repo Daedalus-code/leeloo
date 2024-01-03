@@ -50,6 +50,13 @@ REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASEN
 exchange_template
 
 ################################################################################
+
+# random n
+RANDOM_ORDER_VALUE=$((((RANDOM % 1111) + 1)))
+# account allocated (n%)
+LISTING_ALLOCATED="${LISTING_ALLOCATED}${RANDOM_ORDER_VALUE}"
+
+################################################################################
 # data
 ################################################################################
 
@@ -182,21 +189,6 @@ Last_Order.txid.......: $TX_ID_LAST $TX_ID_AGE (${TX_ID_AGE_DAYS:?}d)" | column 
 ################################################################################
 
 open_positions
-
-################################################################################
-
-# random order amount
-RANDOM_ORDER_NUMBER=$((((RANDOM % 36987654321) + 1)))
-
-# if dot
-if [[ "$(echo "$LISTING_AMOUNT" | egrep -c "[.]" || true)" -eq "1" ]] &>/dev/null; then
-  LISTING_AMOUNT="$LISTING_ALLOCATED${RANDOM_ORDER_NUMBER}"
-else
-  LISTING_AMOUNT="${LISTING_ALLOCATED}.${RANDOM_ORDER_NUMBER}"
-fi
-
-# new listing amount
-LISTING_AMOUNT="$(echo "$(echo "$LISTING_AMOUNT/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
 ################################################################################
 
