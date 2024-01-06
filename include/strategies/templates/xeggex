@@ -151,8 +151,8 @@ function errors() {
   ERROR_OUTPUT_400="$(grep -c "400 :: Increasing listing allocated" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log || true)"
   # if error code 400 persist
   if [[ "$ERROR_CODE_400" -gt "0" ]] &>/dev/null; then
-    # listing allocated increased by itself
-    LISTING_ALLOCATED="$(echo "$LISTING_ALLOCATED+$LISTING_ALLOCATED" | bc 2>/dev/null)"
+    # listing allocated increased
+    LISTING_ALLOCATED="$(echo "1.5*$LISTING_ALLOCATED" | bc 2>/dev/null)"
     # if logs are empty
     if [[ "$ERROR_OUTPUT_400" -eq "0" ]] &>/dev/null; then
       # output allocated increase
