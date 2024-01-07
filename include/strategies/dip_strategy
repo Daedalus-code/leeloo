@@ -715,8 +715,13 @@ fi
 
 # total active count
 DIP_ACTIVE_FILE_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | awk '{ print $1 }')"
+
 # total order count
-DIP_ORDERS_FILE_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk '{ print $1 }')"
+if [[ -n "$DIP_MARKETS" ]] &>/dev/null; then
+  DIP_ORDERS_FILE_COUNT="$(grep -c "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null || true)"
+else
+  DIP_ORDERS_FILE_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk '{ print $1 }')"
+fi
 
 ################################################################################
 
