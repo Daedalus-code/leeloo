@@ -306,15 +306,6 @@ function target_data() {
       # random active target
       DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
     fi
-
-    # if active has more lines than n
-    if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
-      # if search has more lines than n
-      if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
-        # disregard with already searched markets
-        DIP_TARGET_FILE_OUTPUT="$(grep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | shuf | tail -1)"
-      fi
-    fi
   fi
 
   ##############################################################################
@@ -623,31 +614,6 @@ fi
 # if still zero, use good old bitcoin as main market (reference)
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   DIP_MARKETS="BTC"
-fi
-
-################################################################################
-
-# log dip_markets searches
-echo "$DIP_MARKETS" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search
-# remove duplicates
-echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search 2>/dev/null | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search
-
-# if search has lines
-if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
-
-  # disregard with already searched markets
-  echo "$(grep -vf "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip
-
-  # prices.dip lines
-  DIP_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | sed '/^$/d' | wc -l)"
-  # n% of total lines
-  DIP_PRICES_DIP_LIMIT="$(echo "0.369*$DIP_PRICES_DIP_FILE" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-
-  # if prices.dip files is less than n lines
-  if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | sed '/^$/d' | wc -l)" -lt "$DIP_PRICES_DIP_LIMIT" ]] &>/dev/null; then
-    # reset search
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".search &>/dev/null
-  fi
 fi
 
 ################################################################################
