@@ -39,6 +39,15 @@ echo "$(cat "${LOG_DIR:?}"/leeloo/robots 2>/dev/null | awk '!a[$1]++')" >"${LOG_
 
 ################################################################################
 
+function robot_log() {
+  # if strategy log not found
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log &>/dev/null
+  fi
+}
+
+################################################################################
+
 function backup_balances() {
   if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/xeggex/balances "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp &>/dev/null
