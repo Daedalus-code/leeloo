@@ -818,7 +818,38 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
                 # create target file
                 POTENTIAL_TARGET_FOUND="$POTENTIAL_BUY_SYMBOL | Bid: $POTENTIAL_BUY_BID | Ask: $POTENTIAL_BUY_ASK | Last: $POTENTIAL_BUY_LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME"
-                echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+
+                # potential rsi strength
+                POTENTIAL_RSI_LISTING="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $1 }')"
+                # potential rsi data
+                POTENTIAL_RSI_DATA="$(get_rsi 14 "$POTENTIAL_RSI_LISTING")"
+                # potential rsi status
+                POTENTIAL_RSI_STATUS="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
+                # potential rsi value
+                POTENTIAL_RSI_VALUE="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $NF }')"
+
+                # target overbought
+                if [[ "$POTENTIAL_RSI_STATUS" == "Overbought" ]] &>/dev/null; then
+                  POTENTIAL_RSI_OUTPUT="Skipping $POTENTIAL_RSI_LISTING. RSI: $POTENTIAL_RSI_VALUE"
+                fi
+                # target neutral
+                if [[ "$POTENTIAL_RSI_STATUS" == "Neutral" ]] &>/dev/null; then
+                  POTENTIAL_RSI_OUTPUT="Skipping $POTENTIAL_RSI_LISTING. RSI: $POTENTIAL_RSI_VALUE"
+                fi
+                # target oversold, target have no value (not found)
+                if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE" == "0.000000000" ]] &>/dev/null; then
+                  POTENTIAL_RSI_OUTPUT="Selecting $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_VALUE"
+                fi
+
+                # target status output (log)
+                POTENTIAL_RSI_STRENGTH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: RSI: $POTENTIAL_RSI_LISTING | $POTENTIAL_RSI_OUTPUT"
+                echo "$POTENTIAL_RSI_STRENGTH_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+                # if target is oversold
+                if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" ]] &>/dev/null; then
+                  # create target
+                  echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+                fi
               fi
             fi
           fi
