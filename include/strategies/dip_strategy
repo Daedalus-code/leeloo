@@ -816,10 +816,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 POTENTIAL_BUY_ASK="$ASK"
                 POTENTIAL_BUY_LAST="$LAST"
 
-                # create target file
+                # target output
                 POTENTIAL_TARGET_FOUND="$POTENTIAL_BUY_SYMBOL | Bid: $POTENTIAL_BUY_BID | Ask: $POTENTIAL_BUY_ASK | Last: $POTENTIAL_BUY_LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME"
 
-                # potential rsi strength
+                # potential rsi target (listing)
                 POTENTIAL_RSI_LISTING="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $1 }')"
                 # potential rsi data
                 POTENTIAL_RSI_DATA="$(get_rsi 14 "$POTENTIAL_RSI_LISTING")"
@@ -847,7 +847,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
                 # if target is oversold
                 if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" ]] &>/dev/null; then
-                  # create target
+                  # create/update target file
                   echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
                 fi
               fi
