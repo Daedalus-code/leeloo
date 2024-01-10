@@ -836,10 +836,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 if [[ "$POTENTIAL_RSI_STATUS" == "Neutral" ]] &>/dev/null; then
                   POTENTIAL_RSI_OUTPUT="Skipping $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_STATUS ($POTENTIAL_RSI_VALUE)"
                 fi
+
                 # if target oversold, target have no rsi value (not found), less than n
                 if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE" == "0" || "$POTENTIAL_RSI_VALUE" -lt "33" ]] &>/dev/null; then
                   POTENTIAL_RSI_OUTPUT="Selecting $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_STATUS ($POTENTIAL_RSI_VALUE)"
-
                   # create/update target file
                   echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
                 fi
@@ -1348,7 +1348,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # top active profit (spread)
   DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | awk '{ print $16 }' | sort -n | tail -1)"
   # top profit (spread) data
-  DIP_SPECIFIC_PROFIT="$(grep -w -- "$DIP_ACTIVE_TOP_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)"
+  DIP_SPECIFIC_PROFIT="$(grep -w "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -w -- "$DIP_ACTIVE_TOP_PROFIT" || true)"
   # top profit (spread) market
   DIP_TOP_PROFIT="$(echo "$DIP_SPECIFIC_PROFIT" 2>/dev/null | awk '{ print $1}' | tr -d ':' | head -1)"
   # top profit (spread) amount
@@ -1359,7 +1359,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # lowest active profit (spread)
   DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" | grep -w "$REFERENCE_CURRENCY" | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | awk '{ print $6 }' | tr -d '%' | sort -n | head -1)"
   # lowest profit (spread) data
-  DIP_LOW_ACTIVE_PROFIT="$(grep -w -- "$DIP_ACTIVE_LOW_PROFIT" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null || true)"
+  DIP_LOW_ACTIVE_PROFIT="$(grep -w "$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool.view 2>/dev/null | grep -w -- "$DIP_ACTIVE_LOW_PROFIT" || true)"
   # lowest profit (spread) market
   DIP_LOW_PROFIT="$(echo "$DIP_LOW_ACTIVE_PROFIT" 2>/dev/null | awk '{ print $3}' | tr -d ':' | head -1)"
   # lowest profit (spread) amount
