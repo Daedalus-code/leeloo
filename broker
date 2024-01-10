@@ -505,18 +505,22 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # txid null error count
   TXID_NULL_DATA_COUNT="$(echo "$TXID_NULL_DATA" 2>/dev/null | sed '/^$/d' | wc -l)"
 
+  # null count
+  NULL_TOTAL_COUNT="$(wc -l "${SYS_DIR:?}"/robot/*null* | tail -1 | xargs)"
+
   ##############################################################################
 
-  HEIGHT=10
+  HEIGHT=11
   WIDTH=37
-  CHOICE_HEIGHT=3
+  CHOICE_HEIGHT=4
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Debug Menu"
   MENU="Multipass $DATE_XARGS"
 
   OPTIONS=(1 "Debug           Status"
     2 "Strategy        error.log"
-    3 "TXid            null.log")
+    3 "TXid            null.log"
+    n "Reset            null files ($(echo "$NULL_TOTAL_COUNT" | awk '{ print $1 }'))")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -734,6 +738,19 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
+    # reset null files
+
+  "n")
+
+    if dialog --stdout --title "Reset $NULL_TOTAL_COUNT null files?" \
+      --backtitle "Reset null?" \
+      --yesno "Yes: Reset! No: Go back!" 5 0; then
+      truncate -s 0 "${SYS_DIR:?}"/robot/*.null* &>/dev/null
+      clear
+    fi
+
+    ;;
+
   esac
 
   ##############################################################################
@@ -756,14 +773,11 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
 "7")
 
-  # null count
-  NULL_TOTAL_COUNT="$(wc -l "${SYS_DIR:?}"/robot/*null* | tail -1 | xargs)"
-
   ##############################################################################
 
-  HEIGHT=16
+  HEIGHT=15
   WIDTH=51
-  CHOICE_HEIGHT=9
+  CHOICE_HEIGHT=8
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
@@ -774,7 +788,6 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     3 "Reset            All Configurations!"
     4 "Reset            Leeloo Config"
     5 "Reset            Secret & Key config"
-    n "Reset            null files ($(echo "$NULL_TOTAL_COUNT" | awk '{ print $1 }'))"
     G "Graph            Reference graphs"
     8 "Locale           English (United States)"
     0 "Delist           Delisting Markets")
@@ -844,19 +857,6 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
     clear
-
-    ;;
-
-    # reset null files
-
-  "n")
-
-    if dialog --stdout --title "Reset $NULL_TOTAL_COUNT null files?" \
-      --backtitle "Reset null?" \
-      --yesno "Yes: Reset! No: Go back!" 5 0; then
-      truncate -s 0 "${SYS_DIR:?}"/robot/*.null* &>/dev/null
-      clear
-    fi
 
     ;;
 
