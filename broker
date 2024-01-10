@@ -756,6 +756,11 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
 "7")
 
+  # null count
+  NULL_TOTAL_COUNT="$(wc -l "${SYS_DIR:?}"/robot/*null* | tail -1 | xargs)"
+
+  ##############################################################################
+
   HEIGHT=16
   WIDTH=51
   CHOICE_HEIGHT=9
@@ -769,7 +774,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     3 "Reset            All Configurations!"
     4 "Reset            Leeloo Config"
     5 "Reset            Secret & Key config"
-    n "Reset            NULL files"
+    n "Reset            NULL files ($(echo "$NULL_TOTAL_COUNT" | awk '{ print $1 }'))"
     G "Graph            Reference graphs"
     8 "Locale           English (United States)"
     0 "Delist           Delisting Markets")
@@ -846,12 +851,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "n")
 
-    # null count
-    NULL_COUNT="$(wc -l "${SYS_DIR:?}"/*.null* | awk '{ print $1 }')"
-
-    if dialog --stdout --title "Reset null files?" \
-      --backtitle "Reset $NULL_COUNT lines?" \
-      --yesno "Yes: Reset! No: Go back!" 5 33; then
+    if dialog --stdout --title "Reset $NULL_TOTAL_COUNT null files?" \
+      --backtitle "Reset null?" \
+      --yesno "Yes: Reset! No: Go back!" 0 0; then
       truncate -s 0 "${SYS_DIR:?}"/*.null* &>/dev/null
       clear
     fi
