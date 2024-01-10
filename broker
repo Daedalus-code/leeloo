@@ -756,9 +756,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
 "7")
 
-  HEIGHT=15
+  HEIGHT=16
   WIDTH=51
-  CHOICE_HEIGHT=8
+  CHOICE_HEIGHT=9
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
@@ -769,6 +769,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     3 "Reset            All Configurations!"
     4 "Reset            Leeloo Config"
     5 "Reset            Secret & Key config"
+    n "Reset            NULL files"
     G "Graph            Reference graphs"
     8 "Locale           English (United States)"
     0 "Delist           Delisting Markets")
@@ -838,6 +839,22 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
     clear
+
+    ;;
+
+    # reset null files
+
+  "n")
+
+    # null count
+    NULL_COUNT="$(wc -l "${SYS_DIR:?}"/*.null* | awk '{ print $1 }')"
+
+    if dialog --stdout --title "Reset null files?" \
+      --backtitle "Reset $NULL_COUNT lines?" \
+      --yesno "Yes: Reset! No: Go back!" 5 33; then
+      truncate -s 0 "${SYS_DIR:?}"/*.null* &>/dev/null
+      clear
+    fi
 
     ;;
 

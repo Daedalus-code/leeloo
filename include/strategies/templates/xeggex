@@ -158,10 +158,12 @@ function errors() {
   ERROR_CODE_400="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY : error:code:400,message:Bad Request,description:Missing input quantity" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log || true)"
   # error log output
   ERROR_OUTPUT_400="$(grep -c "400 :: Increasing listing allocated" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log || true)"
+
   # if error code 400 persist
   if [[ "$ERROR_CODE_400" -gt "0" ]] &>/dev/null; then
     # listing allocated increased
     LISTING_ALLOCATED="$(echo "1.5*$LISTING_ALLOCATED" | bc 2>/dev/null)"
+
     # if logs are empty
     if [[ "$ERROR_OUTPUT_400" -eq "0" ]] &>/dev/null; then
       # output allocated increase
