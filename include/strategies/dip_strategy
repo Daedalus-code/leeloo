@@ -836,20 +836,17 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 if [[ "$POTENTIAL_RSI_STATUS" == "Neutral" ]] &>/dev/null; then
                   POTENTIAL_RSI_OUTPUT="Skipping $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_STATUS ($POTENTIAL_RSI_VALUE)"
                 fi
-                # if target oversold, target have no rsi value (not found)
-                if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE" == "0" ]] &>/dev/null; then
+                # if target oversold, target have no rsi value (not found), less than n
+                if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE" == "0" || "$POTENTIAL_RSI_VALUE" -lt "33" ]] &>/dev/null; then
                   POTENTIAL_RSI_OUTPUT="Selecting $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_STATUS ($POTENTIAL_RSI_VALUE)"
+
+                  # create/update target file
+                  echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
                 fi
 
                 # target status output (log)
                 POTENTIAL_RSI_STRENGTH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $POTENTIAL_RSI_OUTPUT"
                 echo "$POTENTIAL_RSI_STRENGTH_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-                # if target oversold, target have no rsi value (not found)
-                if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE" == "0" ]] &>/dev/null; then
-                  # create/update target file
-                  echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
-                fi
               fi
             fi
           fi
