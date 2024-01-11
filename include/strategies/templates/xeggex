@@ -153,28 +153,6 @@ function delisted() {
 
 ################################################################################
 
-function errors() {
-  # error code: 400, message bad request, description: missing input quantity
-  ERROR_CODE_400="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY : error:code:400,message:Bad Request,description:Missing input quantity" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log || true)"
-  # error log output
-  ERROR_OUTPUT_400="$(grep -c "400 :: Increasing listing allocated" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log || true)"
-
-  # if error code 400 persist
-  if [[ "$ERROR_CODE_400" -gt "0" ]] &>/dev/null; then
-    # listing allocated increased
-    LISTING_ALLOCATED="$(echo "1.$ERROR_CODE_400*$LISTING_ALLOCATED" | bc 2>/dev/null)"
-
-    # if logs are empty
-    if [[ "$ERROR_OUTPUT_400" -eq "0" ]] &>/dev/null; then
-      # output allocated increase
-      ERROR_400_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY : 400 :: Increasing listing allocated from $LISTING_ALLOCATED to $(echo "$LISTING_ALLOCATED+$LISTING_ALLOCATED" | bc 2>/dev/null)!"
-      echo "$ERROR_400_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    fi
-  fi
-}
-
-################################################################################
-
 function listing_data() {
 
   # get available listing data

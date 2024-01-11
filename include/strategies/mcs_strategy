@@ -60,7 +60,6 @@ LISTING_ALLOCATED="${LISTING_ALLOCATED}${RANDOM_ORDER_VALUE}"
 # data
 ################################################################################
 
-errors                  # errors
 robot_log               # strategy log
 tx_id_data              # txid data
 listing_data            # get available listing data
@@ -70,6 +69,14 @@ reference_allocated     # total reference allocated
 listing_balance_check   # check for listing balance
 reference_balance_check # check for reference balance
 insufficient_funds      # check for available funds
+
+################################################################################
+
+# listing amount below limit
+if (($(echo "$LISTING_AMOUNT < 0.01" | bc -l 2>/dev/null))); then
+  # set minimum listing amount
+  LISTING_AMOUNT="$(echo "0.010101$RANDOM_ORDER_VALUE" | awk '{ printf "%.9f\n", $1 }')"
+fi
 
 ################################################################################
 
