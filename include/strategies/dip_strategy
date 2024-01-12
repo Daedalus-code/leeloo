@@ -916,23 +916,22 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
       ##########################################################################
 
-      # if order already been checked
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -eq "0" ]] &>/dev/null; then
+      # if zero
+      if [[ -z "$DIP_DCA" ]] &>/dev/null; then
+        # default
+        DIP_DCA="0"
+      fi
 
-        # if order already has balance
-        if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+      # if dca enabled
+      if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
+        # if order already been checked
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -eq "0" ]] &>/dev/null; then
+          # if order already has balance
+          if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
-          # if zero
-          if [[ -z "$DIP_DCA" ]] &>/dev/null; then
-            # default
-            DIP_DCA="0"
-          fi
+            # active listing dca count
+            DIP_ACTIVE_LISTING_DCA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -wc "$LISTING_CURRENCY" || true)"
 
-          # active listing dca count
-          DIP_ACTIVE_LISTING_DCA="$(grep -w "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | wc -l)"
-
-          # if dca enabled
-          if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
             # if listing is single inside active
             if [[ "$DIP_ACTIVE_LISTING_DCA" -eq "1" ]] &>/dev/null; then
 
