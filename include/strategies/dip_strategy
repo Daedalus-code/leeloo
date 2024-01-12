@@ -827,13 +827,14 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 POTENTIAL_RSI_REFERENCE="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $2 }')"
 
                 # potential rsi data (using rsi xeggex) ########################
-                POTENTIAL_RSI_DATA="$(get_rsi_xgx "$POTENTIAL_RSI_LISTING $POTENTIAL_RSI_REFERENCE")"
+                get_rsi_xgx "$POTENTIAL_RSI_LISTING $POTENTIAL_RSI_REFERENCE" >"$POTENTIAL_RSI_DATA"
+                POTENTIAL_RSI_DATA="${LOG_DIR:?}/rsi_xgx.tmp"
                 ################################################################
 
                 # potential rsi status
-                POTENTIAL_RSI_STATUS="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
+                POTENTIAL_RSI_STATUS="$(cat "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
                 # potential rsi value
-                POTENTIAL_RSI_VALUE="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $NF }')"
+                POTENTIAL_RSI_VALUE="$(cat "$POTENTIAL_RSI_DATA" | awk '{ print $NF }')"
 
                 # if target overbought
                 if [[ "$POTENTIAL_RSI_STATUS" == "Overbought" ]] &>/dev/null; then
