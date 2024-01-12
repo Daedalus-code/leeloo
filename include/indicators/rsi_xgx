@@ -87,7 +87,15 @@ get_rsi_xgx() {
   # calculate RSI with SMA
   RSI_WITH_SMA=$(calculate_rsi_with_sma "$DATA")
 
-  echo "$SYMBOL RSI (14) with SMA: $RSI_WITH_SMA"
+  if (($(echo "$RSI_WITH_SMA > 70" | bc -l 2>/dev/null))); then
+    BEAR_BULL="Overbought"
+  elif (($(echo "$RSI_WITH_SMA < 30" | bc -l 2>/dev/null))); then
+    BEAR_BULL="Oversold"
+  else
+    BEAR_BULL="Neutral"
+  fi
+
+  echo "$BEAR_BULL $SYMBOL RSI (14) with SMA: $RSI_WITH_SMA"
 }
 
 # END
