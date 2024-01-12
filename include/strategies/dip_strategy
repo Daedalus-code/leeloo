@@ -827,14 +827,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 POTENTIAL_RSI_REFERENCE="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $2 }')"
 
                 # potential rsi data (using rsi xeggex) ########################
-                get_rsi_xgx "$POTENTIAL_RSI_LISTING $POTENTIAL_RSI_REFERENCE" >"$POTENTIAL_RSI_DATA"
-                POTENTIAL_RSI_DATA="${LOG_DIR:?}/rsi_xgx.tmp"
+                POTENTIAL_RSI_DATA="$(get_rsi_xgx "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")"
                 ################################################################
 
                 # potential rsi status
-                POTENTIAL_RSI_STATUS="$(cat "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
+                POTENTIAL_RSI_STATUS="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
                 # potential rsi value
-                POTENTIAL_RSI_VALUE="$(cat "$POTENTIAL_RSI_DATA" | awk '{ print $NF }')"
+                POTENTIAL_RSI_VALUE="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $NF }' | awk '{ printf "%.2f\n", $1 }')"
+                # potential rsi value check
+                POTENTIAL_RSI_VALUE_CHECK="$(echo "$POTENTIAL_RSI_VALUE" | awk -F. '{ print $1 }')"
 
                 # if target overbought
                 if [[ "$POTENTIAL_RSI_STATUS" == "Overbought" ]] &>/dev/null; then
@@ -846,7 +847,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 fi
 
                 # if target oversold, target have no rsi value (not found), less than n
-                if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE" == "0" || "$POTENTIAL_RSI_VALUE" -lt "33" ]] &>/dev/null; then
+                if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE_CHECK" -lt "33" ]] &>/dev/null; then
                   POTENTIAL_RSI_OUTPUT="Selecting $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_STATUS ($POTENTIAL_RSI_VALUE)"
                   # create/update target file
                   echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
