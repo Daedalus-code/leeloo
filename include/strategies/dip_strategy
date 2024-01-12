@@ -928,10 +928,13 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             DIP_DCA="0"
           fi
 
+          # active listing dca count
+          DIP_ACTIVE_LISTING_DCA="$(grep -wc "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
+
           # if dca enabled
           if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
             # if listing is single inside active
-            if [[ "$(grep -wc "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+            if [[ "$DIP_ACTIVE_LISTING_DCA" -eq "1" ]] &>/dev/null; then
 
               # ruled by configuration
               DIP_DCA_RAW="$DIP_DCA"
@@ -965,7 +968,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             else
 
               # log no dca data output
-              DIP_TARGET_DCA_NO_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No DCA: $LISTING_BALANCE $LISTING_CURRENCY"
+              DIP_TARGET_DCA_NO_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Not single, but has DCA: $LISTING_BALANCE $LISTING_CURRENCY"
               echo "$DIP_TARGET_DCA_NO_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
             fi
