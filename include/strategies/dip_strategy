@@ -826,9 +826,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 # potential rsi target (reference)
                 POTENTIAL_RSI_REFERENCE="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $2 }')"
 
-                # potential rsi data (using rsi xeggex) ########################
-                POTENTIAL_RSI_DATA="$(get_rsi_xgx "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")"
-                ################################################################
+                # if xeggex rsi
+                if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+                  # potential rsi data (using rsi xeggex) ######################
+                  POTENTIAL_RSI_DATA="$(get_rsi_xgx "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")"
+                  ##############################################################
+                fi
 
                 # potential rsi status
                 POTENTIAL_RSI_STATUS="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
