@@ -15,6 +15,8 @@ source /usr/local/bin/include/leeloo/broker.conf
 source /usr/local/bin/include/leeloo/sMcD
 # exchanges, includes functions
 source /usr/local/bin/include/leeloo/strategies/templates/exchanges
+# indicator
+source /usr/local/bin/include/leeloo/indicators/rsi_xgx
 
 ################################################################################
 
@@ -821,8 +823,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
                 # potential rsi target (listing)
                 POTENTIAL_RSI_LISTING="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $1 }')"
-                # potential rsi data
-                POTENTIAL_RSI_DATA="$(get_rsi 14 "$POTENTIAL_RSI_LISTING")"
+
+                # potential rsi data (using rsi xeggex) ########################
+                POTENTIAL_RSI_DATA="$(get_rsi_xgx "$POTENTIAL_BUY_SYMBOL" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+                ################################################################
+
                 # potential rsi status
                 POTENTIAL_RSI_STATUS="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
                 # potential rsi value
