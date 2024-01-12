@@ -557,7 +557,7 @@ if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || t
     ALREADY_ACTIVE_BOTS="$(egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)"
 
     # filter out markets with found data
-    grep -vf <(echo "$ALREADY_ACTIVE_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
+    grep -vf <(echo "$ALREADY_ACTIVE_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp" 2>/dev/null
     # replace the original prices file with the filtered version
     mv "${PRICES_FILE}.temp" "$PRICES_FILE"
   fi
@@ -581,7 +581,7 @@ if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
   ALREADY_RUNNING_BOTS=$(tail -100 "$ROBOT_LOG" 2>/dev/null | awk '!/All|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+")
 
   # filter out markets with found data
-  grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp"
+  grep -vf <(echo "$ALREADY_RUNNING_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp" 2>/dev/null
   # replace the original prices file with the filtered version
   mv "${PRICES_FILE}.temp" "$PRICES_FILE"
 fi
