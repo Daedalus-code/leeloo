@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# shellcheck disable=SC2206
+# shellcheck disable=SC2034
+# shellcheck disable=SC2128
+
+# get_rsi_xgx ##################################################################
+# https://api.xeggex.com/api/v2/market/candles
+# Example: get_rsi_xgx BTC/USDT
+
+get_rsi_xgx() {
+  # fetch candlestick data
+  SYMBOL="$1"
+  INTERVAL="1d"        # adjusted for daily chart
+  RESOLUTION=1440      # minutes in a day
+  COUNTBACK=55         # experiment with different values
+  FIRST_DATA_REQUEST=1 # on or off
+  SMA_PERIOD=14        # adjust to match the period used in the chart
+
+  API_URL="https://api.xeggex.com/api/v2/market/candles?symbol=$SYMBOL&interval=$INTERVAL&resolution=$RESOLUTION&countBack=$COUNTBACK&firstDataRequest=$FIRST_DATA_REQUEST"
+
+  # retrieve data and store it in a variable
+  DATA=$(curl -s "$API_URL" | jq -r '.bars[].close')
+  # fix tiny n
+  DATA="$(echo "${DATA[@]}" | awk '{ printf "%.9f\n", $1 }')"
+
+  # function to handle scientific notation values
+  fix_scientific_notation() {
+    VALUE="$1"
+    if [[ "$VALUE" == *e* ]]; then
+      echo "0"
+    else
+      echo "$VALUE"
+    fi
+  }
+
+  # function to calculate Simple Moving Average (SMA)
+  calculate_sma() {
+    DATA=($1)
+    LENGTH=${#DATA[@]}
+    SUM=0
+
+    for ((i = 0; i < LENGTH; i++)); do
+      VALUE=$(fix_scientific_notation "${DATA[i]}")
+      SUM=$(echo "$SUM + $VALUE" | bc -l)
+    done
+
+    echo "$SUM / $LENGTH" | bc -l
+  }
+
+  # function to calculate RSI with SMA
+  calculate_rsi_with_sma() {
+    DATA=($1)
+    LENGTH=${#DATA[@]}
+    GAIN=0
+    LOSS=0
+    SMA=0
+
+    # falculate SMA
+    SMA=$(calculate_sma "$(echo "${DATA[@]:0:$SMA_PERIOD}" | tr '\n' ' ')")
+
+    # calculate gains and losses for RSI
+    for ((i = $SMA_PERIOD; i < LENGTH; i++)); do
+      VALUE=$(fix_scientific_notation "${DATA[i]}")
+      DIFF=$(echo "$VALUE - ${DATA[i - 1]}" | bc -l)
+      if (($(echo "$DIFF >= 0" | bc -l))); then
+        GAIN=$(echo "$GAIN + $DIFF" | bc -l)
+      else
+        LOSS=$(echo "$LOSS - $DIFF" | bc -l)
+      fi
+    done
+
+    # calculate average gain and average loss
+    AVG_GAIN=$(echo "$GAIN / ($LENGTH - $SMA_PERIOD)" | bc -l)
+    AVG_LOSS=$(echo "$LOSS / ($LENGTH - $SMA_PERIOD)" | bc -l)
+
+    # calculate RS (Relative Strength)
+    RS=$(echo "$AVG_GAIN / $AVG_LOSS" | bc -l)
+
+    # calculate RSI using SMA
+    RSI_WITH_SMA=$(echo "100 - (100 / (1 + $RS))" | bc -l)
+    echo "$RSI_WITH_SMA"
+  }
+
+  # calculate RSI with SMA
+  RSI_WITH_SMA=$(calculate_rsi_with_sma "$DATA")
+
+  echo "$SYMBOL RSI (14) with SMA: $RSI_WITH_SMA"
+}
+
+# END
