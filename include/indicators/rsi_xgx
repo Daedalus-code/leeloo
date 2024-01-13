@@ -9,6 +9,43 @@
 # https://api.xeggex.com/api/v2/market/candles
 # Example: get_rsi_xgx BTC USDT
 
+get_rsi_xgx() {
+  # fetch candlestick data
+  LISTING_CURRENCY="$1"                          # listing currency
+  REFERENCE_CURRENCY="$2"                        # reference currency
+  SYMBOL="$LISTING_CURRENCY/$REFERENCE_CURRENCY" # market symbol
+  INTERVAL="24h"                                 # adjusted for daily chart
+  RESOLUTION="1440"                              # minutes in a day (half)
+  COUNTBACK="34"                                 # candlestick countback
+  FIRST_DATA_REQUEST="1"                         # toggle on or off
+  SMA_PERIOD="14"                                # adjust to match the period used in the chart
+
+  API_URL="https://api.xeggex.com/api/v2/market/candles?symbol=$SYMBOL&interval=$INTERVAL&resolution=$RESOLUTION&countBack=$COUNTBACK&firstDataRequest=$FIRST_DATA_REQUEST"
+
+  # retrieve data and store it in a variable
+  DATA=$(curl -s "$API_URL" | jq -r '.bars[].close')
+  # fix tiny n (e)
+  DATA="$(echo "${DATA[@]}" | awk '{ printf "%.9f\n", $1 }')"
+
+  # calculate Bollinger Bands
+  BOLLINGER_BANDS=$(calculate_bollinger_bands "$DATA")
+
+  # calculate RSI with SMA
+  RSI_WITH_SMA=$(calculate_rsi_with_sma "$DATA")
+
+  if (($(echo "$RSI_WITH_SMA > 70" | bc -l 2>/dev/null))); then
+    BEAR_BULL="Overbought"
+  elif (($(echo "$RSI_WITH_SMA < 30" | bc -l 2>/dev/null))); then
+    BEAR_BULL="Oversold"
+  else
+    BEAR_BULL="Neutral"
+  fi
+
+  RSI_OUTPUT="$BEAR_BULL RSI_14 $(echo "$RSI_WITH_SMA" | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')"
+  BOLLINGER_BANDS_OUTPUT="Upper: ${BOLLINGER_BANDS%% *}, Lower: ${BOLLINGER_BANDS#* }"
+  echo "$RSI_OUTPUT $BOLLINGER_BANDS_OUTPUT"
+}
+
 # function to handle scientific notation values
 fix_scientific_notation() {
   VALUE="$1"
@@ -91,43 +128,6 @@ calculate_rsi_with_sma() {
   # calculate RSI using SMA
   RSI_WITH_SMA=$(echo "100 - (100 / (1 + $RS))" | bc -l)
   echo "$RSI_WITH_SMA"
-}
-
-get_rsi_xgx() {
-  # fetch candlestick data
-  LISTING_CURRENCY="$1"                          # listing currency
-  REFERENCE_CURRENCY="$2"                        # reference currency
-  SYMBOL="$LISTING_CURRENCY/$REFERENCE_CURRENCY" # market symbol
-  INTERVAL="24h"                                 # adjusted for daily chart
-  RESOLUTION="1440"                              # minutes in a day (half)
-  COUNTBACK="34"                                 # candlestick countback
-  FIRST_DATA_REQUEST="1"                         # toggle on or off
-  SMA_PERIOD="14"                                # adjust to match the period used in the chart
-
-  API_URL="https://api.xeggex.com/api/v2/market/candles?symbol=$SYMBOL&interval=$INTERVAL&resolution=$RESOLUTION&countBack=$COUNTBACK&firstDataRequest=$FIRST_DATA_REQUEST"
-
-  # retrieve data and store it in a variable
-  DATA=$(curl -s "$API_URL" | jq -r '.bars[].close')
-  # fix tiny n (e)
-  DATA="$(echo "${DATA[@]}" | awk '{ printf "%.9f\n", $1 }')"
-
-  # calculate Bollinger Bands
-  BOLLINGER_BANDS=$(calculate_bollinger_bands "$DATA")
-
-  # calculate RSI with SMA
-  RSI_WITH_SMA=$(calculate_rsi_with_sma "$DATA")
-
-  if (($(echo "$RSI_WITH_SMA > 70" | bc -l 2>/dev/null))); then
-    BEAR_BULL="Overbought"
-  elif (($(echo "$RSI_WITH_SMA < 30" | bc -l 2>/dev/null))); then
-    BEAR_BULL="Oversold"
-  else
-    BEAR_BULL="Neutral"
-  fi
-
-  RSI_OUTPUT="$BEAR_BULL RSI_14 $(echo "$RSI_WITH_SMA" | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')"
-  BOLLINGER_BANDS_OUTPUT="Upper: ${BOLLINGER_BANDS%% *}, Lower: ${BOLLINGER_BANDS#* }"
-  echo "$RSI_OUTPUT $BOLLINGER_BANDS_OUTPUT"
 }
 
 # END
