@@ -231,18 +231,23 @@ cat_active_target
 # markets
 GHOST_MARKET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -c "Market Not Found" || true)"
 GHOST_TARGET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '{ print $7 }')"
+GHOST_TARGET_LISTING="$(echo "$GHOST_TARGET" | awk '{ print $1 }' |  awk -F/ '{ print $1 }')"
+GHOST_TARGET_REFERENCE="$(echo "$GHOST_TARGET" | awk '{ print $1 }' |  awk -F/ '{ print $2 }')"
 
 # if true
 if [[ "$GHOST_MARKET" -gt "0" ]] &>/dev/null; then
   # if active order exist
   if [[ "$(grep -c "$GHOST_TARGET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
-    # remove active order
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$GHOST_TARGET")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-    # log removing output
-    DIP_MARKET_GHOST="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Ghost :: Market $GHOST_TARGET does not exist, removed!"
-    echo "$DIP_MARKET_GHOST" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    # reset null
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null &>/dev/null
+    # orders does not exist
+    if [[ "$(grep "$GHOST_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$GHOST_TARGET_REFERENCE" || true)" -eq "0" ]] &>/dev/null; then
+      # remove active order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$GHOST_TARGET")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      # log removing output
+      DIP_MARKET_GHOST="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : Ghost :: Market $GHOST_TARGET does not exist, removed!"
+      echo "$DIP_MARKET_GHOST" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      # reset null
+      truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null &>/dev/null
+    fi
   fi
 fi
 
