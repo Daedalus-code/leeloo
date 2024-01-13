@@ -845,6 +845,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 # potential rsi value check
                 POTENTIAL_RSI_VALUE_CHECK="$(echo "$POTENTIAL_RSI_VALUE" | awk -F. '{ print $1 }')"
 
+                ################################################################
+
                 # if target overbought
                 if [[ "$POTENTIAL_RSI_STATUS" == "Overbought" ]] &>/dev/null; then
                   POTENTIAL_RSI_OUTPUT="Skipping $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_STATUS ($POTENTIAL_RSI_VALUE)"
@@ -854,12 +856,26 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                   POTENTIAL_RSI_OUTPUT="Skipping $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_STATUS ($POTENTIAL_RSI_VALUE)"
                 fi
 
-                # if target oversold, less than n
-                if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE_CHECK" -lt "40" ]] &>/dev/null; then
+                ################################################################
+
+                # if target has potential, greater than n
+                if [[ "$POTENTIAL_RSI_VALUE_CHECK" -gt "0" ]] &>/dev/null; then
+                  # less than n
+                  if [[ "$POTENTIAL_RSI_VALUE_CHECK" -lt "40" ]] &>/dev/null; then
+                    POTENTIAL_RSI_OUTPUT="Selecting $POTENTIAL_RSI_LISTING! RSI: Potential ($POTENTIAL_RSI_VALUE)"
+                    # create/update target file
+                    echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+                  fi
+                fi
+
+                # if target oversold
+                if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" ]] &>/dev/null; then
                   POTENTIAL_RSI_OUTPUT="Selecting $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_STATUS ($POTENTIAL_RSI_VALUE)"
                   # create/update target file
                   echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
                 fi
+
+                ################################################################
 
                 # target status output (log)
                 POTENTIAL_RSI_STRENGTH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $POTENTIAL_RSI_OUTPUT"
