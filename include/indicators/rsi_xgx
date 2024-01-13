@@ -42,8 +42,7 @@ get_rsi_xgx() {
   fi
 
   RSI_OUTPUT="$BEAR_BULL RSI_14 $(echo "$RSI_WITH_SMA" | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')"
-  BOLLINGER_BANDS_OUTPUT="Upper: ${BOLLINGER_BANDS%% *}, Lower: ${BOLLINGER_BANDS#* }"
-  echo "$RSI_OUTPUT $BOLLINGER_BANDS_OUTPUT"
+  echo "$RSI_OUTPUT"
 }
 
 # function to handle scientific notation values
@@ -86,14 +85,6 @@ calculate_bollinger_bands() {
     DIFF=$(echo "$VALUE - $SMA" | bc -l)
     SUM=$(echo "$SUM + ($DIFF * $DIFF)" | bc -l)
   done
-
-  STD_DEV=$(echo "sqrt($SUM / ($LENGTH - $SMA_PERIOD))" | bc -l)
-
-  # calculate Bollinger Bands
-  UPPER_BAND=$(echo "$SMA + 2 * $STD_DEV" | bc -l)
-  LOWER_BAND=$(echo "$SMA - 2 * $STD_DEV" | bc -l)
-
-  echo "$UPPER_BAND $LOWER_BAND"
 }
 
 # function to calculate RSI with SMA
@@ -127,7 +118,6 @@ calculate_rsi_with_sma() {
 
   # calculate RSI with SMA
   RSI_WITH_SMA=$(echo "100 - (100 / (1 + $RS))" | bc -l)
-  echo "$RSI_WITH_SMA"
 }
 
 # END
