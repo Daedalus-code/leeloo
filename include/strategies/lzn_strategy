@@ -95,6 +95,16 @@ if [[ -z "$REFERENCE_ALLOCATED_REAL_CHECK" ]] &>/dev/null; then
   REFERENCE_ALLOCATED_REAL_CHECK="N/A"
 fi
 
+# if market
+if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+  MARKET_LIMIT_DATA="Market"
+fi
+
+# if limit
+if [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
+  MARKET_LIMIT_DATA="Limit"
+fi
+
 ################################################################################
 
 # get listing, reference trades
@@ -102,7 +112,8 @@ LZN_TRADES=$(trades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY")
 echo "$LZN_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".trades 2>>"${LOG_ERROR:?}"
 
 # get data
-echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY ($MARKET_LIMIT)
+echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
+Order_Type............: $MARKET_LIMIT_DATA
 Exchange..............: $EXCHANGE_OUTPUT_NAME $EXCHANGE_API
 LZN_Data..............: $STRATEGY_TYPE
 LZN_Position..........: $LZN_POSITION $LZN_POSITION_VALUE
