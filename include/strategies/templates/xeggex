@@ -276,6 +276,8 @@ function listing_allocated() {
   LISTING_ALL_DIFF_CHECK="$(echo "$LISTING_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)"
   # missing based on difference
   REFERENCE_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  # missing in reference
+  REFERENCE_AMOUNT_REVERSED="$(echo "$REFERENCE_ALL_MISSING/$REFERENCE_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 }
 
 ################################################################################
@@ -293,6 +295,8 @@ function reference_allocated() {
   REFERENCE_ALL_DIFF_CHECK="$(echo "$REFERENCE_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)"
   # missing based on difference
   LISTING_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$LISTING_AVAILABLE_VALUED" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  # missing in listing
+  LISTING_AMOUNT_REVERSED="$(echo "$LISTING_ALL_MISSING/$LISTING_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 }
 
 ################################################################################
