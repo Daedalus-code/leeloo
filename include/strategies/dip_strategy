@@ -480,7 +480,7 @@ DIP_TOTAL_COUNT="$(echo "$DIP_SOLD_COUNT+$DIP_REMOVED_COUNT" | bc 2>/dev/null)"
 DIP_SOLD_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SOLD_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 DIP_REMOVED_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_REMOVED_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-if [[ "$(tail -"$(echo "$LOG_LENGTH*1.1" | bc 2>/dev/null | awk -F. '{ print $1 }')" "${LOG_DIR:?}"/leeloo/robot.log | egrep -c " : RSI/DIP :: Today: | : ALL/DIP :: Today: " || true)" -eq "0" ]] &>/dev/null; then
+if [[ "$(tail -"$(echo "$LOG_LENGTH*1.1" | bc 2>/dev/null | awk -F. '{ print $1 }')" "${LOG_DIR:?}"/leeloo/robot.DIP*log | egrep -c " : RSI/DIP :: Today: | : ALL/DIP :: Today: " || true)" -eq "0" ]] &>/dev/null; then
   # skip select count output (log)
   DIP_SS_COUNT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : RSI/DIP :: Today: $DIP_TODAY_DATE Selected: $DIP_SELECT_COUNT (${DIP_SELECT_COUNT_PERC:?}%) Skipped: $DIP_SKIP_COUNT (${DIP_SKIP_COUNT_PERC:?}%)"
   # sold removed count output (log)
