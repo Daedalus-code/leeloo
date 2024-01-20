@@ -1882,6 +1882,7 @@ DIP_TODAY_DATE="$(date +'%d/%m')"
 # count skipped and selected throughout the day (rsi)
 DIP_SELECT_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "Select" | awk '!a[$7]++' | wc -l)"
 
+# if zero
 if [[ -z "$DIP_SELECT_COUNT" ]] &>/dev/null; then
   DIP_SELECT_COUNT="0"
 fi
@@ -1891,9 +1892,15 @@ DIP_TOTAL_COUNT="$(echo "$DIP_SELECT_COUNT+$DIP_SKIP_COUNT" | bc 2>/dev/null)"
 DIP_SELECT_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SELECT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 DIP_SKIP_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SKIP_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+# if zero
+if [[ -z "$DIP_SKIP_COUNT_PERC" ]] &>/dev/null; then
+  DIP_SKIP_COUNT_PERC="0"
+fi
+
 # count sold and removed throughout the day
 DIP_SOLD_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "(Sold)" | awk '!a[$7]++' | wc -l)"
 
+# if zero
 if [[ -z "$DIP_SOLD_COUNT" ]] &>/dev/null; then
   DIP_SOLD_COUNT="0"
 fi
@@ -1901,6 +1908,12 @@ fi
 DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "Removing sell" | awk '!a[$7]++' | wc -l)"
 DIP_TOTAL_COUNT="$(echo "$DIP_SOLD_COUNT+$DIP_REMOVED_COUNT" | bc 2>/dev/null)"
 DIP_SOLD_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SOLD_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# if zero
+if [[ -z "$DIP_SOLD_COUNT_PERC" ]] &>/dev/null; then
+  DIP_SOLD_COUNT_PERC="0"
+fi
+
 DIP_REMOVED_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_REMOVED_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 DIP_COUNT_TIMED="$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | egrep " : ALL/* :: Sold: | : RSI/* :: Selected: " | awk '{ print $1 }' | awk -F: '{ print $3 }' | tail -1)"
