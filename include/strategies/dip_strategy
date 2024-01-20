@@ -474,7 +474,7 @@ DIP_SELECT_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SELECT_COUNT" | bc -l 2
 DIP_SKIP_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SKIP_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 # skip select count output (log)
-if [[ "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot.log | grep -c " :: Today: " || true)" -eq "0" ]] &>/dev/null; then
+if [[ "$(tail -"$(echo "$LOG_LENGTH*1.5" | bc 2>/dev/null | awk -F. '{ print $1 }')" "${LOG_DIR:?}"/leeloo/robot.log | grep -c " :: Today: " || true)" -eq "0" ]] &>/dev/null; then
   DIP_SS_COUNT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : RSI/DIP :: Today: $DIP_TODAY_DATE Selected: $DIP_SELECT_COUNT (${DIP_SELECT_COUNT_PERC:?}%) Skipped: $DIP_SKIP_COUNT (${DIP_SKIP_COUNT_PERC:?}%)"
   echo "$DIP_SS_COUNT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
