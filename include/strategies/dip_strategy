@@ -1876,65 +1876,6 @@ fi
 
 ################################################################################
 
-# dip today date
-DIP_TODAY_DATE="$(date +'%d/%m')"
-
-# count skipped and selected throughout the day (rsi)
-DIP_SELECT_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "Select" | awk '!a[$7]++' | wc -l)"
-
-# if zero
-if [[ -z "$DIP_SELECT_COUNT" ]] &>/dev/null; then
-  DIP_SELECT_COUNT="0"
-fi
-
-DIP_SKIP_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "Skip" | awk '!a[$7]++' | wc -l)"
-DIP_TOTAL_COUNT="$(echo "$DIP_SELECT_COUNT+$DIP_SKIP_COUNT" | bc 2>/dev/null)"
-DIP_SELECT_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SELECT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-DIP_SKIP_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SKIP_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-# if zero
-if [[ -z "$DIP_SKIP_COUNT_PERC" ]] &>/dev/null; then
-  DIP_SKIP_COUNT_PERC="0"
-fi
-
-# count sold and removed throughout the day
-DIP_SOLD_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "(Sold)" | awk '!a[$7]++' | wc -l)"
-
-# if zero
-if [[ -z "$DIP_SOLD_COUNT" ]] &>/dev/null; then
-  DIP_SOLD_COUNT="0"
-fi
-
-DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "Removing sell" | awk '!a[$7]++' | wc -l)"
-DIP_TOTAL_COUNT="$(echo "$DIP_SOLD_COUNT+$DIP_REMOVED_COUNT" | bc 2>/dev/null)"
-DIP_SOLD_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SOLD_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-# if zero
-if [[ -z "$DIP_SOLD_COUNT_PERC" ]] &>/dev/null; then
-  DIP_SOLD_COUNT_PERC="0"
-fi
-
-DIP_REMOVED_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_REMOVED_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-# if zero
-if [[ -z "$DIP_REMOVED_COUNT_PERC" ]] &>/dev/null; then
-  DIP_REMOVED_COUNT_PERC="0"
-fi
-
-DIP_COUNT_TIMED="$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | egrep " : ALL/* :: Sold: | : RSI/* :: Selected: " | awk '{ print $1 }' | awk -F: '{ print $3 }' | tail -1)"
-DIP_LATEST_COUNT_TIMED="$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }' | awk -F: '{ print $2 }' | tail -1)"
-
-if [[ ! "$DIP_COUNT_TIMED" == "$DIP_LATEST_COUNT_TIMED" ]] &>/dev/null; then
-  # skip select count output (log)
-  DIP_SS_COUNT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : RSI/$REFERENCE_CURRENCY :: Selected: $DIP_SELECT_COUNT (${DIP_SELECT_COUNT_PERC:?}%) Skipped: $DIP_SKIP_COUNT (${DIP_SKIP_COUNT_PERC:?}%)"
-  # sold removed count output (log)
-  DIP_SR_COUNT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : ALL/$REFERENCE_CURRENCY :: Sold: $DIP_SOLD_COUNT (${DIP_SOLD_COUNT_PERC:?}%) Removed: $DIP_REMOVED_COUNT (${DIP_REMOVED_COUNT_PERC:?}%)"
-  echo "$DIP_SR_COUNT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  echo "$DIP_SS_COUNT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-fi
-
-################################################################################
-
 # if active file has zero orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
   ACTIVE_MARKET_PAIRS="N/A"
@@ -2823,35 +2764,75 @@ fi
 
 ################################################################################
 
+# dip today date
+DIP_TODAY_DATE="$(date +'%d/%m')"
+
+# count skipped and selected throughout the day (rsi)
+DIP_SELECT_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "Select" | awk '!a[$7]++' | wc -l)"
+
+# if zero
+if [[ -z "$DIP_SELECT_COUNT" ]] &>/dev/null; then
+  DIP_SELECT_COUNT="0"
+fi
+
+DIP_SKIP_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "Skip" | awk '!a[$7]++' | wc -l)"
+DIP_TOTAL_COUNT="$(echo "$DIP_SELECT_COUNT+$DIP_SKIP_COUNT" | bc 2>/dev/null)"
+DIP_SELECT_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SELECT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+DIP_SKIP_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SKIP_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# if zero
+if [[ -z "$DIP_SKIP_COUNT_PERC" ]] &>/dev/null; then
+  DIP_SKIP_COUNT_PERC="0"
+fi
+
+DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "Removing sell" | awk '!a[$7]++' | wc -l)"
+DIP_TOTAL_COUNT="$(echo "$DIP_PROFIT_COUNT+$DIP_REMOVED_COUNT" | bc 2>/dev/null)"
+DIP_PROFIT_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# if zero
+if [[ -z "$DIP_PROFIT_COUNT_PERC" ]] &>/dev/null; then
+  DIP_PROFIT_COUNT_PERC="0"
+fi
+
+DIP_REMOVED_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_REMOVED_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# if zero
+if [[ -z "$DIP_REMOVED_COUNT_PERC" ]] &>/dev/null; then
+  DIP_REMOVED_COUNT_PERC="0"
+fi
+
+################################################################################
+
 # format and display output
 {
-  echo "Targets............: $DIP_DAILY_POTENTIAL | Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% PM: ${DIP_DAILY_MOVEMENT:?}%
-Active.............: $DIP_ACTIVE_FILE_COUNT | Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% PM: ${DIP_ACTIVE_FILE_A_PRICE_MOVEMENT:?}%
-Market.............: $ACTIVE_MARKET_PAIRS
-Exchange...........: $EXCHANGE_OUTPUT_NAME $EXCHANGE_API
-Orders.............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Max: $DIP_MAX_ORDERS
-DCA................: $DIP_DCA_DATA Orders: $DIP_DCA_COUNT
-All_In.............: $DIP_ALL_IN_DATA
-Buying.............: $DIP_ORDER_BUY_COUNT (${DIP_ORDER_PERCENTAGE_BUY:?}%)
-Selling............: $DIP_ORDER_SELL_COUNT (${DIP_ORDER_PERCENTAGE_SELL:?}%)
-Missing/Waiting....: $DIP_MISSING_MARKETS_COUNT (${DIP_MISSING_MARKETS_PERCENTAGE:?}%)
-Average_Order_Age..: $DIP_ACTIVE_FILE_AVERAGE_AGE | Days: $DIP_ACTIVE_FILE_AVERAGE_DAYS
-Top_Volume.........: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?}
-Low_Volume.........: $DIP_LOW_VOLUME_MARKET ${DIP_LOW_VOLUME_AMOUNT:?}
-Top_Amount.........: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
-Top_Movement.......: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
-Top_Spread.........: $DIP_TOP_PROFIT ${DIP_TOP_PROFIT_AMOUNT:?}%
-Low_Spread.........: $DIP_LOW_PROFIT ${DIP_LOW_PROFIT_AMOUNT:?}%
-Top_Dip............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
-Low_Dip............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
-Average_Profit.....: ${DIP_AVERAGE_PROFIT:?}% ($DIP_PROFIT_COUNT)
-Last_Profit........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
-Highest_Profit.....: $DIP_HIGHEST_PROFIT
-Lowest_Profit......: $DIP_LOWEST_PROFIT
-Low_Activity.......: $DIP_LOW_DAY Targets: ${DIP_LOW_TARGETS:?} Movement: ${DIP_LOW_MOVEMENTS:?}
-High_Activity......: $DIP_HIGH_DAY Targets: ${DIP_HIGH_TARGETS:?} Movement: ${DIP_HIGH_MOVEMENTS:?}
-Old_Order.txid.....: $DIP_OLDEST_ORDER_ID ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_AGE ($DIP_OLDEST_ORDER_TYPE) $DIP_OLDEST_ORDER_SPREAD
-Last_Order.txid....: $DIP_LATEST_ORDER_ID ${DIP_LATEST_ORDER_LISTING:?}/${DIP_LATEST_ORDER_REFERENCE:?} $DIP_LATEST_ORDER_AGE ($DIP_LATEST_ORDER_TYPE) $DIP_LATEST_ORDER_SPREAD"
+  echo "Targets.............: $DIP_DAILY_POTENTIAL | Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% PM: ${DIP_DAILY_MOVEMENT:?}%
+Active..............: $DIP_ACTIVE_FILE_COUNT | Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% PM: ${DIP_ACTIVE_FILE_A_PRICE_MOVEMENT:?}%
+Market..............: $ACTIVE_MARKET_PAIRS
+Exchange............: $EXCHANGE_OUTPUT_NAME $EXCHANGE_API
+Orders..............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Max: $DIP_MAX_ORDERS
+DCA.................: $DIP_DCA_DATA Orders: $DIP_DCA_COUNT
+All_In..............: $DIP_ALL_IN_DATA
+Buying..............: $DIP_ORDER_BUY_COUNT (${DIP_ORDER_PERCENTAGE_BUY:?}%)
+Selling.............: $DIP_ORDER_SELL_COUNT (${DIP_ORDER_PERCENTAGE_SELL:?}%)
+Missing/Waiting.....: $DIP_MISSING_MARKETS_COUNT (${DIP_MISSING_MARKETS_PERCENTAGE:?}%)
+Average_Order_Age...: $DIP_ACTIVE_FILE_AVERAGE_AGE | Days: $DIP_ACTIVE_FILE_AVERAGE_DAYS
+Top_Volume..........: $DIP_TOP_VOLUME_MARKET ${DIP_TOP_VOLUME_AMOUNT:?}
+Low_Volume..........: $DIP_LOW_VOLUME_MARKET ${DIP_LOW_VOLUME_AMOUNT:?}
+Top_Amount..........: $DIP_TOP_AMOUNT_MARKET ${DIP_TOP_AMOUNT_AMOUNT:?} $DIP_TOP_AMOUNT_LISTING
+Top_Movement........: $PRICE_MOVEMENT_TOP_MARKET ${PRICE_MOVEMENT_TOP_MARKET_AMOUNT:?}%
+Top_Spread..........: $DIP_TOP_PROFIT ${DIP_TOP_PROFIT_AMOUNT:?}%
+Low_Spread..........: $DIP_LOW_PROFIT ${DIP_LOW_PROFIT_AMOUNT:?}%
+Top_Dip.............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
+Low_Dip.............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
+Average_Profit......: ${DIP_AVERAGE_PROFIT:?}% ($DIP_PROFIT_COUNT)
+Select_Skip_Removed.: ${DIP_SELECT_COUNT_PERC:?}% ($DIP_SELECT_COUNT) ${DIP_SKIP_COUNT_PERC:?}% ($DIP_SKIP_COUNT) ${DIP_REMOVED_COUNT_PERC:?}% ($DIP_REMOVED_COUNT)
+Last_Profit.........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
+Highest_Profit......: $DIP_HIGHEST_PROFIT
+Lowest_Profit.......: $DIP_LOWEST_PROFIT
+Low_Activity........: $DIP_LOW_DAY Targets: ${DIP_LOW_TARGETS:?} Movement: ${DIP_LOW_MOVEMENTS:?}
+High_Activity.......: $DIP_HIGH_DAY Targets: ${DIP_HIGH_TARGETS:?} Movement: ${DIP_HIGH_MOVEMENTS:?}
+Old_Order.txid......: $DIP_OLDEST_ORDER_ID ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_AGE ($DIP_OLDEST_ORDER_TYPE) $DIP_OLDEST_ORDER_SPREAD
+Last_Order.txid.....: $DIP_LATEST_ORDER_ID ${DIP_LATEST_ORDER_LISTING:?}/${DIP_LATEST_ORDER_REFERENCE:?} $DIP_LATEST_ORDER_AGE ($DIP_LATEST_ORDER_TYPE) $DIP_LATEST_ORDER_SPREAD"
 } >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data
 
 ################################################################################
