@@ -481,6 +481,21 @@ fi
 
 ################################################################################
 
+# count sold and removed throughout the day
+DIP_SOLD_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot.DIP*log | grep "(Sold)" | awk '!a[$7]++' | wc -l)"
+DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot.DIP*log | grep "Removing sell" | awk '!a[$7]++' | wc -l)"
+DIP_TOTAL_COUNT="$(echo "$DIP_SOLD_COUNT+$DIP_REMOVED_COUNT" | bc 2>/dev/null)"
+DIP_SOLD_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SOLD_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+DIP_REMOVED_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_REMOVED_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# skip select count output (log)
+if [[ "$(tail -"$(echo "$LOG_LENGTH*1.5" | bc 2>/dev/null | awk -F. '{ print $1 }')" "${LOG_DIR:?}"/leeloo/robot.log | grep -c " :: Today: " || true)" -eq "0" ]] &>/dev/null; then
+  DIP_SS_COUNT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : ALL/DIP :: Today: $DIP_TODAY_DATE Sold: $DIP_SOLD_COUNT (${DIP_SOLD_COUNT_PERC:?}%) Removed: $DIP_REMOVED_COUNT (${DIP_REMOVED_COUNT_PERC:?}%)"
+  echo "$DIP_SS_COUNT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+fi
+
+################################################################################
+
 function cancel_DCA() {
   # if listing, reference has data
   if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
