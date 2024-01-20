@@ -481,7 +481,7 @@ DIP_SOLD_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SOLD_COUNT" | bc -l 2>/de
 DIP_REMOVED_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_REMOVED_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 DIP_COUNT_TIMED="$(egrep " : RSI/DIP :: Today: | : ALL/DIP :: Today: " "${LOG_DIR:?}"/leeloo/robot.log | awk '{ print $1 }' | awk -F: '{ print $3 }' | tail -1)"
-DIP_LATEST_COUNT_TIMED="$(tail -1 "${LOG_DIR:?}"/leeloo/robot.log | awk '{ print $1 }' | awk -F: '{ print $3 }' | tail -1)"
+DIP_LATEST_COUNT_TIMED="$(tail -1 "${LOG_DIR:?}"/leeloo/robot.log | awk '{ print $1 }' | awk -F: '{ print $2 }' | tail -1)"
 
 if [[ ! "$DIP_COUNT_TIMED" == "$DIP_LATEST_COUNT_TIMED" ]] &>/dev/null; then
   # skip select count output (log)
