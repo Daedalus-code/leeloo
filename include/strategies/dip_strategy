@@ -1916,6 +1916,11 @@ fi
 
 DIP_REMOVED_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_REMOVED_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+# if zero
+if [[ -z "$DIP_REMOVED_COUNT_PERC" ]] &>/dev/null; then
+  DIP_REMOVED_COUNT_PERC="0"
+fi
+
 DIP_COUNT_TIMED="$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | egrep " : ALL/* :: Sold: | : RSI/* :: Selected: " | awk '{ print $1 }' | awk -F: '{ print $3 }' | tail -1)"
 DIP_LATEST_COUNT_TIMED="$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }' | awk -F: '{ print $2 }' | tail -1)"
 
