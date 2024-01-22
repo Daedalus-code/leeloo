@@ -389,6 +389,12 @@ function target_data() {
     if [[ "$NORMAL_MARKET" -eq "1" ]] &>/dev/null; then
       # reference allocated decreased
       DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/3.69" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+      # if zero
+      if [[ "$DIP_ALLOCATED" == "0.00" ]] &>/dev/null; then
+        DIP_ALLOCATED="0.5"
+      fi
+
       # below output (log)
       DIP_SLOW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Slow market! (x${NORMAL_MARKET:?}) Allocated decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
       echo "$DIP_SLOW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
