@@ -2018,7 +2018,7 @@ if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/
       DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Profit: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% after $DIP_BOUGHT_AGE_OUTPUT_AFTER"
       echo "$DIP_SOLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       # track profit
-      echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY > $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
+      echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY > $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_AGE_OUTPUT_AFTER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
       # column file
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
 
@@ -2675,7 +2675,7 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
       # extract the numeric value after '>'
       AMOUNT=$(echo "$LINE" | awk -F'>' '{print $2}' | awk '{print $1}')
       # extract the last numeric value
-      PERCENTAGE=$(echo "$LINE" | awk '{print $NF}' | tr -d '%')
+      PERCENTAGE=$(echo "$LINE" | awk '{print $7}' | tr -d '%')
 
       # check if the amount is numeric
       if [[ $AMOUNT =~ ^[0-9.]+$ ]] &>/dev/null; then
