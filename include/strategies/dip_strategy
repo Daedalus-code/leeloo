@@ -373,8 +373,9 @@ function target_data() {
     EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above | awk '{ print $1 }')"
     # if market are greater than n
     if [[ "$EFFICIENT_MARKET" -gt "1" ]] &>/dev/null; then
+      EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET" | awk '{match($0, /[0-9]/); print substr($0, RSTART, RLENGTH)}')"
       # reference allocated increased
-      DIP_ALLOCATED="$(echo "3.69*$DIP_ALLOCATED" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+      DIP_ALLOCATED="$(echo "1.$EFFICIENT_MARKET_LIMIT*$DIP_ALLOCATED" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
       # above output (log)
       DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Fast market! (x${EFFICIENT_MARKET:?}) Allocated increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
       echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
