@@ -142,7 +142,7 @@ function dip_order_data {
 ################################################################################
 
 # if enough profit
-if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "5" ]] &>/dev/null; then
+if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "6" ]] &>/dev/null; then
   # generate top most efficient market
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | sort -nr | head -n 3 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
   # generate top most slowest market
@@ -382,16 +382,7 @@ function target_data() {
     fi
   fi
 
-  # if non existing (no profits)
-  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
-      # reference allocated decreased (first buy)
-      DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/1.23" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-      # above output (log)
-      #      DIP_FIRST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: New market! (x0) Allocated decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
-      #      echo "$DIP_FIRST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    fi
-  fi
+  ##############################################################################
 
   # if below (slow profits)
   if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "1" ]] &>/dev/null; then
@@ -410,6 +401,16 @@ function target_data() {
       # below output (log)
       DIP_SLOW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Slow market! (x${NORMAL_MARKET:?}) Allocated decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
       echo "$DIP_SLOW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
+  fi
+
+  ##############################################################################
+
+  # if non existing (no profits)
+  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
+    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
+      # reference allocated decreased (first buy)
+      DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/1.23" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     fi
   fi
 
