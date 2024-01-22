@@ -46,6 +46,8 @@ DIP_MIN_SPREAD="$(egrep "DIP_MIN_SPREAD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATE
 DIP_MAX_SPREAD="$(egrep "DIP_MAX_SPREAD=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # minimum volume
 DIP_MIN_VOLUME="$(egrep "DIP_MIN_VOLUME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# relative strength index limit
+DIP_RSI_LIMIT="$(egrep "DIP_RSI_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # markets to consider
 DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk '{ print $1 }' | awk -F= '{ print $2 }' | tr -d '"#')"
 # dip allocated (1% of balance)
@@ -861,10 +863,16 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 # default
                 POTENTIAL_RSI="$POTENTIAL_RSI_STATUS"
 
+                # if zero
+                if [[ -z "$DIP_RSI_LIMIT" ]] &>/dev/null; then
+                  # default
+                  DIP_RSI_LIMIT="34"
+                fi
+
                 # if target has potential,
                 # greater than n & less than n,
                 # equals zero (not enough candles, potential new listing)
-                if [[ "$POTENTIAL_RSI_VALUE_CHECK" -gt "30" && "$POTENTIAL_RSI_VALUE_CHECK" -lt "34" || "$POTENTIAL_RSI_VALUE" == "0.00" ]] &>/dev/null; then
+                if [[ "$POTENTIAL_RSI_VALUE_CHECK" -gt "30" && "$POTENTIAL_RSI_VALUE_CHECK" -lt "$DIP_RSI_LIMIT" || "$POTENTIAL_RSI_VALUE" == "0.00" ]] &>/dev/null; then
                   # less than n
                   POTENTIAL_RSI_STATUS="Oversold"
                   POTENTIAL_RSI="Potential"
