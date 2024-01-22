@@ -371,7 +371,7 @@ function target_data() {
   if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
     # efficient market (fast)
     EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above | awk '{ print $1 }')"
-    # if market have n
+    # if market are greater than n
     if [[ "$EFFICIENT_MARKET" -gt "1" ]] &>/dev/null; then
       # reference allocated increased
       DIP_ALLOCATED="$(echo "3.69*$DIP_ALLOCATED" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
@@ -385,7 +385,7 @@ function target_data() {
   if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "1" ]] &>/dev/null; then
     # normal market (slow)
     NORMAL_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $1 }')"
-    # if market have n
+    # if market are equal to n
     if [[ "$NORMAL_MARKET" -eq "1" ]] &>/dev/null; then
       # reference allocated decreased
       DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/3.69" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
