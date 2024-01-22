@@ -369,11 +369,11 @@ function target_data() {
     # efficient market (fast)
     EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above | awk '{ print $1 }')"
     # original reference allocated
-    REFERENCE_ALLOCATED_ORIGINAL="$REFERENCE_ALLOCATED"
+    DIP_ALLOCATED_ORIGINAL="$DIP_ALLOCATED"
     # reference allocated increased
-    REFERENCE_ALLOCATED="$(echo "3.69*$REFERENCE_ALLOCATED" | bc 2>/dev/null)"
+    DIP_ALLOCATED="$(echo "3.69*$DIP_ALLOCATED" | bc 2>/dev/null)"
     # above output (log)
-    DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Efficient market! (x${EFFICIENT_MARKET:?}) Allocated increased from ${REFERENCE_ALLOCATED_ORIGINAL:?}% to ${REFERENCE_ALLOCATED:?}%"
+    DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Efficient market! (x${EFFICIENT_MARKET:?}) Allocated increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
     echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
@@ -382,11 +382,11 @@ function target_data() {
     # normal market (slow)
     NORMAL_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $1 }')"
     # original reference allocated
-    REFERENCE_ALLOCATED_ORIGINAL="$REFERENCE_ALLOCATED"
+    DIP_ALLOCATED_ORIGINAL="$DIP_ALLOCATED"
     # reference allocated decreased
-    REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/3.69" | bc 2>/dev/null)"
+    DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/3.69" | bc 2>/dev/null)"
     # below output (log)
-    DIP_SLOW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Normal market! (x${NORMAL_MARKET:?}) Allocated remains the same ${REFERENCE_ALLOCATED_ORIGINAL:?}%"
+    DIP_SLOW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Normal market! (x${NORMAL_MARKET:?}) Allocated remains the same ${DIP_ALLOCATED_ORIGINAL:?}%"
     echo "$DIP_SLOW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
