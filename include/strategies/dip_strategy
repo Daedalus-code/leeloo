@@ -374,6 +374,7 @@ function target_data() {
     REFERENCE_ALLOCATED="$(echo "3.69*$REFERENCE_ALLOCATED" | bc 2>/dev/null)"
     # above output (log)
     DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Efficient market! (x${EFFICIENT_MARKET:?}) Allocated increased from ${REFERENCE_ALLOCATED_ORIGINAL:?}% to ${REFERENCE_ALLOCATED:?}%"
+    echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
   # if below (slow profits)
@@ -386,9 +387,10 @@ function target_data() {
     REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/3.69" | bc 2>/dev/null)"
     # below output (log)
     DIP_SLOW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Normal market! (x${EFFICIENT_MARKET:?}) Allocated remains the same ${REFERENCE_ALLOCATED_ORIGINAL:?}%"
+    echo "$DIP_SLOW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
 
-  ################################################################################
+  ##############################################################################
 
   amount_to_buy_sell
 
