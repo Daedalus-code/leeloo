@@ -380,6 +380,9 @@ function target_data() {
       DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Fast market! (x${EFFICIENT_MARKET:?}) Allocated increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
       echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
+  else
+    # reference allocated decreased
+    DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/1.11" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
   fi
 
   # if below (slow profits)
@@ -389,7 +392,7 @@ function target_data() {
     # if market are equal to n
     if [[ "$NORMAL_MARKET" -eq "1" ]] &>/dev/null; then
       # reference allocated decreased
-      DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/1.51" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+      DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/2.22" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
       # if zero
       if [[ "$DIP_ALLOCATED" == "0.00" ]] &>/dev/null; then
