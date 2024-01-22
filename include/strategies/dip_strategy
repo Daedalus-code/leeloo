@@ -364,6 +364,18 @@ function target_data() {
 
   ##############################################################################
 
+  # if above (fast profits)
+  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
+    REFERENCE_ALLOCATED="$(echo "3.69*$REFERENCE_ALLOCATED" | bc 2>/dev/null)"
+  fi
+
+  # if below (slow profits)
+  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "1" ]] &>/dev/null; then
+    REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/3.69" | bc 2>/dev/null)"
+  fi
+
+  ################################################################################
+
   amount_to_buy_sell
 
   # target amount to buy and sell (listing)
