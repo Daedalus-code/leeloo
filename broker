@@ -723,11 +723,12 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     # if zero, less than
     if [[ -z "$LENGTH" || "$LENGTH" -lt "5" ]] &>/dev/null; then
-      LENGTH="5"
+      LENGTH=$(echo "$LENGTH+8" | bc 2>/dev/null)
     fi
 
     # if zero
     if [[ -z "$TEMP_READLOG" ]] &>/dev/null; then
+      LENGTH="5"
       TEMP_READLOG="Nothing was found"
     fi
 
