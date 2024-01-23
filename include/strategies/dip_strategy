@@ -429,12 +429,18 @@ function target_data() {
 
   # if data
   if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+
+    # cleanup below file (wrong reference side)
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | egrep -v "$REFERENCE_CURRENCY/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+
     # if above (fast profits)
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
       # efficient market (fast)
       EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above | awk '{ print $1 }')"
       # if market are greater than n
       if [[ "$EFFICIENT_MARKET" -gt "1" ]] &>/dev/null; then
+
+        # market limit
         EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET" | awk '{match($0, /[0-9]/); print substr($0, RSTART, RLENGTH)}')"
 
         # if above n
@@ -456,12 +462,17 @@ function target_data() {
 
   # if data
   if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+
+    # cleanup below file (wrong reference side)
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below 2>/dev/null | egrep -v "$REFERENCE_CURRENCY/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+
     # if below (slow profits)
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "1" ]] &>/dev/null; then
       # normal market (slow)
       NORMAL_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $1 }')"
       # if market are equal to n
       if [[ "$NORMAL_MARKET" -eq "1" ]] &>/dev/null; then
+
         # reference allocated decreased
         DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/2.34" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
