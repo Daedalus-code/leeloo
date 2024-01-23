@@ -374,6 +374,10 @@ function target_data() {
     # if market are greater than n
     if [[ "$EFFICIENT_MARKET" -gt "1" ]] &>/dev/null; then
       EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET" | awk '{match($0, /[0-9]/); print substr($0, RSTART, RLENGTH)}')"
+      # if above n
+      if [[ "$EFFICIENT_MARKET_LIMIT" -gt "9" ]] &>/dev/null; then
+        EFFICIENT_MARKET_LIMIT="999"
+      fi
       # reference allocated increased
       DIP_ALLOCATED="$(echo "1.$EFFICIENT_MARKET_LIMIT*$DIP_ALLOCATED" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
       # above output (log)
