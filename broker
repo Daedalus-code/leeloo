@@ -503,10 +503,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   # txid null error output
   TXID_NULL_DATA="$(echo "$(cat "${SYS_DIR:?}"/robot/*null.log 2>/dev/null)" | sed '/^$/d')"
   # txid null error count
-  TXID_NULL_DATA_COUNT="$(echo "$TXID_NULL_DATA" 2>/dev/null | sed '/^$/d' | wc -l)"
-
-  # null count
-  NULL_TOTAL_COUNT="$(wc -l "${SYS_DIR:?}"/robot/*null* | tail -1 | xargs | sed '/^$/d')"
+  TXID_NULL_DATA_COUNT="$(echo "$TXID_NULL_DATA" 2>/dev/null | egrep -c "[a-z]+|[0-9]+")"
 
   ##############################################################################
 
@@ -520,7 +517,7 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   OPTIONS=(1 "Debug           Status"
     2 "Strategy        error.log"
     3 "TXid            null.log"
-    n "Reset           null ($(echo "$NULL_TOTAL_COUNT" | awk '{ print $1 }'))")
+    n "Reset           null ($(echo "$TXID_NULL_DATA_COUNT" | awk '{ print $1 }'))")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -753,7 +750,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "n")
 
-    if dialog --stdout --title "Reset $NULL_TOTAL_COUNT null files?" \
+    if dialog --stdout --title "Reset $TXID_NULL_DATA_COUNT null files?" \
       --backtitle "Reset null?" \
       --yesno "Yes: Reset! No: Go back!" 5 0; then
       truncate -s 0 "${SYS_DIR:?}"/robot/*.null* &>/dev/null
