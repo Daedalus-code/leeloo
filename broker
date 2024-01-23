@@ -713,8 +713,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
       ERROR_CODES="0"
     fi
 
-    WIDTH="$(echo "$TEMP_READLOG" | head -"$LOG_LENGTH" | wc -L)"
-    LENGTH="$(echo "$TEMP_READLOG" 2>/dev/null | wc -l 2>/dev/null)"
+    WIDTH="$(echo "$TEMP_READLOG" | wc -L)"
+    WIDTH="$(echo "$WIDTH+4" | bc 2>/dev/null)"
+    LENGTH="$(echo "$TEMP_READLOG" | wc -l)"
 
     # if zero, less than
     if [[ -z "$WIDTH" || "$WIDTH" -lt "64" ]] &>/dev/null; then
@@ -723,7 +724,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     # if zero, less than
     if [[ -z "$LENGTH" || "$LENGTH" -lt "5" ]] &>/dev/null; then
-      LENGTH=$(echo "$LENGTH+8" | bc 2>/dev/null)
+      LENGTH=$(echo "$LENGTH+4" | bc 2>/dev/null)
     fi
 
     # if zero
