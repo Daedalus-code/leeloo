@@ -173,10 +173,30 @@ fi
 
 # if enough profit top 10
 if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "36" ]] &>/dev/null; then
+  if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -lt "72" ]] &>/dev/null; then
+    # generate top most efficient market
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    # generate top most slowest market
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+  fi
+fi
+
+# if enough profit top 15
+if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "72" ]] &>/dev/null; then
+  if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -lt "144" ]] &>/dev/null; then
+    # generate top most efficient market
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 15 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    # generate top most slowest market
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 15 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+  fi
+fi
+
+# if enough profit top 20
+if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "144" ]] &>/dev/null; then
   # generate top most efficient market
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 20 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
   # generate top most slowest market
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 20 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 fi
 
 ################################################################################
