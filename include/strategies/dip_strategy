@@ -2976,6 +2976,8 @@ if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
   DIP_SELECT_SKIP_REMOVED="${DIP_SELECT_COUNT_PERC:?}% ($DIP_SELECT_COUNT) ${DIP_SKIP_COUNT_PERC:?}% ($DIP_SKIP_COUNT) ${DIP_REMOVED_COUNT_PERC:?}% ($DIP_REMOVED_COUNT)"
 else
   DIP_SELECT_SKIP_REMOVED="Turn on extra logs"
+  # recalculate sold percentage
+  DIP_SOLD_COUNT_PERC="$(echo "100/$DIP_ORDER_SELL_COUNT*$DIP_SOLD_COUNT" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 fi
 
 ################################################################################
