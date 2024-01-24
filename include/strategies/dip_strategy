@@ -485,6 +485,10 @@ function target_data() {
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
       # reference allocated decreased (first buy)
       DIP_ALLOCATED="1.00"
+
+      # below output (log)
+      DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market below: x${NORMAL_MARKET:?} - Allocated decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+      echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
   fi
 
