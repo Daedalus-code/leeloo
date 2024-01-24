@@ -2971,6 +2971,13 @@ if [[ -z "$DIP_REMOVED_COUNT_PERC" ]] &>/dev/null; then
   DIP_REMOVED_COUNT_PERC="0"
 fi
 
+# if extra logs are set
+if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
+  DIP_SELECT_SKIP_REMOVED="${DIP_SELECT_COUNT_PERC:?}% ($DIP_SELECT_COUNT) ${DIP_SKIP_COUNT_PERC:?}% ($DIP_SKIP_COUNT) ${DIP_REMOVED_COUNT_PERC:?}% ($DIP_REMOVED_COUNT)"
+else
+  DIP_SELECT_SKIP_REMOVED="Turn on extra logs"
+fi
+
 ################################################################################
 
 # format and display output
@@ -2996,7 +3003,7 @@ Top_Dip.............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip.............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
 Average_Profit......: ${DIP_AVERAGE_PROFIT:?}% ($DIP_PROFIT_COUNT)
 Completed_Today.....: ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT)
-Select/Skip/Removed.: ${DIP_SELECT_COUNT_PERC:?}% ($DIP_SELECT_COUNT) ${DIP_SKIP_COUNT_PERC:?}% ($DIP_SKIP_COUNT) ${DIP_REMOVED_COUNT_PERC:?}% ($DIP_REMOVED_COUNT)
+Select/Skip/Removed.: $DIP_SELECT_SKIP_REMOVED
 Last_Profit.........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
 Highest_Profit......: $DIP_HIGHEST_PROFIT
 Lowest_Profit.......: $DIP_LOWEST_PROFIT
