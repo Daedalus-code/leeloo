@@ -143,13 +143,16 @@ function dip_order_data {
 
 ################################################################################
 
+# cat profit
+DIP_CAT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)"
+
 # if enough profit top 1
 if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
   if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -lt "9" ]] &>/dev/null; then
     # generate top most efficient market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 1 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 1 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
     # generate top most slowest market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 1 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 1 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
   fi
 fi
 
@@ -157,9 +160,9 @@ fi
 if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "9" ]] &>/dev/null; then
   if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -lt "18" ]] &>/dev/null; then
     # generate top most efficient market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 3 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 3 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
     # generate top most slowest market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 3 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 3 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
   fi
 fi
 
@@ -167,9 +170,9 @@ fi
 if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "18" ]] &>/dev/null; then
   if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -lt "36" ]] &>/dev/null; then
     # generate top most efficient market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 5 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 5 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
     # generate top most slowest market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 5 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 5 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
   fi
 fi
 
@@ -177,9 +180,9 @@ fi
 if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "36" ]] &>/dev/null; then
   if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -lt "72" ]] &>/dev/null; then
     # generate top most efficient market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
     # generate top most slowest market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
   fi
 fi
 
@@ -187,18 +190,18 @@ fi
 if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "72" ]] &>/dev/null; then
   if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -lt "144" ]] &>/dev/null; then
     # generate top most efficient market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 15 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 15 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
     # generate top most slowest market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 15 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 15 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
   fi
 fi
 
 # if enough profit top 25
 if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "144" ]] &>/dev/null; then
   # generate top most efficient market
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
   # generate top most slowest market
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 fi
 
 ################################################################################
@@ -2184,7 +2187,7 @@ if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/
       # track profit
       echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY > $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_AGE_OUTPUT_AFTER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
       # column file
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
+      echo "$(echo "$DIP_CAT_PROFIT" | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
 
       # remove duplicates
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
@@ -2214,7 +2217,7 @@ if [[ ! "$DIP_NEW_YEAR" == "$(cat "$SYS_DIR"/robot/year 2>/dev/null)" ]] &>/dev/
   if [[ ! -f "$SYS_DIR"/robot/"$BASENAME_STRATEGY".revenue."$(date '+%Y')" ]] &>/dev/null; then
     # track annual revenue
     echo "$DIP_OLD_YEAR Profits:
-$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)
+$(echo "$DIP_CAT_PROFIT" 2>/dev/null)
 
 $DIP_OLD_YEAR Gains:
 $(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null)" >"$SYS_DIR"/robot/"$BASENAME_STRATEGY".revenue."$(date '+%Y')"
@@ -2826,7 +2829,7 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
 
     # input data from the specified file
-    DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | tr -d '%' 2>/dev/null || ERROR_STATUS=$?)
+    DATA=$(echo "$DIP_CAT_PROFIT" | tr -d '%' 2>/dev/null || ERROR_STATUS=$?)
     # initialize associative arrays to store the total SUM and total percentage for each reference
     declare -A REFERENCE_TOTAL
     declare -A REFERENCE_TOTAL_PERCENTAGE
@@ -2896,8 +2899,6 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
 
   # dip profit format
   DIP_PROFIT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_PROFIT_FILE_AGE_SECONDS/3600")) $(("$DIP_PROFIT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_PROFIT_FILE_AGE_SECONDS%60")))
-  # cat profit
-  DIP_CAT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)"
   # last
   DIP_LAST_PROFIT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | tail -1 | awk '{ print $3,$7" | +"$5,$6 }')"
   # high
