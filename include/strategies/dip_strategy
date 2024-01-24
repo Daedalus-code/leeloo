@@ -193,20 +193,10 @@ fi
 
 # if enough profit top 25
 if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "144" ]] &>/dev/null; then
-  if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -lt "288" ]] &>/dev/null; then
-    # generate top most efficient market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
-    # generate top most slowest market
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
-  fi
-fi
-
-# if enough profit top 50
-if [[ "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')" -gt "288" ]] &>/dev/null; then
   # generate top most efficient market
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 50 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
   # generate top most slowest market
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 50 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{print $3, $(NF-1)}' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 fi
 
 ################################################################################
@@ -474,11 +464,11 @@ function target_data() {
       if [[ "$NORMAL_MARKET" -eq "1" ]] &>/dev/null; then
 
         # reference allocated decreased
-        DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/2.34" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+        DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/1.50" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
         # if zero
         if [[ "$DIP_ALLOCATED" == "0.00" ]] &>/dev/null; then
-          DIP_ALLOCATED="0.54"
+          DIP_ALLOCATED="1.00"
         fi
 
         # below output (log)
@@ -490,11 +480,11 @@ function target_data() {
 
   ##############################################################################
 
-  # if non existing (no profits)
+  # if non existing (no profits yet)
   if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
       # reference allocated decreased (first buy)
-      DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/1.23" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+      DIP_ALLOCATED="1.00"
     fi
   fi
 
