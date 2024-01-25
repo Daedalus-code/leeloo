@@ -388,6 +388,11 @@ function target_data() {
       # ineffective market (slow)
       INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow | awk '{ print $1 }')"
 
+      # efficient market output (fast)
+      EFFICIENT_MARKET_OUTPUT="$EFFICIENT_MARKET"
+      # ineffective market output (slow)
+      INEFFECTIVE_MARKET_OUTPUT="$INEFFECTIVE_MARKET"
+
       # if zero
       if [[ -z "$INEFFECTIVE_MARKET" ]] &>/dev/null; then
         INEFFECTIVE_MARKET="0"
@@ -418,7 +423,7 @@ function target_data() {
         # if extra logs are set
         if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
           # above output (log)
-          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_CHECK:?} - Allocated increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_OUTPUT:?}-${INEFFECTIVE_MARKET_OUTPUT:?}=${EFFICIENT_MARKET_CHECK:?} : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
           echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         fi
       fi
@@ -451,7 +456,7 @@ function target_data() {
         # if extra logs are set
         if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
           # below output (log)
-          DIP_SLOW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market below: x${NORMAL_MARKET:?} - Allocated decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+          DIP_SLOW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market below: x${NORMAL_MARKET:?} : Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
           echo "$DIP_SLOW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         fi
       fi
@@ -471,7 +476,7 @@ function target_data() {
       # if extra logs are set
       if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
         # below output (log)
-        DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x${NEW_MARKET:?} - Allocated decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+        DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x${NEW_MARKET:?} : Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
         echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
     fi
