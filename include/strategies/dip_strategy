@@ -365,7 +365,7 @@ function target_data() {
   ##############################################################################
 
   # original reference allocated
-  DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
+  DIP_ALLOCATED_ORIGINAL="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
   # if zero
   if [[ -z "$DIP_EXTRA_LOGS" ]] &>/dev/null; then
