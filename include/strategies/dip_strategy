@@ -364,6 +364,9 @@ function target_data() {
 
   ##############################################################################
 
+  # original reference allocated
+  DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
+
   # if zero
   if [[ -z "$DIP_EXTRA_LOGS" ]] &>/dev/null; then
     DIP_EXTRA_LOGS="false"
@@ -386,9 +389,6 @@ function target_data() {
 
   # if data
   if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-
-    # original reference allocated
-    DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
 
     # cleanup below file (wrong reference side)
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | egrep -v "$REFERENCE_CURRENCY/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
@@ -435,9 +435,6 @@ function target_data() {
   # if data
   if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
-    # original reference allocated
-    DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
-
     # cleanup below file (wrong reference side)
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below 2>/dev/null | egrep -v "$REFERENCE_CURRENCY/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 
@@ -449,12 +446,7 @@ function target_data() {
       if [[ "$NORMAL_MARKET" -eq "1" ]] &>/dev/null; then
 
         # reference allocated decreased
-        DIP_ALLOCATED="$(echo "$DIP_ALLOCATED/1.50" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-        # if zero
-        if [[ "$DIP_ALLOCATED" == "0.00" ]] &>/dev/null; then
-          DIP_ALLOCATED="1.00"
-        fi
+        DIP_ALLOCATED="1.00"
 
         # if extra logs are set
         if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
@@ -471,9 +463,6 @@ function target_data() {
   # if non existing (no profits yet)
   if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
-
-      # original reference allocated
-      DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
 
       # reference allocated decreased (first buy)
       DIP_ALLOCATED="1.00"
