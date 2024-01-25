@@ -659,35 +659,30 @@ fi
 
 # cat profit
 DIP_CAT_PROFIT=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)
-
 # wc profit (count)
 DIP_WC_PROFIT=$(echo "$DIP_CAT_PROFIT" | wc -l)
 
-# function to generate top markets based on count
+# generate top markets based on count
 generate_top_markets() {
-  local count=$1
-  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n $count | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+  local COUNT=$1
+  # generate top most efficient market, disregard slow orders (n+d)
+  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n $COUNT | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
 }
 
-# function to generate bottom markets based on count
+# generate bottom markets based on count
 generate_bottom_markets() {
-  local count=$1
-  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $count | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+  local COUNT=$1
+  # generate top most slowest market
+  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $COUNT | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 }
+
+# calculate the count for top and bottom markets dynamically
+DEFAULT_COUNT=$(echo "$DIP_WC_PROFIT / 3" | bc)
 
 # check profit ranges and generate top and bottom markets accordingly
-if [[ "$DIP_WC_PROFIT" -gt "1" && "$DIP_WC_PROFIT" -lt "9" ]] &>/dev/null; then
-  generate_top_markets 1
-  generate_bottom_markets 1
-elif [[ "$DIP_WC_PROFIT" -gt "9" && "$DIP_WC_PROFIT" -lt "144" ]] &>/dev/null; then
-  ranges=(9 18 36 72 144)
-  for range in "${ranges[@]}"; do
-    if [[ "$DIP_WC_PROFIT" -lt "$range" ]]; then
-      generate_top_markets $((range / 2))
-      generate_bottom_markets $((range / 2))
-      break
-    fi
-  done
+if [[ "$DIP_WC_PROFIT" -gt "1" ]]; then
+  generate_top_markets $DEFAULT_COUNT
+  generate_bottom_markets $DEFAULT_COUNT
 fi
 
 ################################################################################
@@ -2208,7 +2203,7 @@ DIP_OUTPUT_FILE="${SYS_DIR:?}/robot/pool"
 # read the active list from the file
 DIP_ACTIVE_LIST=$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" 2>/dev/null)
 
-# function to extract values from the active list
+# extract values from the active list
 extract_values() {
   CURRENCY=$1
   FIELD=$2
@@ -2216,7 +2211,7 @@ extract_values() {
   echo "$VALUE"
 }
 
-# function to calculate the age of the sold file
+# calculate the age of the sold file
 calculate_sold_file_age() {
 
   # input currency
