@@ -667,9 +667,9 @@ generate_top_markets() {
   COUNT=$1
   ABOVE_FILE="${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
   # calculate the count for top markets dynamically
-  split_count=$((DIP_WC_PROFIT / 2))
+  split_count=$((DIP_WC_PROFIT / 2 + DIP_WC_PROFIT % 2))
   # generate top most efficient market, disregard slow orders (n+d)
-  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n $COUNT | awk '{ print $1,$2 }')" >"$ABOVE_FILE"
+  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n $split_count | awk '{ print $1,$2 }')" >"$ABOVE_FILE"
 }
 
 # generate bottom markets based on count
@@ -677,9 +677,9 @@ generate_bottom_markets() {
   COUNT=$1
   BELOW_FILE="${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
   # calculate the count for bottom markets dynamically
-  split_count=$((DIP_WC_PROFIT - DIP_WC_PROFIT / 2))
+  split_count=$((DIP_WC_PROFIT / 2))
   # generate top most slowest market
-  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $COUNT | awk '{ print $1,$2 }')" >"$BELOW_FILE"
+  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $split_count | awk '{ print $1,$2 }')" >"$BELOW_FILE"
 }
 
 # calculate the count for top and bottom markets dynamically
