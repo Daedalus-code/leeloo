@@ -369,6 +369,21 @@ function target_data() {
     DIP_EXTRA_LOGS="false"
   fi
 
+  # efficient market (fast)
+  EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above | awk '{ print $1 }')"
+  # ineffective market (slow)
+  INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow | awk '{ print $1 }')"
+
+  # efficient market output (fast)
+  EFFICIENT_MARKET_OUTPUT="$EFFICIENT_MARKET"
+  # ineffective market output (slow)
+  INEFFECTIVE_MARKET_OUTPUT="$INEFFECTIVE_MARKET"
+
+  # if zero
+  if [[ -z "$INEFFECTIVE_MARKET" ]] &>/dev/null; then
+    INEFFECTIVE_MARKET="0"
+  fi
+
   # original reference allocated
   DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
 
@@ -382,21 +397,6 @@ function target_data() {
 
     # if above (fast profits)
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
-
-      # efficient market (fast)
-      EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above | awk '{ print $1 }')"
-      # ineffective market (slow)
-      INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow | awk '{ print $1 }')"
-
-      # efficient market output (fast)
-      EFFICIENT_MARKET_OUTPUT="$EFFICIENT_MARKET"
-      # ineffective market output (slow)
-      INEFFECTIVE_MARKET_OUTPUT="$INEFFECTIVE_MARKET"
-
-      # if zero
-      if [[ -z "$INEFFECTIVE_MARKET" ]] &>/dev/null; then
-        INEFFECTIVE_MARKET="0"
-      fi
 
       # calculate market virtual (RAW)
       EFFICIENT_MARKET="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
