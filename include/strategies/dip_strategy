@@ -679,7 +679,7 @@ generate_bottom_markets() {
   # calculate the count for bottom markets dynamically
   split_count=$((DIP_WC_PROFIT - DIP_WC_PROFIT / 2))
   # generate top most slowest market
-  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $split_count | awk '{ print $1,$2 }')" >"$BELOW_FILE"
+  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $split_count | awk '{ print $1,$2 }')" >"$BELOW_FILE"
 }
 
 # calculate the count for top and bottom markets dynamically
