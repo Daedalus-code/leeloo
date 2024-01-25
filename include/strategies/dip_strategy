@@ -384,11 +384,11 @@ function target_data() {
   # ineffective market output (slow)
   INEFFECTIVE_MARKET_OUTPUT="$INEFFECTIVE_MARKET"
 
-  # original reference allocated
-  DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
-
   # if data
   if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+
+    # original reference allocated
+    DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
 
     # cleanup below file (wrong reference side)
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | egrep -v "$REFERENCE_CURRENCY/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
@@ -435,6 +435,9 @@ function target_data() {
   # if data
   if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
+    # original reference allocated
+    DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
+
     # cleanup below file (wrong reference side)
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below 2>/dev/null | egrep -v "$REFERENCE_CURRENCY/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 
@@ -468,15 +471,17 @@ function target_data() {
   # if non existing (no profits yet)
   if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
-      # new market (dunno)
-      NEW_MARKET="0"
+
+      # original reference allocated
+      DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }')"
+
       # reference allocated decreased (first buy)
       DIP_ALLOCATED="1.00"
 
       # if extra logs are set
       if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
         # below output (log)
-        DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x${NEW_MARKET:?} : Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+        DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x0 : Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
         echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
     fi
