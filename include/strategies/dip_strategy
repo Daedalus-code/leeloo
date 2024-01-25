@@ -143,71 +143,6 @@ function dip_order_data {
 
 ################################################################################
 
-# cat profit
-DIP_CAT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)"
-# wc profit
-DIP_WC_PROFIT="$(echo "$DIP_CAT_PROFIT" | wc -l)"
-
-# if enough profit top 1
-if [[ "$DIP_WC_PROFIT" -gt "1" ]] &>/dev/null; then
-  if [[ "$DIP_WC_PROFIT" -lt "9" ]] &>/dev/null; then
-    # generate top most efficient market, disregard slow orders (n+d)
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 1 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
-    # generate top most slowest market
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 1 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
-  fi
-fi
-
-# if enough profit top 3
-if [[ "$DIP_WC_PROFIT" -gt "9" ]] &>/dev/null; then
-  if [[ "$DIP_WC_PROFIT" -lt "18" ]] &>/dev/null; then
-    # generate top most efficient market, disregard slow orders (n+d)
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 3 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
-    # generate top most slowest market
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 3 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
-  fi
-fi
-
-# if enough profit top 5
-if [[ "$DIP_WC_PROFIT" -gt "18" ]] &>/dev/null; then
-  if [[ "$DIP_WC_PROFIT" -lt "36" ]] &>/dev/null; then
-    # generate top most efficient market, disregard slow orders (n+d)
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 5 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
-    # generate top most slowest market
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 5 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
-  fi
-fi
-
-# if enough profit top 10
-if [[ "$DIP_WC_PROFIT" -gt "36" ]] &>/dev/null; then
-  if [[ "$DIP_WC_PROFIT" -lt "72" ]] &>/dev/null; then
-    # generate top most efficient market, disregard slow orders (n+d)
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
-    # generate top most slowest market
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 10 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
-  fi
-fi
-
-# if enough profit top 15
-if [[ "$DIP_WC_PROFIT" -gt "72" ]] &>/dev/null; then
-  if [[ "$DIP_WC_PROFIT" -lt "144" ]] &>/dev/null; then
-    # generate top most efficient market, disregard slow orders (n+d)
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 15 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
-    # generate top most slowest market
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 15 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
-  fi
-fi
-
-# if enough profit top 25
-if [[ "$DIP_WC_PROFIT" -gt "144" ]] &>/dev/null; then
-  # generate top most efficient market, disregard slow orders (n+d)
-  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
-  # generate top most slowest market
-  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n 25 | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
-fi
-
-################################################################################
-
 # amount to buy sell
 function amount_to_buy_sell() {
 
@@ -708,13 +643,51 @@ fi
 ################################################################################
 
 # create price.dip file, only print lines with bids that are less than ask
-cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | awk '{if ($2 < $3) print}' >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip
+echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | awk '{if ($2 < $3) print}')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip
+
+# prices file output (RAW)
+CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
 
 # if xeggex api, change _ into /
 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-  echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip
+  echo "$(echo "$CAT_PRICES_DIP_FILE" | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+fi
+
+################################################################################
+
+# cat profit
+DIP_CAT_PROFIT=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)
+
+# wc profit (count)
+DIP_WC_PROFIT=$(echo "$DIP_CAT_PROFIT" | wc -l)
+
+# function to generate top markets based on count
+generate_top_markets() {
+  local count=$1
+  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n $count | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+}
+
+# function to generate bottom markets based on count
+generate_bottom_markets() {
+  local count=$1
+  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $count | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+}
+
+# check profit ranges and generate top and bottom markets accordingly
+if [[ "$DIP_WC_PROFIT" -gt "1" && "$DIP_WC_PROFIT" -lt "9" ]] &>/dev/null; then
+  generate_top_markets 1
+  generate_bottom_markets 1
+elif [[ "$DIP_WC_PROFIT" -gt "9" && "$DIP_WC_PROFIT" -lt "144" ]] &>/dev/null; then
+  ranges=(9 18 36 72 144)
+  for range in "${ranges[@]}"; do
+    if [[ "$DIP_WC_PROFIT" -lt "$range" ]]; then
+      generate_top_markets $((range / 2))
+      generate_bottom_markets $((range / 2))
+      break
+    fi
+  done
 fi
 
 ################################################################################
@@ -797,9 +770,6 @@ if [[ "$DIP_ALL_IN" == "0" ]] &>/dev/null; then
 fi
 
 ################################################################################
-
-# prices file output
-CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
 
 # if zero, do random markets (all reference markets) southxchange
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
