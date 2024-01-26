@@ -259,14 +259,14 @@ function reference_data() {
   # calculate reference total values
   REFERENCE_TOTAL="$(echo "$REFERENCE_AVAILABLE_BALANCE+$REFERENCE_UNCONFIRMED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_TOTAL_VALUED="$(echo "$REFERENCE_AVAILABLE_VALUED+$REFERENCE_UNCONFIRMED_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
-  # total ema value
-  TOTAL_EMA_VALUE="$(echo "$LISTING_TOTAL_VALUED+$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
 }
 
 ################################################################################
 
 function listing_allocated() {
+  # total ema value
+  TOTAL_EMA_VALUE="$(echo "$LISTING_TOTAL_VALUED+$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+
   # listing real value
   LISTING_ALLOCATED_REAL="$(echo "100/$TOTAL_EMA_VALUE*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null)"
   # listing real check
@@ -284,6 +284,7 @@ function listing_allocated() {
 
   # DEBUG
   echo "
+total emu value..............: $TOTAL_EMA_VALUE
 listing_allocated............: $LISTING_ALLOCATED
 listing real value...........: $LISTING_ALLOCATED_REAL
 listing real check...........: $LISTING_ALLOCATED_REAL_CHECK
@@ -297,6 +298,9 @@ missing in reference.........: $REFERENCE_AMOUNT_REVERSED" >/tmp/debug_listing
 ################################################################################
 
 function reference_allocated() {
+  # total ema value
+  TOTAL_EMA_VALUE="$(echo "$LISTING_TOTAL_VALUED+$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
+
   # reference real value
   REFERENCE_ALLOCATED_REAL="$(echo "100/$TOTAL_EMA_VALUE*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
   # reference real check
@@ -314,6 +318,7 @@ function reference_allocated() {
 
   # DEBUG
   echo "
+total emu value................: $TOTAL_EMA_VALUE
 reference allocated............: $REFERENCE_ALLOCATED
 reference real value...........: $REFERENCE_ALLOCATED_REAL
 reference real check...........: $REFERENCE_ALLOCATED_REAL_CHECK
