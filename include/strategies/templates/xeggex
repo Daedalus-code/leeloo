@@ -267,7 +267,7 @@ function listing_allocated() {
   # total ema value
   TOTAL_EMA_VALUE="$(echo "$LISTING_TOTAL_VALUED+$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
 
-  # listing real value
+  # listing real value (percentage)
   LISTING_ALLOCATED_REAL="$(echo "100/$TOTAL_EMA_VALUE*$LISTING_TOTAL_VALUED" | bc -l 2>/dev/null)"
   # listing real check
   LISTING_ALLOCATED_REAL_CHECK="$(echo "$LISTING_ALLOCATED_REAL" | awk '{ printf "%.0f\n", $1 }')"
@@ -281,18 +281,6 @@ function listing_allocated() {
   REFERENCE_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
   # missing in reference
   REFERENCE_AMOUNT_REVERSED="$(echo "$REFERENCE_ALL_MISSING/$REFERENCE_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-
-  # DEBUG
-  echo "
-total emu value..............: $TOTAL_EMA_VALUE
-listing_allocated............: $LISTING_ALLOCATED
-listing real value...........: $LISTING_ALLOCATED_REAL
-listing real check...........: $LISTING_ALLOCATED_REAL_CHECK
-listing allocated real check.: $LISTING_ALLOCATED_CONFIG_CHECK
-calculate difference.........: $LISTING_ALL_DIFF
-difference check.............: $LISTING_ALL_DIFF_CHECK
-missing based on difference..: $REFERENCE_ALL_MISSING
-missing in reference.........: $REFERENCE_AMOUNT_REVERSED" >/tmp/debug_listing
 }
 
 ################################################################################
@@ -301,7 +289,7 @@ function reference_allocated() {
   # total ema value
   TOTAL_EMA_VALUE="$(echo "$LISTING_TOTAL_VALUED+$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
 
-  # reference real value
+  # reference real value (percentage)
   REFERENCE_ALLOCATED_REAL="$(echo "100/$TOTAL_EMA_VALUE*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null)"
   # reference real check
   REFERENCE_ALLOCATED_REAL_CHECK="$(echo "$REFERENCE_ALLOCATED_REAL" | awk '{ printf "%.0f\n", $1 }')"
@@ -312,21 +300,9 @@ function reference_allocated() {
   # difference check
   REFERENCE_ALL_DIFF_CHECK="$(echo "$REFERENCE_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)"
   # missing based on difference
-  LISTING_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$LISTING_AVAILABLE_VALUED" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AVAILABLE_VALUED" | bc -l | awk '{ printf "%.9f\n", $1 }')"
   # missing in listing
   LISTING_AMOUNT_REVERSED="$(echo "$LISTING_ALL_MISSING/$LISTING_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-
-  # DEBUG
-  echo "
-total emu value................: $TOTAL_EMA_VALUE
-reference allocated............: $REFERENCE_ALLOCATED
-reference real value...........: $REFERENCE_ALLOCATED_REAL
-reference real check...........: $REFERENCE_ALLOCATED_REAL_CHECK
-reference allocated real check.: $REFERENCE_ALLOCATED_CONFIG_CHECK
-calculate difference...........: $REFERENCE_ALL_DIFF
-difference check...............: $REFERENCE_ALL_DIFF_CHECK
-missing based on difference....: $LISTING_ALL_MISSING
-missing in reference...........: $LISTING_AMOUNT_REVERSED" >/tmp/debug_reference
 }
 
 ################################################################################
