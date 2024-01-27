@@ -448,6 +448,14 @@ function target_data() {
         # reference allocated decreased
         DIP_ALLOCATED="1.00"
 
+        # if equal values
+        if [[ "$DIP_ALLOCATED_ORIGINAL" == "$DIP_ALLOCATED" ]] &>/dev/null; then
+          DIP_ALLOCATED_OUTPUT="Equals at ${DIP_ALLOCATED_ORIGINAL:?}% - ${DIP_ALLOCATED:?}%"
+        else
+          # not equal
+          DIP_ALLOCATED_OUTPUT="Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+        fi
+
         # if extra logs are set
         if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
           # below output (log)
@@ -469,8 +477,17 @@ function target_data() {
 
       # if extra logs are set
       if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
+
+        # if equal values
+        if [[ "$DIP_ALLOCATED_ORIGINAL" == "$DIP_ALLOCATED" ]] &>/dev/null; then
+          DIP_ALLOCATED_OUTPUT="Equals at ${DIP_ALLOCATED_ORIGINAL:?}% - ${DIP_ALLOCATED:?}%"
+        else
+          # not equal
+          DIP_ALLOCATED_OUTPUT="Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+        fi
+
         # below output (log)
-        DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x0 : Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+        DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x0 : $DIP_ALLOCATED_OUTPUT"
         echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
     fi
