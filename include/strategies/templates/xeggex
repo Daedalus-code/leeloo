@@ -281,6 +281,11 @@ function listing_allocated() {
   REFERENCE_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
   # missing in reference
   REFERENCE_AMOUNT_REVERSED="$(echo "$REFERENCE_ALL_MISSING/$REFERENCE_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+
+  # if zero
+  if [[ -z "$REFERENCE_AMOUNT_REVERSED" ]] &>/dev/null; then
+    REFERENCE_AMOUNT_REVERSED="0.000000000"
+  fi
 }
 
 ################################################################################
@@ -303,6 +308,11 @@ function reference_allocated() {
   LISTING_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
   # missing in listing
   LISTING_AMOUNT_REVERSED="$(echo "$LISTING_ALL_MISSING/$LISTING_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+
+  # if zero
+  if [[ -z "$LISTING_AMOUNT_REVERSED" ]] &>/dev/null; then
+    LISTING_AMOUNT_REVERSED="0.000000000"
+  fi
 }
 
 ################################################################################
