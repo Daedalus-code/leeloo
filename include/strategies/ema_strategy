@@ -153,19 +153,19 @@ EMA_Strength..........: ${GET_PERCENTAGE:?}%
 EMA_FOMO..............: $EMA_FOMO_DATA
 Price.................: $LISTING_PRICE $LISTING_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL_CHECK:?}%/${LISTING_ALLOCATED:?}%
-Listing_Missing.......: ${REFERENCE_AMOUNT_REVERSED:?} $LISTING_CURRENCY
+Listing_Missing.......: ${REFERENCE_AMOUNT:?} $LISTING_CURRENCY
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY ($LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY)
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY ($LISTING_AVAILABLE_VALUED $REFERENCE_CURRENCY)
 Listing_Unconfirmed...: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY ($LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY)
 Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL_CHECK:?}%/${REFERENCE_ALLOCATED:?}%
-Listing_Missing.......: ${LISTING_AMOUNT_REVERSED:?} $LISTING_CURRENCY
+Listing_Missing.......: ${LISTING_AMOUNT:?} $LISTING_CURRENCY
 Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY ($REFERENCE_AMOUNT_VALUED $LISTING_CURRENCY)
 Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY ($REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY)
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY ($REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY)
 Last_Order.txid.......: $TX_ID_LAST $TX_ID_AGE (${TX_ID_AGE_DAYS:?}d)" | column -t >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".data 2>>"${LOG_ERROR:?}"
 
 # DEBUG
- echo "
+echo "
 total emu value................: $TOTAL_EMA_VALUE
 reference allocated............: $REFERENCE_ALLOCATED
 reference real value...........: $REFERENCE_ALLOCATED_REAL
@@ -174,10 +174,10 @@ reference allocated real check.: $REFERENCE_ALLOCATED_CONFIG_CHECK
 calculate difference...........: $REFERENCE_ALL_DIFF
 difference check...............: $REFERENCE_ALL_DIFF_CHECK
 missing based on difference....: $LISTING_ALL_MISSING
-missing in reference...........: $LISTING_AMOUNT_REVERSED" >/tmp/debug_reference
+missing in reference...........: $LISTING_AMOUNT" >/tmp/debug_reference
 
 # DEBUG
- echo "
+echo "
 total emu value..............: $TOTAL_EMA_VALUE
 listing_allocated............: $LISTING_ALLOCATED
 listing real value...........: $LISTING_ALLOCATED_REAL
@@ -186,7 +186,7 @@ listing allocated real check.: $LISTING_ALLOCATED_CONFIG_CHECK
 calculate difference.........: $LISTING_ALL_DIFF
 difference check.............: $LISTING_ALL_DIFF_CHECK
 missing based on difference..: $REFERENCE_ALL_MISSING
-missing in reference.........: $REFERENCE_AMOUNT_REVERSED" >/tmp/debug_listing
+missing in reference.........: $REFERENCE_AMOUNT" >/tmp/debug_listing
 
 ################################################################################
 
@@ -779,7 +779,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
           # rsi below bullish
           if [[ "$RSI_BULLISH_CHECK" -lt "70" ]] &>/dev/null; then
             # new reference amount (missing difference)
-            REFERENCE_AMOUNT="$REFERENCE_ALL_MISSING"
+            REFERENCE_AMOUNT="$REFERENCE_AMOUNT"
             # new bullish output
             BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bullish+Signal : Buying $REFERENCE_AMOUNT $LISTING_CURRENCY $(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')+$(echo "$REFERENCE_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)% > ${REFERENCE_ALLOCATED:?}%"
             # is this bullish signal allocated correctly? (without decimal)
@@ -935,7 +935,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
           # rsi above bearish
           if [[ "$RSI_BEARISH_CHECK" -gt "30" ]] &>/dev/null; then
             # new listing amount (missing difference)
-            LISTING_AMOUNT="$LISTING_AMOUNT_REVERSED"
+            LISTING_AMOUNT="$LISTING_AMOUNT"
             # new bearish output
             BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')+$(echo "$LISTING_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)% > ${LISTING_ALLOCATED:?}%"
             # is this bearish signal allocated correctly? (without decimal)

@@ -273,18 +273,21 @@ function listing_allocated() {
   LISTING_ALLOCATED_REAL_CHECK="$(echo "$LISTING_ALLOCATED_REAL" | awk '{ printf "%.0f\n", $1 }')"
   # listing allocated real check
   LISTING_ALLOCATED_CONFIG_CHECK="$(echo "$LISTING_ALLOCATED" | awk '{ printf "%.0f\n", $1 }')"
+
+  # listing f o m o - ema
+
   # calculate difference
   LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALLOCATED_CONFIG_CHECK-$LISTING_ALLOCATED_REAL_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
   # difference check
   LISTING_ALL_DIFF_CHECK="$(echo "$LISTING_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)"
   # missing based on difference
-  REFERENCE_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$LISTING_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
   # missing in reference
-  REFERENCE_AMOUNT_REVERSED="$(echo "$REFERENCE_ALL_MISSING/$REFERENCE_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_AMOUNT="$(echo "$REFERENCE_ALL_MISSING/$REFERENCE_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
   # if zero
-  if [[ -z "$REFERENCE_AMOUNT_REVERSED" ]] &>/dev/null; then
-    REFERENCE_AMOUNT_REVERSED="0.000000000"
+  if [[ -z "$REFERENCE_AMOUNT" ]] &>/dev/null; then
+    REFERENCE_AMOUNT="0.000000000"
   fi
 }
 
@@ -300,6 +303,9 @@ function reference_allocated() {
   REFERENCE_ALLOCATED_REAL_CHECK="$(echo "$REFERENCE_ALLOCATED_REAL" | awk '{ printf "%.0f\n", $1 }')"
   # reference allocated real check
   REFERENCE_ALLOCATED_CONFIG_CHECK="$(echo "$REFERENCE_ALLOCATED" | awk '{ printf "%.0f\n", $1 }')"
+
+  # reference f o m o - ema
+
   # calculate difference
   REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALLOCATED_CONFIG_CHECK-$REFERENCE_ALLOCATED_REAL_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
   # difference check
@@ -307,11 +313,11 @@ function reference_allocated() {
   # missing based on difference
   LISTING_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
   # missing in listing
-  LISTING_AMOUNT_REVERSED="$(echo "$LISTING_ALL_MISSING/$LISTING_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  LISTING_AMOUNT="$(echo "$LISTING_ALL_MISSING/$LISTING_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
   # if zero
-  if [[ -z "$LISTING_AMOUNT_REVERSED" ]] &>/dev/null; then
-    LISTING_AMOUNT_REVERSED="0.000000000"
+  if [[ -z "$LISTING_AMOUNT" ]] &>/dev/null; then
+    LISTING_AMOUNT="0.000000000"
   fi
 }
 
