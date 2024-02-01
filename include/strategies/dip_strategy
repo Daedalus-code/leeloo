@@ -2724,24 +2724,22 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
   # no reference, use bitcoin, usdt,usdc as dumping grounds
   if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-    RANDOM_REF_CURRENCY=$((((RANDOM % 6) + 1)))
+    RANDOM_REF_CURRENCY=$((((RANDOM % 4) + 1)))
+    # dump on btc
     if [[ "$RANDOM_REF_CURRENCY" == "1" ]] &>/dev/null; then
       REFERENCE_CURRENCY="BTC"
     fi
+    # dump on usdt
     if [[ "$RANDOM_REF_CURRENCY" == "2" ]] &>/dev/null; then
       REFERENCE_CURRENCY="USDT"
     fi
+    # dump on usdc
     if [[ "$RANDOM_REF_CURRENCY" == "3" ]] &>/dev/null; then
       REFERENCE_CURRENCY="USDC"
     fi
+    # dump on every reference available
     if [[ "$RANDOM_REF_CURRENCY" == "4" ]] &>/dev/null; then
-      REFERENCE_CURRENCY="DOGE"
-    fi
-    if [[ "$RANDOM_REF_CURRENCY" == "5" ]] &>/dev/null; then
-      REFERENCE_CURRENCY="ETH"
-    fi
-    if [[ "$RANDOM_REF_CURRENCY" == "6" ]] &>/dev/null; then
-      REFERENCE_CURRENCY="LTC"
+      REFERENCE_CURRENCY="$(echo "$CAT_PRICES_DIP_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | awk '!a[$0]++' | sort -R | tail -1)"
     fi
   fi
 
