@@ -224,13 +224,23 @@ for (( ; ; )); do
 
   ##############################################################################
 
+  # filter out specific
+  LO_FILTER="$(cat "${SYS_DIR:?}"/lo_filter 2>/dev/null)"
+
+  # if zero
+  if [[ -z "$LO_FILTER" ]] &>/dev/null; then
+    LO_FILTER=": NULL :"
+  fi
+
+  ##############################################################################
+
   # sort all logs by date, remove duplicates, remove empty lines, remove lines with less than n
-  echo "$(sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | uniq | sed '/^$/d' | awk 'NF >= 6')" >"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+  echo "$(sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | grep -v "${LO_FILTER[@]}" | uniq | sed '/^$/d' | awk 'NF >= 6')" >"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
 
   ##############################################################################
 
   # sort all orders by date, remove duplicates, remove empty lines
-  echo "$(sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | uniq | sed '/^$/d')" >"${SYS_DIR:?}"/robot/orders 2>/dev/null
+  echo "$(sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n "${SYS_DIR:?}"/robot/*.orders 2>/dev/null | grep -v "${LO_FILTER[@]}" | uniq | sed '/^$/d')" >"${SYS_DIR:?}"/robot/orders 2>/dev/null
 
   ##############################################################################
 
