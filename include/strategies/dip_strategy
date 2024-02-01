@@ -2721,6 +2721,8 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
   # get reference based on listing
   REFERENCE_CURRENCY="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | tr '_/:' ' ' | awk '{ print $2 }' | grep -v "$DIP_DUMP_LISTING" | head -1)"
+  # prices file output (RAW)
+  CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
 
   # no reference, use bitcoin, usdt,usdc as dumping grounds
   if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
