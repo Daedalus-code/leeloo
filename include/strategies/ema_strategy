@@ -153,10 +153,12 @@ EMA_Strength..........: ${GET_PERCENTAGE:?}%
 EMA_FOMO..............: $EMA_FOMO_DATA
 Price.................: $LISTING_PRICE $LISTING_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL_CHECK:?}%/${LISTING_ALLOCATED:?}%
+Listing_Difference....: $LISTING_ALL_DIFF
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY ($LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY)
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY ($LISTING_AVAILABLE_VALUED $REFERENCE_CURRENCY)
 Listing_Unconfirmed...: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY ($LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY)
 Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL_CHECK:?}%/${REFERENCE_ALLOCATED:?}%
+Reference_Difference..: $REFERENCE_ALL_DIFF
 Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY ($REFERENCE_AMOUNT_VALUED $LISTING_CURRENCY)
 Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY ($REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY)
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY ($REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY)
@@ -753,10 +755,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
           # rsi below bullish
           if [[ "$RSI_BULLISH_CHECK" -lt "70" ]] &>/dev/null; then
 
-            # calculate difference
-            LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALLOCATED_CONFIG_CHECK-$LISTING_ALLOCATED_REAL_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
-            # difference check
-            LISTING_ALL_DIFF_CHECK="$(echo "$LISTING_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)"
             # missing based on difference
             REFERENCE_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
             # missing in reference
@@ -921,10 +919,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
           # rsi above bearish
           if [[ "$RSI_BEARISH_CHECK" -gt "30" ]] &>/dev/null; then
 
-            # calculate difference
-            REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALLOCATED_CONFIG_CHECK-$REFERENCE_ALLOCATED_REAL_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
-            # difference check
-            REFERENCE_ALL_DIFF_CHECK="$(echo "$REFERENCE_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)"
             # missing based on difference
             LISTING_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
             # missing in listing
