@@ -299,6 +299,24 @@ function reference_allocated() {
 
 ################################################################################
 
+function listing_fomo() {
+  # missing based on difference
+  LISTING_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$TOTAL_EMA_VALUE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  # missing in listing
+  LISTING_AMOUNT_FOMO="$(echo "$LISTING_ALL_MISSING/$LISTING_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+}
+
+################################################################################
+
+function reference_fomo() {
+  # missing based on difference
+  REFERENCE_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$TOTAL_EMA_VALUE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+  # missing in reference
+  REFERENCE_AMOUNT_FOMO="$(echo "$REFERENCE_ALL_MISSING/$REFERENCE_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+}
+
+################################################################################
+
 function listing_balance_check {
   # listing balance check (without decimal)
   LISTING_AVAILABLE_BALANCE_NR="$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')"

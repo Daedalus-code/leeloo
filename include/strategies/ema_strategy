@@ -79,6 +79,8 @@ reference_allocated     # total reference allocated
 listing_balance_check   # check for listing balance
 reference_balance_check # check for reference balance
 insufficient_funds      # check for available funds
+listing_fomo            # listing fomo
+reference_fomo          # reference fomo
 
 ################################################################################
 
@@ -153,11 +155,11 @@ EMA_Strength..........: ${GET_PERCENTAGE:?}%
 EMA_FOMO..............: $EMA_FOMO_DATA
 EMA_Total_Value.......: $TOTAL_EMA_VALUE $REFERENCE_CURRENCY
 Price.................: $LISTING_PRICE $LISTING_CURRENCY
-Listing_Allocated.....: ${LISTING_ALLOCATED_REAL_CHECK:?}%/${LISTING_ALLOCATED:?}%/(Diff:${LISTING_ALL_DIFF_CHECK:?}%)
+Listing_Allocated.....: ${LISTING_ALLOCATED_REAL_CHECK:?}%/${LISTING_ALLOCATED:?}%/(Diff:${LISTING_ALL_DIFF_CHECK:?}%=$LISTING_AMOUNT_FOMO)
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY ($LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY)
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY ($LISTING_AVAILABLE_VALUED $REFERENCE_CURRENCY)
 Listing_Unconfirmed...: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY ($LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY)
-Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL_CHECK:?}%/${REFERENCE_ALLOCATED:?}%/(Diff:${REFERENCE_ALL_DIFF_CHECK:?}%)
+Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL_CHECK:?}%/${REFERENCE_ALLOCATED:?}%/(Diff:${REFERENCE_ALL_DIFF_CHECK:?}%=$REFERENCE_AMOUNT_FOMO)
 Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY ($REFERENCE_AMOUNT_VALUED $LISTING_CURRENCY)
 Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY ($REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY)
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY ($REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY)
@@ -754,11 +756,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
           # rsi below bullish
           if [[ "$RSI_BULLISH_CHECK" -lt "70" ]] &>/dev/null; then
 
-            # missing based on difference
-            REFERENCE_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-            # missing in reference
-            REFERENCE_AMOUNT_FOMO="$(echo "$REFERENCE_ALL_MISSING/$REFERENCE_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-
             # new reference amount (missing difference)
             REFERENCE_AMOUNT="$REFERENCE_AMOUNT_FOMO"
 
@@ -917,11 +914,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
 
           # rsi above bearish
           if [[ "$RSI_BEARISH_CHECK" -gt "30" ]] &>/dev/null; then
-
-            # missing based on difference
-            LISTING_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
-            # missing in listing
-            LISTING_AMOUNT_FOMO="$(echo "$LISTING_ALL_MISSING/$LISTING_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
 
             # new listing amount (missing difference)
             LISTING_AMOUNT="$LISTING_AMOUNT_FOMO"
