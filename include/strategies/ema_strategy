@@ -153,12 +153,10 @@ EMA_Strength..........: ${GET_PERCENTAGE:?}%
 EMA_FOMO..............: $EMA_FOMO_DATA
 Price.................: $LISTING_PRICE $LISTING_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL_CHECK:?}%/${LISTING_ALLOCATED:?}%
-Listing_Missing.......: ${REFERENCE_AMOUNT_FOMO:?} $LISTING_CURRENCY
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY ($LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY)
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY ($LISTING_AVAILABLE_VALUED $REFERENCE_CURRENCY)
 Listing_Unconfirmed...: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY ($LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY)
 Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL_CHECK:?}%/${REFERENCE_ALLOCATED:?}%
-Listing_Missing.......: ${LISTING_AMOUNT_FOMO:?} $LISTING_CURRENCY
 Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY ($REFERENCE_AMOUNT_VALUED $LISTING_CURRENCY)
 Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY ($REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY)
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY ($REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY)
@@ -754,10 +752,22 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
 
           # rsi below bullish
           if [[ "$RSI_BULLISH_CHECK" -lt "70" ]] &>/dev/null; then
+
+            # calculate difference
+            LISTING_ALL_DIFF="$(echo "$(echo "$LISTING_ALLOCATED_CONFIG_CHECK-$LISTING_ALLOCATED_REAL_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+            # difference check
+            LISTING_ALL_DIFF_CHECK="$(echo "$LISTING_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)"
+            # missing based on difference
+            REFERENCE_ALL_MISSING="$(echo "$LISTING_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+            # missing in reference
+            REFERENCE_AMOUNT_FOMO="$(echo "$REFERENCE_ALL_MISSING/$REFERENCE_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+
             # new reference amount (missing difference)
             REFERENCE_AMOUNT="$REFERENCE_AMOUNT_FOMO"
+
             # new bullish output
             BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bullish+Signal : Buying $REFERENCE_AMOUNT $LISTING_CURRENCY $(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')+$(echo "$REFERENCE_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)% > ${REFERENCE_ALLOCATED:?}%"
+
             # is this bullish signal allocated correctly? (without decimal)
             if [[ "$LISTING_ALLOCATED_REAL_CHECK" -lt "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
               # trigger a buy for fear of missing out
@@ -910,10 +920,22 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
 
           # rsi above bearish
           if [[ "$RSI_BEARISH_CHECK" -gt "30" ]] &>/dev/null; then
+
+            # calculate difference
+            REFERENCE_ALL_DIFF="$(echo "$(echo "$REFERENCE_ALLOCATED_CONFIG_CHECK-$REFERENCE_ALLOCATED_REAL_CHECK" | bc -l 2>/dev/null)/100" | bc -l 2>/dev/null)"
+            # difference check
+            REFERENCE_ALL_DIFF_CHECK="$(echo "$REFERENCE_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)"
+            # missing based on difference
+            LISTING_ALL_MISSING="$(echo "$REFERENCE_ALL_DIFF*$REFERENCE_AVAILABLE_BALANCE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+            # missing in listing
+            LISTING_AMOUNT_FOMO="$(echo "$LISTING_ALL_MISSING/$LISTING_PRICE" | bc -l | awk '{ printf "%.9f\n", $1 }')"
+
             # new listing amount (missing difference)
             LISTING_AMOUNT="$LISTING_AMOUNT_FOMO"
+
             # new bearish output
             BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')+$(echo "$LISTING_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)% > ${LISTING_ALLOCATED:?}%"
+
             # is this bearish signal allocated correctly? (without decimal)
             if [[ "$REFERENCE_ALLOCATED_REAL_CHECK" -lt "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
               # trigger a sell for fear of missing out
