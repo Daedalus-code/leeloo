@@ -789,10 +789,15 @@ function last_orders {
 
 function robot_Log_cleanup() {
   NEW_LOG="$(echo "$MAX_LOG/3" | bc 2>/dev/null)"
-  # keep n lines
+  # keep n lines (log)
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
     echo "$(tail -"$NEW_LOG" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     echo "$LOG_DATE : LOG : KEK : LogReset : $MAX_LOG lines down to > $NEW_LOG lines." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  fi
+  # keep n lines (ssr)
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
+    echo "$(tail -"$NEW_LOG" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null
+    echo "$LOG_DATE : LOG : KEK : LogReset : $MAX_LOG lines down to > $NEW_LOG lines." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null
   fi
 }
 
