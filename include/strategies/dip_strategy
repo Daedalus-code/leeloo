@@ -375,6 +375,11 @@ function target_data() {
   # efficient market (fast)
   EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above | awk '{ print $1 }')"
 
+  # if zero
+  if [[ -z "$EFFICIENT_MARKET" ]] &>/dev/null; then
+    EFFICIENT_MARKET="0"
+  fi
+
   # generate slow list
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d" | awk '{ print $3 }' | uniq -c | awk '!a[$1,$2]++' | sort -nr | awk '{ print $1,$2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow
 
