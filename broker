@@ -1470,8 +1470,11 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
           WIDTH="77"
         fi
 
+        # sell count (percentage
+        SELL_COUNT_PERCENTAGE="$(echo "100/$BUY_COUNT*$SELL_COUNT" | bc 2>/dev/null)"
+
         display_result() {
-          dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT Profit: High ${PROFIT_HIGH:?}% Low ${PROFIT_LOW:?}% Average ${PROFIT_AVERAGE:?}%" \
+          dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT (${SELL_COUNT_PERCENTAGE:?}%) Profit: High ${PROFIT_HIGH:?}% Low ${PROFIT_LOW:?}% Average ${PROFIT_AVERAGE:?}%" \
             --no-collapse \
             --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
