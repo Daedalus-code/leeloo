@@ -407,16 +407,14 @@ function target_data() {
       EFFICIENT_MARKET="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
       # efficient market output (fast)
       EFFICIENT_MARKET_OUTPUT="$EFFICIENT_MARKET"
-      # calculate market virtual check
-      EFFICIENT_MARKET_CHECK="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
       # if less than n
-      if [[ "$EFFICIENT_MARKET_CHECK" -lt "0" ]] &>/dev/null; then
+      if [[ "$EFFICIENT_MARKET_OUTPUT" -lt "0" ]] &>/dev/null; then
         EFFICIENT_MARKET="1"
       fi
 
       # if market are greater than n
-      if [[ "$EFFICIENT_MARKET_CHECK" -gt "1" ]] &>/dev/null; then
+      if [[ "$EFFICIENT_MARKET_OUTPUT" -gt "1" ]] &>/dev/null; then
 
         # calculate market virtual
         EFFICIENT_MARKET="$(echo "$EFFICIENT_MARKET/100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
