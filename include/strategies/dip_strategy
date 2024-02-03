@@ -2756,9 +2756,11 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     fi
   fi
 
-  # dump output (log)
-  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
-  echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  if [[ "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep -c "Dumping order!" || true)" -eq "0" ]] &>/dev/null; then
+    # dump output (log)
+    DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Dumping order! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
+    echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  fi
 
   ##############################################################################
   ##############################################################################
