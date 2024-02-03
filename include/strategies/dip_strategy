@@ -391,8 +391,6 @@ function target_data() {
     INEFFECTIVE_MARKET="0"
   fi
 
-  # efficient market output (fast)
-  EFFICIENT_MARKET_OUTPUT="$EFFICIENT_MARKET"
   # ineffective market output (slow)
   INEFFECTIVE_MARKET_OUTPUT="$INEFFECTIVE_MARKET"
 
@@ -407,6 +405,8 @@ function target_data() {
 
       # calculate market virtual (RAW)
       EFFICIENT_MARKET="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
+      # efficient market output (fast)
+      EFFICIENT_MARKET_OUTPUT="$EFFICIENT_MARKET"
       # calculate market virtual check
       EFFICIENT_MARKET_CHECK="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
@@ -428,7 +428,7 @@ function target_data() {
         DIP_ALLOCATED="$(echo "$DIP_ALLOCATED+$EFFICIENT_MARKET_LIMIT" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
         # market above output (log)
-        DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_CHECK:?} (${INEFFECTIVE_MARKET_OUTPUT:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+        DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_OUTPUT:?} (${INEFFECTIVE_MARKET_OUTPUT:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
         # select skip remove output (ssr)
         echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
 
