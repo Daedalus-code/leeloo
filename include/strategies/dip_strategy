@@ -2205,8 +2205,6 @@ if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/
       # cleanup output (log)
       DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (Sold) Age: $DIP_BOUGHT_AGE_OUTPUT"
       echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-      # cleanup output (ssr)
-      echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
       # profit output (log)
       DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Profit: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% after $DIP_BOUGHT_AGE_OUTPUT_AFTER"
       echo "$DIP_SOLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -2985,10 +2983,10 @@ fi
 DIP_TODAY_DATE="$(date +'%d/%m')"
 
 # count skipped and selected throughout the day (rsi)
-DIP_SOLD_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "(Sold)" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
+DIP_SOLD_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "(Sold)" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_SELECT_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Select" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_SKIP_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Skip" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
-DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Removing sell" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
+DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "Removing sell" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 
 # total
 DIP_TOTAL_COUNT="$(echo "$DIP_SOLD_COUNT+$DIP_SELECT_COUNT+$DIP_SKIP_COUNT+$DIP_REMOVED_COUNT" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
