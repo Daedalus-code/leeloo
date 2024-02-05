@@ -233,6 +233,17 @@ function cat_active_target() {
   CAT_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
   # cat target data
   CAT_TARGET_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+
+  # if target exist as dca
+  if [[ "$(grep -wc "$(echo "$CAT_TARGET_FILE" | awk -F: '{ print $1 }' | head -1)" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+    # if target is dca
+    CAT_ACTIVE_FILE="$CAT_TARGET_FILE"
+    # if zero
+    if [[ -z "$CAT_ACTIVE_FILE" ]] &>/dev/null; then
+      # default
+      CAT_ACTIVE_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null)"
+    fi
+  fi
 }
 
 # cat active, target data
