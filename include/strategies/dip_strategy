@@ -2981,7 +2981,7 @@ DIP_TODAY_DATE="$(date +'%d/%m')"
 
 # count skipped and selected throughout the day (rsi)
 DIP_SOLD_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "(Sold)" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
-DIP_SOLD_TODAY="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -B1 "(Sold)" | grep "Profit" | awk '{ print $10 }' | awk '{ SUM += $1} END { print SUM }')"
+DIP_SOLD_TODAY="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -A1 "(Sold)" | grep "Profit" | awk '{ print $10 }' | awk '{ SUM += $1} END { print SUM }')"
 DIP_SELECT_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Select" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_SKIP_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Skip" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "Removing sell" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
