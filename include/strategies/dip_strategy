@@ -3016,6 +3016,13 @@ fi
 
 # if extra logs are set
 DIP_SELECT_SKIP_REMOVED="${DIP_SELECT_COUNT_PERC:?}% ($DIP_SELECT_COUNT) ${DIP_SKIP_COUNT_PERC:?}% ($DIP_SKIP_COUNT) ${DIP_REMOVED_COUNT_PERC:?}% ($DIP_REMOVED_COUNT)"
+# completed profit
+DIP_COMPLETED_PROFIT="$(grep -w "$ACTIVE_MARKET_PAIRS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '{ print $1,$2 }' | tr -d ':')"
+
+# if zero
+if [[ -z "$DIP_COMPLETED_PROFIT" ]] &>/dev/null; then
+  DIP_COMPLETED_PROFIT="$ACTIVE_MARKET_PAIRS 0.000000000"
+fi
 
 ################################################################################
 
@@ -3041,6 +3048,7 @@ Low_Spread..........: $DIP_LOW_PROFIT ${DIP_LOW_PROFIT_AMOUNT:?}%
 Top_Dip.............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip.............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
 Average_Profit......: ${DIP_AVERAGE_PROFIT:?}% ($DIP_PROFIT_COUNT)
+Completed_Profit....: $DIP_COMPLETED_PROFIT
 Completed_Today.....: ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT)
 Select/Skip/Removed.: $DIP_SELECT_SKIP_REMOVED
 Last_Profit.........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
