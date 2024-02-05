@@ -275,11 +275,14 @@ function target_data() {
   # cat active, target data
   cat_active_target
 
+  # target found, before the fact (sync)
+  DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_TARGET_FILE" | head -1)"
+
   # use latest target
   if [[ "$TARGET_ACTIVE" == "TARGET" ]] &>/dev/null; then ######################
 
     # target found
-    DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_TARGET_FILE" | head -1)"
+    DIP_TARGET_FILE_OUTPUT="$DIP_TARGET_FILE_OUTPUT"
 
     # use active list
   elif [[ "$TARGET_ACTIVE" == "ACTIVE" ]] &>/dev/null; then ####################
@@ -334,6 +337,14 @@ function target_data() {
       # random active target
       DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
     fi
+  fi
+
+  ##############################################################################
+  ##############################################################################
+
+  # if target exist as dca (sync)
+  if [[ "$(grep -wc "$(echo "$DIP_TARGET_FILE_OUTPUT" | awk -F: '{ print $1 }')" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+    DIP_TARGET_FILE_OUTPUT="$(grep "$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null)"
   fi
 
   ##############################################################################
