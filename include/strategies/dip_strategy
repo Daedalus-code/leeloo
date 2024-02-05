@@ -337,14 +337,11 @@ function target_data() {
       # random active target
       DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
     fi
-  fi
 
-  ##############################################################################
-  ##############################################################################
-
-  # if target exist as dca (sync)
-  if [[ "$(grep -wc "$(echo "$DIP_TARGET_FILE_OUTPUT" | awk -F: '{ print $1 }')" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
-    DIP_TARGET_FILE_OUTPUT="$(grep "$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null)"
+    # if target exist as dca (sync)
+    if [[ "$(grep -wc "$(echo "$DIP_TARGET_FILE_OUTPUT" | awk -F: '{ print $1 }')" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+      DIP_TARGET_FILE_OUTPUT="$(grep "$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }')" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null)"
+    fi
   fi
 
   ##############################################################################
