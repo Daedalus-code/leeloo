@@ -606,7 +606,7 @@ function remove_old_dca() {
           # dip active file age (seconds)
           DIP_ACTIVE_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
           # if active file is old enough
-          if [[ "$DIP_ACTIVE_FILE_AGE" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/null)" ]] &>/dev/null; then
+          if [[ "$DIP_ACTIVE_FILE_AGE" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" ]] &>/dev/null; then
 
             ####################################################################
             ####################################################################
