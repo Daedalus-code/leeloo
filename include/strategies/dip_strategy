@@ -2981,6 +2981,7 @@ DIP_TODAY_DATE="$(date +'%d/%m')"
 
 # count skipped and selected throughout the day (rsi)
 DIP_SOLD_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "(Sold)" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
+DIP_SOLD_TODAY="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep -B1 "(Sold)" | grep "Profit" | awk '{ print $10 }' | awk '{ SUM += $1} END { print SUM }')"
 DIP_SELECT_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Select" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_SKIP_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Skip" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "Removing sell" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
@@ -3021,7 +3022,7 @@ DIP_COMPLETED_PROFIT="$(grep -w "$ACTIVE_MARKET_PAIRS" "${SYS_DIR:?}"/robot/"$BA
 
 # if zero
 if [[ -z "$DIP_COMPLETED_PROFIT" ]] &>/dev/null; then
-  DIP_COMPLETED_PROFIT="$ACTIVE_MARKET_PAIRS 0.000000000"
+  DIP_COMPLETED_PROFIT="0.000000000"
 fi
 
 ################################################################################
@@ -3049,8 +3050,8 @@ Low_Spread..........: $DIP_LOW_PROFIT ${DIP_LOW_PROFIT_AMOUNT:?}%
 Top_Dip.............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip.............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
 Average_Profit......: ${DIP_AVERAGE_PROFIT:?}%
-Completed_Today.....: ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT)
-Completed_Profit....: $DIP_COMPLETED_PROFIT ($DIP_PROFIT_COUNT)
+Completed_Today.....: $DIP_SOLD_TODAY $ACTIVE_MARKET_PAIRS ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT)
+Completed_Profit....: $DIP_COMPLETED_PROFIT $ACTIVE_MARKET_PAIRS ($DIP_PROFIT_COUNT)
 Select/Skip/Removed.: $DIP_SELECT_SKIP_REMOVED
 Last_Profit.........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
 Highest_Profit......: $DIP_HIGHEST_PROFIT
