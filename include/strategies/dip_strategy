@@ -2523,7 +2523,7 @@ DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
   if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
     # if specific market exist in orders file (sell)
-    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "sell" || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "sell" || true)" -gt "0" ]] &>/dev/null; then
       # old order id (sell)
       DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':' | head -1)"
       # order id found
