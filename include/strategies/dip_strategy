@@ -307,8 +307,16 @@ if [[ ! "$DIP_ORDER_STATUS_ID" == "$DIP_ORDER_NEWEST" ]] &>/dev/null; then
       if [[ "$DIP_ORDER_STATUS_ACTIVE" -eq "0" ]] &>/dev/null; then
         # cancel ghost order
         cancelOrder "$DIP_ORDER_STATUS_ID" 2>>"${LOG_ERROR:?}"
+
+        # order n greater than n
+        if [[ "$(echo "$DIP_ORDER_ID" | wc -L)" -gt "9" ]] &>/dev/null; then
+          DIP_ORDER_ID_DOTS=".."
+        else
+          DIP_ORDER_ID_DOTS=""
+        fi
+
         # removing buy order output (log)
-        DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_GHOST_LISTING/$DIP_MARKETS :: Removing ghost order: $DIP_ORDER_STATUS_ID ($DIP_ORDER_STATUS/$DIP_ORDER_STATUS_ACTIVE)"
+        DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_GHOST_LISTING/$DIP_MARKETS :: Removing ghost order: ${DIP_ORDER_STATUS_ID:0:9}$DIP_ORDER_ID_DOTS ($DIP_ORDER_STATUS/$DIP_ORDER_STATUS_ACTIVE) (${DIP_BOUGHT_GHOST_AGE_DAYS:?}d/${DIP_SOLD_GHOST_AGE_DAYS:?}d)"
         echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
     fi
