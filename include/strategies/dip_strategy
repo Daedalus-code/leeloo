@@ -274,6 +274,47 @@ if [[ "$GHOST_MARKET" -gt "0" ]] &>/dev/null; then
   fi
 fi
 
+# remove ghost orders ##########################################################
+
+# order status
+DIP_ORDER_STATUS="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | wc -l)"
+# order status id
+DIP_ORDER_STATUS_ID="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | awk '{ print $1 }' | tr -d ':' | head -1)"
+# order ghost listing
+DIP_GHOST_LISTING="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | awk '{ print $6 }' | head -1)"
+# order status as active (check)
+DIP_ORDER_STATUS_ACTIVE="$(grep "$DIP_GHOST_LISTING/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | wc -l)"
+# newest order
+DIP_ORDER_NEWEST="$(sort -n -k 1 "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | head -1 | awk '{ print $1 }' | tr -d ':')"
+
+# if order is not the newest one
+if [[ ! "$DIP_ORDER_STATUS_ID" == "$DIP_ORDER_NEWEST" ]] &>/dev/null; then
+
+  # bought file age (seconds)
+  DIP_BOUGHT_GHOST_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_GHOST_LISTING:?}"_"${DIP_MARKETS:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # bought file age (days)
+  DIP_BOUGHT_GHOST_AGE_DAYS="$(echo "$DIP_BOUGHT_GHOST_AGE_SECONDS/86400" | bc 2>/dev/null)"
+  # sold file age (seconds)
+  DIP_SOLD_GHOST_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_GHOST_LISTING:?}"_"${DIP_MARKETS:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # sold file age (days)
+  DIP_SOLD_GHOST_AGE_DAYS="$(echo "$DIP_SOLD_GHOST_AGE_SECONDS/86400" | bc 2>/dev/null)"
+
+  # if bought and sold is old enough (ruled by configuration)
+  if [[ "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$DIP_MAX_BUY_AGE" && "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
+    # if order status is greater than n
+    if [[ "$DIP_ORDER_STATUS" -gt "0" ]] &>/dev/null; then
+      # if order status as active equal null
+      if [[ "$DIP_ORDER_STATUS_ACTIVE" -eq "0" ]] &>/dev/null; then
+        # cancel ghost order
+        cancelOrder "$DIP_ORDER_STATUS_ID" 2>>"${LOG_ERROR:?}"
+        # removing buy order output (log)
+        DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_GHOST_LISTING/$DIP_MARKETS :: Removing ghost order: $DIP_ORDER_STATUS_ID ($DIP_ORDER_STATUS/$DIP_ORDER_STATUS_ACTIVE)"
+        echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      fi
+    fi
+  fi
+fi
+
 ################################################################################
 ################################################################################
 # specific target & specific active variables
