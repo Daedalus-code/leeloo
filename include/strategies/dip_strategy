@@ -282,10 +282,14 @@ DIP_ORDER_STATUS="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_
 DIP_ORDER_STATUS_ID="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | awk '{ print $1 }' | tr -d ':' | head -1)"
 # order ghost listing
 DIP_GHOST_LISTING="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | awk '{ print $6 }' | head -1)"
-# order status as active (check)
-DIP_ORDER_STATUS_ACTIVE="$(grep "$DIP_GHOST_LISTING/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | wc -l)"
-# newest order
-DIP_ORDER_NEWEST="$(sort -n -k 1 "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | head -1 | awk '{ print $1 }' | tr -d ':')"
+
+# if data
+if [[ -n "$DIP_GHOST_LISTING" ]] &>/dev/null; then
+  # order status as active (check)
+  DIP_ORDER_STATUS_ACTIVE="$(grep "$DIP_GHOST_LISTING/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | wc -l)"
+  # newest order
+  DIP_ORDER_NEWEST="$(sort -n -k 1 "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | head -1 | awk '{ print $1 }' | tr -d ':')"
+fi
 
 # if order is not the newest one
 if [[ ! "$DIP_ORDER_STATUS_ID" == "$DIP_ORDER_NEWEST" ]] &>/dev/null; then
