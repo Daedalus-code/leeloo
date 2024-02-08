@@ -1248,8 +1248,23 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
               log_date
 
+              # order count (buy)
+              DIP_ORDER_BUY="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
+              # order count (sell)
+              DIP_ORDER_SELL="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':' | head -1)"
+
+              # if zero
+              if [[ -z "$DIP_ORDER_BUY" ]] &>/dev/null; then
+                DIP_ORDER_BUY="0"
+              fi
+
+              # if zero
+              if [[ -z "$DIP_ORDER_SELL" ]] &>/dev/null; then
+                DIP_ORDER_SELL="0"
+              fi
+
               # log dca balance output
-              DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: $LISTING_CURRENCY Has balance! $LISTING_BALANCE $LISTING_CURRENCY"
+              DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: $LISTING_CURRENCY Has balance! $LISTING_BALANCE $LISTING_CURRENCY (${DIP_ORDER_BUY:?}b/${DIP_ORDER_SELL:?}s)"
               echo "$DIP_TARGET_DCA_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
               # log dca data output
