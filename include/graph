@@ -107,6 +107,10 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
     GRAPH_DB_ORDERS_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_orders.rrd"
     GRAPH_PNG_ORDERS_PATH="/var/www/html/${EXCHANGE_DIR_NAME:?}_orders.png"
 
+    # path coins tokens png
+    GRAPH_DB_HODL_PATH="${SYS_DIR:?}/robot/${EXCHANGE_DIR_NAME:?}_coins_tokens.rrd"
+    GRAPH_PNG_HODL_PATH="/var/www/html/${EXCHANGE_DIR_NAME:?}_coins_tokens.png"
+
     # if zero
     if [[ -z "$GRAPH_DATA" ]] &>/dev/null; then
       GRAPH_DATA="525600" # 1 year with 1-minute interval
@@ -128,6 +132,22 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
 
     # update order databases
     rrdtool update "$GRAPH_DB_ORDERS_PATH" N:"$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null || true)":"$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null || true)" 2>/dev/null
+
+    ############################################################################
+    # graph exchange coins / tokens hodl
+    ############################################################################
+
+    # create graph based on exchange coins / tokens hodl
+    if [ ! -f "${GRAPH_DB_HODL_PATH}" ]; then
+      printf '%b' '%s Status() rrdtoolStats() Creating "'"${EXCHANGE_DIR_NAME:?}_coins_tokens"'".rrd! <>\n' "$(date "+%Y-%m-%d %H:%M:%S")" "Coins / Tokens" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
+      rrdtool create "${GRAPH_DB_HODL_PATH}" \
+        --step=60 \
+        DS:coins_tokens:GAUGE:300:U:U \
+        RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
+    fi
+
+    # update hodl databases
+    rrdtool update "$GRAPH_DB_HODL_PATH" N:"$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" 2>/dev/null
 
     ############################################################################
     # graph reference accounts with balance
@@ -232,6 +252,25 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
 
   ##############################################################################
 
+  rrdtool graph "${GRAPH_PNG_HODL_PATH}" \
+    -w 400 -h "$HEIGHT" -a PNG \
+    --slope-mode \
+    --vertical-label "${EXCHANGE_NAME} Coins / Tokens" \
+    --color BACK#565875 \
+    --color FONT#FFFFFF \
+    --color CANVAS#42445F \
+    --color GRID#565875 \
+    --color FRAME#565875 \
+    --color SHADEA#565875 \
+    --color SHADEB#565875 \
+    --font DEFAULT:8:en_US.UTF-8 \
+    --end now --start end-"${GRAPH_TIME:?}" \
+    DEF:coins_tokens="${GRAPH_DB_HODL_PATH}":coins_tokens:MAX \
+    LINE1:coins_tokens#F7931A:" $EXCHANGE_NAME Coins / Tokens " \
+    GPRINT:buy:LAST:"%.0lf\n"
+
+  ##############################################################################
+
   # start generating exchange_dir_name.php
   cat >/var/www/html/"$EXCHANGE_DIR_NAME".php <<EOF
 <div id="content" align="center">
@@ -245,6 +284,10 @@ EOF
   # generate exchange orders at the beginning
   GRAPH_PNG_ORDERS_PATH="${EXCHANGE_DIR_NAME:?}_orders.png"
   echo "  echo '<img src=\"${GRAPH_PNG_ORDERS_PATH:?}\" alt=\"${EXCHANGE_DIR_NAME} Orders\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
+
+  # generate exchange coins / tokens at the beginning
+  GRAPH_PNG_HODL_PATH="${EXCHANGE_DIR_NAME:?}_coins_tokens.png"
+  echo "  echo '<img src=\"${GRAPH_PNG_HODL_PATH:?}\" alt=\"${EXCHANGE_DIR_NAME} Coins Tokens\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
 
   # generate rest of reference balances
   for GRAPH_REFERENCE_CURRENCY in $GRAPH_REFERENCE_LIST; do
