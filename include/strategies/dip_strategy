@@ -1478,6 +1478,27 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # buying block
     ############################################################################
 
+    # cat target data
+    CAT_TARGET_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null)"
+
+    # if zero
+    if [[ -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+      # target symbol
+      DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
+      # listing (target from above)
+      LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $1 }')"
+    fi
+
+    # if zero
+    if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      # target symbol
+      DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
+      # reference (market from above)
+      REFERENCE_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $2 }')"
+    fi
+
+    ############################################################################
+
     # if any orders with reference, listing currency does not exist
     if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
       # if positive profit
