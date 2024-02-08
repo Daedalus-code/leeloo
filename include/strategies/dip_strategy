@@ -1249,9 +1249,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
               log_date
 
               # order count (buy)
-              DIP_ORDER_BUY="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
+              DIP_ORDER_BUY="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep -c "buy" || true)"
               # order count (sell)
-              DIP_ORDER_SELL="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':' | head -1)"
+              DIP_ORDER_SELL="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep -c "sell" || true)"
 
               # if zero
               if [[ -z "$DIP_ORDER_BUY" ]] &>/dev/null; then
