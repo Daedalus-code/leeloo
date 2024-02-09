@@ -2016,30 +2016,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
-  # if still trading
-  if [[ "$DIP_BS_STATUS" == "Trading" ]] &>/dev/null; then
-    # check age of bought file
-    DIP_BS_STATUS_BOUGHT_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-    # check age of sold file
-    DIP_BS_STATUS_SOLD_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-    # if bought and sold are too old (using max buy age limit on both)
-    if [[ "$DIP_BS_STATUS_BOUGHT_AGE" -gt "$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)" && "$DIP_BS_STATUS_SOLD_AGE" -gt "$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)" ]] &>/dev/null; then
-      # reset sold file
-      truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
-      # if not zero
-      if [[ ! -z "$REFERENCE_CURRENCY" && ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
-          # remove active order
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-        fi
-      fi
-      DIP_BS_STATUS="Reset!"
-    fi
-  fi
-
-  ##############################################################################
-
   # if zero
   if [[ -z "$DIP_BS_STATUS" ]] &>/dev/null; then
     DIP_BS_STATUS="null"
