@@ -1276,8 +1276,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
               # cancel order
               cancelOrder "$DIP_DCA_ORDER_ID" 2>>"${LOG_ERROR:?}"
 
-              # reset sold file
-              truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
+              # if any valued data
+              if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+                # reset sold file
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
+              fi
 
               # remove old dca order
               remove_old_dca
