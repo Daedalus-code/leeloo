@@ -2313,12 +2313,15 @@ if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
         # reset sold file
         truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
-        # reset market.list
-        echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
       fi
     fi
   fi
 fi
+
+################################################################################
+
+# remove old active
+echo "$(awk -F'[:[:space:]]+' 'NR==FNR { active[$1]; next } $1 in active' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
 
 ################################################################################
 # annual revenue
