@@ -304,7 +304,7 @@ if [[ ! "$DIP_ORDER_STATUS_ID" == "$DIP_ORDER_NEWEST" ]] &>/dev/null; then
   DIP_SOLD_GHOST_AGE_DAYS="$(echo "$DIP_SOLD_GHOST_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
   # if bought and sold is old enough (ruled by configuration)
-  if [[ "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$DIP_MAX_BUY_AGE" && "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
+  if [[ "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_BUY_AGE*2" | bc 2>/dev/null)" && "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_SELL_AGE*2" | bc 2>/dev/null)" ]] &>/dev/null; then
     # if order status is greater than n
     if [[ "$DIP_ORDER_STATUS" -gt "0" ]] &>/dev/null; then
       # if order status as active equal null
