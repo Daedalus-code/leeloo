@@ -89,17 +89,27 @@ delisted   # delisted markets
 
 function time_and_profit() {
   # if listing, reference data exist
-  if [[ "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    # market spread
     EXTRA_TIME_WITH_SPREAD="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')"
     # if data
     if [[ -n "$EXTRA_TIME_WITH_SPREAD" ]] &>/dev/null; then
       EXTRA_SPREAD_EXTRA_TIME="$(echo "$EXTRA_TIME_WITH_SPREAD+$DIP_MAX_BUY_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-      EXTRA_PERCENTAGE="$(echo "100/$DIP_MAX_BUY_AGE*$EXTRA_SPREAD_EXTRA_TIME" | bc -l 2>/dev/null)"
-      DIP_MAX_BUY_AGE_EXTRA="$(echo "0.$EXTRA_PERCENTAGE*$DIP_MAX_BUY_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-      DIP_MAX_SELL_AGE_EXTRA="$(echo "0.$EXTRA_PERCENTAGE*$DIP_MAX_SELL_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-      DIP_MAX_BUY_AGE="$(echo "$DIP_MAX_BUY_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-      DIP_MAX_SELL_AGE="$(echo "$DIP_MAX_SELL_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+      EXTRA_BUY_PERCENTAGE="$(echo "100/$EXTRA_SPREAD_EXTRA_TIME*$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null)"
+      EXTRA_SELL_PERCENTAGE="$(echo "100/$EXTRA_SPREAD_EXTRA_TIME*$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null)"
+      DIP_MAX_BUY_AGE_EXTRA="$(echo "0.$EXTRA_BUY_PERCENTAGE*$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null)"
+      DIP_MAX_SELL_AGE_EXTRA="$(echo "0.$EXTRA_SELL_PERCENTAGE*$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null)"
+      DIP_MAX_BUY_AGE="$(echo "$DIP_MAX_BUY_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+      DIP_MAX_SELL_AGE="$(echo "$DIP_MAX_SELL_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
     fi
+  fi
+
+  # if zero
+  if [[ -z "$DIP_MAX_BUY_AGE" || -z "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
+    # max buy order age (days)
+    DIP_MAX_BUY_AGE="$(egrep "DIP_MAX_BUY_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+    # max sell order age (days)
+    DIP_MAX_SELL_AGE="$(egrep "DIP_MAX_SELL_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
   fi
 }
 
