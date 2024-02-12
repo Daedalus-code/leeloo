@@ -12,4 +12,16 @@ function tickers {
   fi
 }
 
+# tickers ######################################################################
+# https://api.xeggex.com/api/v2/market/getlist
+# Example: market_list
+
+function market_list {
+  if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
+    timeout "${API_TIMEOUT:?}" torify curl -s -X GET "https://api.xeggex.com/api/v2/market/getlist" -H "accept: application/json" | jq -r
+  else
+    timeout "${API_TIMEOUT:?}" curl -s -X GET "https://api.xeggex.com/api/v2/market/getlist" -H "accept: application/json" | jq -r
+  fi
+}
+
 # END

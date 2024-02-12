@@ -157,10 +157,28 @@ function amount_to_buy_sell() {
   # calculate dip allocated (configuration)
   REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
 
+  ##############################################################################
+  ##############################################################################
+
+  # dip market list age (seconds)
+  DIP_MARKET_LIST_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if greater than n, if not found
+  if [[ "$DIP_MARKET_LIST_AGE" -gt "300" || ! -f "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
+    # quantity decimals
+    market_list >"${LOG_DIR:?}"/leeloo/market.list
+  fi
+
+  # decimal limit
+  DIP_DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | grep -wA45 "$LISTING_CURRENCY" | grep -wA45 "$REFERENCE_CURRENCY" | grep "quantityDecimals" | awk -F: '{ print $2 }' | tr -d ' ,')"
+
+  ##############################################################################
+  ##############################################################################
+
   # reference balance (available)
   REFERENCE_BALANCE="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
   # listing balance (available)
-  LISTING_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
+  LISTING_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | head -1)"
 
   # reference balance (deposited)
   REFERENCE_BALANCE_DEPOSITED="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
