@@ -1143,9 +1143,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   ##############################################################################
 
-  HEIGHT=18
+  HEIGHT=19
   WIDTH=45
-  CHOICE_HEIGHT=11
+  CHOICE_HEIGHT=12
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Robot Strategy Menu"
   MENU="Multipass $DATE_XARGS
@@ -1157,6 +1157,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     3 "Config           Configurations"
     4 "Setup            Setup strategy"
     C "Control          Robot controller"
+    S "Search           Search logs"
     L "Bots             robot.log"
     P "Logs             Specific log"
     R "Reset            Buy limits ($INSUFFICIENT_FUNDS_COUNT)"
@@ -1883,6 +1884,24 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     else
       no_key_no_secret
     fi
+
+    ;;
+
+  "S")
+
+    # search robot logs
+    coin_token_search
+
+    LOG_SEARCH="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/robot.log)"
+    LOG_SEARCH_COUNT="$(echo "$LOG_SEARCH" | wc -l)"
+
+    display_result() {
+      dialog --title "Search Log: $COIN_TOKEN :: robot.log ($LOG_SEARCH_COUNT):" \
+        --no-collapse \
+        --msgbox "$RESULT" 0 0
+    }
+    RESULT="${LOG_SEARCH:?}"
+    display_result 2>/dev/null
 
     ;;
 
