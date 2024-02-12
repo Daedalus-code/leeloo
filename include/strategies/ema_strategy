@@ -191,7 +191,6 @@ ROGUE_AMOUNT="0.009225" # n % to be used (default: 0.009225)
 ROGUE_TIMER="3600"      # n seconds (default: 3600 seconds/1 hour cooldown)
 ROGUE_HOURS="6"         # n hours of data (default: 6 hours)
 ROGUE_MAX_DAY="3"       # n trades a day (default: 3)
-ROGUE_RSI="14"          # relative strength index (default: 14)
 
 # n% reference, listing amount
 REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | head -1)"
@@ -208,9 +207,9 @@ fi
 
 # get_rsi n
 function rogue_data() {
-  echo "L $LISTING_CURRENCY $(get_rsi "$ROGUE_RSI" "$LISTING_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+  echo "L $LISTING_CURRENCY $(get_rsi_xgx "$LISTING_CURRENCY" "USDT")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
   sleep 1
-  echo "R $REFERENCE_CURRENCY $(get_rsi "$ROGUE_RSI" "$REFERENCE_CURRENCY")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+  echo "R $REFERENCE_CURRENCY $(get_rsi_xgx "$REFERENCE_CURRENCY" "USDT")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
 }
 
 ################################################################################
@@ -577,7 +576,7 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
 
   echo "Update    $ROGUE_TIMER_NOW/${ROGUE_TIMER:?}s ${ROGUE_UPDATE_PERCENTAGE:?}% (${ROGUE_SYNCED_PERCENTAGE:?}%)
 Lines     $ROGUE_LINES/${ROGUE_COUNT:?}h/${ROGUE_DAYS:?}d
-RSI       $ROGUE_RSI
+RSI       14
 
 L_PRICE   $ROGUE_LISTING_PRICE Diff: ${ROGUE_LISTING_PRICE_DIFF:?}%
 L_NOW     $ROGUE_LISTING_NOW
@@ -751,7 +750,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
           # rsi bullish check
-          RSI_BULLISH_CHECK="$(get_rsi 14 "$LISTING_CURRENCY" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+          RSI_BULLISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
 
           # rsi below bullish
           if [[ "$RSI_BULLISH_CHECK" -lt "70" ]] &>/dev/null; then
@@ -910,7 +909,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
           # rsi bearish check
-          RSI_BEARISH_CHECK="$(get_rsi 14 "$LISTING_CURRENCY" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+          RSI_BEARISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
 
           # rsi above bearish
           if [[ "$RSI_BEARISH_CHECK" -gt "30" ]] &>/dev/null; then
