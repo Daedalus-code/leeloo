@@ -3164,6 +3164,8 @@ fi
 DIP_SELECT_SKIP_REMOVED_GHOST="${DIP_SELECT_COUNT_PERC:?}% ($DIP_SELECT_COUNT) ${DIP_SKIP_COUNT_PERC:?}% ($DIP_SKIP_COUNT) ${DIP_REMOVED_COUNT_PERC:?}% ($DIP_REMOVED_COUNT) ${DIP_GHOST_COUNT_PERC:?}% ($DIP_GHOST_COUNT) Ghost(s)"
 # completed profit
 DIP_COMPLETED_PROFIT="$(grep -w "$ACTIVE_MARKET_PAIRS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '{ print $2 }' | tr -d ':')"
+# completed profit percentage
+DIP_COMPLETED_PROFIT_PERCENTAGE="$(echo "$DIP_COMPLETED_PROFIT" | awk '{ print $NF }')"
 
 # if zero
 if [[ -z "$DIP_COMPLETED_PROFIT" ]] &>/dev/null; then
@@ -3201,7 +3203,7 @@ Top_Dip.............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip.............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
 Average_Profit......: ${DIP_AVERAGE_PROFIT:?}%
 Completed_Today.....: $DIP_SOLD_TODAY $ACTIVE_MARKET_PAIRS ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT)
-Completed_Profit....: $DIP_COMPLETED_PROFIT $ACTIVE_MARKET_PAIRS ($DIP_PROFIT_COUNT)
+Completed_Profit....: $DIP_COMPLETED_PROFIT $ACTIVE_MARKET_PAIRS ($DIP_PROFIT_COUNT) ${DIP_COMPLETED_PROFIT_PERCENTAGE:?}%
 Select/Skip/Removed.: $DIP_SELECT_SKIP_REMOVED_GHOST
 Last_Profit.........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
 Highest_Profit......: $DIP_HIGHEST_PROFIT
