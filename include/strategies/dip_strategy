@@ -170,7 +170,7 @@ function amount_to_buy_sell() {
   fi
 
   # decimal limit
-  DIP_DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | grep -wA45 "$LISTING_CURRENCY" | grep -wA45 "$REFERENCE_CURRENCY" | grep "quantityDecimals" | awk '{ print $NF }' | tr -d ' ,' | tail -1)"
+  DIP_DECIMAL_LIMIT="$(awk -v listing="$LISTING_CURRENCY" -v reference="$REFERENCE_CURRENCY" '$0~listing && $0~reference{flag=1} flag && /quantityDecimals/{print $NF; exit}' "${LOG_DIR:?}"/leeloo/market.list | tr -d ',')"
 
   ##############################################################################
   ##############################################################################
