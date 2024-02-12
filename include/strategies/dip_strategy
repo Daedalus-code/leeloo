@@ -87,15 +87,17 @@ delisted   # delisted markets
 
 ################################################################################
 
-# if listing, reference data exist
-if [[ "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-  EXTRA_SPREAD_EXTRA_TIME="$(echo "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')+$DIP_MAX_BUY_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-  EXTRA_PERCENTAGE="$(echo "100/$DIP_MAX_BUY_AGE*$EXTRA_SPREAD_EXTRA_TIME" | bc -l 2>/dev/null)"
-  DIP_MAX_BUY_AGE_EXTRA="$(echo "0.$EXTRA_PERCENTAGE*$DIP_MAX_BUY_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-  DIP_MAX_SELL_AGE_EXTRA="$(echo "0.$EXTRA_PERCENTAGE*$DIP_MAX_SELL_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-  DIP_MAX_BUY_AGE="$(echo "$DIP_MAX_BUY_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-  DIP_MAX_SELL_AGE="$(echo "$DIP_MAX_SELL_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-fi
+function time_and_profit() {
+  # if listing, reference data exist
+  if [[ "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    EXTRA_SPREAD_EXTRA_TIME="$(echo "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')+$DIP_MAX_BUY_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+    EXTRA_PERCENTAGE="$(echo "100/$DIP_MAX_BUY_AGE*$EXTRA_SPREAD_EXTRA_TIME" | bc -l 2>/dev/null)"
+    DIP_MAX_BUY_AGE_EXTRA="$(echo "0.$EXTRA_PERCENTAGE*$DIP_MAX_BUY_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+    DIP_MAX_SELL_AGE_EXTRA="$(echo "0.$EXTRA_PERCENTAGE*$DIP_MAX_SELL_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+    DIP_MAX_BUY_AGE="$(echo "$DIP_MAX_BUY_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+    DIP_MAX_SELL_AGE="$(echo "$DIP_MAX_SELL_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+  fi
+}
 
 ################################################################################
 
@@ -338,6 +340,8 @@ if [[ ! "$DIP_ORDER_STATUS_ID" == "$DIP_ORDER_NEWEST" ]] &>/dev/null; then
   DIP_SOLD_GHOST_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_GHOST_LISTING:?}"_"${DIP_MARKETS:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # sold file age (days)
   DIP_SOLD_GHOST_AGE_DAYS="$(echo "$DIP_SOLD_GHOST_AGE_SECONDS/86400" | bc 2>/dev/null)"
+
+  time_and_profit
 
   # if bought and sold is too old (ruled by configuration * 2)
   if [[ "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_BUY_AGE*2" | bc 2>/dev/null)" && "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_SELL_AGE*2" | bc 2>/dev/null)" ]] &>/dev/null; then
@@ -2501,6 +2505,8 @@ echo "$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool)" >"${SYS_DIR:?}"/robot/
 # removing old positions (single buy orders)
 ################################################################################
 
+time_and_profit
+
 # if zero
 if [[ -z "$DIP_MAX_BUY_AGE" ]] &>/dev/null; then
   # use default n days
@@ -2547,6 +2553,8 @@ fi
 ################################################################################
 # dumping old positions (single sell orders)
 ################################################################################
+
+time_and_profit
 
 # if zero
 if [[ -z "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
@@ -2640,6 +2648,8 @@ fi
 ################################################################################
 # removing old positions (single sell orders)
 ################################################################################
+
+time_and_profit
 
 # if zero
 if [[ -z "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
