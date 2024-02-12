@@ -424,29 +424,29 @@ case $CHOICE in
     # robot log status
     ROBOT_LOG_STATUS="$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | column -t | awk -F. '{ print $2,$NF }')"
 
-    # print the current log status for debugging
-    echo "Current log status:"
-    echo "$ROBOT_LOG_STATUS"
+    # num
+    NUMBERS="$(echo "$ROBOT_LOG_STATUS" | awk '{ print $NF }' | sort -n)"
 
-    # calculate total number of logs
-    TOTAL_LOGS=$(echo "$ROBOT_LOG_STATUS" | wc -l)
+    # loop through each number
+    NO_LOGS_BELOW=true
+    for NUM in $NUMBERS; do
+      # check if the number is below n
+      if [ "$NUM" -lt "$BOT_TIMER" ]; then
+        NO_LOGS_BELOW=false
+        WAITING_ON_BOT="$NUM"
+        break # no need to check further, we found a log below n seconds
+      fi
+    done
 
-    # number of logs below the threshold
-    NUM_BELOW_THRESHOLD=$(echo "$ROBOT_LOG_STATUS" | awk -v bt="$BOT_TIMER" '$NF < bt' | wc -l)
-
-    # calculate percentage of logs below the threshold
-    PERCENTAGE=$((NUM_BELOW_THRESHOLD * 100 / TOTAL_LOGS))
-
-    # if the percentage is 100% or more, break out of the loop
-    if [ "$PERCENTAGE" -ge 100 ]; then
+    # if no logs are below n seconds, break the loop
+    if $NO_LOGS_BELOW; then
       break
     fi
 
-    # show the dialog percentage bar
-    dialog --title "Waiting for Logs" --gauge "Bots are doing something... Please wait!" 7 60 "$PERCENTAGE"
-
     # wait for a specified interval before checking again
+    echo "Bots are doing something.. ($NUM/$BOT_TIMER) Please wait!"
     sleep 1
+    clear
   done
 
   ##############################################################################
