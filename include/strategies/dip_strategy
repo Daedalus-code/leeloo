@@ -87,6 +87,18 @@ delisted   # delisted markets
 
 ################################################################################
 
+# if listing, reference data exist
+if [[ "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  EXTRA_SPREAD_EXTRA_TIME="$(echo "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')+$DIP_MAX_BUY_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+  EXTRA_PERCENTAGE="$(echo "100/$DIP_MAX_BUY_AGE*$EXTRA_SPREAD_EXTRA_TIME" | bc -l 2>/dev/null)"
+  DIP_MAX_BUY_AGE_EXTRA="$(echo "0.$EXTRA_PERCENTAGE*$DIP_MAX_BUY_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+  DIP_MAX_SELL_AGE_EXTRA="$(echo "0.$EXTRA_PERCENTAGE*$DIP_MAX_SELL_AGE" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+  DIP_MAX_BUY_AGE="$(echo "$DIP_MAX_BUY_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+  DIP_MAX_SELL_AGE="$(echo "$DIP_MAX_SELL_AGE+$DIP_MAX_BUY_AGE_EXTRA" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+fi
+
+################################################################################
+
 # latest and oldest dip order data
 function dip_order_data {
 
@@ -327,7 +339,7 @@ if [[ ! "$DIP_ORDER_STATUS_ID" == "$DIP_ORDER_NEWEST" ]] &>/dev/null; then
   # sold file age (days)
   DIP_SOLD_GHOST_AGE_DAYS="$(echo "$DIP_SOLD_GHOST_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
-  # if bought and sold is old enough (ruled by configuration)
+  # if bought and sold is too old (ruled by configuration * 2)
   if [[ "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_BUY_AGE*2" | bc 2>/dev/null)" && "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_SELL_AGE*2" | bc 2>/dev/null)" ]] &>/dev/null; then
     # if order status is greater than n
     if [[ "$DIP_ORDER_STATUS" -gt "0" ]] &>/dev/null; then
