@@ -143,8 +143,24 @@ function dip_order_data {
 
 ################################################################################
 
+function decimal_market() {
+  # dip market list age (seconds)
+  DIP_MARKET_LIST_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # if greater than n, if not found
+  if [[ "$DIP_MARKET_LIST_AGE" -gt "300" || ! -f "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
+    # quantity decimals
+    market_list >"${LOG_DIR:?}"/leeloo/market.list
+  fi
+  # decimal limit
+  DIP_DECIMAL_LIMIT="$(awk -v listing="$LISTING_CURRENCY" -v reference="$REFERENCE_CURRENCY" '$0~listing && $0~reference{flag=1} flag && /quantityDecimals/{print $NF; exit}' "${LOG_DIR:?}"/leeloo/market.list | tr -d ',')"
+}
+
+################################################################################
+
 # amount to buy sell
 function amount_to_buy_sell() {
+
+  decimal_market
 
   # account allocated (n%)
   REFERENCE_ALLOCATED="$DIP_ALLOCATED"
@@ -157,33 +173,15 @@ function amount_to_buy_sell() {
   # calculate dip allocated (configuration)
   REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
 
-  ##############################################################################
-  ##############################################################################
-
-  # dip market list age (seconds)
-  DIP_MARKET_LIST_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-  # if greater than n, if not found
-  if [[ "$DIP_MARKET_LIST_AGE" -gt "300" || ! -f "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
-    # quantity decimals
-    market_list >"${LOG_DIR:?}"/leeloo/market.list
-  fi
-
-  # decimal limit
-  DIP_DECIMAL_LIMIT="$(awk -v listing="$LISTING_CURRENCY" -v reference="$REFERENCE_CURRENCY" '$0~listing && $0~reference{flag=1} flag && /quantityDecimals/{print $NF; exit}' "${LOG_DIR:?}"/leeloo/market.list | tr -d ',')"
-
-  ##############################################################################
-  ##############################################################################
-
   # reference balance (available)
   REFERENCE_BALANCE="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
   # listing balance (available)
-  LISTING_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | head -1)"
+  LISTING_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
 
   # reference balance (deposited)
   REFERENCE_BALANCE_DEPOSITED="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
   # listing balance (deposited)
-  LISTING_BALANCE_DEPOSITED="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | head -1)"
+  LISTING_BALANCE_DEPOSITED="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
 
   # if zero
   if [[ -z "$REFERENCE_BALANCE" ]] &>/dev/null; then
@@ -1232,7 +1230,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # if old order
         if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
           # track old amount (listing)
-          DIP_BUY_AMOUNT_LISTING="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
+          DIP_BUY_AMOUNT_LISTING="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $26 }' | awk '{ printf "%.9f\n", $1 }')"
         fi
       fi
 
@@ -1262,7 +1260,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
               # calculate dca value
               DIP_DCA_NUM="$(echo "$DIP_DCA/100" | bc -l 2>/dev/null)"
               # include old balance, ruled by configuration (dollar cost average)
-              DIP_BUY_AMOUNT_LISTING_DCA="$(echo "$DIP_DCA_NUM*$LISTING_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
+              DIP_BUY_AMOUNT_LISTING_DCA="$(echo "$DIP_DCA_NUM*$LISTING_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
               log_date
 
@@ -1954,7 +1952,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # listing balance, available (without decimal)
-  DIP_LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  DIP_LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   # target amount (without decimal)
   DIP_TARGET_BALANCE_CHECK="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
@@ -2087,7 +2085,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       ##########################################################################
 
       # calculate percentage of order size
-      DIP_LEFTOVER_SIZE=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $LISTING_BALANCE; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')
+      DIP_LEFTOVER_SIZE=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $LISTING_BALANCE; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.9f\n", $1 }')
 
       # if zero
       if [[ -z "$DIP_LEFTOVER_SIZE" ]] &>/dev/null; then
@@ -2175,7 +2173,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         tx_id
 
         # track amount being sold
-        echo "$LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | sed '/^$/d' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+        echo "$LISTING_BALANCE" | awk '{ printf "%.9f\n", $1 }' | sed '/^$/d' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
         # selling output (log)
         DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Selling $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
         echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -2845,7 +2843,7 @@ fi
 backup_balances
 
 # dump listing balance
-DUMP_LISTING_BALANCE="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $3 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
+DUMP_LISTING_BALANCE="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
 # dump listing balance (without decimal)
 DUMP_LISTING_BALANCE_CHECK="$(echo "$DUMP_LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')"
 
