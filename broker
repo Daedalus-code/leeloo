@@ -1895,11 +1895,22 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     LOG_SEARCH="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/robot.log | tail -100)"
     LOG_SEARCH_COUNT="$(echo "$LOG_SEARCH" | wc -l)"
     WIDTH="$(echo "$(echo "$LOG_SEARCH" | wc -L)+5" | bc 2>/dev/null)"
+    LENGTH="$LOG_SEARCH_COUNT"
+
+    # if zero
+    if [[ -z "$LOG_LENGTH" || "$LENGTH" -lt "6" ]] &>/dev/null; then
+      LENGTH="5"
+    fi
+
+    # if length are greater than log_length
+    if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+      LENGTH="$LOG_LENGTH"
+    fi
 
     display_result() {
       dialog --title "Search Log: $COIN_TOKEN :: robot.log (+$LOG_SEARCH_COUNT):" \
         --no-collapse \
-        --msgbox "$RESULT" "$LOG_LENGTH" "$WIDTH"
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
     RESULT="${LOG_SEARCH:?}"
     display_result 2>/dev/null
