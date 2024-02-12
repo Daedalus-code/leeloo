@@ -423,10 +423,8 @@ case $CHOICE in
   while true; do
     # robot log status
     ROBOT_LOG_STATUS="$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | column -t | awk -F. '{ print $2,$NF }')"
-
     # num
     NUMBERS="$(echo "$ROBOT_LOG_STATUS" | awk '{ print $NF }' | sort -n)"
-
     # loop through each number
     NO_LOGS_BELOW=true
     for NUM in $NUMBERS; do
@@ -437,14 +435,13 @@ case $CHOICE in
         break # no need to check further, we found a log below n seconds
       fi
     done
-
     # if no logs are below n seconds, break the loop
     if $NO_LOGS_BELOW; then
       break
     fi
-
+    ROBOT_STATUS_PERCENTAGE="$(echo "100/$BOT_TIMER*$NUM" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # wait for a specified interval before checking again
-    echo "Bots are doing something.. ($NUM/$BOT_TIMER) Please wait!"
+    echo "Bots are doing something.. (${ROBOT_STATUS_PERCENTAGE:?}%) Please wait!"
     sleep 1
     clear
   done
