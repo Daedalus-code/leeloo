@@ -1935,19 +1935,19 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
       LENGTH="$LOG_LENGTH"
     fi
 
+    # if zero
+    if [[ -z "$LOG_SEARCH" ]] &>/dev/null; then
+      RESULT="Nothing was found"
+      WIDTH="45"
+    else
+      RESULT="${LOG_SEARCH:?}"
+    fi
+
     display_result() {
       dialog --title "Search Log: $COIN_TOKEN :: robot.log +$LOG_SEARCH_COUNT" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
-
-    # if zero
-    if [[ -z "$LOG_SEARCH" ]] &>/dev/null; then
-      RESULT="Nothing was found"
-    else
-      RESULT="${LOG_SEARCH:?}"
-    fi
-
     display_result 2>/dev/null
 
     ;;
