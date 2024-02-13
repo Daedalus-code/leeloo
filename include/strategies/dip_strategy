@@ -106,11 +106,11 @@ function time_and_profit() {
       DIP_MAX_SELL_AGE=$(echo "$DIP_MAX_SELL_AGE * $SELL_PERCENTAGE / 1000" | bc -l | awk '{ printf "%.0f\n", $1 }')
     fi
   fi
-  # If buy age or sell age is zero, use default values
+  # if buy age or sell age is zero, use default values
   if [[ -z "$DIP_MAX_BUY_AGE" || -z "$DIP_MAX_SELL_AGE" ]]; then
-    # Max buy order age (days) (default)
+    # max buy order age (days) (default)
     DIP_MAX_BUY_AGE=$(egrep "DIP_MAX_BUY_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
-    # Max sell order age (days) (default)
+    # max sell order age (days) (default)
     DIP_MAX_SELL_AGE=$(egrep "DIP_MAX_SELL_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
   fi
 }
