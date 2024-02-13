@@ -188,12 +188,12 @@ function decimal_market() {
     # remove tmp
     rm "${LOG_DIR:?}"/leeloo/market.list.tmp &>/dev/null
   fi
-  # if any data
-  if [[ -s "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
-    # decimal limit
-    DIP_DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
-  else
-    DIP_DECIMAL_LIMIT="1"
+  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    # if any data
+    if [[ -s "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
+      # decimal limit
+      DIP_DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
+    fi
   fi
 }
 
