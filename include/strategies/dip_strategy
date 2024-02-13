@@ -88,7 +88,7 @@ delisted   # delisted markets
 ################################################################################
 
 function time_and_profit() {
-  # if listing, reference data exist
+  # if listing and reference data exist
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]]; then
     # market spread
     EXTRA_TIME_WITH_SPREAD=$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')
@@ -96,19 +96,17 @@ function time_and_profit() {
     if [[ -n "$EXTRA_TIME_WITH_SPREAD" ]]; then
       # adjusting the spread calculation to add more days if spread is higher
       if (($(echo "$EXTRA_TIME_WITH_SPREAD > 10" | bc -l))); then
-        EXTRA_TIME_WITH_SPREAD=$(echo "$EXTRA_TIME_WITH_SPREAD*10" | bc -l)
+        EXTRA_TIME_WITH_SPREAD=$(echo "$EXTRA_TIME_WITH_SPREAD * 10" | bc -l)
       fi
-      EXTRA_SPREAD_BUY_EXTRA_TIME=$(echo "$EXTRA_TIME_WITH_SPREAD + $DIP_MAX_BUY_AGE" | bc -l)
-      EXTRA_SPREAD_SELL_EXTRA_TIME=$(echo "$EXTRA_TIME_WITH_SPREAD + $DIP_MAX_SELL_AGE" | bc -l)
-      EXTRA_BUY_PERCENTAGE=$(echo "100 / $EXTRA_SPREAD_BUY_EXTRA_TIME * $DIP_MAX_BUY_AGE" | bc -l)
-      EXTRA_SELL_PERCENTAGE=$(echo "100 / $EXTRA_SPREAD_SELL_EXTRA_TIME * $DIP_MAX_SELL_AGE" | bc -l)
-      DIP_MAX_BUY_AGE_EXTRA=$(echo "$EXTRA_BUY_PERCENTAGE * $DIP_MAX_BUY_AGE / 100" | bc -l)
-      DIP_MAX_SELL_AGE_EXTRA=$(echo "$EXTRA_SELL_PERCENTAGE * $DIP_MAX_SELL_AGE / 100" | bc -l)
-      DIP_MAX_BUY_AGE=$(echo "$DIP_MAX_BUY_AGE + $DIP_MAX_BUY_AGE_EXTRA" | bc -l | awk -F. '{ print $1 }')
-      DIP_MAX_SELL_AGE=$(echo "$DIP_MAX_SELL_AGE + $DIP_MAX_SELL_AGE_EXTRA" | bc -l | awk -F. '{ print $1 }')
+      # calculate percentage increase based on spread
+      BUY_PERCENTAGE=$(echo "10000 / $EXTRA_TIME_WITH_SPREAD" | bc -l)
+      SELL_PERCENTAGE=$(echo "20000 / $EXTRA_TIME_WITH_SPREAD" | bc -l)
+      # adjust DIP_MAX_BUY_AGE and DIP_MAX_SELL_AGE using calculated percentages
+      DIP_MAX_BUY_AGE=$(echo "$DIP_MAX_BUY_AGE * $BUY_PERCENTAGE / 1000" | bc -l | awk '{ printf "%.0f\n", $1 }')
+      DIP_MAX_SELL_AGE=$(echo "$DIP_MAX_SELL_AGE * $SELL_PERCENTAGE / 1000" | bc -l | awk '{ printf "%.0f\n", $1 }')
     fi
   fi
-  # If zero
+  # If buy age or sell age is zero, use default values
   if [[ -z "$DIP_MAX_BUY_AGE" || -z "$DIP_MAX_SELL_AGE" ]]; then
     # Max buy order age (days) (default)
     DIP_MAX_BUY_AGE=$(egrep "DIP_MAX_BUY_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
