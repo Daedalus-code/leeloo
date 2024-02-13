@@ -183,13 +183,17 @@ function decimal_market() {
     # if market.list.tmp has data
     if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/market.list.tmp 2>/dev/null | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
       # update
-      mv "${LOG_DIR:?}"/leeloo/market.list.tmp "${LOG_DIR:?}"/leeloo/market.list
+      mv "${LOG_DIR:?}"/leeloo/market.list.tmp "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null
     fi
     # remove tmp
     rm "${LOG_DIR:?}"/leeloo/market.list.tmp &>/dev/null
   fi
   # decimal limit
-  DIP_DECIMAL_LIMIT="$(awk -v listing="$LISTING_CURRENCY" -v reference="$REFERENCE_CURRENCY" '$0~listing && $0~reference{flag=1} flag && /quantityDecimals/{print $NF; exit}' "${LOG_DIR:?}"/leeloo/market.list | tr -d ',')"
+  DIP_DECIMAL_LIMIT="$(awk -v listing="$LISTING_CURRENCY" -v reference="$REFERENCE_CURRENCY" '$0~listing && $0~reference{flag=1} flag && /quantityDecimals/{print $NF; exit}' "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | tr -d ',')"
+  # if zero
+  if [[ -z "$DIP_DECIMAL_LIMIT" ]] &>/dev/null; then
+    DIP_DECIMAL_LIMIT="1"
+  fi
 }
 
 ################################################################################
@@ -197,7 +201,7 @@ function decimal_market() {
 # amount to buy sell
 function amount_to_buy_sell() {
 
-  decimal_market
+  decimal_market 2>/dev/null
 
   # account allocated (n%)
   REFERENCE_ALLOCATED="$DIP_ALLOCATED"
@@ -1281,7 +1285,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         DIP_DCA="0"
       fi
 
-      decimal_market
+      decimal_market 2>/dev/null
 
       # if dca enabled
       if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
@@ -2888,7 +2892,7 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
 fi
 
 backup_balances
-decimal_market
+decimal_market 2>/dev/null
 
 # dump listing balance
 DUMP_LISTING_BALANCE="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $3 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
