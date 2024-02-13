@@ -99,11 +99,11 @@ function time_and_profit() {
         EXTRA_TIME_WITH_SPREAD=$(echo "$EXTRA_TIME_WITH_SPREAD * 10" | bc -l)
       fi
       # calculate percentage increase based on spread
-      BUY_PERCENTAGE=$(echo "10000 / $EXTRA_TIME_WITH_SPREAD" | bc -l)
-      SELL_PERCENTAGE=$(echo "20000 / $EXTRA_TIME_WITH_SPREAD" | bc -l)
+      BUY_PERCENTAGE=$(echo "($EXTRA_TIME_WITH_SPREAD / 100)" | bc -l)
+      SELL_PERCENTAGE=$(echo "($EXTRA_TIME_WITH_SPREAD / 50)" | bc -l)
       # adjust DIP_MAX_BUY_AGE and DIP_MAX_SELL_AGE using calculated percentages
-      DIP_MAX_BUY_AGE=$(echo "$DIP_MAX_BUY_AGE * $BUY_PERCENTAGE / 1000" | bc -l | awk '{ printf "%.0f\n", $1 }')
-      DIP_MAX_SELL_AGE=$(echo "$DIP_MAX_SELL_AGE * $SELL_PERCENTAGE / 1000" | bc -l | awk '{ printf "%.0f\n", $1 }')
+      DIP_MAX_BUY_AGE=$(echo "$DIP_MAX_BUY_AGE + $BUY_PERCENTAGE" | bc -l | awk '{ printf "%.0f\n", $1 }')
+      DIP_MAX_SELL_AGE=$(echo "$DIP_MAX_SELL_AGE + $SELL_PERCENTAGE" | bc -l | awk '{ printf "%.0f\n", $1 }')
     fi
   fi
   # if buy age or sell age is zero, use default values
