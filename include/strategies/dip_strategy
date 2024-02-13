@@ -179,7 +179,7 @@ function decimal_market() {
   # if greater than n, if not found
   if [[ "$DIP_MARKET_LIST_AGE" -gt "3600" || ! -f "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
     # quantity decimals
-    echo "$(market_list 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/market.list.tmp 2>/dev/null
+    echo "$(market_list 2>/dev/null | column -t | sort -n -k 2)" >"${LOG_DIR:?}"/leeloo/market.list.tmp 2>/dev/null
     # if market.list.tmp has data
     if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/market.list.tmp 2>/dev/null | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
       # update
@@ -188,8 +188,11 @@ function decimal_market() {
     # remove tmp
     rm "${LOG_DIR:?}"/leeloo/market.list.tmp &>/dev/null
   fi
-  # decimal limit
-  DIP_DECIMAL_LIMIT="$(awk -v listing="$LISTING_CURRENCY" -v reference="$REFERENCE_CURRENCY" '$0~listing && $0~reference{flag=1} flag && /quantityDecimals/{print $NF; exit}' "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | tr -d ',')"
+  # if any data
+  if [[ -s "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
+    # decimal limit
+    DIP_DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" 2>/dev/null | awk '{ print $2 }')"
+  fi
   # if zero
   if [[ -z "$DIP_DECIMAL_LIMIT" ]] &>/dev/null; then
     DIP_DECIMAL_LIMIT="1"
