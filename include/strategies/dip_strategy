@@ -204,7 +204,7 @@ function decimal_market() {
 # amount to buy sell
 function amount_to_buy_sell() {
 
-  decimal_market 2>/dev/null
+  decimal_market
 
   # account allocated (n%)
   REFERENCE_ALLOCATED="$DIP_ALLOCATED"
@@ -1288,7 +1288,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         DIP_DCA="0"
       fi
 
-      decimal_market 2>/dev/null
+      decimal_market
+
       # decimal market limit
       LISTING_BALANCE="$(echo "$LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
 
@@ -2897,7 +2898,7 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
 fi
 
 backup_balances
-decimal_market 2>/dev/null
+decimal_market
 
 # dump listing balance
 DUMP_LISTING_BALANCE="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $3 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
