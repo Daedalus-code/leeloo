@@ -92,27 +92,27 @@ function time_and_profit() {
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]]; then
     # market spread
     EXTRA_TIME_WITH_SPREAD=$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')
-    # if data
+    # if data is present
     if [[ -n "$EXTRA_TIME_WITH_SPREAD" ]]; then
       # adjusting the spread calculation to add more days if spread is higher
       if (($(echo "$EXTRA_TIME_WITH_SPREAD > 10" | bc -l))); then
-        EXTRA_TIME_WITH_SPREAD=$(awk -v spread="$EXTRA_TIME_WITH_SPREAD" 'BEGIN { printf "%.2f\n", spread * 10 }')
+        EXTRA_TIME_WITH_SPREAD=$(echo "$EXTRA_TIME_WITH_SPREAD*10" | bc -l)
       fi
-      EXTRA_SPREAD_BUY_EXTRA_TIME=$(awk -v spread="$EXTRA_TIME_WITH_SPREAD" -v dip_max_buy_age="$DIP_MAX_BUY_AGE" 'BEGIN { printf "%.2f\n", spread + dip_max_buy_age }')
-      EXTRA_SPREAD_SELL_EXTRA_TIME=$(awk -v spread="$EXTRA_TIME_WITH_SPREAD" -v dip_max_sell_age="$DIP_MAX_SELL_AGE" 'BEGIN { printf "%.2f\n", spread + dip_max_sell_age }')
-      EXTRA_BUY_PERCENTAGE=$(awk -v spread_buy_extra_time="$EXTRA_SPREAD_BUY_EXTRA_TIME" -v dip_max_buy_age="$DIP_MAX_BUY_AGE" 'BEGIN { printf "%.20f\n", 100 / spread_buy_extra_time * dip_max_buy_age }')
-      EXTRA_SELL_PERCENTAGE=$(awk -v spread_sell_extra_time="$EXTRA_SPREAD_SELL_EXTRA_TIME" -v dip_max_sell_age="$DIP_MAX_SELL_AGE" 'BEGIN { printf "%.20f\n", 100 / spread_sell_extra_time * dip_max_sell_age }')
-      DIP_MAX_BUY_AGE_EXTRA=$(awk -v extra_buy_percentage="$EXTRA_BUY_PERCENTAGE" -v dip_max_buy_age="$DIP_MAX_BUY_AGE" 'BEGIN { printf "%.20f\n", extra_buy_percentage * dip_max_buy_age / 100 }')
-      DIP_MAX_SELL_AGE_EXTRA=$(awk -v extra_sell_percentage="$EXTRA_SELL_PERCENTAGE" -v dip_max_sell_age="$DIP_MAX_SELL_AGE" 'BEGIN { printf "%.20f\n", extra_sell_percentage * dip_max_sell_age / 100 }')
-      DIP_MAX_BUY_AGE=$(awk -v dip_max_buy_age="$DIP_MAX_BUY_AGE" -v dip_max_buy_age_extra="$DIP_MAX_BUY_AGE_EXTRA" 'BEGIN { printf "%.0f\n", dip_max_buy_age + dip_max_buy_age_extra }')
-      DIP_MAX_SELL_AGE=$(awk -v dip_max_sell_age="$DIP_MAX_SELL_AGE" -v dip_max_sell_age_extra="$DIP_MAX_SELL_AGE_EXTRA" 'BEGIN { printf "%.0f\n", dip_max_sell_age + dip_max_sell_age_extra }')
+      EXTRA_SPREAD_BUY_EXTRA_TIME=$(echo "$EXTRA_TIME_WITH_SPREAD + $DIP_MAX_BUY_AGE" | bc -l)
+      EXTRA_SPREAD_SELL_EXTRA_TIME=$(echo "$EXTRA_TIME_WITH_SPREAD + $DIP_MAX_SELL_AGE" | bc -l)
+      EXTRA_BUY_PERCENTAGE=$(echo "100 / $EXTRA_SPREAD_BUY_EXTRA_TIME * $DIP_MAX_BUY_AGE" | bc -l)
+      EXTRA_SELL_PERCENTAGE=$(echo "100 / $EXTRA_SPREAD_SELL_EXTRA_TIME * $DIP_MAX_SELL_AGE" | bc -l)
+      DIP_MAX_BUY_AGE_EXTRA=$(echo "$EXTRA_BUY_PERCENTAGE * $DIP_MAX_BUY_AGE / 100" | bc -l)
+      DIP_MAX_SELL_AGE_EXTRA=$(echo "$EXTRA_SELL_PERCENTAGE * $DIP_MAX_SELL_AGE / 100" | bc -l)
+      DIP_MAX_BUY_AGE=$(echo "$DIP_MAX_BUY_AGE + $DIP_MAX_BUY_AGE_EXTRA" | bc -l | awk -F. '{ print $1 }')
+      DIP_MAX_SELL_AGE=$(echo "$DIP_MAX_SELL_AGE + $DIP_MAX_SELL_AGE_EXTRA" | bc -l | awk -F. '{ print $1 }')
     fi
   fi
-  # if zero
+  # If zero
   if [[ -z "$DIP_MAX_BUY_AGE" || -z "$DIP_MAX_SELL_AGE" ]]; then
-    # max buy order age (days) (default)
+    # Max buy order age (days) (default)
     DIP_MAX_BUY_AGE=$(egrep "DIP_MAX_BUY_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
-    # max sell order age (days) (default)
+    # Max sell order age (days) (default)
     DIP_MAX_SELL_AGE=$(egrep "DIP_MAX_SELL_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
   fi
 }
