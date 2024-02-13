@@ -1341,7 +1341,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
               # if any valued data
               if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
-                # reset sold file
+                # reset sold file (reset data, age)
                 truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
               fi
 
@@ -1577,7 +1577,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           log_date
 
-          # reset sold file
+          # reset sold file (reset data, age)
           truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
 
           ######################################################################
@@ -2383,7 +2383,7 @@ if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
         # remove duplicates
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-        # reset sold file
+        # reset sold file (reset data, age)
         truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
       fi
     fi
@@ -2422,7 +2422,7 @@ $(echo "$DIP_CAT_PROFIT" 2>/dev/null)
 
 $DIP_OLD_YEAR Gains:
 $(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null)" >"$SYS_DIR"/robot/"$BASENAME_STRATEGY".revenue."$(date '+%Y')"
-    # reset last year
+    # reset last year profit, gains
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit &>/dev/null
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains &>/dev/null
   fi
