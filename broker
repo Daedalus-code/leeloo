@@ -429,7 +429,7 @@ case $CHOICE in
     NO_LOGS_BELOW=true
     for NUM in $NUMBERS; do
       # check if the number is below n
-      if [ "$NUM" -lt "$(echo "$BOT_TIMER-5" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
+      if [ "$NUM" -lt "$(echo "$BOT_TIMER-10" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
         NO_LOGS_BELOW=false
         WAITING_ON_BOT="$NUM"
         break # no need to check further, we found a log below n seconds
@@ -1920,7 +1920,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     # search robot logs
     coin_token_search
 
-    LOG_SEARCH="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/robot.log | tail -100)"
+    LOG_SEARCH="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/robot.log | tail -250)"
     LOG_SEARCH_COUNT="$(echo "$LOG_SEARCH" | wc -l)"
     WIDTH="$(echo "$(echo "$LOG_SEARCH" | wc -L)+5" | bc 2>/dev/null)"
     LENGTH="$LOG_SEARCH_COUNT"
@@ -1940,7 +1940,14 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
-    RESULT="${LOG_SEARCH:?}"
+
+    # if zero
+    if [[ -z "$LOG_SEARCH" ]] &>/dev/null; then
+      RESULT="Nothing was found"
+    else
+      RESULT="${LOG_SEARCH:?}"
+    fi
+
     display_result 2>/dev/null
 
     ;;

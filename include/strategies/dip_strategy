@@ -180,14 +180,13 @@ function decimal_market() {
   if [[ "$DIP_MARKET_LIST_AGE" -gt "300" || ! -f "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
     # quantity decimals
     market_list >"${LOG_DIR:?}"/leeloo/market.list.tmp 2>/dev/null
-    # if market.list has data
+    # if market.list.tmp has data
     if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/market.list.tmp 2>/dev/null | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
       # update
       mv "${LOG_DIR:?}"/leeloo/market.list.tmp "${LOG_DIR:?}"/leeloo/market.list
-    else
-      # remove null
-      rm "${LOG_DIR:?}"/leeloo/market.list.tmp &>/dev/null
     fi
+    # remove tmp
+    rm "${LOG_DIR:?}"/leeloo/market.list.tmp &>/dev/null
   fi
   # decimal limit
   DIP_DECIMAL_LIMIT="$(awk -v listing="$LISTING_CURRENCY" -v reference="$REFERENCE_CURRENCY" '$0~listing && $0~reference{flag=1} flag && /quantityDecimals/{print $NF; exit}' "${LOG_DIR:?}"/leeloo/market.list | tr -d ',')"
