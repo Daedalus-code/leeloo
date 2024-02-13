@@ -1286,13 +1286,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       fi
 
       decimal_market 2>/dev/null
+      # decimal market limit
+      LISTING_BALANCE="$(echo "$LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
 
       # if dca enabled
       if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
         # if order already been checked
         if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -eq "0" ]] &>/dev/null; then
           # if order already has balance (ruled by balance + decimal market)
-          if [[ "$(echo "$LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+          if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
             # active listing dca count (market list)
             DIP_ACTIVE_LISTING_DCA="$(cat "${SYS_DIR:?}"/robot/*.market.list 2>/dev/null | grep -wc "$LISTING_CURRENCY" 2>/dev/null || true)"
