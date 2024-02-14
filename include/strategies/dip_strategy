@@ -207,6 +207,8 @@ function decimal_market() {
 
 ################################################################################
 
+backup_balances
+
 # amount to buy sell
 function amount_to_buy_sell() {
 
@@ -827,6 +829,8 @@ fi
 ################################################################################
 # market prices
 ################################################################################
+
+backup_prices
 
 # create price.dip file, only print lines with bids that are less than ask
 echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | awk '{if ($2 < $3) print}')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip
@@ -2904,7 +2908,6 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
   fi
 fi
 
-backup_balances
 decimal_market
 
 # dump listing balance
