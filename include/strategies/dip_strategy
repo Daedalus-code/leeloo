@@ -412,8 +412,7 @@ function target_data() {
     fi
 
     # if zero
-    if [[ -z "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
-      # default
+    if [[ -z "$RANDOM_MISSING_MARKET" ]] &>/dev/null; then
       RANDOM_MISSING_MARKET="1"
     fi
 
@@ -855,6 +854,11 @@ if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || t
 
   # random n
   RANDOM_CLEARED_MARKET=$((((RANDOM % 2) + 1)))
+
+  # if zero
+  if [[ -z "$RANDOM_CLEARED_MARKET" ]] &>/dev/null; then
+    RANDOM_CLEARED_MARKET="2"
+  fi
 
   # disregard already active markets (positions)
   if [[ "$RANDOM_CLEARED_MARKET" == "1" ]] &>/dev/null; then
@@ -2897,6 +2901,12 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   # no reference, use bitcoin, usdt,usdc as dumping grounds
   if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     RANDOM_REF_CURRENCY=$((((RANDOM % 4) + 1)))
+
+    # if zero
+    if [[ -z "$RANDOM_REF_CURRENCY" ]] &>/dev/null; then
+      RANDOM_REF_CURRENCY="1"
+    fi
+
     # dump on btc
     if [[ "$RANDOM_REF_CURRENCY" == "1" ]] &>/dev/null; then
       REFERENCE_CURRENCY="BTC"
