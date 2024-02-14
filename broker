@@ -465,15 +465,15 @@ $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_
   ##############################################################################
 
   HEIGHT=10
-  WIDTH=41
+  WIDTH=50
   CHOICE_HEIGHT=2
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Update Menu"
   MENU="Multipass $DATE_XARGS
 Load: $LOAD :: $REPO_HEAD $REPO_DATE"
 
-  OPTIONS=(1 "Normal           Slow-Update"
-    2 "Force            Fast-Update")
+  OPTIONS=(1 "Normal           Safe update (slow)"
+    2 "Forced           Forced update (fast)")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -499,7 +499,7 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
       NO_LOGS_BELOW=true
       for NUM in $NUMBERS; do
         # check if the number is below n
-        if [ "$NUM" -lt "$(echo "$BOT_TIMER-10" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
+        if [ "$NUM" -lt "$(echo "$BOT_TIMER/1.5" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
           NO_LOGS_BELOW=false
           WAITING_ON_BOT="$NUM"
           break # no need to check further, we found a log below n seconds
