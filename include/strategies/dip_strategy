@@ -396,8 +396,12 @@ function target_data() {
 
     # missing markets
     echo "$MISSING_MARKETS" | xargs >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
+
+    # missing markets file
+    MISSING_MARKETS_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null)"
+
     # random missing market
-    MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS" | tr ' ' '\n' | shuf -n 1)"
+    MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS_FILE" | tr ' ' '\n' | shuf -n 1)"
 
     # if data
     if [[ -n "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
@@ -406,7 +410,7 @@ function target_data() {
     fi
 
     # if zero
-    if [[ -z "$RANDOM_MISSING_MARKET" ]] &>/dev/null; then
+    if [[ -z "$RANDOM_MISSING_MARKET" || -z "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
       RANDOM_MISSING_MARKET="1"
     fi
 
