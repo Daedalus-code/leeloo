@@ -173,40 +173,6 @@ function dip_order_data {
 
 ################################################################################
 
-# default
-DIP_DECIMAL_LIMIT="9"
-
-function decimal_market() {
-  # dip market list age (seconds)
-  DIP_MARKET_LIST_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  # if greater than n, if not found
-  if [[ "$DIP_MARKET_LIST_AGE" -gt "3600" || ! -f "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
-    # quantity decimals
-    echo "$(market_list 2>/dev/null | column -t | sort -n -k 2)" >"${LOG_DIR:?}"/leeloo/market.list.tmp 2>/dev/null
-    # if market.list.tmp has data
-    if [[ -s "${LOG_DIR:?}"/leeloo/market.list.tmp ]] &>/dev/null; then
-      # update
-      mv "${LOG_DIR:?}"/leeloo/market.list.tmp "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null
-    fi
-    # remove tmp
-    rm "${LOG_DIR:?}"/leeloo/market.list.tmp &>/dev/null
-  fi
-  # if any data
-  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-    # if any data
-    if [[ -s "${LOG_DIR:?}"/leeloo/market.list ]] &>/dev/null; then
-      # decimal limit
-      DIP_DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/market.list 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
-    fi
-    # if zero
-    if [[ -z "$DIP_DECIMAL_LIMIT" ]] &>/dev/null; then
-      DIP_DECIMAL_LIMIT="9"
-    fi
-  fi
-}
-
-################################################################################
-
 backup_balances
 
 # amount to buy sell
