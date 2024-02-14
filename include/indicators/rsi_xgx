@@ -21,32 +21,32 @@ calculate_rsi_with_sma() {
   # calculate SMA
   for ((i = 0; i < $SMA_PERIOD; i++)); do
     VALUE=$(fix_scientific_notation "${DATA[i]}")
-    SMA=$(echo "$SMA + $VALUE" | bc -l)
+    SMA=$(echo "$SMA + $VALUE" | bc -l 2>/dev/null)
   done
 
-  SMA=$(echo "$SMA / $SMA_PERIOD" | bc -l)
+  SMA=$(echo "$SMA / $SMA_PERIOD" | bc -l 2>/dev/null)
 
   # calculate gains and losses for RSI
   for ((i = $SMA_PERIOD; i < LENGTH; i++)); do
     VALUE=$(fix_scientific_notation "${DATA[i]}")
-    DIFF=$(echo "$VALUE - ${DATA[i - 1]}" | bc -l)
+    DIFF=$(echo "$VALUE - ${DATA[i - 1]}" | bc -l 2>/dev/null)
 
-    if (($(echo "$DIFF >= 0" | bc -l))); then
-      GAIN=$(echo "$GAIN + $DIFF" | bc -l)
+    if (($(echo "$DIFF >= 0" | bc -l 2>/dev/null))); then
+      GAIN=$(echo "$GAIN + $DIFF" | bc -l 2>/dev/null)
     else
-      LOSS=$(echo "$LOSS - $DIFF" | bc -l)
+      LOSS=$(echo "$LOSS - $DIFF" | bc -l 2>/dev/null)
     fi
   done
 
   # calculate average gain and average loss
-  AVG_GAIN=$(echo "$GAIN / $SMA_PERIOD" | bc -l)
-  AVG_LOSS=$(echo "$LOSS / $SMA_PERIOD" | bc -l)
+  AVG_GAIN=$(echo "$GAIN / $SMA_PERIOD" | bc -l 2>/dev/null)
+  AVG_LOSS=$(echo "$LOSS / $SMA_PERIOD" | bc -l 2>/dev/null)
 
   # calculate RS (Relative Strength)
-  RS=$(echo "$AVG_GAIN / $AVG_LOSS" | bc -l)
+  RS=$(echo "$AVG_GAIN / $AVG_LOSS" | bc -l 2>/dev/null)
 
   # calculate RSI with SMA
-  RSI_WITH_SMA=$(echo "100 - (100 / (1 + $RS))" | bc -l)
+  RSI_WITH_SMA=$(echo "100 - (100 / (1 + $RS))" | bc -l 2>/dev/null)
   echo "$RSI_WITH_SMA"
 }
 
