@@ -88,13 +88,16 @@ decimal_market          # decimal market
 
 # get ema data
 GET_EMA_DATA="$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY")"
+# create temp
+echo "$GET_EMA_DATA" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema.tmp
 
-# if data
-if [[ ! -z "$GET_EMA_DATA" ]] &>/dev/null; then
-  # update data
-  echo "$GET_EMA_DATA" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema
+# if any data
+if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema.tmp ]] &>/dev/null; then
+  # update ema
+  mv "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema.tmp "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema
 fi
 
+# ema data
 GET_EMA_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema 2>/dev/null)"
 
 GET_EMA_SIGNAL="$(echo "$GET_EMA_DATA" | awk '{ print $1 }')"
