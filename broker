@@ -410,7 +410,6 @@ case $CHOICE in
 
   ##############################################################################
 
-  ### cleanup old junk ###
   if [[ -f "${LOG_DIR:?}"/leeloo/robot.broker.log || -f "${LOG_DIR:?}"/leeloo/looper.log ]] &>/dev/null; then
     echo "Removing old junk.."
     sudo rm "${LOG_DIR:?}"/leeloo/robot.broker.log &>/dev/null
@@ -420,80 +419,115 @@ case $CHOICE in
 
   ##############################################################################
 
-  while true; do
-    # robot log status
-    ROBOT_LOG_STATUS="$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | column -t | awk -F. '{ print $2,$NF }')"
-    # num
-    NUMBERS="$(echo "$ROBOT_LOG_STATUS" | awk '{ print $NF }' | sort -n)"
-    # loop through each number
-    NO_LOGS_BELOW=true
-    for NUM in $NUMBERS; do
-      # check if the number is below n
-      if [ "$NUM" -lt "$(echo "$BOT_TIMER-10" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
-        NO_LOGS_BELOW=false
-        WAITING_ON_BOT="$NUM"
-        break # no need to check further, we found a log below n seconds
+  function leeloo_update() {
+    display_result() {
+      dialog --title "Updating Leeloo (Multipass)" \
+        --no-collapse \
+        --msgbox "$RESULT" 0 0
+    }
+    cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+    # any updates relating to the auto strategies system, restart
+    UPDATE_KEYS="looper|leeloo|functions|private_API|public_API"
+    if [[ "$(egrep "$UPDATE_KEYS" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | grep '[+-]' | wc -l)" -gt "0" ]] &>/dev/null; then
+      ROBOT_UPDATES="$(egrep "$UPDATE_KEYS" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | awk '{ print $3,$4 }')"
+      echo " New updates! $ROBOT_UPDATES" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+      if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
+        echo " Robot stopping! --" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+        # kill leeloo pid (shell)
+        echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
+        LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
+        kill -9 "$LEELOO_PID" &>/dev/null
+        # kill screen
+        screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit &>/dev/null
+        sleep 1
+        # start looper
+        bash "${SYS_DIR:?}"/robot/looper
+        echo " Robot starting! ++" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
       fi
-    done
-    # if no logs are below n seconds, break the loop
-    if $NO_LOGS_BELOW; then
-      break
     fi
-    ROBOT_STATUS_PERCENTAGE="$(echo "100/$BOT_TIMER*$NUM" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-    # wait for a specified interval before checking again
-    echo "Bots are doing something.. (${ROBOT_STATUS_PERCENTAGE:?}%) Please wait!"
-    sleep 1
+    # if any updates, skip
+    if [[ ! "$(grep "Updating" "${LOG_DIR:?}"/leeloo/updating | wc -l)" -gt "0" ]] &>/dev/null; then
+      echo "
+$(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+    fi
+    RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
+    display_result 2>/dev/null
+    cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && bash include/install 2>/dev/null
+    rm "${LOG_DIR:?}"/leeloo/repo &>/dev/null
+    cd "${HOME_DIR:?}"/leeloo || exit && git rev-parse --short HEAD 2>&1 | grep -Eo '[a0-z9]{7}' 2>&1 | head -1 >"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
+    cd "${HOME_DIR:?}"/leeloo || exit && git log -1 --format="%at" | xargs -I{} date -d @{} '+%Y' >>"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
     clear
-  done
+    if [[ ! "$(grep "Already up to date." "${LOG_DIR:?}"/leeloo/updating | wc -l)" -gt "0" ]] &>/dev/null; then
+      exit
+    fi
+  }
 
   ##############################################################################
 
-  display_result() {
-    dialog --title "Updating Leeloo (Multipass)" \
-      --no-collapse \
-      --msgbox "$RESULT" 0 0
-  }
+  HEIGHT=11
+  WIDTH=24
+  CHOICE_HEIGHT=3
+  BACKTITLE="Leeloo (Multipass)"
+  TITLE="Update Menu"
+  MENU="Multipass $DATE_XARGS
+  Load: $LOAD :: $REPO_HEAD $REPO_DATE"
 
-  cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+  OPTIONS=(1 "Normal           Slow-Update"
+    2 "Force            Fast-Update")
 
-  # any updates relating to the auto strategies system, restart
-  UPDATE_KEYS="looper|leeloo|functions|private_API|public_API"
-  if [[ "$(egrep "$UPDATE_KEYS" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | grep '[+-]' | wc -l)" -gt "0" ]] &>/dev/null; then
-    ROBOT_UPDATES="$(egrep "$UPDATE_KEYS" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | awk '{ print $3,$4 }')"
-    echo " New updates! $ROBOT_UPDATES" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+  CHOICE=$(dialog --clear \
+    --backtitle "$BACKTITLE" \
+    --title "$TITLE" \
+    --menu "$MENU" \
+    $HEIGHT $WIDTH $CHOICE_HEIGHT \
+    "${OPTIONS[@]}" \
+    2>&1 >/dev/tty)
 
-    if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
-      echo " Robot stopping! --" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
-      # kill leeloo pid (shell)
-      echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
-      LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
-      kill -9 "$LEELOO_PID" &>/dev/null
-      # kill screen
-      screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit &>/dev/null
-      sleep 1
-      # start looper
-      bash "${SYS_DIR:?}"/robot/looper
-      echo " Robot starting! ++" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
-    fi
-  fi
-
-  # if any updates, skip
-  if [[ ! "$(grep "Updating" "${LOG_DIR:?}"/leeloo/updating | wc -l)" -gt "0" ]] &>/dev/null; then
-    echo "
-$(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
-  fi
-
-  RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
-  display_result 2>/dev/null
-  cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && bash include/install 2>/dev/null
-  rm "${LOG_DIR:?}"/leeloo/repo &>/dev/null
-  cd "${HOME_DIR:?}"/leeloo || exit && git rev-parse --short HEAD 2>&1 | grep -Eo '[a0-z9]{7}' 2>&1 | head -1 >"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
-  cd "${HOME_DIR:?}"/leeloo || exit && git log -1 --format="%at" | xargs -I{} date -d @{} '+%Y' >>"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
   clear
+  case $CHOICE in
 
-  if [[ ! "$(grep "Already up to date." "${LOG_DIR:?}"/leeloo/updating | wc -l)" -gt "0" ]] &>/dev/null; then
-    exit
-  fi
+  # normal updates (slow)
+
+  "1")
+
+    while true; do
+      # robot log status
+      ROBOT_LOG_STATUS="$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | column -t | awk -F. '{ print $2,$NF }')"
+      # num
+      NUMBERS="$(echo "$ROBOT_LOG_STATUS" | awk '{ print $NF }' | sort -n)"
+      # loop through each number
+      NO_LOGS_BELOW=true
+      for NUM in $NUMBERS; do
+        # check if the number is below n
+        if [ "$NUM" -lt "$(echo "$BOT_TIMER-10" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
+          NO_LOGS_BELOW=false
+          WAITING_ON_BOT="$NUM"
+          break # no need to check further, we found a log below n seconds
+        fi
+      done
+      # if no logs are below n seconds, break the loop
+      if $NO_LOGS_BELOW; then
+        break
+      fi
+      ROBOT_STATUS_PERCENTAGE="$(echo "100/$BOT_TIMER*$NUM" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+      # wait for a specified interval before checking again
+      echo "Bots are working.. (${ROBOT_STATUS_PERCENTAGE:?}%) Please wait!"
+      sleep 1
+      clear
+    done
+    leeloo_update
+
+    ;;
+
+    # fast update (fast)
+
+  "2")
+
+    leeloo_update
+
+    ;;
+
+  esac
 
   ;;
 
