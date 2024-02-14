@@ -2768,6 +2768,7 @@ fi
 
 # cat market.list data
 CAT_MARKET_LIST="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null)"
+
 # daily potential markets
 DIP_DAILY_POTENTIAL="$(echo "$CAT_MARKET_LIST" | sed '/^$/d' | wc -l)"
 
@@ -2778,13 +2779,7 @@ fi
 
 # daily potential targets
 DIP_DAILY_TARGETS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk '{ print $17 }' | sort -n | tr -d '%' | egrep -v "[0]+.[0]+[0]" | grep -v "-" | sed '/^$/d' | wc -l)"
-# calculate potential percentage
-DIP_DAILY_POTENTIAL_PERCENTAGE="$(echo "100/$DIP_DAILY_POTENTIAL*$DIP_DAILY_TARGETS" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-# if zero
-if [[ -z "$DIP_DAILY_POTENTIAL_PERCENTAGE" ]] &>/dev/null; then
-  DIP_DAILY_POTENTIAL_PERCENTAGE="0"
-fi
 # if zero
 if [[ -z "$DIP_DAILY_TARGETS" ]] &>/dev/null; then
   DIP_DAILY_TARGETS="0"
@@ -2991,13 +2986,21 @@ fi
 # daily potential
 ################################################################################
 
+# calculate potential percentage
+DIP_DAILY_POTENTIAL_PERCENTAGE="$(echo "100/$DIP_ORDERS_FILE_COUNT*$DIP_DAILY_TARGETS" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# if zero
+if [[ -z "$DIP_DAILY_POTENTIAL_PERCENTAGE" ]] &>/dev/null; then
+  DIP_DAILY_POTENTIAL_PERCENTAGE="0"
+fi
+
 # time check
 DIP_TIME_CHECK="$(date +"%T" | awk -F: '{ print $1":"$2 }' | egrep "23:55" | wc -l)"
 # potential file age (seconds)
 DIP_D_P_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # if greater than n seconds
-if [[ "$DIP_D_P_FILE_AGE_SECONDS" -gt "90000" || "$DIP_TIME_CHECK" -eq "1" ]] &>/dev/null; then
+if [[ "$DIP_D_P_FILE_AGE_SECONDS" -gt "86300" || "$DIP_TIME_CHECK" -eq "1" ]] &>/dev/null; then
   # track daily potential
   LOG_DATE_DAY="$(date | awk '{ print $3,$1 }')"
   echo "$LOG_DATE_DAY :: Potential: $DIP_DAILY_POTENTIAL Targets: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% Price Movement: ${DIP_DAILY_MOVEMENT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
