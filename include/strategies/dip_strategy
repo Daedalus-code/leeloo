@@ -97,19 +97,16 @@ function time_and_profit() {
       # increase limit based on spread
       DIP_BUY_EXTRA_TIME=$(echo "$EXTRA_TIME_WITH_SPREAD*1.2/10" | bc -l 2>/dev/null)
       DIP_SELL_EXTRA_TIME=$(echo "$EXTRA_TIME_WITH_SPREAD*2.1/10" | bc -l 2>/dev/null)
-      # adjust DIP_MAX_BUY_AGE and DIP_MAX_SELL_AGE using calculated percentages
-      DIP_MAX_BUY_AGE=$(echo "$DIP_BUY_EXTRA_TIME+$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')
-      DIP_MAX_SELL_AGE=$(echo "$DIP_SELL_EXTRA_TIME+$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')
     fi
   fi
+  # max buy order age (days) (default)
+  DIP_MAX_BUY_AGE=$(egrep "DIP_MAX_BUY_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
+  # max sell order age (days) (default)
+  DIP_MAX_SELL_AGE=$(egrep "DIP_MAX_SELL_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
 
-  # if buy age or sell age is zero, use default values
-  if [[ -z "$DIP_MAX_BUY_AGE" || -z "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
-    # max buy order age (days) (default)
-    DIP_MAX_BUY_AGE=$(egrep "DIP_MAX_BUY_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
-    # max sell order age (days) (default)
-    DIP_MAX_SELL_AGE=$(egrep "DIP_MAX_SELL_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
-  fi
+  # adjust DIP_MAX_BUY_AGE and DIP_MAX_SELL_AGE using calculated percentages
+  DIP_MAX_BUY_AGE=$(echo "$DIP_BUY_EXTRA_TIME+$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')
+  DIP_MAX_SELL_AGE=$(echo "$DIP_SELL_EXTRA_TIME+$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')
 }
 
 ################################################################################
