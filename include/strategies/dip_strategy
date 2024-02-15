@@ -3003,7 +3003,7 @@ DIP_D_P_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEG
 if [[ "$DIP_D_P_FILE_AGE_SECONDS" -gt "86300" || "$DIP_TIME_CHECK" -eq "1" ]] &>/dev/null; then
   # track daily potential
   LOG_DATE_DAY="$(date | awk '{ print $3,$1 }')"
-  echo "$LOG_DATE_DAY :: Potential: $DIP_DAILY_POTENTIAL Targets: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% Price Movement: ${DIP_DAILY_MOVEMENT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
+  echo "$LOG_DATE_DAY :: Orders: $DIP_ORDERS_FILE_COUNT Targets: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% Price Movement: ${DIP_DAILY_MOVEMENT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
   # keep n lines, remove duplicates
   echo "$(tail -30 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | awk '!a[$1]++' | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp
   # reset market.list file
@@ -3230,6 +3230,21 @@ if [[ -z "$DIP_SOLD_TODAY" ]] &>/dev/null; then
   DIP_SOLD_TODAY="0.000000000"
 fi
 
+# slowest market (less than a day)
+DIP_SLOWEST_MARKET="$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null)"
+# fastest market (more than a day)
+DIP_FASTEST_MARKET="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow 2>/dev/null)"
+
+# if zero
+if [[ -z "$DIP_SLOWEST_MARKET" ]] &>/dev/null; then
+  DIP_SLOWEST_MARKET="0 N/A"
+fi
+
+# if zero
+if [[ -z "$DIP_FASTEST_MARKET" ]] &>/dev/null; then
+  DIP_FASTEST_MARKET="0 N/A"
+fi
+
 ################################################################################
 
 # format and display output
@@ -3254,6 +3269,8 @@ Top_Spread..........: $DIP_TOP_PROFIT ${DIP_TOP_PROFIT_AMOUNT:?}%
 Low_Spread..........: $DIP_LOW_PROFIT ${DIP_LOW_PROFIT_AMOUNT:?}%
 Top_Dip.............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip.............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
+Slowest_Market......: $DIP_SLOWEST_MARKET
+Fastest_Market......: $DIP_FASTEST_MARKET
 Average_Profit......: ${DIP_AVERAGE_PROFIT:?}%
 Completed_Today.....: $DIP_SOLD_TODAY $ACTIVE_MARKET_PAIRS ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT)
 Completed_Profit....: $DIP_COMPLETED_PROFIT $ACTIVE_MARKET_PAIRS ($DIP_PROFIT_COUNT) ${DIP_COMPLETED_PROFIT_PERCENTAGE:?}%
