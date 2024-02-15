@@ -3239,7 +3239,7 @@ DIP_FASTEST_PROFIT_COUNT="$(grep -c "$DIP_FASTEST_MARKET" "${SYS_DIR:?}"/robot/"
 # fastest total profit
 DIP_FASTEST_TOTAL_PROFIT="$(grep "$DIP_FASTEST_MARKET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $7 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
 # fastest average profit
-DIP_FASTEST_AVERAGE_PROFIT="$(echo "$DIP_FASTEST_TOTAL_PROFIT/$DIP_FASTEST_PROFIT_COUNT" | bc 2>/dev/null)"
+DIP_FASTEST_AVERAGE_PROFIT="$(echo "$DIP_FASTEST_TOTAL_PROFIT/$DIP_FASTEST_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 # slowest market (more than a day)
 DIP_SLOWEST_MARKET="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow 2>/dev/null | awk '{ print $1 }')"
@@ -3250,7 +3250,7 @@ DIP_SLOWEST_PROFIT_COUNT="$(grep -c "$DIP_SLOWEST_MARKET" "${SYS_DIR:?}"/robot/"
 # fastest total profit
 DIP_SLOWEST_TOTAL_PROFIT="$(grep "$DIP_SLOWEST_MARKET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $7 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
 # fastest average profit
-DIP_SLOWEST_AVERAGE_PROFIT="$(echo "$DIP_SLOWEST_TOTAL_PROFIT/$DIP_SLOWEST_PROFIT_COUNT" | bc 2>/dev/null)"
+DIP_SLOWEST_AVERAGE_PROFIT="$(echo "$DIP_SLOWEST_TOTAL_PROFIT/$DIP_SLOWEST_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 # if zero
 if [[ -z "$DIP_FASTEST_MARKET" ]] &>/dev/null; then
