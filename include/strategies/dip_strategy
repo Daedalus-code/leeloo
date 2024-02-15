@@ -403,32 +403,29 @@ function target_data() {
     # random missing market
     MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS_FILE" | tr ' ' '\n' | shuf -n 1)"
 
+    # default
+    RANDOM_MISSING_MARKET="1"
+
     # if data
     if [[ -n "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
       # random n
-      RANDOM_MISSING_MARKET=$((((RANDOM % 4) + 1)))
-    fi
-
-    # if zero
-    if [[ -z "$RANDOM_MISSING_MARKET" || -z "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
-      RANDOM_MISSING_MARKET="1"
+      RANDOM_MISSING_MARKET=$((((RANDOM % 5) + 1)))
     fi
 
     # if random
     if [[ "$RANDOM_MISSING_MARKET" -gt "1" ]] &>/dev/null; then
       # target missing orders from active list
-      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" | grep -w "$MISSING_MARKETS_RANDOM")"
-      # if zero
-      if [[ -z "$DIP_TARGET_FILE_OUTPUT" ]] &>/dev/null; then
-        # use default random check
-        RANDOM_MISSING_MARKET="1"
-      fi
+      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" | grep -w "$MISSING_MARKETS_RANDOM:" | awk '{ print $1 }')"
     fi
 
-    ############################################################################
+    # if zero
+    if [[ -z "$DIP_TARGET_FILE_OUTPUT" ]] &>/dev/null; then
+      # use default random check
+      RANDOM_MISSING_MARKET="1"
+    fi
 
     # if random
-    if [[ "$RANDOM_MISSING_MARKET" == "1" ]] &>/dev/null; then
+    if [[ "$RANDOM_MISSING_MARKET" -eq "1" ]] &>/dev/null; then
       # random active target
       DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
     fi
