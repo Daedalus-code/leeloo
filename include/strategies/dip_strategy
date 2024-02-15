@@ -3234,10 +3234,23 @@ fi
 DIP_FASTEST_MARKET="$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | awk '{ print $2 }')"
 # fastest count
 DIP_FASTEST_COUNT="$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | awk '{ print $1 }')"
+# fastest profit count
+DIP_FASTEST_PROFIT_COUNT="$(grep -c "$DIP_FASTEST_MARKET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null || true)"
+# fastest total profit
+DIP_FASTEST_TOTAL_PROFIT="$(grep "$DIP_FASTEST_MARKET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $7 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+# fastest average profit
+DIP_FASTEST_AVERAGE_PROFIT="$(echo "$DIP_FASTEST_TOTAL_PROFIT/$DIP_FASTEST_PROFIT_COUNT" | bc 2>/dev/null)"
+
 # slowest market (more than a day)
 DIP_SLOWEST_MARKET="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow 2>/dev/null | awk '{ print $1 }')"
 # slowest count
 DIP_SLOWEST_COUNT="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow 2>/dev/null | awk '{ print $2 }')"
+# fastest profit count
+DIP_SLOWEST_PROFIT_COUNT="$(grep -c "$DIP_SLOWEST_MARKET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null || true)"
+# fastest total profit
+DIP_SLOWEST_TOTAL_PROFIT="$(grep "$DIP_SLOWEST_MARKET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $7 }' | tr -d '%' | awk '{ SUM += $1} END { print SUM }')"
+# fastest average profit
+DIP_SLOWEST_AVERAGE_PROFIT="$(echo "$DIP_SLOWEST_TOTAL_PROFIT/$DIP_SLOWEST_PROFIT_COUNT" | bc 2>/dev/null)"
 
 # if zero
 if [[ -z "$DIP_FASTEST_MARKET" ]] &>/dev/null; then
@@ -3257,6 +3270,16 @@ fi
 # if zero
 if [[ -z "$DIP_SLOWEST_COUNT" ]] &>/dev/null; then
   DIP_SLOWEST_COUNT="0"
+fi
+
+# if zero
+if [[ -z "$DIP_FASTEST_AVERAGE_PROFIT" ]] &>/dev/null; then
+  DIP_FASTEST_AVERAGE_PROFIT="0"
+fi
+
+# if zero
+if [[ -z "$DIP_SLOWEST_AVERAGE_PROFIT" ]] &>/dev/null; then
+  DIP_SLOWEST_AVERAGE_PROFIT="0"
 fi
 
 ################################################################################
@@ -3283,8 +3306,8 @@ Top_Spread..........: $DIP_TOP_PROFIT ${DIP_TOP_PROFIT_AMOUNT:?}%
 Low_Spread..........: $DIP_LOW_PROFIT ${DIP_LOW_PROFIT_AMOUNT:?}%
 Top_Dip.............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip.............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
-Fastest_Market......: $DIP_FASTEST_MARKET ($DIP_FASTEST_COUNT)
-Slowest_Market......: $DIP_SLOWEST_MARKET ($DIP_SLOWEST_COUNT)
+Fastest_Market......: $DIP_FASTEST_MARKET ($DIP_FASTEST_COUNT) ${DIP_FASTEST_AVERAGE_PROFIT:?}%
+Slowest_Market......: $DIP_SLOWEST_MARKET ($DIP_SLOWEST_COUNT) ${DIP_SLOWEST_AVERAGE_PROFIT:?}%
 Average_Profit......: ${DIP_AVERAGE_PROFIT:?}%
 Completed_Today.....: $DIP_SOLD_TODAY $ACTIVE_MARKET_PAIRS ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT)
 Completed_Profit....: $DIP_COMPLETED_PROFIT $ACTIVE_MARKET_PAIRS ($DIP_PROFIT_COUNT) ${DIP_COMPLETED_PROFIT_PERCENTAGE:?}%
