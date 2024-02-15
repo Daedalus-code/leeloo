@@ -401,7 +401,7 @@ function target_data() {
     MISSING_MARKETS_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null)"
 
     # random missing market
-    MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS_FILE" | tr ' ' '\n' | shuf -n 1)"
+    MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS_FILE" | tr ' ' '\n' | shuf -n 1 | awk '{ print $1 }')"
 
     # default
     RANDOM_MISSING_MARKET="1"
@@ -415,7 +415,7 @@ function target_data() {
     # if random
     if [[ "$RANDOM_MISSING_MARKET" -gt "1" ]] &>/dev/null; then
       # target missing orders from active list
-      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" | grep -w "$MISSING_MARKETS_RANDOM:" | awk '{ print $1 }')"
+      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" | grep -w "$MISSING_MARKETS_RANDOM:")"
     fi
 
     # if zero
