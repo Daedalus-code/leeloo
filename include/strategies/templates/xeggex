@@ -109,12 +109,14 @@ function isHighRisk() {
   if [[ "$DIP_IS_HIGH_RISK_AGE" -gt "300" && -f "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
     # call isHighRisk data
     IS_HIGH_RISK="$(cat "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info 2>/dev/null | grep "isHighRisk" | awk -F: '{ print $2 }' | tr -d ',' | awk '{ print $1 }')"
-    # keep data
-    echo "$IS_HIGH_RISK" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_high_risk
     # if zero
     if [[ -z "$IS_HIGH_RISK" ]] &>/dev/null; then
       IS_HIGH_RISK="false"
     fi
+    # keep data
+    echo "$IS_HIGH_RISK" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_high_risk
+    # high risk data
+    IS_HIGH_RISK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_high_risk 2>/dev/null)"
   fi
 }
 
