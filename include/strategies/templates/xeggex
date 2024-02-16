@@ -86,9 +86,7 @@ function backup_orders() {
 function listing_info() {
   # if missing
   if [[ ! -d "${LOG_DIR:?}"/leeloo/xeggex/listing ]] &>/dev/null; then
-    # clean up (old version)
     mkdir "${LOG_DIR:?}"/leeloo/xeggex/listing &>/dev/null
-    mv "${LOG_DIR:?}"/leeloo/xeggex/*_info "${LOG_DIR:?}"/leeloo/xeggex/listing/ &>/dev/null
   fi
 
   # dip listing info age (seconds)
@@ -99,6 +97,24 @@ function listing_info() {
     LISTING_INFORMATION="$(getbyticker "$LISTING_CURRENCY")"
     # keep data
     echo "$LISTING_INFORMATION" >"${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info
+  fi
+}
+
+################################################################################
+
+function isHighRisk() {
+  # dip isHighRisk age (seconds)
+  DIP_IS_HIGH_RISK_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_high_risk 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # if age are greater than n, if found
+  if [[ "$DIP_IS_HIGH_RISK_AGE" -gt "300" && -f "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
+    # call isHighRisk data
+    IS_HIGH_RISK="$(cat "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info 2>/dev/null | grep "isHighRisk" | awk -F: '{ print $2 }' | tr -d ',' | awk '{ print $1 }')"
+    # keep data
+    echo "$IS_HIGH_RISK" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_high_risk
+    # if zero
+    if [[ -z "$IS_HIGH_RISK" ]] &>/dev/null; then
+      IS_HIGH_RISK="false"
+    fi
   fi
 }
 
