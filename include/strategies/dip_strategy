@@ -2417,45 +2417,6 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/n
 fi
 
 ################################################################################
-# removing broken position (broken quest)
-################################################################################
-
-# calculate days into seconds
-DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
-# calculate days into seconds
-DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
-# orders check
-DIP_ACTIVE_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
-# balances check
-DIP_ACTIVE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | grep -w "$LISTING_CURRENCY" | egrep -c "[1-9]+" || true)"
-
-# if older than n seconds
-if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
-  # if older than n seconds
-  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
-    # if no orders
-    if [[ "$DIP_ACTIVE_ORDERS" -eq "0" ]] &>/dev/null; then
-      # if no balances
-      if [[ "$DIP_ACTIVE_BALANCES" -eq "0" ]] &>/dev/null; then
-
-        # if specific market dont exist in orders file (buy,sell)
-        if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | egrep -c "buy|sell" || true)" -eq "0" ]] &>/dev/null; then
-          # if (active) order exist
-          if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
-            # remove old (active) order (buy & sell does not exist)
-            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-          fi
-        fi
-
-        # cleanup output (log)
-        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (broken) Age: $DIP_BOUGHT_AGE_OUTPUT"
-        echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-      fi
-    fi
-  fi
-fi
-
-################################################################################
 # sold order
 ################################################################################
 
@@ -2565,6 +2526,45 @@ if [[ "$DIP_ACTIVE_TARGET" -gt "0" ]] &>/dev/null; then
           # reset sold file (reset data, age)
           truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
         fi
+      fi
+    fi
+  fi
+fi
+
+################################################################################
+# removing broken position (broken quest)
+################################################################################
+
+# calculate days into seconds
+DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
+# calculate days into seconds
+DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
+# orders check
+DIP_ACTIVE_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
+# balances check
+DIP_ACTIVE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | grep -w "$LISTING_CURRENCY" | egrep -c "[1-9]+" || true)"
+
+# if older than n seconds
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
+  # if older than n seconds
+  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
+    # if no orders
+    if [[ "$DIP_ACTIVE_ORDERS" -eq "0" ]] &>/dev/null; then
+      # if no balances
+      if [[ "$DIP_ACTIVE_BALANCES" -eq "0" ]] &>/dev/null; then
+
+        # if specific market dont exist in orders file (buy,sell)
+        if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | egrep -c "buy|sell" || true)" -eq "0" ]] &>/dev/null; then
+          # if (active) order exist
+          if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+            # remove old (active) order (buy & sell does not exist)
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+          fi
+        fi
+
+        # cleanup output (log)
+        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (broken) Age: $DIP_BOUGHT_AGE_OUTPUT"
+        echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       fi
     fi
   fi
