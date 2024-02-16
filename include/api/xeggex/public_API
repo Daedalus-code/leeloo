@@ -12,15 +12,28 @@ function tickers {
   fi
 }
 
-# tickers ######################################################################
+# getlist ######################################################################
 # https://api.xeggex.com/api/v2/market/getlist
-# Example: market_list
+# Example: getlist
 
-function market_list {
+function getlist {
   if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
     timeout "${API_TIMEOUT:?}" torify curl -s -X GET "https://api.xeggex.com/api/v2/market/getlist" -H "accept: application/json" | jq -r '.[]? | "\(.symbol): \(.quantityDecimals) \(.spreadPercentNumber)"'
   else
     timeout "${API_TIMEOUT:?}" curl -s -X GET "https://api.xeggex.com/api/v2/market/getlist" -H "accept: application/json" | jq -r '.[]? | "\(.symbol): \(.quantityDecimals) \(.spreadPercentNumber)"'
+  fi
+}
+
+# getbyticker ##################################################################
+# https://api.xeggex.com/api/v2/asset/getbyticker
+# Example: getbyticker BTC
+
+function getbyticker {
+  SYMBOL="$1"
+  if [[ "$PROXY_PUBLIC_API" == "true" ]] &>/dev/null; then
+    timeout "${API_TIMEOUT:?}" torify curl -X GET "https://api.xeggex.com/api/v2/asset/getbyticker/$SYMBOL" -H "accept: application/json" | jq -r
+  else
+    timeout "${API_TIMEOUT:?}" curl -X GET "https://api.xeggex.com/api/v2/asset/getbyticker/$SYMBOL" -H "accept: application/json" | jq -r
   fi
 }
 
