@@ -192,6 +192,7 @@ incoming_reference
 # rogue profit using rsi
 
 ROGUE_TIMER_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+ROGUE_STATUS_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 ROGUE_AMOUNT="0.009225" # n % to be used (default: 0.009225)
 ROGUE_TIMER="3600"      # n seconds (default: 3600 seconds/1 hour cooldown)
 ROGUE_HOURS="6"         # n hours of data (default: 6 hours)
@@ -668,8 +669,8 @@ RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/
 
   ##############################################################################
 
-  # reset status at midnight
-  if [[ "$(date '+%H:%M' | egrep "00:00" | wc -l)" -eq "1" ]] &>/dev/null; then
+  # reset status at midnight, greater than n
+  if [[ "$(date '+%H:%M' | egrep "00:00" | wc -l)" -eq "1" || "$ROGUE_STATUS_NOW" -gt "86400" ]] &>/dev/null; then
     echo "IDLE @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null
   fi
 fi
