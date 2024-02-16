@@ -84,14 +84,21 @@ function backup_orders() {
 ################################################################################
 
 function listing_info() {
+  # if missing
+  if [[ ! -d "${LOG_DIR:?}"/leeloo/xeggex/listing ]] &>/dev/null; then
+    # clean up (old version)
+    mkdir "${LOG_DIR:?}"/leeloo/xeggex/listing &>/dev/null
+    mv "${LOG_DIR:?}"/leeloo/xeggex/*_info "${LOG_DIR:?}"/leeloo/xeggex/listing/ &>/dev/null
+  fi
+
   # dip listing info age (seconds)
-  DIP_LISTING_INFO_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_info 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  DIP_LISTING_INFO_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # if age are greater than n, if not found
-  if [[ "$DIP_LISTING_INFO_AGE" -gt "600" || ! -f "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
+  if [[ "$DIP_LISTING_INFO_AGE" -gt "600" || ! -f "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
     # call listing data
     LISTING_INFORMATION="$(getbyticker "$LISTING_CURRENCY")"
     # keep data
-    echo "$LISTING_INFORMATION" >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_info
+    echo "$LISTING_INFORMATION" >"${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info
   fi
 }
 
@@ -101,9 +108,9 @@ function isDelisting() {
   # dip delisting age (seconds)
   DIP_IS_DELISTING_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_delisting 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # if age are greater than n, if found
-  if [[ "$DIP_IS_DELISTING_AGE" -gt "300" && -f "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
+  if [[ "$DIP_IS_DELISTING_AGE" -gt "300" && -f "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
     # call delisting data
-    IS_DELISTING="$(cat "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_info 2>/dev/null | grep "isDelisting" | awk -F: '{ print $2 }' | tr -d ',' | awk '{ print $1 }')"
+    IS_DELISTING="$(cat "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info 2>/dev/null | grep "isDelisting" | awk -F: '{ print $2 }' | tr -d ',' | awk '{ print $1 }')"
     # keep data
     echo "$IS_DELISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_delisting
     # if zero
