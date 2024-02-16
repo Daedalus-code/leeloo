@@ -490,10 +490,15 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
 
   "1")
 
+    # function to update dialog progress bar
+    update_progress() {
+      echo "$1" | dialog --title "Bots Progress" --gauge "Bots are working.. Please wait!" 6 45 $2
+    }
+
     while true; do
       # robot log status
       ROBOT_LOG_STATUS="$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | column -t | awk -F. '{ print $2,$NF }')"
-      # num
+      # extract numbers
       NUMBERS="$(echo "$ROBOT_LOG_STATUS" | awk '{ print $NF }' | sort -n)"
       # loop through each number
       NO_LOGS_BELOW=true
@@ -509,12 +514,17 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
       if $NO_LOGS_BELOW; then
         break
       fi
+      # calculate progress percentage
       ROBOT_STATUS_PERCENTAGE="$(echo "100/$BOT_TIMER*$NUM" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+      # display progress bar in dialog
+      update_progress "Bots are working.." $ROBOT_STATUS_PERCENTAGE
       # wait for a specified interval before checking again
-      echo "Bots are working.. (${ROBOT_STATUS_PERCENTAGE:?}%) Please wait!"
       sleep 1
-      clear
     done
+
+    # close dialog after the loop ends
+    dialog --infobox "Bots have finished their work." 3 40
+    sleep 2
     leeloo_update
 
     ;;
