@@ -3201,8 +3201,6 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   DIP_TOTAL_PROFIT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | awk '{ print $7 }' | awk '{ SUM += $1} END { print SUM }')"
   # profit count
   DIP_PROFIT_COUNT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | wc -l)"
-  # average profit
-  DIP_AVERAGE_PROFIT="$(echo "$DIP_TOTAL_PROFIT/$DIP_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 
   # if zero
   if [[ "$DIP_PROFIT_COUNT" == "0" ]] &>/dev/null; then
@@ -3213,9 +3211,6 @@ fi
 # if zero
 if [[ -z "$DIP_PROFIT_COUNT" ]] &>/dev/null; then
   DIP_PROFIT_COUNT="0"
-fi
-if [[ -z "$DIP_AVERAGE_PROFIT" ]] &>/dev/null; then
-  DIP_AVERAGE_PROFIT="0"
 fi
 if [[ -z "$DIP_LAST_PROFIT" ]] &>/dev/null; then
   DIP_LAST_PROFIT="N/A"
@@ -3375,8 +3370,7 @@ Top_Dip.............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip.............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
 Fastest_Market......: $DIP_FASTEST_MARKET ($DIP_FASTEST_COUNT) ${DIP_FASTEST_AVERAGE_PROFIT:?}%
 Slowest_Market......: $DIP_SLOWEST_MARKET ($DIP_SLOWEST_COUNT) ${DIP_SLOWEST_AVERAGE_PROFIT:?}%
-Average_Profit......: ${DIP_AVERAGE_PROFIT:?}%
-Completed_Today.....: $DIP_SOLD_TODAY $ACTIVE_MARKET_PAIRS ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT)
+Completed_Today.....: ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT) $DIP_SOLD_TODAY $ACTIVE_MARKET_PAIRS
 Completed_Profit....: $DIP_COMPLETED_PROFIT $ACTIVE_MARKET_PAIRS ($DIP_PROFIT_COUNT) ${DIP_COMPLETED_PROFIT_PERCENTAGE:?}%
 Select/Skip/Removed.: $DIP_SELECT_SKIP_REMOVED_GHOST
 Last_Profit.........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
