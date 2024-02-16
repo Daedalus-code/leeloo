@@ -146,6 +146,9 @@ if [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
   MARKET_LIMIT_DATA="Limit"
 fi
 
+# listing available balance (market decimal)
+LISTING_AVAILABLE_BALANCE="$(echo "$LISTING_AVAILABLE_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
+
 ################################################################################
 
 echo "Market................: $LISTING_CURRENCY/$REFERENCE_CURRENCY
@@ -368,9 +371,6 @@ function rogue_clean_lines() {
 }
 
 ################################################################################
-
-# listing price (market decimal)
-LISTING_PRICE="$(echo "$LISTING_PRICE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
 
 if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
 
