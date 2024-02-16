@@ -83,24 +83,37 @@ function backup_orders() {
 
 ################################################################################
 
-function isDelisting() {
-  # symbol (listing)
-  SYMBOL="$1"
+function listing_info() {
   # dip market list age (seconds)
-  DIP_IS_DELISTING_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$SYMBOL"_delisting 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  # if age equals n
-  if [[ "$DIP_IS_DELISTING_AGE" -eq "300" ]] &>/dev/null; then
-    # call data
-    IS_DELISTING="$(getbyticker "$SYMBOL" | grep "isDelisting" | awk -F: '{ print $2 }' | tr -d ',' | awk '{ print $1 }')"
+  DIP_LISTING_INFO_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_info 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # if age are greater than n, if not found
+  if [[ "$DIP_LISTING_INFO_AGE" -gt "300" || ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
+    # call listing data
+    LISTING_INFORMATION="$(getbyticker "$LISTING_CURRENCY")"
     # keep data
-    echo "$IS_DELISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$SYMBOL"_delisting
+    echo "$LISTING_INFORMATION" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_info
+  fi
+}
+
+################################################################################
+
+function isDelisting() {
+  # dip market list age (seconds)
+  DIP_IS_DELISTING_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_delisting 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # if age are greater than n, if found
+  if [[ "$DIP_IS_DELISTING_AGE" -gt "300" && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
+    # call delisting data
+    IS_DELISTING="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_info 2>/dev/null | grep "isDelisting" | awk -F: '{ print $2 }' | tr -d ',' | awk '{ print $1 }')"
+    # keep data
+    echo "$IS_DELISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_delisting
     # if zero
     if [[ -z "$IS_DELISTING" ]] &>/dev/null; then
       IS_DELISTING="false"
     fi
     # if delisting is true
     if [[ "$IS_DELISTING" == "true" ]] &>/dev/null; then
-      echo "$SYMBOL" >>"${SYS_DIR:?}"/delisted_xeggex
+      # add delisted asset
+      echo "$LISTING_CURRENCY" >>"${SYS_DIR:?}"/delisted_xeggex
       # remove duplicates
       echo "$(cat "${SYS_DIR:?}"/delisted_xeggex 2>/dev/null | awk '!a[$1]++')" >"${SYS_DIR:?}"/delisted_xeggex
     fi
