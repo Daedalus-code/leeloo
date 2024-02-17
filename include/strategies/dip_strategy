@@ -2590,16 +2590,16 @@ DIP_CHANGE_ASSET_BALANCE="$(echo "$DIP_CHANGE_ASSET" | awk '{ print $3 }' | awk 
 # old ask price (bought)
 DIP_CHANGE_OLD_PRICE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".bought 2>/dev/null | awk '{ print $10 }' | tail -1)"
 # new bid price (prices.dip)
-DIP_CHANGE_NEW_PRICE="$(grep "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip | awk '{ print $2 }')"
+DIP_CHANGE_NEW_PRICE="$(grep -w "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip | awk '{ print $2 }')"
 # calculate profit or loss
 DIP_CHANGE_PROFIT_LOSS="$(echo "100/$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_NEW_PRICE-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 # if prices exist
 if [[ -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
   # if market exist
-  if [[ "$(grep -c "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip || true)" -eq "1" ]]; then
+  if [[ "$(grep -wc "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip || true)" -eq "1" ]]; then
     # if (active) order does not exist
-    if [[ "$(grep -c "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "0" ]] &>/dev/null; then
+    if [[ "$(grep -wc "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "0" ]] &>/dev/null; then
 
       # if profit are adequate (above minimum spread, ruled by configuration)
       if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "$(echo "$DIP_MIN_SPREAD" | awk -F. '{ print $1 }')" ]] &>/dev/null; then
