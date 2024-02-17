@@ -3377,8 +3377,11 @@ if [[ -z "$DIP_DUSTING_COUNT_PERC" ]] &>/dev/null; then
   DIP_DUSTING_COUNT_PERC="0.00"
 fi
 
-# if extra logs are set
+# combined output of select, skip and removed
 DIP_SELECT_SKIP_REMOVED="${DIP_SELECT_COUNT_PERC:?}% ($DIP_SELECT_COUNT) ${DIP_SKIP_COUNT_PERC:?}% ($DIP_SKIP_COUNT) ${DIP_REMOVED_COUNT_PERC:?}% ($DIP_REMOVED_COUNT)"
+# combined output of ghosts, broken and dust
+DIP_GHOST_BROKEN_DUST="${DIP_GHOST_COUNT_PERC:?}% ($DIP_GHOST_COUNT) ${DIP_BROKEN_COUNT_PERC:?}% ($DIP_BROKEN_COUNT) ${DIP_DUSTING_COUNT_PERC:?}% ($DIP_DUSTING_COUNT)"
+
 # completed profit
 DIP_COMPLETED_PROFIT="$(grep -w "$ACTIVE_MARKET_PAIRS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '{ print $2 }' | tr -d ':')"
 # completed profit percentage
@@ -3480,7 +3483,7 @@ Slowest_Market......: $DIP_SLOWEST_MARKET ($DIP_SLOWEST_COUNT) ${DIP_SLOWEST_AVE
 Completed_Today.....: ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT) $DIP_SOLD_TODAY $ACTIVE_MARKET_PAIRS
 Completed_Profit....: $DIP_COMPLETED_PROFIT $ACTIVE_MARKET_PAIRS ($DIP_PROFIT_COUNT) ${DIP_COMPLETED_PROFIT_PERCENTAGE:?}%
 Select/Skip/Removed.: $DIP_SELECT_SKIP_REMOVED
-Ghosts/Broken/Dust..: ${DIP_GHOST_COUNT_PERC:?}% ($DIP_GHOST_COUNT) ${DIP_BROKEN_COUNT_PERC:?}% ($DIP_BROKEN_COUNT) ${DIP_DUSTING_COUNT_PERC:?}% ($DIP_DUSTING_COUNT)
+Ghosts/Broken/Dust..: $DIP_GHOST_BROKEN_DUST
 Last_Profit.........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
 Highest_Profit......: $DIP_HIGHEST_PROFIT
 Lowest_Profit.......: $DIP_LOWEST_PROFIT
