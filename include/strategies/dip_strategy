@@ -2602,7 +2602,7 @@ if [[ -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; t
     if [[ "$(grep -c "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "0" ]] &>/dev/null; then
 
       # if profit are adequate (above minimum spread, ruled by configuration)
-      if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" > "$(echo "$DIP_MIN_SPREAD" | awk -F. '{ print $1 }')" ]] &>/dev/null; then
+      if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "$(echo "$DIP_MIN_SPREAD" | awk -F. '{ print $1 }')" ]] &>/dev/null; then
 
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
