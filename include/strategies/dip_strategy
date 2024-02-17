@@ -816,16 +816,16 @@ fi
 backup_prices
 
 # create price.dip file, only print lines with bids that are less than ask
-echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | awk '{if ($2 < $3) print}')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip
+echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | awk '{if ($2 < $3) print}')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null
 
 # prices file output (RAW)
 CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
 
 # if xeggex api, change _ into /
 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-  echo "$(echo "$CAT_PRICES_DIP_FILE" | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+  echo "$(echo "$CAT_PRICES_DIP_FILE" | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null
 fi
 
 ################################################################################
@@ -2388,29 +2388,42 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/n
     # if specific market exist in orders file (sell)
     if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "sell" || true)" -gt "0" ]] &>/dev/null; then
       # old order id (sell)
-      DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':' | head -1)"
+      DIP_ORDER_ID="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
       # order id found
       if [[ -n "$DIP_ORDER_ID" ]] &>/dev/null; then
-        # cancel old order (sell)
-        cancelOrder "$DIP_ORDER_ID" 2>>"${LOG_ERROR:?}"
+
+        # use a while loop to read each line of the string into the variable order_id
+        echo "$DIP_ORDER_ID" | while IFS= read -r ORDER_ID; do
+          # cancel old order (sell)
+          cancelOrder "$ORDER_ID" 2>>"${LOG_ERROR:?}"
+        done
+
         sleep 1
+
         # remove old order
         echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -v "$DIP_ORDER_ID")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders
+
         # if specific market dont exist in orders file (buy)
         if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -c "buy" || true)" -eq "0" ]] &>/dev/null; then
           # remove old (active) order (buy & sell does not exist)
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
         fi
+
         log_date
+
         # order n greater than n
-        if [[ "$(echo "$DIP_ORDER_ID" | wc -L)" -gt "9" ]] &>/dev/null; then
+        if [[ "$(echo "$(echo "$DIP_ORDER_ID" | tail -1)" | wc -L)" -gt "9" ]] &>/dev/null; then
           DIP_ORDER_ID_DOTS=".."
         else
           DIP_ORDER_ID_DOTS=""
         fi
-        # removing sell order output (log)
-        DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing sell order: ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
-        echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+        # use a while loop to read each line of the string into the variable order_id
+        echo "$DIP_ORDER_ID" | while IFS= read -r ORDER_ID; do
+          # removing sell order output (log)
+          DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing sell order: ${ORDER_ID:0:9}$DIP_ORDER_ID_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
+          echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        done
       fi
     fi
   fi
