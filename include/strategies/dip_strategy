@@ -2611,6 +2611,9 @@ if [[ -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; t
         # if profit are adequate (above minimum spread, ruled by configuration)
         if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "$(echo "$DIP_MIN_SPREAD" | awk -F. '{ print $1 }')" ]] &>/dev/null; then
 
+          ######################################################################
+          ######################################################################
+
           # if xeggex order
           if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
             # CreateOrder market ###############################################
@@ -2619,8 +2622,10 @@ if [[ -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; t
             sleep 1
           fi
 
-          # tx_id
-          echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+          ######################################################################
+          ######################################################################
+
+          tx_id
 
           # sell output (trade history)
           DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: $DIP_CHANGE_ASSET_BALANCE $REFERENCE_BALANCE ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_FILE_AGE"

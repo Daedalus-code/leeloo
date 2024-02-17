@@ -439,13 +439,11 @@ function reference_balance_check {
 ################################################################################
 
 function tx_id {
-  # if not found
-  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log ]] &>/dev/null; then
-    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log &>/dev/null
-  fi
 
   # execute order in strategy, create txid file
-  echo "$(echo "$PLACE_ORDER" | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  echo "$PLACE_ORDER" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  # cleanup txid
+  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | tr -d '{"}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 
   # last txid (raw)
   TX_ID_LAST_RAW="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | xargs)"
@@ -454,6 +452,11 @@ function tx_id {
   if [[ "$(echo "$TX_ID_LAST_RAW" | egrep -c "id:[A-Za-z0-9]+" || true)" -gt "0" ]] &>/dev/null; then
     # update txid
     echo "$(echo "$TX_ID_LAST_RAW" | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
+  fi
+
+  # if not found
+  if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log ]] &>/dev/null; then
+    touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log &>/dev/null
   fi
 
   # search for words ###########################################################
