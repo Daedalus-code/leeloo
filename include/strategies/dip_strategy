@@ -2274,7 +2274,7 @@ fi
 ################################################################################
 
 # listing trades age (seconds)
-DIP_LISTING_TRADES_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+DIP_LISTING_TRADES_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # if empty
 if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -eq "0" || -z "$DIP_LISTING_TRADES_AGE_SECONDS" ]] &>/dev/null; then
@@ -2291,12 +2291,12 @@ if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/n
     if [[ -z "$DIP_OLD_GROUP_ID" ]] &>/dev/null; then
       DIP_OLD_GROUP_ID="0"
     fi
-    # listing trades
+    # listing trades (sell)
     DIP_LISTING_TRADES="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | grep 'sell' | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
     # keep data
-    echo "$DIP_LISTING_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
+    echo "$DIP_LISTING_TRADES" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
     # output data
-    DIP_LISTING_TRADES="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null)"
+    DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null)"
     # get the last group ID
     LAST_GROUP_ID=$(echo "$DIP_LISTING_TRADES" | awk '{ print $6 }' | head -1)
     # sold order quantity
