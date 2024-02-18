@@ -2286,7 +2286,7 @@ if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/n
   # if any data
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # listing trades
-    DIP_LISTING_TRADES="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | grep 'sell' | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity)"' | tr -d '{"}' | tr ':,' ' ' | column -t | sort -n -k 1)"
+    DIP_LISTING_TRADES="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | grep 'sell' | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
     # keep data
     echo "$DIP_LISTING_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
     # output data
