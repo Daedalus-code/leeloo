@@ -2276,29 +2276,39 @@ fi
 # listing trades age (seconds)
 DIP_LISTING_TRADES_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-# if listing trade age are olde than n
+# if listing trade age is older than n
 if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" ]] &>/dev/null; then
   # if any data
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # listing trades
-    DIP_LISTING_TRADES="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity)"' | tr -d '{"}' | tr ':,' ' ' | column -t | sort -n -k 1)"
+    DIP_LISTING_TRADES="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | grep 'sell' | sort -k 3 | awk '{arr[$3]=$0} END{for (i in arr) print arr[i]}')"
     # keep data
     echo "$DIP_LISTING_TRADES" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
-    # sold order quantity
-    DIP_ORDER_SOLD_QUANTITY="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | awk '{ print $9 }')"
-    # sold order price
-    DIP_ORDER_SOLD_PRICE="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | awk '{ print $8 }')"
-    # sold order id
-    DIP_ORDER_SOLD_ID="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | awk '{ print $1 }')"
-    # sold order id (tracked)
-    DIP_ORDER_SOLD_ID_TRACKED="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trade.id 2>/dev/null | awk '{ print $1 }')"
-    # if order id's don't match
-    if [[ ! "$DIP_ORDER_SOLD_ID" == "$DIP_ORDER_SOLD_ID_TRACKED" ]] &>/dev/null; then
-      # track order amount being sold
-      echo "$DIP_ORDER_SOLD_QUANTITY" | awk '{ printf "%.9f\n", $1 }' | sed '/^$/d' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
-      # track last order id
-      echo "$DIP_ORDER_SOLD_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trade.id
-    fi
+    # get the last group ID
+    LAST_GROUP_ID=$(echo "$DIP_LISTING_TRADES" | awk '{ print $3 }' | tail -1)
+    # iterate over each sell order in the last group
+    while read -r trade; do
+      # get group ID
+      GROUP_ID=$(echo "$trade" | awk '{ print $3 }')
+      # check if it belongs to the last group
+      if [[ "$GROUP_ID" == "$LAST_GROUP_ID" ]]; then
+        # sold order quantity
+        DIP_ORDER_SOLD_QUANTITY="$(echo "$trade" | awk '{ print $9 }')"
+        # sold order price
+        DIP_ORDER_SOLD_PRICE="$(echo "$trade" | awk '{ print $8 }')"
+        # sold order id
+        DIP_ORDER_SOLD_ID="$(echo "$trade" | awk '{ print $1 }')"
+        # sold order id (tracked)
+        DIP_ORDER_SOLD_ID_TRACKED="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trade.id 2>/dev/null | awk '{ print $1 }')"
+        # if order id's don't match
+        if [[ ! "$DIP_ORDER_SOLD_ID" == "$DIP_ORDER_SOLD_ID_TRACKED" ]] &>/dev/null; then
+          # track order amount being sold
+          echo "$DIP_ORDER_SOLD_QUANTITY" | awk '{ printf "%.9f\n", $1 }' | sed '/^$/d' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+          # track last order id
+          echo "$DIP_ORDER_SOLD_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trade.id
+        fi
+      fi
+    done <<<"$DIP_LISTING_TRADES"
   fi
 fi
 
