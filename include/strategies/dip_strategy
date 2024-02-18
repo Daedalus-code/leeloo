@@ -2276,6 +2276,11 @@ fi
 # listing trades age (seconds)
 DIP_LISTING_TRADES_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
+# if empty
+if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -eq "0" || -z "$DIP_LISTING_TRADES_AGE_SECONDS" ]] &>/dev/null; then
+  DIP_LISTING_TRADES_AGE_SECONDS="$(echo "$BOT_TIMER*4" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+fi
+
 # if listing trade age is older than n
 if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" ]] &>/dev/null; then
   # if any data
