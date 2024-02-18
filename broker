@@ -1496,6 +1496,11 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
         LENGTH="$(echo "$(echo "$ORDERS_COUNT" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
         RESULT="$(echo "$ORDERS_TAC" 2>/dev/null | head -100 | column -t)"
 
+        # if zero
+        if [[ -z "$RESULT" ]] &>/dev/null; then
+          RESULT="Nothing here"
+        fi
+
         # sell count
         SELL_COUNT="$(echo "$ORDERS_TAC" | grep -c "sell")"
         if [[ -z "$SELL_COUNT" ]] &>/dev/null; then
