@@ -2954,12 +2954,10 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/n
 
             reset_active_market_list
 
-            # if extra logs are set
-            if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
-              # dump output (log)
-              DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Dumping! ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old) ${LISTING_PRICE_PROFIT:?}% P/L"
-              echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-            fi
+            # dump output (log)
+            DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Dumping! ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old) ${LISTING_PRICE_PROFIT:?}% P/L"
+            echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
             ####################################################################
             ####################################################################
           fi
@@ -3187,10 +3185,13 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     fi
   fi
 
-  if [[ "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep -c "Dumping!" || true)" -eq "0" ]] &>/dev/null; then
-    # dump output (log)
-    DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$REFERENCE_CURRENCY :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
-    echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  # if extra logs are set
+  if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
+    if [[ "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep -c "Dumping!" || true)" -eq "0" ]] &>/dev/null; then
+      # dump output (log)
+      DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$REFERENCE_CURRENCY :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
+      echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    fi
   fi
 
   ##############################################################################
