@@ -455,12 +455,18 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
       # robot log status
       ROBOT_LOG_STATUS="$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | column -t | awk -F. '{ print $2,$NF }')"
       # extract numbers
-      NUMBERS="$(echo "$ROBOT_LOG_STATUS" | awk '{ print $NF }' | sort -n)"
+      NUMBERS="$(echo "$ROBOT_LOG_STATUS" | awk '{ print $NF }')"
+      # count numbers
+      NUMBERS_COUNT="$(echo "$NUMBERS" | wc -l)"
+      # extract total numbers value
+      NUMBERS_TOTAL="$(echo "$NUMBERS" | awk '{ SUM += $1} END { print SUM }')"
+      # calculate average seconds
+      NUMBERS_AVERAGE="$(echo "$NUMBERS_TOTAL/$NUMBERS_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
       # loop through each number
       NO_LOGS_BELOW=true
-      for NUM in $NUMBERS; do
+      for NUM in $NUMBERS_AVERAGE; do
         # check if the number is below n
-        if [ "$NUM" -lt "$(echo "$BOT_TIMER/1.555" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
+        if [ "$NUM" -lt "$(echo "$BOT_TIMER" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
           NO_LOGS_BELOW=false
           WAITING_ON_BOT="$NUM"
           break # no need to check further, we found a log below n seconds
