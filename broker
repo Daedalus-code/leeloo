@@ -467,8 +467,8 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
       # loop through each number
       NO_LOGS_BELOW=true
       for NUM in $NUMBERS_AVERAGE; do
-        # check if the number is below n
-        if [ "$NUM" -gt "$BOT_TIMER" ]; then
+        # check if the number is above n
+        if [ "$NUM" -gt "$(echo "$BOT_TIMER*2" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
           NO_LOGS_BELOW=false
           WAITING_ON_BOT="$NUM"
           break # no need to check further, we found a log below n seconds
