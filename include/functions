@@ -34,18 +34,19 @@ function install_exchange_dir() {
   if [[ ! -d "${LOG_DIR:?}"/leeloo ]] &>/dev/null; then
     mkdir "${LOG_DIR:?}"/leeloo &>/dev/null
   fi
+  # indicators directory
   if [[ ! -d "${LOG_DIR:?}"/leeloo/indicators ]] &>/dev/null; then
     mkdir "${LOG_DIR:?}"/leeloo/indicators &>/dev/null
   fi
+  # poloniex directory
   if [[ ! -d "${LOG_DIR:?}"/leeloo/poloniex ]] &>/dev/null; then
     mkdir "${LOG_DIR:?}"/leeloo/poloniex &>/dev/null
   fi
-  if [[ ! -d "${LOG_DIR:?}"/leeloo/southxchange ]] &>/dev/null; then
-    mkdir "${LOG_DIR:?}"/leeloo/southxchange &>/dev/null
-  fi
+  # stakecube directory
   if [[ ! -d "${LOG_DIR:?}"/leeloo/stakecube ]] &>/dev/null; then
     mkdir "${LOG_DIR:?}"/leeloo/stakecube &>/dev/null
   fi
+  # xeggex directory
   if [[ ! -d "${LOG_DIR:?}"/leeloo/xeggex ]] &>/dev/null; then
     mkdir "${LOG_DIR:?}"/leeloo/xeggex &>/dev/null
   fi
@@ -158,7 +159,6 @@ ERROR_LOG="${LOG_DIR:?}/leeloo/error.log"
 function key_secret_set() {
 
   KEY_SECRET_SET_PLX="0" # poloniex
-  KEY_SECRET_SET_SXC="0" # southxchange
   KEY_SECRET_SET_SCE="0" # stakecube
   KEY_SECRET_SET_XGX="0" # xeggex
 
@@ -167,10 +167,6 @@ function key_secret_set() {
   # poloniex option
   if [[ -n "$API_POLONIEX_KEY" ]] && [[ -n "$API_POLONIEX_SECRET" ]]; then
     KEY_SECRET_SET_PLX="1"
-  fi
-  # southxchange option
-  if [[ -n "$API_SOUTHX_KEY" ]] && [[ -n "$API_SOUTHX_SECRET" ]]; then
-    KEY_SECRET_SET_SXC="1"
   fi
   # stakecube option
   if [[ -n "$API_STAKECUBE_KEY" ]] && [[ -n "$API_STAKECUBE_SECRET" ]]; then
@@ -427,18 +423,6 @@ function exchange_balance() {
 
   ##############################################################################
 
-  # southxchange
-  if [[ "$EXCHANGE_BALANCE" == "southxchange" ]] &>/dev/null; then
-    EXCHANGE_API="SXC"
-    exchange_template
-    # get balance
-    function result_balances() {
-      echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null
-    }
-  fi
-
-  ##############################################################################
-
   # stakecube
   if [[ "$EXCHANGE_BALANCE" == "stakecube" ]] &>/dev/null; then
     EXCHANGE_API="SCE"
@@ -529,7 +513,7 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
 
   ##############################################################################
 
-  if [[ "$EXCHANGE_BALANCE" == "poloniex" || "$EXCHANGE_BALANCE" == "southxchange" || "$EXCHANGE_BALANCE" == "xeggex" ]] &>/dev/null; then
+  if [[ "$EXCHANGE_BALANCE" == "poloniex" || "$EXCHANGE_BALANCE" == "xeggex" ]] &>/dev/null; then
 
     # default
     WIDTH="0"
@@ -543,14 +527,6 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
     fi
 
     if [[ "$EXCHANGE_BALANCE" == "xeggex" ]] &>/dev/null; then
-      # keep lines with n
-      RESULT="Coins: Deposited Available Unconfirmed
-    $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
-      WIDTH="$(echo "$(echo "$RESULT" | column -t | wc -L)+4" | bc 2>/dev/null)"
-      LENGTH="$(echo "$(echo "$RESULT" | column -t | wc -l)+4" | bc 2>/dev/null)"
-    fi
-
-    if [[ "$EXCHANGE_BALANCE" == "southxchange" ]] &>/dev/null; then
       # keep lines with n
       RESULT="Coins: Deposited Available Unconfirmed
     $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
@@ -651,20 +627,6 @@ function observe_market() {
     SUPPORT="Support: https://support.poloniex.com"
     function result_prices() {
       echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null
-    }
-  fi
-
-  ##############################################################################
-
-  # southxchange prices
-  if [[ "$OBSERVE_MARKET" == "southxchange" ]] &>/dev/null; then
-    EXCHANGE_API="SXC"
-    exchange_template
-    SUPPORT_WIDTH="+4"
-    SUPPORT_LENGTH="5"
-    SUPPORT="Support: https://southxchange.gorgias.help"
-    function result_prices() {
-      echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null
     }
   fi
 
@@ -772,22 +734,17 @@ function observe_all_market() {
   # update data every n seconds
   if [[ ! -f "${LOG_DIR:?}"/leeloo/prices.all || "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
     # exchange balances
-    echo "Updating prices (1/4)"
+    echo "Updating prices (1/3)"
     if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
       echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
     fi
     clear
-    echo "Updating prices (2/4)"
-    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
-      echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/southxchange/prices 2>/dev/null
-    fi
-    clear
-    echo "Updating prices (3/4)"
+    echo "Updating prices (2/3)"
     if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
       echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
     fi
     clear
-    echo "Updating prices (4/4)"
+    echo "Updating prices (3/3)"
     if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
       echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
     fi
@@ -867,15 +824,6 @@ function search_market() {
     )
   fi
 
-  # southxchange search
-  if [[ "$SEARCH_MARKET" == "southxchange" ]] &>/dev/null; then
-    MARKET_INPUT=$(
-      dialog --title "Market (BTC/USDT) (BTC)" \
-        --inputbox "Enter name:" 8 40 \
-        3>&1 1>&2 2>&3 3>&-
-    )
-  fi
-
   ##############################################################################
   # market search
   ##############################################################################
@@ -890,17 +838,6 @@ function search_market() {
       SUPPORT_LENGTH="+5"
       function result_prices() {
         echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
-      }
-    fi
-
-    # get southxchange prices
-    if [[ "$SEARCH_MARKET" == "southxchange" ]] &>/dev/null; then
-      EXCHANGE_API="SXC"
-      exchange_template
-      SUPPORT_WIDTH="+5"
-      SUPPORT_LENGTH="+5"
-      function result_prices() {
-        echo "$(prices | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
       }
     fi
 
@@ -1083,24 +1020,6 @@ function open_orders {
 
   ##############################################################################
 
-  # southxchange data
-  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-    # cat or tac
-    CAT_TAC="tac"
-    # set orders format
-    ORDERS_FORMAT="OrderID: Type Amount Original LimitPrice List Ref DateAdded"
-    # set exchange template
-    EXCHANGE_API="SXC"
-    exchange_template
-    ORDER_EXCHANGE="SouthXchange"
-    # open orders function
-    function result_orders {
-      listOrders | jq -r '.[] | "\(.Code): \(.Type) \(.Amount) \(.OriginalAmount) \(.LimitPrice) \(.ListingCurrency) \(.ReferenceCurrency) \(.DateAdded)"' 2>/dev/null | awk '{for(i=1;i<=NF;i++) {if($i~/^[0-9]*\.?[0-9]*[eE][-+]?[0-9]+$/) {printf("%0.8f ",$i);} else if($i~/^[0-9]+$/) {printf("%0.8f ",$i);} else {printf("%s ",$i)}} printf("\n")}' | column -t >"${LOG_DIR:?}"/leeloo/southxchange/orders 2>/dev/null
-    }
-  fi
-
-  ##############################################################################
-
   # stakecube data
   if [[ "$EXCHANGE_API" == "SCE" ]] &>/dev/null; then
     # cat or tac
@@ -1202,11 +1121,6 @@ function open_orders {
         if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
           if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
 
-            # if southxchange
-            if [[ "$ORDER_EXCHANGE" == "SouthXchange" ]] &>/dev/null; then
-              PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-              PLACE_ORDER="$(echo "$PLACE_ORDER" | tr -d '"')"
-            fi
             # if xeggex
             if [[ "$ORDER_EXCHANGE" == "XeggeX" ]] &>/dev/null; then
               PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$AMOUNT" "" "false")"
@@ -1236,11 +1150,6 @@ function open_orders {
           if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
             if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
 
-              # if southxchange
-              if [[ "$ORDER_EXCHANGE" == "SouthXchange" ]] &>/dev/null; then
-                PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                PLACE_ORDER="$(echo "$PLACE_ORDER" | tr -d '"')"
-              fi
               # if xeggex
               if [[ "$ORDER_EXCHANGE" == "XeggeX" ]] &>/dev/null; then
                 PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$AMOUNT" "$PRICE" "false")"
@@ -1302,11 +1211,6 @@ function open_orders {
         if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
           if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
 
-            # if southxchange
-            if [[ "$ORDER_EXCHANGE" == "SouthXchange" ]] &>/dev/null; then
-              PLACE_ORDER="$(placeOrder_market "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-              PLACE_ORDER="$(echo "$PLACE_ORDER" | tr -d '"')"
-            fi
             # if xeggex
             if [[ "$ORDER_EXCHANGE" == "XeggeX" ]] &>/dev/null; then
               PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$AMOUNT" "" "false")"
@@ -1336,11 +1240,6 @@ function open_orders {
           if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
             if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
 
-              # if southxchange
-              if [[ "$ORDER_EXCHANGE" == "SouthXchange" ]] &>/dev/null; then
-                PLACE_ORDER="$(placeOrder_limit "$TYPE" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$PRICE" "$AMOUNT" "$AMOUNT_IN_REFERENCE_CURRENCY")"
-                PLACE_ORDER="$(echo "$PLACE_ORDER" | tr -d '"')"
-              fi
               # if xeggex
               if [[ "$ORDER_EXCHANGE" == "XeggeX" ]] &>/dev/null; then
                 PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$AMOUNT" "$PRICE" "false")"

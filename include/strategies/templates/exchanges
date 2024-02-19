@@ -33,17 +33,15 @@ fi
 
 # private api
 function account_private_api() {
-  # poloniex, southxchange, stakecube private api
+  # poloniex, stakecube private api
   source /usr/local/bin/include/leeloo/api/poloniex/private_API
-  source /usr/local/bin/include/leeloo/api/southxchange/private_API
   source /usr/local/bin/include/leeloo/api/stakecube/private_API
   source /usr/local/bin/include/leeloo/api/xeggex/private_API
 }
 # public api
 function account_public_api() {
-  # poloniex, southxchange, stakecube public api
+  # poloniex, stakecube public api
   source /usr/local/bin/include/leeloo/api/poloniex/public_API
-  source /usr/local/bin/include/leeloo/api/southxchange/public_API
   source /usr/local/bin/include/leeloo/api/stakecube/public_API
   source /usr/local/bin/include/leeloo/api/xeggex/public_API
 }
@@ -84,25 +82,6 @@ function exchange_template() {
     # poloniex api
     source /usr/local/bin/include/leeloo/api/poloniex/private_API
     source /usr/local/bin/include/leeloo/api/poloniex/public_API
-  fi
-
-  ##############################################################################
-
-  # southxchange template
-  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-    EXCHANGE_OUTPUT_NAME="SouthXchange"
-    EXCHANGE_DIR_NAME="southxchange"
-    if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/southxchange ]] &>/dev/null; then
-      EXCHANGE_API="Nothing"
-      EXCHANGE_DIR_NAME="null"
-      echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      exit
-    else
-      source /usr/local/bin/include/leeloo/strategies/templates/southxchange
-    fi
-    # southxchange api
-    source /usr/local/bin/include/leeloo/api/southxchange/private_API
-    source /usr/local/bin/include/leeloo/api/southxchange/public_API
   fi
 
   ##############################################################################

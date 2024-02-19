@@ -93,16 +93,15 @@ case $CHOICE in
 
   if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-    HEIGHT=11
+    HEIGHT=10
     WIDTH=24
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Account Balances"
     MENU="$DATE"
 
     OPTIONS=(1 "Poloniex"
-      2 "SouthXchange"
-      3 "StakeCube"
-      4 "XeggeX")
+      2 "StakeCube"
+      3 "XeggeX")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
@@ -124,18 +123,9 @@ case $CHOICE in
 
       ;;
 
-      # southxchange balances ##################################################
-
-    "2")
-
-      EXCHANGE_BALANCE="southxchange"
-      exchange_balance
-
-      ;;
-
       # stakecube balances #####################################################
 
-    "3")
+    "2")
 
       EXCHANGE_BALANCE="stakecube"
       exchange_balance
@@ -144,7 +134,7 @@ case $CHOICE in
 
       # xeggex balances ########################################################
 
-    "4")
+    "3")
 
       EXCHANGE_BALANCE="xeggex"
       exchange_balance
@@ -165,16 +155,15 @@ case $CHOICE in
 
 "2")
 
-  HEIGHT=12
+  HEIGHT=11
   WIDTH=24
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Prices"
   MENU="$DATE"
 
   OPTIONS=(1 "Poloniex"
-    2 "SouthXchange"
-    3 "StakeCube"
-    4 "XeggeX"
+    2 "StakeCube"
+    3 "XeggeX"
     0 "All")
 
   CHOICE=$(dialog --clear \
@@ -197,18 +186,9 @@ case $CHOICE in
 
     ;;
 
-    # southxchange prices ######################################################
-
-  "2")
-
-    OBSERVE_MARKET="southxchange"
-    observe_market
-
-    ;;
-
     # stakecube prices #########################################################
 
-  "3")
+  "2")
 
     OBSERVE_MARKET="stakecube"
     observe_market
@@ -217,7 +197,7 @@ case $CHOICE in
 
     # xeggex prices ############################################################
 
-  "4")
+  "3")
 
     OBSERVE_MARKET="xeggex"
     observe_market
@@ -240,16 +220,15 @@ case $CHOICE in
 
 "3")
 
-  HEIGHT=11
+  HEIGHT=10
   WIDTH=24
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Search"
   MENU="$DATE"
 
   OPTIONS=(1 "Poloniex"
-    2 "SouthXchange"
-    3 "StakeCube"
-    4 "XeggeX")
+    2 "StakeCube"
+    3 "XeggeX")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -271,18 +250,9 @@ case $CHOICE in
 
     ;;
 
-    # southxchange search ######################################################
-
-  "2")
-
-    SEARCH_MARKET="southxchange"
-    search_market
-
-    ;;
-
     # stakecube search #########################################################
 
-  "3")
+  "2")
 
     SEARCH_MARKET="stakecube"
     search_market
@@ -291,7 +261,7 @@ case $CHOICE in
 
     # xeggex search ############################################################
 
-  "4")
+  "3")
 
     SEARCH_MARKET="xeggex"
     search_market
@@ -312,16 +282,15 @@ case $CHOICE in
 
   if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-    HEIGHT=11
+    HEIGHT=10
     WIDTH=24
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Orders"
     MENU="$DATE"
 
     OPTIONS=(1 "Poloniex"
-      2 "SouthXchange"
-      3 "StakeCube"
-      4 "XeggeX")
+      2 "StakeCube"
+      3 "XeggeX")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
@@ -338,19 +307,6 @@ case $CHOICE in
 
       # set exchange template
       EXCHANGE_API="POL"
-      exchange_template
-      open_orders
-
-      # set broker template
-      EXCHANGE_API=""
-      exchange_template
-
-      ;;
-
-    "2") # southxchange menu
-
-      # set exchange template
-      EXCHANGE_API="SXC"
       exchange_template
       open_orders
 
@@ -952,9 +908,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     MENU="$DATE"
 
     OPTIONS=(1 "Poloniex         Generate graph"
-      2 "SouthXchange     Generate graph"
-      3 "StakeCube        Generate graph"
-      4 "XeggeX           Generate graph"
+      2 "StakeCube        Generate graph"
+      3 "XeggeX           Generate graph"
       0 "Install          Install graph"
       x "Remove           Remove install"
       r "Reset            Reset databases"
@@ -982,19 +937,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       ;;
 
-      # southxchange graphs ####################################################
-
-    "2")
-
-      install_graphs
-      GRAPH_EXCHANGE="southxchange"
-      source /usr/local/bin/include/leeloo/graph
-
-      ;;
-
       # stakecube graphs #######################################################
 
-    "3")
+    "2")
 
       install_graphs
       GRAPH_EXCHANGE="stakecube"
@@ -1004,7 +949,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       # xeggex graphs ##########################################################
 
-    "4")
+    "3")
 
       install_graphs
       GRAPH_EXCHANGE="xeggex"
@@ -1113,10 +1058,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     MENU="Multipass $DATE_XARGS"
 
     OPTIONS=(
-      1 "SXC              SouthXchange"
-      2 "POL              Poloniex"
-      3 "SCE              StakeCube"
-      4 "XGX              XeggeX")
+      1 "POL              Poloniex"
+      2 "SCE              StakeCube"
+      3 "XGX              XeggeX")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
@@ -1129,18 +1073,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     clear
     case $CHOICE in
 
-    # southxchange delist
+    # poloniex delist
 
     "1")
-
-      nano "${SYS_DIR:?}"/delisted_southxchange
-      clear
-
-      ;;
-
-      # poloniex delist
-
-    "2")
 
       nano "${SYS_DIR:?}"/delisted_poloniex
       clear
@@ -1149,7 +1084,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       # stakecube delist
 
-    "3")
+    "2")
 
       nano "${SYS_DIR:?}"/delisted_stakecube
       clear
@@ -1158,7 +1093,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       # xeggex delist
 
-    "4")
+    "3")
 
       nano "${SYS_DIR:?}"/delisted_xeggex
       clear

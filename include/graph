@@ -46,16 +46,6 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
 
   ##############################################################################
 
-  # if southxchange
-  if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
-    # create reference list based on exchange
-    GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | egrep -o "/[A-Z,0-9]+" | tr -d '/' | awk '!a[$0]++')" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0' | awk '{ print $1 }' | tr -d ':')"
-    # orders by exchange
-    GRAPH_ORDERS_EXCHANGE="SXC"
-  fi
-
-  ##############################################################################
-
   # if data
   if [[ -n "$GRAPH_REFERENCE_LIST" ]] &>/dev/null; then
     # keep reference data
@@ -80,12 +70,6 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
   # if still zero or empty
   if [[ -z "$GRAPH_TIME" ]] &>/dev/null; then
     GRAPH_TIME="1h"
-  fi
-
-  # if southxchange
-  if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
-    EXCHANGE_NAME="SouthXchange"
-    HEIGHT="150"
   fi
 
   # if xeggex
@@ -193,35 +177,6 @@ if [[ "$WCL_BALANCES" -gt "1" && "$WCL_PRICES" -gt "1" && "$WCL_ORDERS" -gt "1" 
         LINE2:available#85bb65:" $GRAPH_REFERENCE_CURRENCY Available      " GPRINT:available:LAST:"%.9lf\n" \
         LINE1:unconfirmed#EA7575:" $GRAPH_REFERENCE_CURRENCY Unconfirmed " GPRINT:unconfirmed:LAST:"%.9lf\n" \
         LINE2:total#BFDACF:" $GRAPH_REFERENCE_CURRENCY Total            " GPRINT:total:LAST:"%.9lf\n"
-    fi
-
-    ############################################################################
-
-    # if southxchange
-    if [[ "$EXCHANGE_DIR_NAME" == "southxchange" ]] &>/dev/null; then
-      # reference balance
-      rrdtool graph "${GRAPH_PNG_PATH}" \
-        -w 400 -h 150 -a PNG \
-        --slope-mode \
-        --vertical-label "${GRAPH_REFERENCE_CURRENCY} Balance" \
-        --color BACK#565875 \
-        --color FONT#FFFFFF \
-        --color CANVAS#42445F \
-        --color GRID#565875 \
-        --color FRAME#565875 \
-        --color SHADEA#565875 \
-        --color SHADEB#565875 \
-        --font DEFAULT:8:en_US.UTF-8 \
-        --end now --start end-"${GRAPH_TIME:?}" \
-        DEF:deposited="${GRAPH_DB_PATH}":deposited:MAX \
-        DEF:available="${GRAPH_DB_PATH}":available:MAX \
-        DEF:unconfirmed="${GRAPH_DB_PATH}":unconfirmed:MAX \
-        LINE1:deposited#BFDACF:" $GRAPH_REFERENCE_CURRENCY Deposited  " \
-        GPRINT:deposited:LAST:"%.9lf\n" \
-        LINE2:available#85bb65:" $GRAPH_REFERENCE_CURRENCY Available  " \
-        GPRINT:available:LAST:"%.9lf\n" \
-        LINE1:unconfirmed#EA7575:" $GRAPH_REFERENCE_CURRENCY Unconfirmed" \
-        GPRINT:unconfirmed:LAST:"%.9lf\n"
     fi
   done
 

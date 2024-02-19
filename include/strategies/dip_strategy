@@ -954,16 +954,12 @@ fi
 # prices file output (RAW)
 CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
 
-# if zero, do random markets (all reference markets) southxchange
-if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-  # dip markets (random)
-  DIP_MARKETS="$(echo "$CAT_PRICES_DIP_FILE" | awk -F/ '{ print $2 }' | awk '{ print $1 }' | awk '!a[$1]++' | tr -d ':' | shuf | head -1)"
-fi
 # if zero, do random markets (all reference markets) xeggex
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   # dip markets (random)
   DIP_MARKETS="$(echo "$CAT_PRICES_DIP_FILE" | awk -F_ '{ print $2 }' | awk '{ print $1 }' | awk '!a[$1]++' | tr -d ':' | shuf | head -1)"
 fi
+
 # if still zero, use good old bitcoin as main market (reference)
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
   DIP_MARKETS="BTC"
@@ -1586,12 +1582,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           ######################################################################
           ######################################################################
 
-          # if southxchange order
-          if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-            # setup limit buy order ############################################
-            PLACE_ORDER="$(placeOrder_limit "buy" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_BID" "$DIP_BUY_AMOUNT_REFERENCE" "true")"
-            ####################################################################
-          fi
           # if xeggex order
           if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
             # CreateOrder market ###############################################
@@ -2240,12 +2230,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         ########################################################################
         ########################################################################
 
-        # if southxchange order
-        if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-          # setup limit sell order #############################################
-          PLACE_ORDER="$(placeOrder_limit "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$DIP_TARGET_ASK" "$LISTING_BALANCE" "false")"
-          ######################################################################
-        fi
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder limit ##################################################
@@ -2949,13 +2933,6 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
             ####################################################################
             ####################################################################
 
-            # if southxchange order
-            if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-              # setup market sell order ########################################
-              PLACE_ORDER="$(placeOrder_market "sell" "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" "$LISTING_AVAILABLE_BALANCE" "false")"
-              echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
-              ##################################################################
-            fi
             # if xeggex order
             if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
               # CreateOrder limit ##############################################
@@ -3142,11 +3119,7 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
   # removing output (log)
   DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Removing order! $DIP_DUMP_LISTING_ORDER_ID. (Delisted)"
   echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  # if southxchange order
-  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-    # update balances
-    echo "$(listBalances | jq -r '.[] | "\(.Currency): \(.Deposited) \(.Available) \(.Unconfirmed)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null
-  fi
+
   # if xeggex order
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
     echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null
@@ -3211,13 +3184,6 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   ##############################################################################
   ##############################################################################
 
-  # if southxchange order
-  if [[ "$EXCHANGE_API" == "SXC" ]] &>/dev/null; then
-    # setup market sell order ##################################################
-    PLACE_ORDER="$(placeOrder_market "sell" "$DIP_DUMP_LISTING" "$REFERENCE_CURRENCY" "$DUMP_LISTING_BALANCE" "false")"
-    echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
-    ############################################################################
-  fi
   # if xeggex order
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
     # CreateOrder limit ########################################################
