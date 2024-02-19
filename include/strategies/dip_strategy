@@ -2395,6 +2395,7 @@ fi
 ################################################################################
 
 time_and_profit
+bought_sold_age
 
 # if older than n seconds (using max buy age limit on both)
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
@@ -2610,14 +2611,14 @@ time_and_profit
 bought_sold_age
 
 # orders check
-DIP_ACTIVE_ORDERS="$(grep "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
+DIP_ACTIVE_BROKEN_ORDERS="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
 
 # if older than n seconds
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
   # if older than n seconds
   if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
     # if no orders
-    if [[ "$DIP_ACTIVE_ORDERS" -eq "0" ]] &>/dev/null; then
+    if [[ "$DIP_ACTIVE_BROKEN_ORDERS" -eq "0" ]] &>/dev/null; then
 
       # if (active) order exist
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
@@ -2649,7 +2650,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
 fi
 
 ################################################################################
-# sell dip change (profit)
+# sell dip change (dust)
 ################################################################################
 
 # balances
