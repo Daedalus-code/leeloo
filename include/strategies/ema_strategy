@@ -401,16 +401,26 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
   # backup prices
   backup_prices
 
-  # listing
+  # if zero
+  if [[ -z "$LISTING_PRICE" || "$LISTING_PRICE" == "0.000000000" ]] &>/dev/null; then
+    # listing price backup
+    LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices.bkp 2>/dev/null | awk '{ print $2 }')"
+  fi
+
+  # rogue listing price
   ROGUE_LISTING_PRICE="$LISTING_PRICE"
+
+  # rogue listing price old
   ROGUE_LISTING_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $3 }' | tail -1)"
 
+  # if zero
   if [[ -z "$ROGUE_LISTING_PRICE_OLD" ]] &>/dev/null; then
     ROGUE_LISTING_PRICE_OLD="0"
   fi
 
   ROGUE_LISTING_PRICE_DIFF="$(echo "100/$ROGUE_LISTING_PRICE_OLD*$ROGUE_LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+  # if zero
   if [[ -z "$ROGUE_LISTING_PRICE_DIFF" ]] &>/dev/null; then
     ROGUE_LISTING_PRICE_DIFF="0"
   fi
@@ -420,12 +430,18 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
   ROGUE_LISTING_LOW="$(grep "L " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
 
   # rsi can not be empty/zero, regardless
+
+  # if zero
   if [[ -z "$ROGUE_LISTING_NOW" || "$(echo "$ROGUE_LISTING_NOW" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
     ROGUE_LISTING_NOW="50.1111"
   fi
+
+  # if zero
   if [[ -z "$ROGUE_LISTING_HIGH" || "$(echo "$ROGUE_LISTING_HIGH" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
     ROGUE_LISTING_HIGH="50.1111"
   fi
+
+  # if zero
   if [[ -z "$ROGUE_LISTING_LOW" || "$(echo "$ROGUE_LISTING_LOW" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
     ROGUE_LISTING_LOW="50.1111"
   fi
@@ -462,6 +478,7 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
 
   ROGUE_LISTING_DIFF_PERCENTAGE="$(echo "100/$ROGUE_LISTING_AVERAGE*$ROGUE_LISTING_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+  # if zero
   if [[ -z "$ROGUE_LISTING_DIFF_PERCENTAGE" ]] &>/dev/null; then
     ROGUE_LISTING_DIFF_PERCENTAGE="0"
   fi
@@ -470,12 +487,14 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
   ROGUE_REFERENCE_PRICE="$REFERENCE_PRICE"
   ROGUE_REFERENCE_PRICE_OLD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | awk '{ print $5 }' | tail -1)"
 
+  # if zero
   if [[ -z "$ROGUE_REFERENCE_PRICE_OLD" ]] &>/dev/null; then
     ROGUE_REFERENCE_PRICE_OLD="0"
   fi
 
   ROGUE_REFERENCE_PRICE_DIFF="$(echo "100/$ROGUE_REFERENCE_PRICE_OLD*$ROGUE_REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+  # if zero
   if [[ -z "$ROGUE_REFERENCE_PRICE_DIFF" ]] &>/dev/null; then
     ROGUE_REFERENCE_PRICE_DIFF="0"
   fi
@@ -485,12 +504,18 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
   ROGUE_REFERENCE_LOW="$(grep "R " "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | awk '{ print $NF }' | sort -n | head -1 | awk '{ printf "%.4f\n", $1 }')"
 
   # rsi can not be empty/zero, regardless
+
+  # if zero
   if [[ -z "$ROGUE_REFERENCE_NOW" || "$(echo "$ROGUE_REFERENCE_NOW" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
     ROGUE_REFERENCE_NOW="50.1111"
   fi
+
+  # if zero
   if [[ -z "$ROGUE_REFERENCE_HIGH" || "$(echo "$ROGUE_REFERENCE_HIGH" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
     ROGUE_REFERENCE_HIGH="50.1111"
   fi
+
+  # if zero
   if [[ -z "$ROGUE_REFERENCE_LOW" || "$(echo "$ROGUE_REFERENCE_LOW" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
     ROGUE_REFERENCE_LOW="50.1111"
   fi
@@ -529,6 +554,7 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
 
   ROGUE_REFERENCE_DIFF_PERCENTAGE="$(echo "100/$ROGUE_REFERENCE_AVERAGE*$ROGUE_REFERENCE_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+  # if zero
   if [[ -z "$ROGUE_REFERENCE_DIFF_PERCENTAGE" ]] &>/dev/null; then
     ROGUE_REFERENCE_DIFF_PERCENTAGE="0"
   fi
@@ -536,6 +562,8 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
   ##############################################################################
 
   ROGUE_SYNCED_PERCENTAGE="$(echo "100/$ROGUE_HOURS*$ROGUE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  # if zero
   if [[ -z "$ROGUE_SYNCED_PERCENTAGE" ]] &>/dev/null; then
     ROGUE_SYNCED_PERCENTAGE="0"
   fi
@@ -543,6 +571,8 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
   ##############################################################################
 
   ROGUE_UPDATE_PERCENTAGE="$(echo "100/$ROGUE_TIMER*$ROGUE_TIMER_NOW" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  # if zero
   if [[ -z "$ROGUE_UPDATE_PERCENTAGE" ]] &>/dev/null; then
     ROGUE_UPDATE_PERCENTAGE="0"
   fi
@@ -559,11 +589,13 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
   ROGUE_LISTING_RPI_NR="$(echo "$ROGUE_LISTING_RPI" | awk '{ printf "%.4f\n", $1 }')"
   ROGUE_REFERENCE_RPI_NR="$(echo "$ROGUE_REFERENCE_RPI" | awk '{ printf "%.4f\n", $1 }')"
 
+  # if zero
   if [[ -z "$ROGUE_LISTING_RPI_NR" ]] &>/dev/null; then
     # if zero, keep it idling
     ROGUE_LISTING_RPI_NR="50.1111"
   fi
 
+  # if zero
   if [[ -z "$ROGUE_REFERENCE_RPI_NR" ]] &>/dev/null; then
     # if zero, keep it idling
     ROGUE_REFERENCE_RPI_NR="50.1111"
@@ -719,6 +751,7 @@ fi
 EMA_DIFFERENCE="$(echo "$EMA_REAL_SHORT-$EMA_REAL_LONG" | bc -l 2>/dev/null)"
 EMA_PERCENTAGE="$(echo "100/$EMA_REAL_SHORT*$EMA_DIFFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 
+# if zero
 if [[ -z "$EMA_PERCENTAGE" ]] &>/dev/null; then
   EMA_PERCENTAGE="0"
 fi
