@@ -2939,6 +2939,10 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
             DIP_ORDER_ID_DOTS=""
           fi
 
+          decimal_market
+          # dump listing balance
+          LISTING_AVAILABLE_BALANCE="$(echo "$LISTING_AVAILABLE_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
+
           # if there are dumping balance available
           if [[ "$LISTING_AVAILABLE_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
@@ -3149,6 +3153,8 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
   fi
 fi
 
+# variable for decimal market
+LISTING_CURRENCY="$DIP_DUMP_LISTING"
 decimal_market
 
 # dump listing balance
@@ -3201,13 +3207,6 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$REFERENCE_CURRENCY :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
     echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
-
-  # variable for decimal market
-  LISTING_CURRENCY="$DIP_DUMP_LISTING"
-  decimal_market
-
-  # dump listing balance
-  DUMP_LISTING_BALANCE="$(echo "$DUMP_LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
 
   ##############################################################################
   ##############################################################################
