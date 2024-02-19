@@ -1485,8 +1485,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     ############################################################################
 
-    # calculate percentage of order filled
+    # amount of order filled (sold)
     DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+    # target amount (bought)
+    DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | awk '{ print $4 }' | tail -1)"
 
     # if zero
     if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
@@ -2197,8 +2199,10 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
         fi
 
-        # calculate percentage of order filled
-        DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }' | sed '/^$/d')"
+        # amount of order filled (sold)
+        DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+        # target amount (bought)
+        DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | awk '{ print $4 }' | tail -1)"
 
         # if zero, equals zero
         if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" || "$DIP_LEFTOVER_FILLED_AMOUNT" -eq "0" ]] &>/dev/null; then
