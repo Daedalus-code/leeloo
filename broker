@@ -452,6 +452,7 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
     }
 
     while true; do
+
       # robot log status
       ROBOT_LOG_STATUS="$(stat -c '%n %Y' "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | while read filename lastedit; do echo "$filename $(($(date +%s) - $lastedit))"; done | column -t | awk -F. '{ print $2,$NF }')"
       # extract numbers
@@ -461,23 +462,32 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
       # extract total numbers value
       NUMBERS_TOTAL="$(echo "$NUMBERS" | awk '{ SUM += $1} END { print SUM }')"
       # calculate average seconds
-      NUMBERS_AVERAGE="$(echo "$NUMBERS_TOTAL/$NUMBERS_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+      NUMBERS_AVERAGE="$(echo "$NUMBERS_TOTAL/$NUMBERS_COUNT" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
       # loop through each number
       NO_LOGS_BELOW=true
       for NUM in $NUMBERS_AVERAGE; do
         # check if the number is below n
-        if [ "$NUM" -gt "$(echo "$BOT_TIMER" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]; then
+        if [ "$NUM" -gt "$BOT_TIMER" ]; then
           NO_LOGS_BELOW=false
           WAITING_ON_BOT="$NUM"
           break # no need to check further, we found a log below n seconds
         fi
       done
+
       # if no logs are below n seconds, break the loop
       if $NO_LOGS_BELOW; then
         break
       fi
+
       # calculate progress percentage
       ROBOT_STATUS_PERCENTAGE="$(echo "100/$BOT_TIMER*$NUM" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
+      # if above n
+      if [[ "$ROBOT_STATUS_PERCENTAGE" -gt "100" ]] &>/dev/null; then
+        ROBOT_STATUS_PERCENTAGE="100"
+      fi
+
       # display progress bar in dialog
       update_progress "Bots are working.." $ROBOT_STATUS_PERCENTAGE
       # wait for a specified interval before checking again
