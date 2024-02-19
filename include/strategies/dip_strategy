@@ -2287,24 +2287,38 @@ if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/n
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # old group id
     DIP_OLD_GROUP_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".old 2>/dev/null)"
+
     # if zero
     if [[ -z "$DIP_OLD_GROUP_ID" ]] &>/dev/null; then
       DIP_OLD_GROUP_ID="0"
     fi
+
     # listing trades (sell)
     DIP_LISTING_TRADES="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | grep 'sell' | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
     # keep data
     echo "$DIP_LISTING_TRADES" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
     # output data
     DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null)"
+
     # get the last group ID
     LAST_GROUP_ID=$(echo "$DIP_LISTING_TRADES" | awk '{ print $6 }' | head -1)
     # sold order quantity
     DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_GROUP_ID" | grep "sell" | awk '{ print $9 }' | awk '{ SUM += $1} END { print SUM }')
+    # old sold quantity
+    DIP_OLD_ORDER_SOLD_QUANTITY="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null)"
+
+    # if zero
+    if [[ -z "$DIP_OLD_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+      DIP_OLD_ORDER_SOLD_QUANTITY="0"
+    fi
+
     # if group id is unique
     if [[ ! "$DIP_OLD_GROUP_ID" == "$LAST_GROUP_ID" ]] &>/dev/null; then
-      # track order amount being sold (update)
-      echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+      # if quantity is unique
+      if [[ ! "$DIP_ORDER_SOLD_QUANTITY" == "$DIP_OLD_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+        # track order amount being sold (update)
+        echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+      fi
     fi
   fi
 fi
