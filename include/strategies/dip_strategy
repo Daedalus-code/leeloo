@@ -2666,7 +2666,7 @@ DIP_CHANGE_ASSET="$(echo "$DIP_CHANGE_BALANCES" | sort -R | tail -1)"
 # asset name
 DIP_CHANGE_NAME="$(echo "$DIP_CHANGE_ASSET" | awk '{ print $1 }' | tr -d ':')"
 
-# variable for decimal market (back)
+# variable for decimal market
 LISTING_CURRENCY="$DIP_CHANGE_NAME"
 decimal_market
 
@@ -3201,6 +3201,13 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$REFERENCE_CURRENCY :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
     echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   fi
+
+  # variable for decimal market
+  LISTING_CURRENCY="$DIP_DUMP_LISTING"
+  decimal_market
+
+  # dump listing balance
+  DUMP_LISTING_BALANCE="$(echo "$DUMP_LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
 
   ##############################################################################
   ##############################################################################
