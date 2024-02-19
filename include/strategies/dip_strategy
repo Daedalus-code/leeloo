@@ -2574,6 +2574,12 @@ if [[ "$DIP_ACTIVE_TARGET" -gt "0" ]] &>/dev/null; then
           DIP_LISTING_TRADES="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | grep 'sell' | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
           # get the last group ID
           LAST_GROUP_ID=$(echo "$DIP_LISTING_TRADES" | awk '{ print $6 }' | head -1)
+
+          # if zero
+          if [[ -z "$LAST_GROUP_ID" ]] &>/dev/null; then
+            LAST_GROUP_ID="0"
+          fi
+
           # track old id
           echo "$LAST_GROUP_ID" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".old
 
