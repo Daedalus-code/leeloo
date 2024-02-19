@@ -87,6 +87,25 @@ delisted   # delisted markets
 
 ################################################################################
 
+# if zero (ruled by configuration)
+if [[ -z "$DIP_MAX_BUY_AGE" ]] &>/dev/null; then
+  # use default n days
+  DIP_MAX_BUY_AGE="7"
+fi
+
+# if zero (ruled by configuration)
+if [[ -z "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
+  # use default n days
+  DIP_MAX_SELL_AGE="14"
+fi
+
+# calculate days into seconds
+DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
+# calculate days into seconds
+DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
+
+################################################################################
+
 function time_and_profit() {
   # if listing and reference data exist
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
@@ -2370,15 +2389,6 @@ fi
 
 time_and_profit
 
-# if zero
-if [[ -z "$DIP_MAX_BUY_AGE" ]] &>/dev/null; then
-  # use default n days
-  DIP_MAX_BUY_AGE="7"
-fi
-
-# calculate days into seconds
-DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
-
 # if older than n seconds (using max buy age limit on both)
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
   if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
@@ -2418,15 +2428,13 @@ fi
 ################################################################################
 
 time_and_profit
+bought_sold_age
 
 # if zero
 if [[ -z "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
   # use default n days
   DIP_MAX_SELL_AGE="14"
 fi
-
-# calculate days into seconds
-DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
 
 # if older than n seconds
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
@@ -2590,10 +2598,8 @@ fi
 # removing broken position (broken quest)
 ################################################################################
 
-# calculate days into seconds
-DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
-# calculate days into seconds
-DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
+bought_sold_age
+
 # orders check
 DIP_ACTIVE_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
 # balances check
@@ -2867,15 +2873,7 @@ echo "$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool)" >"${SYS_DIR:?}"/robot/
 ################################################################################
 
 time_and_profit
-
-# if zero
-if [[ -z "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
-  # use default n days
-  DIP_MAX_SELL_AGE="14"
-fi
-
-# calculate days into seconds
-DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
+bought_sold_age
 
 # if older than n seconds (using max sell age limit on both)
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
