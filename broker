@@ -1924,6 +1924,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     LOG_SEARCH_ALL="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/robot.log)"
     LOG_SEARCH_TAIL="$(echo "$LOG_SEARCH_ALL" | tail -250 | sort -r)"
     LOG_SEARCH_COUNT="$(echo "$LOG_SEARCH_TAIL" | wc -l)"
+    LOG_SEARCH_BUY="$(echo "$LOG_SEARCH_ALL" | grep -c "Selling" || true)"
+    LOG_SEARCH_SELL="$(echo "$LOG_SEARCH_ALL" | grep -c "Buying" || true)"
     LOG_SEARCH_SOLD="$(echo "$LOG_SEARCH_ALL" | grep -c "(Sold)" || true)"
     LOG_SEARCH_DUST="$(echo "$LOG_SEARCH_ALL" | grep -c "Dusting" || true)"
     LOG_SEARCH_AMOUNT="$(echo "$LOG_SEARCH_ALL" | egrep -o "[0-9]+.[0-9]+ $COIN_TOKEN" | awk '{ print $1 }' | awk '{ SUM += $1} END { print SUM }')"
@@ -1945,7 +1947,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     fi
 
     display_result() {
-      dialog --title "Search Log: $COIN_TOKEN :: Sold: +$LOG_SEARCH_SOLD :: Dust: +$LOG_SEARCH_DUST :: Amount: $LOG_SEARCH_AMOUNT $COIN_TOKEN :: robot.log +$LOG_SEARCH_COUNT" \
+      dialog --title "$COIN_TOKEN :: Buy: $LOG_SEARCH_BUY :: Sell: $LOG_SEARCH_SELL :: Sold: +$LOG_SEARCH_SOLD :: Dust: +$LOG_SEARCH_DUST :: Amount: $LOG_SEARCH_AMOUNT $COIN_TOKEN :: robot.log +$LOG_SEARCH_COUNT" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
