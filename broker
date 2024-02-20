@@ -1924,6 +1924,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     LOG_SEARCH="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/robot.log | tail -250 | sort -r)"
     LOG_SEARCH_COUNT="$(echo "$LOG_SEARCH" | wc -l)"
     LOG_SEARCH_SOLD="$(echo "$LOG_SEARCH" | grep -c "(Sold)" || true)"
+    LOG_SEARCH_DUST="$(echo "$LOG_SEARCH" | grep -c "Dusting" || true)"
     WIDTH="$(echo "$(echo "$LOG_SEARCH" | wc -L)+5" | bc 2>/dev/null)"
     LENGTH="$(echo "$LOG_SEARCH_COUNT+4" | bc 2>/dev/null)"
 
@@ -1946,7 +1947,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     fi
 
     display_result() {
-      dialog --title "Search Log: $COIN_TOKEN :: Sold: +$LOG_SEARCH_SOLD :: robot.log +$LOG_SEARCH_COUNT" \
+      dialog --title "Search Log: $COIN_TOKEN :: Sold: +$LOG_SEARCH_SOLD :: Dust: +$LOG_SEARCH_DUST :: robot.log +$LOG_SEARCH_COUNT" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
