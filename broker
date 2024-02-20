@@ -1929,14 +1929,9 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     WIDTH="$(echo "$(echo "$LOG_SEARCH" | wc -L)+5" | bc 2>/dev/null)"
     LENGTH="$(echo "$LOG_SEARCH_COUNT+4" | bc 2>/dev/null)"
 
-    # if zero
-    if [[ -z "$LOG_LENGTH" || "$LENGTH" -lt "6" ]] &>/dev/null; then
-      LENGTH="5"
-    fi
-
-    # if length are greater than log_length
-    if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
-      LENGTH="$LOG_LENGTH"
+    # if greater than log_length, zero, less than n, greater than n
+    if [[ "$LENGTH" -gt "$LOG_LENGTH" || -z "$LENGTH" || "$LENGTH" -lt "5" || "$LENGTH" -gt "250" ]] &>/dev/null; then
+      LENGTH="21"
     fi
 
     # if zero
