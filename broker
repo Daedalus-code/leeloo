@@ -793,6 +793,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     # max headroom of 100, disregard delisted
     DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | grep -v "Delisted" | sort -n -k 1 | column -t | sort -r | head -100)"
+    # data count
+    DEBUG_DATA_COUNT="$(echo "$DEBUG_DATA" | wc -l)"
 
     WIDTH=$(echo "$(echo "$DEBUG_DATA" | wc -L)+4" | bc 2>/dev/null)
     LENGTH=$(echo "$(echo "$DEBUG_DATA" | wc -l)+4" | bc 2>/dev/null)
@@ -819,7 +821,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     fi
 
     display_result() {
-      dialog --title "Leeloo/Strategy Order Debug :: " \
+      dialog --title "Leeloo/Strategy Order Debug :: +$DEBUG_DATA_COUNT" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
