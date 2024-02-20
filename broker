@@ -1926,6 +1926,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     LOG_SEARCH_COUNT="$(echo "$LOG_SEARCH_TAIL" | wc -l)"
     LOG_SEARCH_SOLD="$(echo "$LOG_SEARCH_ALL" | grep -c "(Sold)" || true)"
     LOG_SEARCH_DUST="$(echo "$LOG_SEARCH_ALL" | grep -c "Dusting" || true)"
+    LOG_SEARCH_AMOUNT="$(echo "$LOG_SEARCH_ALL" | egrep -o "[0-9]+.[0-9]+ $COIN_TOKEN" | awk '{ print $1 }' | awk '{ SUM += $1} END { print SUM }')"
 
     WIDTH="$(echo "$(echo "$LOG_SEARCH_TAIL" | wc -L)+5" | bc 2>/dev/null)"
     LENGTH="$(echo "$LOG_SEARCH_COUNT+4" | bc 2>/dev/null)"
@@ -1944,7 +1945,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     fi
 
     display_result() {
-      dialog --title "Search Log: $COIN_TOKEN :: Sold: +$LOG_SEARCH_SOLD :: Dust: +$LOG_SEARCH_DUST :: robot.log +$LOG_SEARCH_COUNT" \
+      dialog --title "Search Log: $COIN_TOKEN :: Sold: +$LOG_SEARCH_SOLD :: Dust: +$LOG_SEARCH_DUST :: Amount: $LOG_SEARCH_AMOUNT $COIN_TOKEN :: robot.log +$LOG_SEARCH_COUNT" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
