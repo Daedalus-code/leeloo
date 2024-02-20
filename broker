@@ -547,9 +547,9 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
 
   ##############################################################################
 
-  HEIGHT=11
+  HEIGHT=12
   WIDTH=37
-  CHOICE_HEIGHT=4
+  CHOICE_HEIGHT=5
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Debug Menu"
   MENU="Multipass $DATE_XARGS"
@@ -557,6 +557,7 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
   OPTIONS=(1 "Debug           Status"
     2 "Strategy        error.log"
     3 "TXid            null.log"
+    4 "Order           order.debug"
     n "Reset           null ($(echo "$TXID_NULL_DATA_COUNT" | awk '{ print $1 }'))")
 
   CHOICE=$(dialog --clear \
@@ -783,6 +784,48 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     # remove temp file
     rm /tmp/readlog &>/dev/null
+
+    ;;
+
+    # order
+
+  "4")
+
+    DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug | column -t | tail -100)"
+    WIDTH="$(echo "$DEBUG_DATA" | wc -L)"
+    WIDTH="$(echo "$WIDTH+4" | bc 2>/dev/null)"
+    LENGTH=$(echo "$(echo "$DEBUG_DATA" | wc -l)+4" | bc 2>/dev/null)
+
+    # if zero, less than
+    if [[ -z "$WIDTH" || "$WIDTH" -lt "64" ]] &>/dev/null; then
+      WIDTH="64"
+    fi
+
+    # if zero, less than
+    if [[ -z "$LENGTH" || "$LENGTH" -lt "5" ]] &>/dev/null; then
+      LENGTH="5"
+    fi
+
+    # if zero
+    if [[ -z "$DEBUG_DATA" ]] &>/dev/null; then
+      LENGTH="5"
+      RESULT="Nothing was found"
+    fi
+
+    # if length greater than n
+    if [[ "$LENGTH" -gt "25" ]] &>/dev/null; then
+      LENGTH="25"
+    fi
+
+    display_result() {
+      dialog --title "Leeloo/Strategy Order Debug :: " \
+        --no-collapse \
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+    }
+
+    # max headroom of 100
+    RESULT="$(cat "${LOG_DIR:?}"/leeloo/*.debug | column -t | tail -100)"
+    display_result 2>/dev/null
 
     ;;
 
