@@ -787,11 +787,11 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-    # order
+    # order debug
 
   "4")
 
-    DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug | column -t | tail -100)"
+    DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | column -t | head -100)"
     WIDTH="$(echo "$DEBUG_DATA" | wc -L)"
     WIDTH="$(echo "$WIDTH+4" | bc 2>/dev/null)"
     LENGTH=$(echo "$(echo "$DEBUG_DATA" | wc -l)+4" | bc 2>/dev/null)
@@ -824,7 +824,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     }
 
     # max headroom of 100
-    RESULT="$(cat "${LOG_DIR:?}"/leeloo/*.debug | column -t | tail -100)"
+    RESULT="$(cat "${LOG_DIR:?}"/leeloo/*.debug | column -t | head -100)"
     display_result 2>/dev/null
 
     ;;
