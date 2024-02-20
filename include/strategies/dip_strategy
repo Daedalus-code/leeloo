@@ -3208,10 +3208,13 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     PLACE_ORDER="$(CreateOrder "" "$DIP_DUMP_LISTING/$REFERENCE_CURRENCY" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
     echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
     # debug line ###############################################################
-    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$REFERENCE_CURRENCY sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$REFERENCE_CURRENCY sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
     ############################################################################
     sleep 1
   fi
+
+  # keep lines
+  echo "$(tail -100 "${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
 
   ##############################################################################
   ##############################################################################
