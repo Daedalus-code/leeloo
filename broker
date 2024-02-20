@@ -1940,14 +1940,16 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
     # if zero
     if [[ -z "$LOG_SEARCH_TAIL" ]] &>/dev/null; then
+      RESULT_TITLE="$COIN_TOKEN :: No data :: robot.log +$LOG_SEARCH_COUNT"
       RESULT="Nothing was found"
       WIDTH="45"
     else
+      RESULT_TITLE="$COIN_TOKEN :: Buy: $LOG_SEARCH_BUY :: Sell: $LOG_SEARCH_SELL :: Sold: +$LOG_SEARCH_SOLD :: Dust: +$LOG_SEARCH_DUST :: Amount: $LOG_SEARCH_AMOUNT $COIN_TOKEN :: robot.log +$LOG_SEARCH_COUNT"
       RESULT="${LOG_SEARCH_TAIL:?}"
     fi
 
     display_result() {
-      dialog --title "$COIN_TOKEN :: Buy: $LOG_SEARCH_BUY :: Sell: $LOG_SEARCH_SELL :: Sold: +$LOG_SEARCH_SOLD :: Dust: +$LOG_SEARCH_DUST :: Amount: $LOG_SEARCH_AMOUNT $COIN_TOKEN :: robot.log +$LOG_SEARCH_COUNT" \
+      dialog --title "$RESULT_TITLE" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
