@@ -2328,19 +2328,19 @@ if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/n
     fi
 
     # get trades data
-    DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY")"
+    DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity)"' | tr -d '{"}' | tr ':,' ' ')"
 
     # is this buying, (new)
     if [[ "$(echo "$DIP_GET_TRADES_DATA" | head -1 | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
       # new id
-      echo "$(echo "$DIP_GET_TRADES_DATA" | head -1 | grep "buy" | tr -d '{"}' | tr ':,' ' ' | awk '{ print $6 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".new
+      echo "$(echo "$DIP_GET_TRADES_DATA" | head -1 | grep "buy" | awk '{ print $6 }')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".new
     fi
 
     # new group id
     DIP_NEW_GROUP_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".new 2>/dev/null || true)"
 
     # listing trades (sell)
-    DIP_LISTING_TRADES="$(echo "$DIP_GET_TRADES_DATA" | grep 'sell' | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
+    DIP_LISTING_TRADES="$(echo "$DIP_GET_TRADES_DATA" | grep 'sell' | column -t)"
     # keep data
     echo "$DIP_LISTING_TRADES" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
     # output data
