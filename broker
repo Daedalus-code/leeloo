@@ -791,9 +791,10 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "4")
 
-    DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | column -t | head -100)"
-    WIDTH="$(echo "$DEBUG_DATA" | wc -L)"
-    WIDTH="$(echo "$WIDTH+4" | bc 2>/dev/null)"
+    # max headroom of 100
+    DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | sort -n -k 1 | column -t | sort -r | head -100)"
+
+    WIDTH=$(echo "$(echo "$DEBUG_DATA" | wc -L)+4" | bc 2>/dev/null)
     LENGTH=$(echo "$(echo "$DEBUG_DATA" | wc -l)+4" | bc 2>/dev/null)
 
     # if zero, less than
@@ -823,8 +824,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
-    # max headroom of 100
-    RESULT="$(cat "${LOG_DIR:?}"/leeloo/*.debug | column -t | head -100)"
+    RESULT="$(echo "$DEBUG_DATA")"
     display_result 2>/dev/null
 
     ;;
