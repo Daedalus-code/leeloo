@@ -2339,6 +2339,11 @@ if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/n
     # new group id
     DIP_NEW_GROUP_ID="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".new 2>/dev/null || true)"
 
+    # if zero
+    if [[ -z "$DIP_NEW_GROUP_ID" ]] &>/dev/null; then
+      DIP_NEW_GROUP_ID="0"
+    fi
+
     # listing trades (sell)
     DIP_LISTING_TRADES="$(echo "$DIP_GET_TRADES_DATA" | grep 'sell' | column -t)"
     # keep data
