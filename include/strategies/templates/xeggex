@@ -428,8 +428,8 @@ function target_order_status() {
         DIP_GET_TRADES_DATA="null"
       fi
 
-      # get orders data
-      DIP_GET_ORDERS_DATA="$(cat "${LOG_DIR:?}"/leeloo/xeggex/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+      # get orders data, remove duplicate id
+      DIP_GET_ORDERS_DATA="$(cat "${LOG_DIR:?}"/leeloo/xeggex/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++')"
       # if zero
       if [[ -z "$DIP_GET_TRADES_DATA" ]] &>/dev/null; then
         DIP_GET_TRADES_DATA="null"
