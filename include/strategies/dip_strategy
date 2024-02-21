@@ -2187,6 +2187,23 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # sold data
   ##############################################################################
 
+  # get trades data
+  DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
+  # get orders data
+  DIP_GET_ORDERS_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+
+  # keep trades data
+  echo "$DIP_GET_TRADES_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
+  # keep orders data
+  echo "$DIP_GET_ORDERS_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders
+
+  # output trades data
+  DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null)"
+  # output orders data
+  DIP_LISTING_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null)"
+
+  ##############################################################################
+
   # if any listing (available) and listing (deposited) data
   if [[ -n "$DIP_LISTING_BALANCE_CHECK" && -n "$DIP_DEPOSITED_BALANCE_CHECK" ]] &>/dev/null; then
     # if any listing and reference data
@@ -2195,21 +2212,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       if [[ "$DIP_LISTING_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
         # if listing deposited balance being used
         if [[ "$DIP_DEPOSITED_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
-
-          # get trades data
-          DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
-          # get orders data
-          DIP_GET_ORDERS_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
-
-          # keep trades data
-          echo "$DIP_GET_TRADES_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
-          # keep orders data
-          echo "$DIP_GET_ORDERS_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders
-
-          # output trades data
-          DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null)"
-          # output orders data
-          DIP_LISTING_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null)"
 
           ######################################################################
 
