@@ -2074,11 +2074,14 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
-  # listing balance, available (without decimal)
+  # listing balance, available check (without decimal)
   DIP_LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
-  # target amount (without decimal)
+  # target amount check (without decimal)
   DIP_TARGET_BALANCE_CHECK="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+
+  # listing balance deposited check (without decimal)
+  DIP_DEPOSITED_BALANCE_CHECK="$(echo "$LISTING_DEPOSITED_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   # if zero
   if [[ -z "$DIP_LISTING_BALANCE_CHECK" ]] &>/dev/null; then
@@ -2184,24 +2187,14 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # sold data
   ##############################################################################
 
-  decimal_market
-  amount_to_buy_sell
-
-  # listing available balance check
-  LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-  # listing deposited balance check
-  LISTING_DEPOSITED_BALANCE_CHECK="$(echo "$LISTING_DEPOSITED_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-
-  ##############################################################################
-
   # if any listing (available) and listing (deposited) data
-  if [[ -n "$LISTING_BALANCE_CHECK" && -n "$LISTING_DEPOSITED_BALANCE_CHECK" ]] &>/dev/null; then
+  if [[ -n "$DIP_LISTING_BALANCE_CHECK" && -n "$DIP_DEPOSITED_BALANCE_CHECK" ]] &>/dev/null; then
     # if any listing and reference data
     if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
       # if listing available balance being used
-      if [[ "$LISTING_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
+      if [[ "$DIP_LISTING_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
         # if listing deposited balance being used
-        if [[ "$LISTING_DEPOSITED_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
+        if [[ "$DIP_DEPOSITED_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
           # get trades data
           DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
