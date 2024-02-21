@@ -226,15 +226,12 @@ function amount_to_buy_sell() {
   # calculate dip allocated (configuration)
   REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
 
-  # reference balance (available)
-  REFERENCE_BALANCE="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
+  ##############################################################################
+
   # listing balance (available)
   LISTING_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | head -1)"
-
-  # reference balance (deposited)
-  REFERENCE_DEPOSITED_BALANCE="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
-  # listing balance (deposited)
-  LISTING_DEPOSITED_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | head -1)"
+  # reference balance (available)
+  REFERENCE_BALANCE="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
 
   # if zero
   if [[ -z "$REFERENCE_BALANCE" ]] &>/dev/null; then
@@ -245,6 +242,18 @@ function amount_to_buy_sell() {
   if [[ -z "$LISTING_BALANCE" ]] &>/dev/null; then
     LISTING_BALANCE="$(echo "0.000000000" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
   fi
+
+  # listing balance (variable available)
+  LISTING_AVAILABLE_BALANCE="$LISTING_BALANCE"
+  # reference balance (variable available)
+  REFERENCE_AVAILABLE_BALANCE="$REFERENCE_BALANCE"
+
+  # listing balance (deposited)
+  LISTING_DEPOSITED_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | head -1)"
+  # reference balance (deposited)
+  REFERENCE_DEPOSITED_BALANCE="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
+
+  ##############################################################################
 
   # calculate dip margin
   DIP_MARGIN="$(echo "$DIP_MARGIN/1000000000" | bc -l 2>/dev/null)"
@@ -2377,8 +2386,8 @@ if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
         DIP_OLD_ORDER_SOLD_QUANTITY="0"
       fi
 
-      # if order is buying
-      if [[ "$DIP_ORDER_SELLING" == "false" ]] &>/dev/null; then
+      # if order is selling
+      if [[ "$DIP_ORDER_SELLING" == "true" ]] &>/dev/null; then
         # if quantity is unique, not zeros
         if [[ ! "$DIP_ORDER_SOLD_QUANTITY" == "$DIP_OLD_ORDER_SOLD_QUANTITY" || ! -z "$DIP_ORDER_SOLD_QUANTITY" || ! -z "$DIP_OLD_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
           # track order amount being sold (update)
