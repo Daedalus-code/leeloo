@@ -243,11 +243,6 @@ function amount_to_buy_sell() {
     LISTING_BALANCE="$(echo "0.000000000" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
   fi
 
-  # listing balance (variable available)
-  LISTING_AVAILABLE_BALANCE="$LISTING_BALANCE"
-  # reference balance (variable available)
-  REFERENCE_AVAILABLE_BALANCE="$REFERENCE_BALANCE"
-
   # listing balance (deposited)
   LISTING_DEPOSITED_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | head -1)"
   # reference balance (deposited)
@@ -2193,18 +2188,18 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   amount_to_buy_sell
 
   # listing available balance check
-  LISTING_AVAILABLE_BALANCE_CHECK="$(echo "$LISTING_AVAILABLE_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
   # listing deposited balance check
   LISTING_DEPOSITED_BALANCE_CHECK="$(echo "$LISTING_DEPOSITED_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
   ##############################################################################
 
   # if any listing (available) and listing (deposited) data
-  if [[ -n "$LISTING_AVAILABLE_BALANCE_CHECK" && -n "$LISTING_DEPOSITED_BALANCE_CHECK" ]] &>/dev/null; then
+  if [[ -n "$LISTING_BALANCE_CHECK" && -n "$LISTING_DEPOSITED_BALANCE_CHECK" ]] &>/dev/null; then
     # if any listing and reference data
     if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
       # if listing available balance being used
-      if [[ "$LISTING_AVAILABLE_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
+      if [[ "$LISTING_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
         # if listing deposited balance being used
         if [[ "$LISTING_DEPOSITED_BALANCE_CHECK" -eq "0" ]] &>/dev/null; then
 
@@ -2947,7 +2942,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/n
         # now price profit check
         LISTING_PRICE_PROFIT_CHECK="$(echo "$LISTING_PRICE_PROFIT" | tr -d '.' | sed 's/^0*//')"
         # listing available balance check
-        LISTING_AVAILABLE_BALANCE_CHECK="$(echo "$LISTING_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')"
+        LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')"
 
         # if sell order above average profit
         if [[ "$LISTING_PRICE_PROFIT_CHECK" -gt "-$DATA_AVERAGE_PROFIT_CHECK" ]] &>/dev/null; then
@@ -2971,10 +2966,10 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/n
 
           decimal_market
           # dump listing balance
-          LISTING_AVAILABLE_BALANCE="$(echo "$LISTING_AVAILABLE_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
+          LISTING_BALANCE="$(echo "$LISTING_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')"
 
           # if there are dumping balance available
-          if [[ "$LISTING_AVAILABLE_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
+          if [[ "$LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
             ####################################################################
             ####################################################################
@@ -2982,10 +2977,10 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/n
             # if xeggex order
             if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
               # CreateOrder limit ##############################################
-              PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AVAILABLE_BALANCE" "" "false")"
+              PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_BALANCE" "" "false")"
               echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
               # debug line #####################################################
-              echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell market $LISTING_AVAILABLE_BALANCE '' false <--- Dumping asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+              echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell market $LISTING_BALANCE '' false <--- Dumping asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
               ##################################################################
               sleep 1
             fi
@@ -2993,7 +2988,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/n
             reset_active_market_list
 
             # dump output (log)
-            DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Dumping! ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old) ${LISTING_PRICE_PROFIT:?}% P/L"
+            DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Dumping! ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS $LISTING_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old) ${LISTING_PRICE_PROFIT:?}% P/L"
             echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
             ####################################################################
