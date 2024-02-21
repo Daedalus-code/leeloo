@@ -2317,48 +2317,44 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # sold data
   ##############################################################################
 
-  # if any listing and reference data
-  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  # get trades data
+  DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
+  # get orders data
+  DIP_GET_ORDERS_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
 
-    # get trades data
-    DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
-    # get orders data
-    DIP_GET_ORDERS_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+  # keep trades data
+  echo "$DIP_GET_TRADES_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
+  # keep orders data
+  echo "$DIP_GET_ORDERS_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders
 
-    # keep trades data
-    echo "$DIP_GET_TRADES_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
-    # keep orders data
-    echo "$DIP_GET_ORDERS_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders
+  # output trades data
+  DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null || true)"
+  # output orders data
+  DIP_LISTING_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null || true)"
 
-    # output trades data
-    DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null || true)"
-    # output orders data
-    DIP_LISTING_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null || true)"
+  ##############################################################################
 
-    ############################################################################
+  # last sell group id
+  LAST_SELL_GROUP_ID="$(echo "$DIP_LISTING_TRADES" | grep "sell" | head -1 | awk '{ print $6 }')"
 
-    # last sell group id
-    LAST_SELL_GROUP_ID="$(echo "$DIP_LISTING_TRADES" | grep "sell" | head -1 | awk '{ print $6 }')"
+  ##############################################################################
 
-    ############################################################################
+  # last order id
+  LAST_SELL_ORDER_ID="$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }')"
 
-    # last order id
-    LAST_SELL_ORDER_ID="$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }')"
+  ##############################################################################
 
-    ############################################################################
+  # sold order quantity
+  DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_SELL_GROUP_ID" | grep "sell" | awk '{ print $9 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')
 
-    # sold order quantity
-    DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_SELL_GROUP_ID" | grep "sell" | awk '{ print $9 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')
+  ##############################################################################
 
-    ############################################################################
-
-    # if sold has data
-    if [[ ! -z "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
-      # if order is selling
-      if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
-        # track order amount being sold (update)
-        echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
-      fi
+  # if sold has data
+  if [[ ! -z "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+    # if order is selling
+    if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
+      # track order amount being sold (update)
+      echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
     fi
   fi
 
