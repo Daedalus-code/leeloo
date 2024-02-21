@@ -2517,13 +2517,13 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
   ##############################################################################
 
   # if sold has data
-  if [[ ! -z "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+  if [[ ! -z "$DIP_ORDER_SOLD_QUANTITY" && ! "$(echo "$DIP_ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
     # if order is selling
     if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
       # track order amount being sold (update)
       echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
       # asset profit output (log)
-      DIP_SELL_ASSET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Asset sale: +$DIP_ORDER_SOLD_QUANTITY $LISTING_CURRENCY"
+      DIP_SELL_ASSET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Asset sale: +$DIP_ORDER_SOLD_QUANTITY $LISTING_CURRENCY Age: $DIP_BOUGHT_AGE_OUTPUT"
       echo "$DIP_SELL_ASSET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
   fi
