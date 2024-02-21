@@ -468,10 +468,6 @@ function target_order_status() {
 
       # selling value
       DIP_SELLING_VALUE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null || true)"
-      # if zero
-      if [[ -z "$DIP_SELLING_VALUE" ]] &>/dev/null; then
-        DIP_SELLING_VALUE="0"
-      fi
 
       ##########################################################################
 
@@ -482,7 +478,7 @@ function target_order_status() {
           # if order value is unique
           if [[ ! "$DIP_SELLING_VALUE" == "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
             # if order value is not zero
-            if [[ ! "$DIP_SELLING_VALUE" -eq "0" || "$DIP_ORDER_SOLD_QUANTITY" -eq "0" ]] &>/dev/null; then
+            if [[ ! "$DIP_ORDER_SOLD_QUANTITY" -eq "0" ]] &>/dev/null; then
               # track order amount being sold (update)
               echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
               # asset profit output (log)
