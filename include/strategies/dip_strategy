@@ -3254,9 +3254,6 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     sleep 1
   fi
 
-  # keep lines
-  echo "$(tail -100 "${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
-
   ##############################################################################
   ##############################################################################
 
@@ -3619,6 +3616,8 @@ Last_Order.txid.....: $DIP_LATEST_ORDER_ID ${DIP_LATEST_ORDER_LISTING:?}/${DIP_L
 
 # keep n lines
 echo "$(tail -100 "${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug 2>/dev/null | column -t | grep -v "Delisted")" >"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+# keep n lines
+echo "$(tail -100 "${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted 2>/dev/null | column -t | egrep -v "Buying|Selling")" >"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
 
 ################################################################################
 
