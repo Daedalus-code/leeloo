@@ -2311,6 +2311,8 @@ fi
 # sold data
 ################################################################################
 
+decimal_market
+
 # listing trades age (seconds)
 DIP_LISTING_TRADES_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -2359,8 +2361,6 @@ if [[ "$DIP_LISTING_TRADES_AGE_SECONDS" -gt "$(echo "$BOT_TIMER*3" | bc 2>/dev/n
         if [[ -z "$LAST_SELL_GROUP_ID" ]] &>/dev/null; then
           LAST_SELL_GROUP_ID="0"
         fi
-
-        decimal_market
 
         # sold order quantity
         DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_SELL_GROUP_ID" | grep "sell" | awk '{ print $9 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')
