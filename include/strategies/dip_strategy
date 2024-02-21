@@ -2318,6 +2318,18 @@ LISTING_AVAILABLE_BALANCE_CHECK="$(echo "$LISTING_AVAILABLE_BALANCE" | awk '{ pr
 # listing deposited balance check
 LISTING_DEPOSITED_BALANCE_CHECK="$(echo "$LISTING_DEPOSITED_BALANCE" | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
+# if zero
+if [[ -z "$LISTING_AVAILABLE_BALANCE_CHECK" ]] &>/dev/null; then
+  # false negative
+  LISTING_AVAILABLE_BALANCE_CHECK="1"
+fi
+
+# if zero
+if [[ -z "$LISTING_DEPOSITED_BALANCE_CHECK" ]] &>/dev/null; then
+  # false negative
+  LISTING_DEPOSITED_BALANCE_CHECK="1"
+fi
+
 # if any listing and reference data
 if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
   # if listing available balance being used
