@@ -2376,19 +2376,11 @@ if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
       # last sell group id
       LAST_SELL_GROUP_ID="$(echo "$DIP_LISTING_TRADES" | grep "sell" | head -1 | awk '{ print $6 }')"
-      # if zero
-      if [[ -z "$LAST_SELL_GROUP_ID" ]] &>/dev/null; then
-        LAST_SELL_GROUP_ID="0"
-      fi
 
       ##########################################################################
 
       # last order id
       LAST_SELL_ORDER_ID="$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }')"
-      # if zero
-      if [[ -z "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
-        LAST_SELL_ORDER_ID="1"
-      fi
 
       ##########################################################################
 
@@ -2412,12 +2404,15 @@ if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
       # if not buying
       if [[ "$LAST_TRADE_LINE" -eq "0" ]] &>/dev/null; then
-        # if order is selling
-        if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
-          # if quantity is unique, not zeros
-          if [[ ! "$DIP_ORDER_SOLD_QUANTITY" == "$DIP_OLD_ORDER_SOLD_QUANTITY" || ! -z "$DIP_ORDER_SOLD_QUANTITY" || ! -z "$DIP_OLD_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
-            # track order amount being sold (update)
-            echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+        # if order has id data
+        if [[ -n "$LAST_SELL_GROUP_ID" && -n "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
+          # if order is selling
+          if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
+            # if quantity is unique, not zeros
+            if [[ ! "$DIP_ORDER_SOLD_QUANTITY" == "$DIP_OLD_ORDER_SOLD_QUANTITY" || ! -z "$DIP_ORDER_SOLD_QUANTITY" || ! -z "$DIP_OLD_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+              # track order amount being sold (update)
+              echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+            fi
           fi
         fi
       fi
