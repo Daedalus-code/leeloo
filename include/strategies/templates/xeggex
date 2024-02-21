@@ -459,11 +459,21 @@ function target_order_status() {
 
       # sold order quantity
       DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_SELL_GROUP_ID" | grep "sell" | awk '{ print $9 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')
+      # if zero
+      if [[ -z "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+        DIP_ORDER_SOLD_QUANTITY="0"
+      fi
 
       ##########################################################################
 
       # selling value
       DIP_SELLING_VALUE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null || true)"
+      # if zero
+      if [[ -z "$DIP_SELLING_VALUE" ]] &>/dev/null; then
+        DIP_SELLING_VALUE="0"
+      fi
+
+      ##########################################################################
 
       # if sold has data
       if [[ ! -z "$DIP_ORDER_SOLD_QUANTITY" && ! "$(echo "$DIP_ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
