@@ -1699,63 +1699,7 @@ TARGET_ACTIVE="ACTIVE"
 target_data
 bought_sold_age
 remove_ghost_orders
-
-################################################################################
-# sold data
-################################################################################
-
-# get trades data
-DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
-# get orders data
-DIP_GET_ORDERS_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
-
-# keep trades data
-echo "$DIP_GET_TRADES_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
-# keep orders data
-echo "$DIP_GET_ORDERS_DATA" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders
-
-# output trades data
-DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null || true)"
-# output orders data
-DIP_LISTING_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null || true)"
-
-################################################################################
-
-# last sell group id
-LAST_SELL_GROUP_ID="$(echo "$DIP_LISTING_TRADES" | grep "sell" | head -1 | awk '{ print $6 }')"
-
-################################################################################
-
-# last order id
-LAST_SELL_ORDER_ID="$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }')"
-
-################################################################################
-
-# sold order quantity
-DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_SELL_GROUP_ID" | grep "sell" | awk '{ print $9 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')
-
-################################################################################
-
-# if sold has data
-if [[ ! -z "$DIP_ORDER_SOLD_QUANTITY" && ! "$(echo "$DIP_ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
-  # if order is selling
-  if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
-    # track order amount being sold (update)
-    echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
-    # asset profit output (log)
-    DIP_SELL_ASSET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Asset sale: +$DIP_ORDER_SOLD_QUANTITY $LISTING_CURRENCY Age: $DIP_BOUGHT_AGE_OUTPUT"
-    echo "$DIP_SELL_ASSET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  fi
-fi
-
-################################################################################
-# confirmed sold order
-################################################################################
-
-# if total sum greater or equal than target
-if [[ "$DIP_TOTAL_SOLD_SUM_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
-  echo "$DIP_TOTAL_SOLD_SUM" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold
-fi
+target_order_status
 
 ################################################################################
 
