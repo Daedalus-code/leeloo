@@ -2234,10 +2234,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
           # sold order quantity
           DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_SELL_GROUP_ID" | grep "sell" | awk '{ print $9 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')
-          # if zero
-          if [[ -z "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
-            DIP_ORDER_SOLD_QUANTITY="0"
-          fi
 
           ######################################################################
 
@@ -2254,12 +2250,15 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           if [[ "$LAST_TRADE_LINE" -eq "0" ]] &>/dev/null; then
             # if order has id data
             if [[ ! -z "$LAST_SELL_GROUP_ID" && ! -z "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
-              # if order is selling
-              if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
-                # if quantity is unique, not zeros
-                if [[ ! "$DIP_ORDER_SOLD_QUANTITY" == "$DIP_OLD_ORDER_SOLD_QUANTITY" || ! -z "$DIP_ORDER_SOLD_QUANTITY" || ! -z "$DIP_OLD_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
-                  # track order amount being sold (update)
-                  echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+              # if sold has data
+              if [[ ! -z "$DIP_ORDER_SOLD_QUANTITY" && ! -z "$DIP_OLD_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+                # if order is selling
+                if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
+                  # if quantity is unique
+                  if [[ ! "$DIP_ORDER_SOLD_QUANTITY" == "$DIP_OLD_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+                    # track order amount being sold (update)
+                    echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+                  fi
                 fi
               fi
             fi
