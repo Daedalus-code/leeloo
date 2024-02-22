@@ -106,28 +106,6 @@ DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
 
 ################################################################################
 
-function reset_active_market_list() {
-  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-    # if (active) order exist
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
-      # remove old (active) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-    fi
-    # if (market) order exist
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market || true)" -eq "1" ]] &>/dev/null; then
-      # remove old (market) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
-    fi
-    # if (market.list) order exist
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list || true)" -eq "1" ]] &>/dev/null; then
-      # remove old (market.list) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
-    fi
-  fi
-}
-
-################################################################################
-
 function time_and_profit() {
   # if listing and reference data exist
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
@@ -2397,7 +2375,21 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
           DIP_ORDER_ID_DOTS=""
         fi
 
-        reset_active_market_list
+        # if (active) order exist
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+          # remove old (active) order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+        fi
+        # if (market) order exist
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market || true)" -eq "1" ]] &>/dev/null; then
+          # remove old (market) order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+        fi
+        # if (market.list) order exist
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list || true)" -eq "1" ]] &>/dev/null; then
+          # remove old (market.list) order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+        fi
 
         # removing buy order output (log)
         DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing buy order: ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
@@ -2454,7 +2446,21 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/n
           DIP_ORDER_ID_DOTS=""
         fi
 
-        reset_active_market_list
+        # if (active) order exist
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+          # remove old (active) order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+        fi
+        # if (market) order exist
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market || true)" -eq "1" ]] &>/dev/null; then
+          # remove old (market) order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+        fi
+        # if (market.list) order exist
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list || true)" -eq "1" ]] &>/dev/null; then
+          # remove old (market.list) order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+        fi
 
         # use a while loop to read each line of the string into the variable order_id
         echo "$DIP_ORDER_ID" | while IFS= read -r ORDER_ID; do
@@ -2571,7 +2577,21 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
         # reset sold file (reset data, age)
         truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
 
-        reset_active_market_list
+        # if (active) order exist
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+          # remove old (active) order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+        fi
+        # if (market) order exist
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market || true)" -eq "1" ]] &>/dev/null; then
+          # remove old (market) order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+        fi
+        # if (market.list) order exist
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list || true)" -eq "1" ]] &>/dev/null; then
+          # remove old (market.list) order
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+        fi
       fi
     fi
   fi
@@ -2600,7 +2620,21 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
         truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
       fi
 
-      reset_active_market_list
+      # if (active) order exist
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+        # remove old (active) order
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      fi
+      # if (market) order exist
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market || true)" -eq "1" ]] &>/dev/null; then
+        # remove old (market) order
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+      fi
+      # if (market.list) order exist
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list || true)" -eq "1" ]] &>/dev/null; then
+        # remove old (market.list) order
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+      fi
 
       # cleanup output (log)
       DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (broken) Age: $DIP_BOUGHT_AGE_OUTPUT"
@@ -2910,7 +2944,21 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/n
               sleep 1
             fi
 
-            reset_active_market_list
+            # if (active) order exist
+            if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+              # remove old (active) order
+              echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+            fi
+            # if (market) order exist
+            if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market || true)" -eq "1" ]] &>/dev/null; then
+              # remove old (market) order
+              echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+            fi
+            # if (market.list) order exist
+            if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list || true)" -eq "1" ]] &>/dev/null; then
+              # remove old (market.list) order
+              echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+            fi
 
             # dump output (log)
             DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Dumping! ${DIP_ORDER_ID:0:9}$DIP_ORDER_ID_DOTS $LISTING_BALANCE $LISTING_CURRENCY into $REFERENCE_CURRENCY (Old) ${LISTING_PRICE_PROFIT:?}% P/L"
