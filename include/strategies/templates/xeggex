@@ -233,7 +233,7 @@ function insufficient_funds {
 
 ################################################################################
 
-function delisted() {
+function delisted_market() {
   # check if delisted_xeggex file exists, create it if not
   if [[ ! -f "${SYS_DIR:?}/delisted_xeggex" ]] &>/dev/null; then
     touch "${SYS_DIR:?}/delisted_xeggex"
@@ -251,6 +251,30 @@ function delisted() {
         # remove the market in both formats
         sed -i "/${MARKET//\//\\/}/d" "$PRICES_FILE"
       done <"$DELISTED_FILE"
+    fi
+  fi
+}
+
+################################################################################
+
+function paused_market() {
+  # check if pause file exists, create it if not
+  if [[ ! -f "${LOG_DIR:?}/leeloo/xeggex/pause" ]] &>/dev/null; then
+    touch "${LOG_DIR:?}/leeloo/xeggex/pause"
+  fi
+
+  # define file paths
+  PRICES_FILE="${LOG_DIR:?}/leeloo/xeggex/prices"
+  PAUSED_FILE="${LOG_DIR:?}/leeloo/xeggex/pause"
+
+  # check if there are paused markets
+  if [[ -s "$PAUSED_FILE" ]] &>/dev/null; then
+    if [[ "$(egrep -c "[0-9]+|[A-Z]+" "$PAUSED_FILE" || true)" -gt "0" ]] &>/dev/null; then
+      # loop through the paused markets and remove them from the prices file
+      while IFS= read -r MARKET; do
+        # remove the market in both formats
+        sed -i "/${MARKET//\//\\/}/d" "$PRICES_FILE"
+      done <"$PAUSED_FILE"
     fi
   fi
 }

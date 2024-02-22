@@ -81,9 +81,10 @@ exchange_template
 # data
 ################################################################################
 
-robot_log  # strategy log
-tx_id_data # txid data
-delisted   # delisted markets
+robot_log       # strategy log
+tx_id_data      # txid data
+delisted_market # delisted markets
+paused_market   # paused markets
 
 ################################################################################
 
@@ -995,23 +996,6 @@ if [[ "$DIP_ALL_IN" == "0" ]] &>/dev/null; then
     $1 in reference { next }
     { print }
   ' "$PRICES_FILE" >"${PRICES_FILE}.temp"
-  # replace the original prices file with the filtered version
-  mv "${PRICES_FILE}.temp" "$PRICES_FILE"
-fi
-
-################################################################################
-
-# if paused markets exist
-if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause 2>/dev/null | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
-  # set the paths for the files
-  PAUSE_FILE="${LOG_DIR}/leeloo/$EXCHANGE_DIR_NAME/pause"
-  PRICES_FILE="${LOG_DIR}/leeloo/$EXCHANGE_DIR_NAME/prices.dip"
-
-  # extract paused markets
-  PAUSED_MARKETS=$(cat "$PAUSE_FILE" 2>/dev/null)
-
-  # filter out markets with found data
-  grep -vf <(echo "$PAUSED_MARKETS") "$PRICES_FILE" >"${PRICES_FILE}.temp" 2>/dev/null
   # replace the original prices file with the filtered version
   mv "${PRICES_FILE}.temp" "$PRICES_FILE"
 fi
