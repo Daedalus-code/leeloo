@@ -1284,12 +1284,16 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk '!a[$1]++' | sed '/^$/d' | sort | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
 
   ##############################################################################
+  # setup buy order (limit) using target file
+  ##############################################################################
 
   # target data
   TARGET_ACTIVE="TARGET"
   target_data
+  decimal_market
   bought_sold_age
   remove_ghost_orders
+  target_order_status
 
   ##############################################################################
 
@@ -1312,8 +1316,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   ##############################################################################
   # potential buy target
   ##############################################################################
-
-  decimal_market
 
   # target found
   if [[ -n "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
@@ -1686,6 +1688,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 fi
 
 ################################################################################
+################################################################################
 
 # reset target file
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
@@ -1699,8 +1702,10 @@ fi
 # target data
 TARGET_ACTIVE="ACTIVE"
 target_data
+decimal_market
 bought_sold_age
 remove_ghost_orders
+target_order_status
 
 ################################################################################
 
