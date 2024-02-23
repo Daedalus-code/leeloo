@@ -1494,7 +1494,7 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
         fi
 
         # sell count
-        SELL_COUNT="$(echo "$ORDERS_TAC" | grep -c "sell")"
+        SELL_COUNT="$(echo "$ORDERS_TAC" | egrep -c "sell|dust" || true)"
         if [[ -z "$SELL_COUNT" ]] &>/dev/null; then
           SELL_COUNT="0"
         fi
@@ -1504,17 +1504,17 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
           BUY_COUNT="0"
         fi
         # profit high
-        PROFIT_HIGH="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | tail -1)"
+        PROFIT_HIGH="$(echo "$ORDERS_TAC" | egrep "sell|dust" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | tail -1)"
         if [[ -z "$PROFIT_HIGH" ]] &>/dev/null; then
           PROFIT_HIGH="0"
         fi
         # profit low
-        PROFIT_LOW="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | head -1)"
+        PROFIT_LOW="$(echo "$ORDERS_TAC" | egrep "sell|dust" | awk '{ print $13 }' | tr -d ' %' | sort -n 2>/dev/null | head -1)"
         if [[ -z "$PROFIT_LOW" ]] &>/dev/null; then
           PROFIT_LOW="0"
         fi
         # profit sum
-        PROFIT_SUM="$(echo "$ORDERS_TAC" | grep "sell" | awk '{ print $13 }' | tr -d ' %' | awk '{ SUM += $1} END { print SUM }')"
+        PROFIT_SUM="$(echo "$ORDERS_TAC" | egrep "sell|dust" | awk '{ print $13 }' | tr -d ' %' | awk '{ SUM += $1} END { print SUM }')"
         if [[ -z "$PROFIT_SUM" ]] &>/dev/null; then
           PROFIT_SUM="0"
         fi
