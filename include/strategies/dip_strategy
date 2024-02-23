@@ -2591,9 +2591,14 @@ fi
 time_and_profit
 bought_sold_age
 
+# broken buy age check x 2
+DIP_MAX_BUY_AGE_SECONDS_BROKEN="$(echo "$DIP_MAX_BUY_AGE_SECONDS*2" | bc 2>/dev/null)"
+# broken sell age check x 2
+DIP_MAX_SELL_AGE_SECONDS_BROKEN="$(echo "$DIP_MAX_SELL_AGE_SECONDS*2" | bc 2>/dev/null)"
+
 # if older than n seconds (using max sell and buy age limit)
-if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
-  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
+  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
 
     # orders check
     DIP_ACTIVE_BROKEN_ORDERS="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
