@@ -170,10 +170,17 @@ function decimal_market() {
     if [[ -s "${LOG_DIR:?}"/leeloo/getlist ]] &>/dev/null; then
       # decimal limit
       DIP_DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY:" | awk '{ print $2 }')"
-      # if any insufficient funds errors
-      if [[ "$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "0" ]] &>/dev/null; then
+
+      # if any insufficient funds error
+      if [[ "$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
         # disregard one decimal
         DIP_DECIMAL_LIMIT="$(echo "$DIP_DECIMAL_LIMIT-1" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+      fi
+
+      # if any insufficient funds errors
+      if [[ "$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
+        # disregard another decimal
+        DIP_DECIMAL_LIMIT="$(echo "$DIP_DECIMAL_LIMIT-2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
       fi
     fi
     # if zero
