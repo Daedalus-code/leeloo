@@ -171,17 +171,26 @@ function decimal_market() {
       # decimal limit
       DIP_DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY:" | awk '{ print $2 }')"
 
+      ##########################################################################
+      # insufficient null data
+      DIP_INSUFFICIENT_NULL="$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log)"
       # if any insufficient funds error
-      if [[ "$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
+      if [[ "$(echo "$DIP_INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
         # disregard one decimal
         DIP_DECIMAL_LIMIT="$(echo "$DIP_DECIMAL_LIMIT-1" | bc 2>/dev/null | awk -F. '{ print $1 }')"
       fi
-
       # if any insufficient funds errors
-      if [[ "$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
+      if [[ "$(echo "$DIP_INSUFFICIENT_NULL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
         # disregard another decimal
         DIP_DECIMAL_LIMIT="$(echo "$DIP_DECIMAL_LIMIT-2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
       fi
+      # if any persistence insufficient funds errors
+      if [[ "$(echo "$DIP_INSUFFICIENT_NULL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
+        # disregard all decimal
+        DIP_DECIMAL_LIMIT="0"
+      fi
+      ##########################################################################
+
     fi
     # if zero
     if [[ -z "$DIP_DECIMAL_LIMIT" || "$(echo "$DIP_DECIMAL_LIMIT" | wc -w)" -gt "1" ]] &>/dev/null; then
