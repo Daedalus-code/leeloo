@@ -2539,8 +2539,15 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
       # fully sold order
       ##########################################################################
 
+      # total sum (confirmed sold)
+      DIP_TOTAL_SOLD_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | sed '/^$/d')"
+      # total sum check
+      DIP_TOTAL_SOLD_FILE_CHECK="$(echo "$DIP_TOTAL_SOLD_FILE" | tr -d '.' | sed 's/^0*//')"
+
+      ##########################################################################
+
       # if total sum greater or equal than target
-      if [[ "$DIP_TOTAL_SOLD_SUM_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
+      if [[ "$DIP_TOTAL_SOLD_FILE_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
 
         log_date
 
