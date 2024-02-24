@@ -2496,6 +2496,7 @@ fi
 
 time_and_profit
 bought_sold_age
+decimal_market
 
 # active target
 DIP_ACTIVE_TARGET="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
@@ -2507,7 +2508,7 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
     # total sum (confirmed sell)
-    DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }' | sed '/^$/d')"
+    DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | sed '/^$/d')"
 
     ############################################################################
     ############################################################################
@@ -2726,7 +2727,7 @@ if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" ]] &>/dev/null; then
                     DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : dust :: $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: $DIP_CHANGE_ASSET_BALANCE $REFERENCE_BALANCE ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_FILE_AGE"
                     echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
                     # dusting output (log)
-                    DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME. Profit: ${DIP_CHANGE_PROFIT_LOSS:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
+                    DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: ${DIP_CHANGE_PROFIT_LOSS:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
                     echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
                     # profit output (log)
                     DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT"
