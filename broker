@@ -1419,7 +1419,9 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
             POSITION_SORT="2"
           fi
 
-          RESULT="$(cat "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | sort -n -k "$POSITION_SORT")"
+          RESULT="Exchange Strategy Currency Amount Cost Result Age
+          $(grep -v "Exchange" "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | sort -n -k "$POSITION_SORT")"
+          RESULT="$(echo "$RESULT" | column -t)"
           # if zero
           if [[ -z "$RESULT" ]] &>/dev/null; then
             RESULT="No data"
