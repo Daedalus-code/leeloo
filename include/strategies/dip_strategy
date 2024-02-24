@@ -2679,10 +2679,10 @@ DIP_CHANGE_PROFIT_LOSS="$(echo "100/$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_NEW_PRICE-
 # calculate profit or loss in coins/tokens
 DIP_CHANGE_PROFIT_LOSS_AMOUNT="$(echo "$DIP_CHANGE_NEW_AMOUNT-$DIP_CHANGE_OLD_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # if listing market already being spent
-DOP_CHANGE_ALREADY_BOUGHT="$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$DIP_CHANGE_NAME" | egrep -c "Buy |Sell " || true)"
+DIP_CHANGE_ALREADY_BOUGHT="$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$DIP_CHANGE_NAME" | egrep -c "Buy |Sell " || true)"
 
 # not already spent
-if [[ "$DOP_CHANGE_ALREADY_BOUGHT" -eq "0" ]] &>/dev/null; then
+if [[ "$DIP_CHANGE_ALREADY_BOUGHT" -eq "0" ]] &>/dev/null; then
 
   # if dust is old enough (86400 seconds = 1 day)
   if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
