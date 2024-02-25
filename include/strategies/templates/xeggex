@@ -457,6 +457,12 @@ function reference_allocated() {
 
 function target_order_status() {
 
+  TARGET_ORDERS_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # if zero
+  if [[ -z "$TARGET_ORDERS_AGE_SECONDS" ]] &>/dev/null; then
+    TARGET_ORDERS_AGE_SECONDS="0"
+  fi
+
   # if any data
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # market check
@@ -465,8 +471,11 @@ function target_order_status() {
     # if market is real
     if [[ "$DIP_MARKET_CHECK" -eq "1" ]] &>/dev/null; then
 
-      # get trades data
-      DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
+      # if data is old enough, or does not exist
+      if [[ "$TARGET_ORDERS_AGE_SECONDS" -gt "180" || ! -f "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades ]] &>/dev/null; then
+        # get trades data
+        DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
+      fi
       # if zero
       if [[ -z "$DIP_GET_TRADES_DATA" ]] &>/dev/null; then
         DIP_GET_TRADES_DATA="null"
