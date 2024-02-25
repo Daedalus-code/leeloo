@@ -514,6 +514,13 @@ function target_order_status() {
 
       ##########################################################################
 
+      # if zero
+      if [[ -z "$DIP_LISTING_ORDERS" ]] &>/dev/null; then
+        LAST_SELL_ORDER_ID="$LAST_SELL_GROUP_ID"
+      fi
+
+      ##########################################################################
+
       # sold order quantity
       DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_SELL_GROUP_ID" | grep "sell" | awk '{ print $9 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')
       # if zero
