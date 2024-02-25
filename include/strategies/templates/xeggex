@@ -533,22 +533,19 @@ function target_order_status() {
 
       # if order is selling
       if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
-        # if order value is unique
-        if [[ ! "$DIP_SELLING_VALUE" == "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
-          # if old is more than new
-          if [[ "$DIP_ORDER_SOLD_QUANTITY" -gt "$DIP_SELLING_VALUE" ]] &>/dev/null; then
-            # if order value is not zero
-            if [[ ! "$DIP_ORDER_SOLD_QUANTITY" == "0" ]] &>/dev/null; then
-              # if order value is greater than zero
-              if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -gt "0" ]] &>/dev/null; then
-                # not zero (null)
-                if [[ ! -z "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
-                  # track order amount being sold (update)
-                  echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
-                  # asset profit output (log)
-                  DIP_SELL_ASSET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Asset sold: +$DIP_ORDER_SOLD_QUANTITY $LISTING_CURRENCY Age: $DIP_BOUGHT_AGE_OUTPUT"
-                  echo "$DIP_SELL_ASSET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-                fi
+        # if old is more than new
+        if [[ "$DIP_ORDER_SOLD_QUANTITY" -gt "$DIP_SELLING_VALUE" ]] &>/dev/null; then
+          # if order value is not zero
+          if [[ ! "$DIP_ORDER_SOLD_QUANTITY" == "0" ]] &>/dev/null; then
+            # if order value is greater than zero
+            if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -gt "0" ]] &>/dev/null; then
+              # not zero (null)
+              if [[ ! -z "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+                # track order amount being sold (update)
+                echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
+                # asset profit output (log)
+                DIP_SELL_ASSET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Asset sold: +$DIP_ORDER_SOLD_QUANTITY $LISTING_CURRENCY Age: $DIP_BOUGHT_AGE_OUTPUT"
+                echo "$DIP_SELL_ASSET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               fi
             fi
           fi
