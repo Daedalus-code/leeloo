@@ -507,17 +507,6 @@ function target_order_status() {
 
       # last order id
       LAST_SELL_ORDER_ID="$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }' | tr -d ':')"
-      # if zero
-      if [[ -z "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
-        LAST_SELL_ORDER_ID="$LAST_SELL_GROUP_ID"
-      fi
-
-      ##########################################################################
-
-      # if zero
-      if [[ "$(echo "$DIP_LISTING_TRADES" | tail -1 | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
-        LAST_SELL_GROUP_ID="null"
-      fi
 
       ##########################################################################
 
@@ -525,7 +514,7 @@ function target_order_status() {
       DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_SELL_GROUP_ID" | grep "sell" | awk '{ print $9 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%."'$DIP_DECIMAL_LIMIT'"f\n", $1 }')
       # if zero
       if [[ -z "$DIP_ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
-        DIP_ORDER_SOLD_QUANTITY="null"
+        DIP_ORDER_SOLD_QUANTITY="0"
       fi
 
       # sold quantity check
