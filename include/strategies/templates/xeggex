@@ -518,15 +518,16 @@ function target_order_status() {
 
       ##########################################################################
 
-      # if total sum greater or equal than target
-      if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
-        echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold
-      fi
+      # track order amount being sold (constantly)
+      echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
 
       ##########################################################################
 
-      # track order amount being sold (constantly)
-      echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
+      # if total sum greater or equal than target
+      if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
+        # update sold file
+        echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold
+      fi
     fi
   fi
 }
