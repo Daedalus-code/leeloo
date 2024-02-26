@@ -511,8 +511,11 @@ function target_order_status() {
       if [[ -z "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
         LAST_SELL_ORDER_ID="$LAST_SELL_GROUP_ID"
       fi
+
+      ##########################################################################
+
       # if zero
-      if [[ -z "$LAST_SELL_GROUP_ID" ]] &>/dev/null; then
+      if [[ "$(echo "$DIP_LISTING_TRADES" | tail -1 | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
         LAST_SELL_GROUP_ID="null"
       fi
 
