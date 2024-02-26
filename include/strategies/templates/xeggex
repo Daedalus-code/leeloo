@@ -461,17 +461,19 @@ function target_order_status() {
     return 1
   fi
 
-  # check if trades file exists and is old enough
+  # set file paths
   TRADES_FILE="${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades"
+  ORDERS_FILE="${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders"
+
+  # check if trades file exists and is old enough
   if [[ ! -f "$TRADES_FILE" || $(find "$TRADES_FILE" -mmin +3) ]]; then
     # retrieve trades data
-    getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' >"$TRADES_FILE" || {
+    getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '"\(.id),\(.market),\(.orderid),\(.side),\(.price),\(.quantity),\(.createdAt),\(.updatedAt // "N/A")"' >"$TRADES_FILE" || {
       return 1
     }
   fi
 
   # check if orders file exists and is old enough
-  ORDERS_FILE="${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders"
   if [[ ! -f "$ORDERS_FILE" || $(find "$ORDERS_FILE" -mmin +3) ]]; then
     # retrieve and filter orders data
     cat "${LOG_DIR:?}/leeloo/xeggex/orders"* |
@@ -482,10 +484,10 @@ function target_order_status() {
     }
   fi
 
-  # get last sell group ID from trades data
+  # get the last sell group ID from trades data
   LAST_SELL_GROUP_ID=$(awk '$4 == "sell" {print $6; exit}' "$TRADES_FILE")
 
-  # get last sell order ID from orders data
+  # get the last sell order ID from orders data
   LAST_SELL_ORDER_ID=$(awk '$4 == "sell" {print $1; exit}' "$ORDERS_FILE" | tr -d ':')
 
   # get the sold quantity for the last sell group ID
