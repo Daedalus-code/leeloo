@@ -2523,13 +2523,13 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
         # total sum check (confirmed sold)
         DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
       fi
-      # target balance check
-      DIP_TARGET_BALANCE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $4 }' | tr -d '.' | sed 's/^0*//')"
+      # target bought amount check
+      DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $4 }' | tr -d '.' | sed 's/^0*//')"
 
       ##########################################################################
 
       # if total sum greater or equal than target
-      if [[ "$DIP_TOTAL_SOLD_FILE_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
+      if [[ "$DIP_TOTAL_SOLD_FILE_CHECK" -ge "$DIP_TARGET_BOUGHT_CHECK" ]] &>/dev/null; then
 
         log_date
 
