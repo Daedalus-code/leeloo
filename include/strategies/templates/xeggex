@@ -475,10 +475,10 @@ function target_order_status() {
       if [[ "$TARGET_ORDERS_AGE_SECONDS" -gt "180" || ! -f "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades ]] &>/dev/null; then
         # get trades data
         DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
+        # keep target trades data
+        echo "$DIP_GET_TRADES_DATA" >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
       fi
 
-      # keep target trades data
-      echo "$DIP_GET_TRADES_DATA" >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
       # output target trades data
       DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null || true)"
 
