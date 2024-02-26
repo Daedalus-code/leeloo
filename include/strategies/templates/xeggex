@@ -461,7 +461,7 @@ function target_order_status() {
     return 1
   fi
 
-  # set file paths
+  # define file paths
   TRADES_FILE="${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades"
   ORDERS_FILE="${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders"
 
@@ -499,6 +499,12 @@ function target_order_status() {
     if [[ -z "$LAST_SELL_ORDER_ID" || "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]]; then
       echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
     fi
+  fi
+
+  # track order amount being sold (constantly)
+  if [[ -n "$DIP_ORDER_SOLD_QUANTITY" ]]; then
+    # update .selling file with the sold quantity
+    printf "%.${DIP_DECIMAL_LIMIT}f\n" "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.selling"
   fi
 }
 
