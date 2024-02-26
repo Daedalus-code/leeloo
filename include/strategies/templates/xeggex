@@ -477,24 +477,18 @@ function target_order_status() {
         DIP_GET_TRADES_DATA="$(getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | tr -d '{"}' | tr ':,' ' ' | column -t)"
       fi
 
+      # keep target trades data
+      echo "$DIP_GET_TRADES_DATA" >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
+      # output target trades data
+      DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null || true)"
+
       ##########################################################################
 
       # get orders, orders.bkp data, remove duplicate id
       DIP_GET_ORDERS_DATA="$(cat "${LOG_DIR:?}"/leeloo/xeggex/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++')"
-      # if zero
-      if [[ -z "$DIP_GET_TRADES_DATA" ]] &>/dev/null; then
-        DIP_GET_TRADES_DATA="null"
-      fi
 
-      ##########################################################################
-
-      # keep target trades data
-      echo "$DIP_GET_TRADES_DATA" >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
       # keep target orders data
       echo "$DIP_GET_ORDERS_DATA" >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders
-
-      # output target trades data
-      DIP_LISTING_TRADES="$(cat "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null || true)"
       # output target orders data
       DIP_LISTING_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null || true)"
 
