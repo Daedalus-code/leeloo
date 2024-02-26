@@ -2514,7 +2514,7 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
     DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | sed '/^$/d')"
 
     # if no orders exist
-    if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+    if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
 
       # if zero, equals zero
       if [[ -z "$DIP_TOTAL_SOLD_SUM" || "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
