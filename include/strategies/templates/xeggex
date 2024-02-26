@@ -497,7 +497,7 @@ function target_order_status() {
       DIP_TARGET_BOUGHT_CHECK=$(tail -n 1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | awk '{ sub(/^0*/, ""); print $4 }')
 
       # if total sum greater or equal to target
-      if ((DIP_ORDER_SOLD_QUANTITY_CHECK >= DIP_TARGET_BOUGHT_CHECK)); then
+      if (($(echo "$DIP_ORDER_SOLD_QUANTITY_CHECK >= $DIP_TARGET_BOUGHT_CHECK" | bc -l))); then
         # if no orders, it is sold
         [[ -z "$LAST_SELL_ORDER_ID" ]] && LAST_SELL_ORDER_ID="$LAST_SELL_GROUP_ID"
 
