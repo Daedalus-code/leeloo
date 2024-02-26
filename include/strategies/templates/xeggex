@@ -469,8 +469,8 @@ function target_order_status() {
 
       # check if target orders data is old enough or doesn't exist
       if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades ]]; then
-        # get trades data
-        getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.[0]): \(.[1]) \(.[2]) \(.[3]) \(.[4]) \(.[5]) \(.[6]) \(.[7])"' | tr -d '{"}' | tr ':,' ' ' | column -t >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
+        # get trades data and format it
+        getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades
 
         # get orders data, remove duplicate ID
         cat "${LOG_DIR:?}"/leeloo/xeggex/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders
@@ -480,11 +480,11 @@ function target_order_status() {
         DIP_LISTING_ORDERS=$(<"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders)
 
         # extract last sell group ID and last order ID
-        LAST_SELL_GROUP_ID=$(echo "$DIP_LISTING_TRADES" | awk '/sell/{ print $6; exit }')
+        LAST_SELL_GROUP_ID=$(echo "$DIP_LISTING_TRADES" | awk '/sell/{ print $2; exit }')
         LAST_SELL_ORDER_ID=$(echo "$DIP_LISTING_ORDERS" | awk '/sell/{ print $1; exit }' | tr -d ':')
 
         # calculate total sold quantity
-        DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v gid="$LAST_SELL_GROUP_ID" '/sell/ && $6 == gid{ sum += $9 } END { printf "%.9f", sum }')
+        DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v gid="$LAST_SELL_GROUP_ID" '/sell/ && $2 == gid{ sum += $6 } END { printf "%.9f", sum }')
 
         # remove leading zeros from quantity check
         DIP_ORDER_SOLD_QUANTITY_CHECK=${DIP_ORDER_SOLD_QUANTITY#*.}
