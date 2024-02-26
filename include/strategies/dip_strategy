@@ -2513,17 +2513,6 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
     # total sum (confirmed sell)
     DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | sed '/^$/d')"
 
-    ############################################################################
-    ############################################################################
-
-    # if total sum greater or equal than target
-    if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
-      echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold
-    fi
-
-    ############################################################################
-    ############################################################################
-
     # if no orders exist
     if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
 
