@@ -500,10 +500,6 @@ function target_order_status() {
 
         # last order id
         LAST_SELL_ORDER_ID="$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }' | tr -d ':')"
-        # if zero
-        if [[ -z "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
-          LAST_SELL_ORDER_ID="$LAST_SELL_GROUP_ID"
-        fi
 
         ########################################################################
 
@@ -523,6 +519,12 @@ function target_order_status() {
 
       # if total sum greater or equal than target
       if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
+
+        # if zero
+        if [[ -z "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
+          LAST_SELL_ORDER_ID="$LAST_SELL_GROUP_ID"
+        fi
+
         # if group and order id match
         if [[ "$LAST_SELL_GROUP_ID" == "$LAST_SELL_ORDER_ID" ]] &>/dev/null; then
           # update sold file
