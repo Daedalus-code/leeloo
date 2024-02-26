@@ -1328,26 +1328,30 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # filled target status
   ##############################################################################
 
-  # amount of order filled (sold)
-  DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
-  # target amount (bought)
-  DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | awk '{ print $4 }' | tail -1)"
+  # if any data
+  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]]; then
 
-  # if zero
-  if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
-    DIP_LEFTOVER_FILLED_AMOUNT="0"
-  fi
+    # amount of order filled (sold)
+    DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+    # target amount (bought)
+    DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | awk '{ print $4 }' | tail -1)"
 
-  # calculate leftover filled
-  DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
+    # if zero
+    if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
+      DIP_LEFTOVER_FILLED_AMOUNT="0"
+    fi
 
-  # if zero
-  if [[ -z "$DIP_LEFTOVER_FILLED" || "$DIP_LEFTOVER_FILLED" == "0.0000" ]] &>/dev/null; then
-    DIP_LEFTOVER_FILLED="0"
-  fi
-  # if leftover filled greater or equal to n
-  if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
-    DIP_LEFTOVER_FILLED="100"
+    # calculate leftover filled
+    DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
+
+    # if zero
+    if [[ -z "$DIP_LEFTOVER_FILLED" || "$DIP_LEFTOVER_FILLED" == "0.0000" ]] &>/dev/null; then
+      DIP_LEFTOVER_FILLED="0"
+    fi
+    # if leftover filled greater or equal to n
+    if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
+      DIP_LEFTOVER_FILLED="100"
+    fi
   fi
 
   ##############################################################################
