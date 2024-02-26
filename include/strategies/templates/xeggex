@@ -466,7 +466,7 @@ function target_order_status() {
   if [[ ! -f "$TRADES_FILE" || $(find "$TRADES_FILE" -mmin +3) ]]; then
     # retrieve trades data
     getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" |
-      jq -r '"\(.id),\(.market),\(.orderid),\(.side),\(.price),\(.quantity),\(.createdAt)"' >"$TRADES_FILE" || {
+      jq -r '"\(.id),\(.market),\(.orderid),\(.side),\(.price),\(.quantity),\(.createdAt),\(.updatedAt // "N/A")"' >"$TRADES_FILE" || {
       return 1
     }
   fi
