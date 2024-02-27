@@ -482,17 +482,22 @@ function target_order_status() {
 
       # extract last sell order ID from trades file
       LAST_SELL_ORDER_ID=$(echo "$DIP_LISTING_TRADES" | awk '/sell/{ print $3; exit }')
-
       # extract last buy order ID from orders file
       LAST_BUY_ORDER_ID=$(echo "$DIP_LISTING_ORDERS" | awk '/buy/{ print $1; exit }' | cut -d':' -f1)
+      # extract total sold quantity
+      DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v sid="$LAST_SELL_ORDER_ID" '$3 == sid{ sum += $6 } END { printf "%.9f", sum }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($3 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')
+      # sold quantity check
+      DIP_ORDER_SOLD_QUANTITY_CHECK="$(echo "$DIP_ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')"
+      # target bought amount check
+      DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $4 }' | tr -d '.' | sed 's/^0*//')"
 
-      # if the last trade is a sell and its order ID matches the last buy order ID
-      if [[ -n "$LAST_SELL_ORDER_ID" && "$LAST_SELL_ORDER_ID" == "$LAST_BUY_ORDER_ID" ]]; then
-        # extract total sold quantity
-        DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v sid="$LAST_SELL_ORDER_ID" '$3 == sid{ sum += $6 } END { printf "%.9f", sum }')
-
-        # update sold file
-        echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold
+      # if total sum greater or equal than target
+      if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BOUGHT_CHECK" ]] &>/dev/null; then
+        # if the last trade is a sell and its order ID matches the last buy order ID
+        if [[ -n "$LAST_SELL_ORDER_ID" && "$LAST_SELL_ORDER_ID" == "$LAST_BUY_ORDER_ID" ]]; then
+          # update sold file
+          echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold
+        fi
       fi
     fi
 
