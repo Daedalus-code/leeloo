@@ -464,39 +464,33 @@ function target_order_status() {
 
   # check if listing currency and reference currency are not empty
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]]; then
-    # check if the market is real
-    if grep -q "$LISTING_CURRENCY" "${LOG_DIR:?}/leeloo/xeggex/prices" && grep -q "$REFERENCE_CURRENCY" "${LOG_DIR:?}/leeloo/xeggex/prices"; then
 
-      # check if target orders data is old enough or doesn't exist
-      if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades" ]]; then
-        # get trades data and format it
-        getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades"
+    # check if target orders data is old enough or doesn't exist
+    if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades" ]]; then
+      # get trades data and format it
+      getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades"
 
-        # get orders data, remove duplicate ID
-        cat "${LOG_DIR:?}/leeloo/xeggex/orders"* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders"
-      fi
+      # get orders data, remove duplicate ID
+      cat "${LOG_DIR:?}/leeloo/xeggex/orders"* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders"
+    fi
 
-      # extract relevant information
-      DIP_LISTING_TRADES=$(<"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades")
-      DIP_LISTING_ORDERS=$(<"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders")
+    # extract relevant information
+    DIP_LISTING_TRADES=$(<"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades")
+    DIP_LISTING_ORDERS=$(<"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders")
 
-      # extract last buy order ID from orders file
-      LAST_BUY_ORDER_ID=$(echo "$DIP_LISTING_ORDERS" | awk '/buy/{ print $1; exit }' | cut -d':' -f1)
+    # extract last buy order ID from orders file
+    LAST_BUY_ORDER_ID=$(echo "$DIP_LISTING_ORDERS" | awk '/buy/{ print $1; exit }' | cut -d':' -f1)
+    # extract total sold quantity associated with the last buy order
+    DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v bid="$LAST_BUY_ORDER_ID" '$3 == bid && $4 == "sell" { sum += $6 } END { printf "%.9f", sum }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($3 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')
+    # sold quantity check
+    DIP_ORDER_SOLD_QUANTITY_CHECK="$(echo "$DIP_ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')"
+    # target bought amount check
+    DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.bought" | tail -1 | awk '{ print $4 }' | tr -d '.' | sed 's/^0*//')"
 
-      # extract total sold quantity associated with the last buy order
-      DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v bid="$LAST_BUY_ORDER_ID" '$3 == bid && $4 == "sell" { sum += $6 } END { printf "%.9f", sum }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($3 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')
-
-      # sold quantity check
-      DIP_ORDER_SOLD_QUANTITY_CHECK="$(echo "$DIP_ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')"
-
-      # target bought amount check
-      DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.bought" | tail -1 | awk '{ print $4 }' | tr -d '.' | sed 's/^0*//')"
-
-      # if total sum is greater or equal to the target
-      if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BOUGHT_CHECK" ]]; then
-        # update sold file
-        echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
-      fi
+    # if total sum is greater or equal to the target
+    if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BOUGHT_CHECK" ]]; then
+      # update sold file
+      echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
     fi
 
     # track order amount being sold (constantly)
