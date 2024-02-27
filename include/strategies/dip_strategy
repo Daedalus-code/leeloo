@@ -2178,6 +2178,13 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   else # no active, no orders
     DIP_BS_STATUS="Trading"
+    # if any data
+    if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]]; then
+      # update missing file
+      echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
+      # remove duplicates, make a line
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null | awk '{ seen = ""; for (i=1; i<=NF; i++) { if (!($i in a)) { seen = seen $i FS; a[$i] } } print seen }' | tr -d '\n')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
+    fi
   fi
 
   ##############################################################################
