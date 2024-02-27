@@ -972,23 +972,32 @@ function last_log {
 
 function last_log_robot {
 
-  LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
-  WIDTH="$(echo "$(tail -80 "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+  # if zero
   if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
     LENGTH="21"
   else
+    # default (ruled by configuration)
     LENGTH="$LOG_LENGTH"
   fi
+
+  LOG_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/robot.log)"
+  WIDTH="$(echo "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot.log | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+
+  # if zero
   if [[ -z "$LENGTH" ]] &>/dev/null; then
     LENGTH="21"
+    # less than n
   elif [[ "$LENGTH" -lt "21" ]] &>/dev/null; then
     LENGTH="21"
   fi
+  # if zero
   if [[ -z "$WIDTH" ]] &>/dev/null; then
     WIDTH="89"
+    # less than n
   elif [[ "$WIDTH" -lt "89" ]] &>/dev/null; then
     WIDTH="89"
   fi
+
   display_result() {
     dialog --title "Robot Log: $LOG_COUNT" \
       --no-collapse \
