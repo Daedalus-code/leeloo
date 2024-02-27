@@ -478,27 +478,35 @@ function target_order_status() {
     DIP_LISTING_TRADES=$(<"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades")
     DIP_LISTING_ORDERS=$(<"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders")
 
-    # extract last buy order ID from orders file
-    LAST_BUY_ORDER_ID=$(echo "$DIP_LISTING_ORDERS" | awk '/buy/{ print $1; exit }' | cut -d':' -f1)
-    # extract the timestamp of the last buy order
-    LAST_BUY_ORDER_TIMESTAMP=$(echo "$DIP_LISTING_ORDERS" | awk '/buy/{ print $NF; exit }')
-    # extract total sold quantity associated with trades occurring after the last buy order
-    DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v last_buy="$LAST_BUY_ORDER_TIMESTAMP" '$NF > last_buy { sum += $6 } END { printf "%.9f", sum }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')
+    # sell order data ##########################################################
+
     # extract last sell order ID from trades file
     DIP_SELL_TRADES_ID=$(echo "$DIP_LISTING_TRADES" | grep "sell" | head -1 | awk '{ print $3 }')
+    # extract last sell order ID from orders file
+    DIP_SELL_ORDERS_ID=$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }' | tr -d ':')
+    # extract sell order quantity based on ID from trades file
+    DIP_ORDER_SOLD_QUANTITY="$(echo "$DIP_LISTING_TRADES" | grep "$DIP_SELL_TRADES_ID" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
+
+    # quantity & target ########################################################
+
     # sold quantity check
     DIP_ORDER_SOLD_QUANTITY_CHECK="$(echo "$DIP_ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')"
     # target bought amount check
     DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.bought" | tail -1 | awk '{ print $4 }' | tr -d '.' | sed 's/^0*//')"
 
-    # if total sum is greater or equal to the target
-    if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BOUGHT_CHECK" ]]; then
-      # if any data
-      if [[ -n "$LAST_BUY_ORDER_ID" && -n "$DIP_SELL_TRADES_ID" ]]; then
-        # if trades id matches
-        if [[ "$LAST_BUY_ORDER_ID" == "$DIP_SELL_TRADES_ID" ]]; then
-          # update sold file
-          echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
+    # selling & sold sum #######################################################
+
+    # if any quantity
+    if [[ -n "$DIP_ORDER_SOLD_QUANTITY" ]]; then
+      # if total sum is greater or equal to the target
+      if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BOUGHT_CHECK" ]]; then
+        # if any data
+        if [[ -n "$DIP_SELL_TRADES_ID" && -n "$DIP_SELL_ORDERS_ID" ]]; then
+          # if trades id matches
+          if [[ "$DIP_SELL_TRADES_ID" == "$DIP_SELL_ORDERS_ID" ]]; then
+            # update sold file
+            echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
+          fi
         fi
       fi
     fi
