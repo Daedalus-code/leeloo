@@ -483,6 +483,21 @@ function target_order_status() {
     DIP_SELL_TRADES_ID=$(echo "$DIP_LISTING_TRADES" | grep "sell" | head -1 | awk '{ print $3 }')
     # extract last sell order ID from orders file
     DIP_SELL_ORDERS_ID=$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }' | tr -d ':')
+
+    # keep sell order id
+    echo "$DIP_SELL_ORDERS_ID" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sell_id"
+
+    # if zero
+    if [[ -z "$DIP_SELL_ORDERS_ID" ]]; then
+      # use old id until (sold) is confirmed
+      DIP_SELL_ORDERS_ID="$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sell_id" 2>/dev/null)"
+    fi
+    # if still zero, again
+    if [[ -z "$DIP_SELL_ORDERS_ID" ]]; then
+      # use old id
+      DIP_SELL_ORDERS_ID="null"
+    fi
+
     # extract sell order quantity based on ID from trades file
     DIP_ORDER_SOLD_QUANTITY="$(echo "$DIP_LISTING_TRADES" | grep "$DIP_SELL_TRADES_ID" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
 
@@ -505,6 +520,8 @@ function target_order_status() {
           if [[ "$DIP_SELL_TRADES_ID" == "$DIP_SELL_ORDERS_ID" ]]; then
             # update sold file
             echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
+            # reset sell_id
+            truncate -s 0 "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sell_id"
           fi
         fi
       fi
