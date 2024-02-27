@@ -481,7 +481,7 @@ function target_order_status() {
     # extract last buy order ID from orders file
     LAST_BUY_ORDER_ID=$(echo "$DIP_LISTING_ORDERS" | awk '/buy/{ print $1; exit }' | cut -d':' -f1)
     # extract total sold quantity associated with the last buy order
-    DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v bid="$LAST_BUY_ORDER_ID" '$3 == bid && $4 == "sell" { sum += $6 } END { printf "%.9f", sum }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($3 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')
+    DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | grep "$LAST_BUY_ORDER_ID" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')
     # sold quantity check
     DIP_ORDER_SOLD_QUANTITY_CHECK="$(echo "$DIP_ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')"
     # target bought amount check
