@@ -484,8 +484,11 @@ function target_order_status() {
     # extract last sell order ID from orders file
     DIP_SELL_ORDERS_ID=$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }' | tr -d ':')
 
-    # keep sell order id
-    echo "$DIP_SELL_ORDERS_ID" | sed '/^$/d' >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sell_id"
+    # if any data
+    if [[ -n "$DIP_SELL_ORDERS_ID" ]]; then
+      # keep sell order id
+      echo "$DIP_SELL_ORDERS_ID" | sed '/^$/d' >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sell_id"
+    fi
 
     # if zero
     if [[ -z "$DIP_SELL_ORDERS_ID" ]]; then
