@@ -474,24 +474,24 @@ function target_order_status() {
 
         # get orders data, remove duplicate ID
         cat "${LOG_DIR:?}"/leeloo/xeggex/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders
-
-        # extract relevant information
-        DIP_LISTING_TRADES=$(<"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades)
-        DIP_LISTING_ORDERS=$(<"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders)
-
-        # extract last sell group ID and last order ID
-        LAST_SELL_GROUP_ID=$(echo "$DIP_LISTING_TRADES" | awk '/sell/{ print $2; exit }')
-        LAST_SELL_ORDER_ID=$(echo "$DIP_LISTING_ORDERS" | awk '/sell/{ print $1; exit }' | tr -d ':')
-
-        # calculate total sold quantity
-        DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v gid="$LAST_SELL_GROUP_ID" '/sell/ && $2 == gid{ sum += $6 } END { printf "%.9f", sum }')
-
-        # remove leading zeros from quantity check
-        DIP_ORDER_SOLD_QUANTITY_CHECK=${DIP_ORDER_SOLD_QUANTITY#*.}
-
-        # track order amount being sold (constantly)
-        echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
       fi
+
+      # extract relevant information
+      DIP_LISTING_TRADES=$(<"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades)
+      DIP_LISTING_ORDERS=$(<"${LOG_DIR:?}"/leeloo/xeggex/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders)
+
+      # extract last sell group ID and last order ID
+      LAST_SELL_GROUP_ID=$(echo "$DIP_LISTING_TRADES" | awk '/sell/{ print $2; exit }')
+      LAST_SELL_ORDER_ID=$(echo "$DIP_LISTING_ORDERS" | awk '/sell/{ print $1; exit }' | tr -d ':')
+
+      # calculate total sold quantity
+      DIP_ORDER_SOLD_QUANTITY=$(echo "$DIP_LISTING_TRADES" | awk -v gid="$LAST_SELL_GROUP_ID" '/sell/ && $2 == gid{ sum += $6 } END { printf "%.9f", sum }')
+
+      # remove leading zeros from quantity check
+      DIP_ORDER_SOLD_QUANTITY_CHECK=${DIP_ORDER_SOLD_QUANTITY#*.}
+
+      # track order amount being sold (constantly)
+      echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
 
       # target bought amount check
       DIP_TARGET_BOUGHT_CHECK=$(tail -n 1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | awk '{ sub(/^0*/, ""); print $4 }')
