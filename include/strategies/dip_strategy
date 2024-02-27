@@ -2519,6 +2519,18 @@ target_order_status
 # active target
 DIP_ACTIVE_TARGET="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
 
+# if zero minutes
+if [[ "$DIP_BOUGHT_AGE_OUTPUT" == "0m" ]] &>/dev/null; then
+  # skip
+  DIP_ACTIVE_TARGET="0"
+  # reset sold file (reset data, age)
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold &>/dev/null
+  # reset selling file (reset data)
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling &>/dev/null
+  # reset sell_id file (reset data)
+  truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+fi
+
 # if target is active
 if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
 
