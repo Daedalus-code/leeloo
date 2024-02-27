@@ -495,13 +495,15 @@ function target_order_status() {
 
     # if total sum is greater or equal to the target
     if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BOUGHT_CHECK" ]]; then
-      # if trades id matches
-      if [[ "$DIP_BUY_TRADES_ID" == "$DIP_SELL_TRADES_ID" ]]; then
-        # update sold file
-        echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
+      # if any data
+      if [[ -n "$DIP_BUY_TRADES_ID" && -n "$DIP_SELL_TRADES_ID" ]]; then
+        # if trades id matches
+        if [[ "$DIP_BUY_TRADES_ID" == "$DIP_SELL_TRADES_ID" ]]; then
+          # update sold file
+          echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
+        fi
       fi
     fi
-
     # track order amount being sold (constantly)
     echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.selling"
   fi
