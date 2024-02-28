@@ -2077,7 +2077,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # leftover sell amount (without decimal)
-  DIP_LEFTOVER_SOLD_CHECK="$(echo "$DIP_LEFTOVER_SOLD" | tr -d '.' | sed 's/^0*//')"
+  DIP_LEFTOVER_SOLD_CHECK="$(echo "$DIP_LEFTOVER_SOLD" | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
 
   # if zero
   if [[ -z "$DIP_LEFTOVER_SOLD_CHECK" ]] &>/dev/null; then
@@ -2087,7 +2087,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # total sum (without decimal)
-  DIP_TOTAL_SOLD_SUM_CHECK="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  DIP_TOTAL_SOLD_SUM_CHECK="$(echo "$DIP_TOTAL_SOLD_SUM" | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
 
   # if zero
   if [[ -z "$DIP_TOTAL_SOLD_SUM_CHECK" ]] &>/dev/null; then
@@ -2554,7 +2554,7 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
         DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
       fi
       # target bought amount check
-      DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $4 }' | tr -d '.' | sed 's/^0*//')"
+      DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
 
       ##########################################################################
 
@@ -3167,7 +3167,7 @@ decimal_market
 # dump listing balance
 DUMP_LISTING_BALANCE="$(grep -w "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($3 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
 # dump listing balance (without decimal)
-DUMP_LISTING_BALANCE_CHECK="$(echo "$DUMP_LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')"
+DUMP_LISTING_BALANCE_CHECK="$(echo "$DUMP_LISTING_BALANCE" | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
 
 # if zero
 if [[ -z "$DUMP_LISTING_BALANCE_CHECK" ]] &>/dev/null; then
