@@ -3550,13 +3550,43 @@ if [[ -z "$DIP_SLOWEST_AVERAGE_PROFIT" ]] &>/dev/null; then
   DIP_SLOWEST_AVERAGE_PROFIT="0"
 fi
 
+# active market rsi data
+ACTIVE_MARKET_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep -v "RSI: 0" | grep "RSI:" | tail -11)"
+# active market rsi count
+ACTIVE_MARKET_RSI_COUNT="$(echo "$ACTIVE_MARKET_RSI_DATA" | egrep -o "RSI: [0-9]+" | wc -l)"
+# active market rsi total
+ACTIVE_MARKET_RSI_TOTAL="$(echo "$ACTIVE_MARKET_RSI_DATA" | egrep -o "RSI: [0-9]+" | awk '{ SUM += $2} END { print SUM }')"
+# active market rsi average
+ACTIVE_MARKET_RSI_AVERAGE="$(echo "$ACTIVE_MARKET_RSI_TOTAL/$ACTIVE_MARKET_RSI_COUNT" | bc -l | awk '{ printf "%.4f\n", $1 }')"
+
+# if zero
+if [[ -z "$ACTIVE_MARKET_RSI_AVERAGE" ]] &>/dev/null; then
+  ACTIVE_MARKET_RSI_AVERAGE="0"
+fi
+
+# default
+ACTIVE_MARKET_RSI_STATUS="Neutral"
+
+# if greater than n
+if [[ "$ACTIVE_MARKET_RSI_AVERAGE" -gt "70" ]] &>/dev/null; then
+  ACTIVE_MARKET_RSI_STATUS="Overbought"
+fi
+# if less than n
+if [[ "$ACTIVE_MARKET_RSI_AVERAGE" -lt "70" ]] &>/dev/null; then
+  ACTIVE_MARKET_RSI_STATUS="Neutral"
+fi
+# if less than n
+if [[ "$ACTIVE_MARKET_RSI_AVERAGE" -lt "30" ]] &>/dev/null; then
+  ACTIVE_MARKET_RSI_STATUS="Oversold"
+fi
+
 ################################################################################
 
 # format and display output
 {
   echo "Targets.............: $DIP_DAILY_POTENTIAL | Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% PM: ${DIP_DAILY_MOVEMENT:?}%
 Active..............: $DIP_ACTIVE_FILE_COUNT | Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% PM: ${DIP_ACTIVE_FILE_A_PRICE_MOVEMENT:?}%
-Market..............: $ACTIVE_MARKET_PAIRS
+Market..............: $ACTIVE_MARKET_PAIRS RSI: $ACTIVE_MARKET_RSI_AVERAGE ($ACTIVE_MARKET_RSI_STATUS)
 Market_Balance......: $REFERENCE_BALANCE $ACTIVE_MARKET_PAIRS
 Exchange............: $EXCHANGE_OUTPUT_NAME $EXCHANGE_API
 Orders..............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Max: $DIP_MAX_ORDERS
