@@ -477,6 +477,11 @@ function target_order_status() {
     DIP_LISTING_TRADES=$(<"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades")
     DIP_LISTING_ORDERS=$(<"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders")
 
+    # buy order data ###########################################################
+
+    # extract last sell order ID from trades file
+    DIP_BUY_TRADES_STATUS=$(echo "$DIP_LISTING_TRADES" | head -1 | grep -c "buy" || true)
+
     # sell order data ##########################################################
 
     # extract last sell order ID from trades file
@@ -520,10 +525,13 @@ function target_order_status() {
         if [[ -n "$DIP_SELL_TRADES_ID" && -n "$DIP_SELL_ORDERS_ID" ]]; then
           # if trades id matches
           if [[ "$DIP_SELL_TRADES_ID" == "$DIP_SELL_ORDERS_ID" ]]; then
-            # update sold file
-            echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
-            # reset sell_id
-            truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+            # if not a new buy
+            if [[ "$DIP_BUY_TRADES_STATUS" -eq "0" ]]; then
+              # update sold file
+              echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
+              # reset sell_id
+              truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+            fi
           fi
         fi
       fi
