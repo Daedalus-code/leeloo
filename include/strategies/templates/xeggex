@@ -272,6 +272,9 @@ function insufficient_funds {
 ################################################################################
 
 function delisted_market() {
+  # create raw.prices file, readonly
+  echo "$(cat "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/xeggex/raw.prices 2>/dev/null
+
   # check if delisted_xeggex file exists, create it if not
   if [[ ! -f "${SYS_DIR:?}/delisted_xeggex" ]] &>/dev/null; then
     touch "${SYS_DIR:?}/delisted_xeggex"
