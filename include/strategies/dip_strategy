@@ -2806,109 +2806,6 @@ $(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null)" >"$SYS_DIR"/
 fi
 
 ################################################################################
-# open positions
-################################################################################
-
-function open_dip_position() {
-
-  # pool file (positions)
-  DIP_OUTPUT_FILE="${SYS_DIR:?}/robot/pool"
-  # read the active list from the file
-  DIP_ACTIVE_LIST=$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" 2>/dev/null | sed '/^$/d')
-
-  # extract values from the active list
-  extract_values() {
-    CURRENCY=$1
-    FIELD=$2
-    VALUE=$(grep -w "$CURRENCY" <<<"$DIP_ACTIVE_LIST" | awk -v field="$FIELD" -F '[:|]' '{for (i=1; i<=NF; i++) if ($i ~ field) print $(i+1)}' | awk '{print $1}')
-    echo "$VALUE"
-  }
-
-  # calculate the age of the sold file
-  calculate_sold_file_age() {
-
-    # input currency
-    CURRENCY=$1
-
-    # sold file path
-    FILE_PATH_SOLD="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.selling"
-    # bought file path
-    FILE_PATH_BOUGHT="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
-
-    # file exist
-    if [[ -f "$FILE_PATH_SOLD" ]] &>/dev/null; then
-      FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.selling"
-    fi
-    # file exist
-    if [[ -f "$FILE_PATH_BOUGHT" ]] &>/dev/null; then
-      FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
-    fi
-
-    if [[ -f "$FILE_PATH" ]] &>/dev/null; then
-      LAST_EDIT=$(stat -c '%Y' "$FILE_PATH" 2>/dev/null)
-      AGE_SECONDS=$(($(date +%s) - $LAST_EDIT))
-
-      # if zero
-      if [[ -z "$AGE_SECONDS" ]] &>/dev/null; then
-        AGE_SECONDS="0"
-      fi
-
-      # positions age (hours:minutes:seconds)
-      printf '%dh:%dm:%ds\n' $((AGE_SECONDS / 3600)) $((AGE_SECONDS % 3600 / 60)) $((AGE_SECONDS % 60))
-    else
-      echo "N/A"
-    fi
-  }
-
-  # values for each currency
-  while IFS= read -r line; do
-
-    # currency
-    CURRENCY=$(echo "$line" 2>/dev/null | awk -F ": " '{print $1}' 2>/dev/null)
-    # amount to buy (listing)
-    AMOUNT=$(extract_values "$CURRENCY" "Amount" 2>/dev/null)
-    # order bid (reference)
-    COST_BID=$(extract_values "$CURRENCY" "Bid" 2>/dev/null)
-    # order ask (reference)
-    COST_ASK=$(extract_values "$CURRENCY" "Ask" 2>/dev/null)
-    # amount for buy (reference)
-    COST_BUY=$(echo "$AMOUNT*$COST_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-    # amount to recieve(reference)
-    RESULT_GET="$(echo "$AMOUNT*$COST_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-    # amount to profit (reference)
-    RESULT_DIFF="$(echo "$RESULT_GET-$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-    # amount to profit (reference percentage)
-    RESULT_PROFIT="$(echo "100/$COST_BUY*$RESULT_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-    # if zero
-    if [[ -z "$RESULT_PROFIT" ]] &>/dev/null; then
-      RESULT_PROFIT="0"
-    fi
-
-    # order age
-    RESULT_AGE=$(calculate_sold_file_age "$CURRENCY")
-
-    ############################################################################
-    ############################################################################
-
-    # result output (positions)
-    echo "$EXCHANGE_API $STRATEGY_TYPE $CURRENCY $AMOUNT $COST_BUY ${RESULT_PROFIT:?}% $RESULT_AGE" >>"$DIP_OUTPUT_FILE"
-
-    ############################################################################
-    ############################################################################
-
-  done \
-    < <(grep -oE '^[^:]*' <<<"$DIP_ACTIVE_LIST")
-
-  # format output
-  column -t <"$DIP_OUTPUT_FILE" >"${DIP_OUTPUT_FILE}.tmp"
-  mv "${DIP_OUTPUT_FILE}.tmp" "$DIP_OUTPUT_FILE"
-
-  # track position data
-  echo "$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
-}
-
-################################################################################
 # dumping old positions (single sell orders)
 ################################################################################
 
@@ -3642,6 +3539,109 @@ if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
   # clean dca
   clean_DCA
 fi
+
+################################################################################
+# open positions
+################################################################################
+
+function open_dip_position() {
+
+  # pool file (positions)
+  DIP_OUTPUT_FILE="${SYS_DIR:?}/robot/pool"
+  # read the active list from the file
+  DIP_ACTIVE_LIST=$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}.active" 2>/dev/null | sed '/^$/d')
+
+  # extract values from the active list
+  extract_values() {
+    CURRENCY=$1
+    FIELD=$2
+    VALUE=$(grep -w "$CURRENCY" <<<"$DIP_ACTIVE_LIST" | awk -v field="$FIELD" -F '[:|]' '{for (i=1; i<=NF; i++) if ($i ~ field) print $(i+1)}' | awk '{print $1}')
+    echo "$VALUE"
+  }
+
+  # calculate the age of the sold file
+  calculate_sold_file_age() {
+
+    # input currency
+    CURRENCY=$1
+
+    # sold file path
+    FILE_PATH_SOLD="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.selling"
+    # bought file path
+    FILE_PATH_BOUGHT="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
+
+    # file exist
+    if [[ -f "$FILE_PATH_SOLD" ]] &>/dev/null; then
+      FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.selling"
+    fi
+    # file exist
+    if [[ -f "$FILE_PATH_BOUGHT" ]] &>/dev/null; then
+      FILE_PATH="${SYS_DIR:?}/robot/$BASENAME_STRATEGY/${CURRENCY//\//_}.bought"
+    fi
+
+    if [[ -f "$FILE_PATH" ]] &>/dev/null; then
+      LAST_EDIT=$(stat -c '%Y' "$FILE_PATH" 2>/dev/null)
+      AGE_SECONDS=$(($(date +%s) - $LAST_EDIT))
+
+      # if zero
+      if [[ -z "$AGE_SECONDS" ]] &>/dev/null; then
+        AGE_SECONDS="0"
+      fi
+
+      # positions age (hours:minutes:seconds)
+      printf '%dh:%dm:%ds\n' $((AGE_SECONDS / 3600)) $((AGE_SECONDS % 3600 / 60)) $((AGE_SECONDS % 60))
+    else
+      echo "N/A"
+    fi
+  }
+
+  # values for each currency
+  while IFS= read -r line; do
+
+    # currency
+    CURRENCY=$(echo "$line" 2>/dev/null | awk -F ": " '{print $1}' 2>/dev/null)
+    # amount to buy (listing)
+    AMOUNT=$(extract_values "$CURRENCY" "Amount" 2>/dev/null)
+    # order bid (reference)
+    COST_BID=$(extract_values "$CURRENCY" "Bid" 2>/dev/null)
+    # order ask (reference)
+    COST_ASK=$(extract_values "$CURRENCY" "Ask" 2>/dev/null)
+    # amount for buy (reference)
+    COST_BUY=$(echo "$AMOUNT*$COST_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+    # amount to recieve(reference)
+    RESULT_GET="$(echo "$AMOUNT*$COST_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+    # amount to profit (reference)
+    RESULT_DIFF="$(echo "$RESULT_GET-$COST_BUY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+    # amount to profit (reference percentage)
+    RESULT_PROFIT="$(echo "100/$COST_BUY*$RESULT_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    # if zero
+    if [[ -z "$RESULT_PROFIT" ]] &>/dev/null; then
+      RESULT_PROFIT="0"
+    fi
+
+    # order age
+    RESULT_AGE=$(calculate_sold_file_age "$CURRENCY")
+
+    ############################################################################
+    ############################################################################
+
+    # result output (positions)
+    echo "$EXCHANGE_API $STRATEGY_TYPE $CURRENCY $AMOUNT $COST_BUY ${RESULT_PROFIT:?}% $RESULT_AGE" >>"$DIP_OUTPUT_FILE"
+
+    ############################################################################
+    ############################################################################
+
+  done \
+    < <(grep -oE '^[^:]*' <<<"$DIP_ACTIVE_LIST")
+
+  # format output
+  column -t <"$DIP_OUTPUT_FILE" >"${DIP_OUTPUT_FILE}.tmp"
+  mv "${DIP_OUTPUT_FILE}.tmp" "$DIP_OUTPUT_FILE"
+
+  # track position data
+  echo "$(grep "$STRATEGY_TYPE" "${SYS_DIR:?}"/robot/pool)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
+}
 
 ################################################################################
 
