@@ -1464,29 +1464,6 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
         OPEN_PERCENTAGE_AVERAGE="0"
       fi
 
-      WIDTH="$(echo "$(echo "$(echo "$RESULT" | column -t)" | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
-      LENGTH="$(echo "$(echo "$RESULT" | wc -l | awk '{ print $1 }')+4" | bc 2>/dev/null)"
-
-      # if zero
-      if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
-        LOG_LENGTH="7"
-      fi
-
-      # if length greater than n
-      if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
-        LENGTH="$LOG_LENGTH"
-      fi
-
-      # if zero
-      if [[ -z "$WIDTH" ]] &>/dev/null; then
-        WIDTH="65"
-      fi
-
-      # if width less than n
-      if [[ "$WIDTH" -lt "65" ]] &>/dev/null; then
-        WIDTH="65"
-      fi
-
       ##########################################################################
 
       # coin data
@@ -1547,6 +1524,29 @@ Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROF
       else
         # default
         RESULT="$(echo "$RESULT" | column -t)"
+      fi
+
+      WIDTH="$(echo "$(echo "$(echo "$RESULT" | column -t)" | wc -L | awk '{ print $1 }')+6" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$RESULT" | wc -l | awk '{ print $1 }')+4" | bc 2>/dev/null)"
+
+      # if zero
+      if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
+        LOG_LENGTH="7"
+      fi
+
+      # if length greater than n
+      if [[ "$LENGTH" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+        LENGTH="$LOG_LENGTH"
+      fi
+
+      # if zero
+      if [[ -z "$WIDTH" ]] &>/dev/null; then
+        WIDTH="65"
+      fi
+
+      # if width less than n
+      if [[ "$WIDTH" -lt "65" ]] &>/dev/null; then
+        WIDTH="65"
       fi
 
       display_result() {
