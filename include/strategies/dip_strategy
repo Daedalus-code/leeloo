@@ -2721,21 +2721,21 @@ if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" ]] &>/dev/null; then
                   # if profit are adequate (above minimum spread, ruled by configuration)
                   if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "$(echo "$DIP_MIN_SPREAD" | awk -F. '{ print $1 }')" ]] &>/dev/null; then
 
-                    ##############################################################
-                    ##############################################################
+                    ############################################################
+                    ############################################################
 
                     # if xeggex order
                     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-                      # CreateOrder market #######################################
+                      # CreateOrder market #####################################
                       PLACE_ORDER="$(CreateOrder "" "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
-                      # debug line ###############################################
+                      # debug line #############################################
                       echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$REFERENCE_CURRENCY sell market $DIP_CHANGE_ASSET_BALANCE '' false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
-                      ############################################################
+                      ##########################################################
                       sleep 1
                     fi
 
-                    ##############################################################
-                    ##############################################################
+                    ############################################################
+                    ############################################################
 
                     tx_id
 
@@ -3568,10 +3568,8 @@ ACTIVE_MARKET_RSI_AVERAGE="$(echo "$ACTIVE_MARKET_RSI_TOTAL/$ACTIVE_MARKET_RSI_C
 # if zero
 if [[ -z "$ACTIVE_MARKET_RSI_AVERAGE" ]] &>/dev/null; then
   ACTIVE_MARKET_RSI_AVERAGE="0"
+  ACTIVE_MARKET_RSI_STATUS="N/A"
 fi
-
-# default
-ACTIVE_MARKET_RSI_STATUS="Neutral"
 
 # if greater than n
 if [[ "$ACTIVE_MARKET_RSI_AVERAGE" -gt "70" ]] &>/dev/null; then
