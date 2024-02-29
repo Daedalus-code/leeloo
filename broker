@@ -1444,29 +1444,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
 
       pool_duration
 
-      # coin data
-      LOG_SEARCH_COIN_DATA="$(cat "${SYS_DIR:?}"/robot/*/"${COIN_TOKEN:?}"_*.bought 2>/dev/null | tail -1)"
-
-      # if any data
-      if [[ -n "$LOG_SEARCH_COIN_DATA" ]] &>/dev/null; then
-        LAST_COIN_BUY_DATE="$(echo "$LOG_SEARCH_COIN_DATA" | awk '{ print $1 }')"
-        LAST_COIN_PRICE_BUY="$(echo "$LOG_SEARCH_COIN_DATA" | awk '{ print $10,$23 }')"
-        LAST_COIN_PRICE_REFERENCE="$(echo "$LOG_SEARCH_COIN_DATA" | awk '{ print $23 }')"
-        LAST_COIN_SOLD_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/*/"${COIN_TOKEN:?}"_"${LAST_COIN_PRICE_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-        LAST_COIN_SOLD_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)%60")))
-        LAST_COIN_PRICE_NOW="$(cat "${LOG_DIR:?}"/leeloo/*/prices 2>/dev/null | grep "${COIN_TOKEN:?}" | grep "$LAST_COIN_PRICE_REFERENCE" | awk '{ print $3 }' | head -1)"
-        LAST_COIN_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/*/balances 2>/dev/null | grep -w "${COIN_TOKEN:?}" | sort -n -k 3 | head -1 | awk '{ print $3 }')"
-        LAST_COIN_VALUE_NOW="$(echo "$LAST_COIN_BALANCES*$LAST_COIN_PRICE_NOW" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-      else
-        COIN_TOKEN="N/A"
-        LAST_COIN_BUY_DATE="N/A"
-        LAST_COIN_SOLD_TIME="N/A"
-        LAST_COIN_PRICE_BUY="N/A"
-        LAST_COIN_BALANCES="N/A"
-        LAST_COIN_VALUE_NOW="N/A"
-        LAST_COIN_PRICE_REFERENCE="N/A"
-      fi
-
       # position search
       RESULT="Exchange Strategy Currency Amount Cost Result Age
 $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
@@ -1511,18 +1488,54 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
         WIDTH="65"
       fi
 
+      ##########################################################################
+
+      # coin data
+      LOG_SEARCH_COIN_DATA="$(cat "${SYS_DIR:?}"/robot/*/"${COIN_TOKEN:?}"_*.bought 2>/dev/null | tail -1)"
+
+      # if any data
+      if [[ -n "$LOG_SEARCH_COIN_DATA" ]] &>/dev/null; then
+        LAST_COIN_BUY_DATE="$(echo "$LOG_SEARCH_COIN_DATA" | awk '{ print $1 }')"
+        LAST_COIN_PRICE_BUY="$(echo "$LOG_SEARCH_COIN_DATA" | awk '{ print $10,$23 }')"
+        LAST_COIN_PRICE_REFERENCE="$(echo "$LOG_SEARCH_COIN_DATA" | awk '{ print $23 }')"
+        LAST_COIN_BUY_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/*/"${COIN_TOKEN:?}"_"${LAST_COIN_PRICE_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+        LAST_COIN_BOUGHT_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>&1)%60")))
+        LAST_COIN_SOLD_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/*/"${COIN_TOKEN:?}"_"${LAST_COIN_PRICE_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+        LAST_COIN_SOLD_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)%60")))
+        LAST_COIN_PRICE_NOW="$(cat "${LOG_DIR:?}"/leeloo/*/prices 2>/dev/null | grep "${COIN_TOKEN:?}" | grep "$LAST_COIN_PRICE_REFERENCE" | awk '{ print $3 }' | head -1)"
+        LAST_COIN_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/*/balances 2>/dev/null | grep -w "${COIN_TOKEN:?}" | sort -n -k 3 | head -1 | awk '{ print $3 }')"
+        LAST_COIN_VALUE_NOW="$(echo "$LAST_COIN_BALANCES*$LAST_COIN_PRICE_NOW" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+        LAST_COIN_BUY_VALUE="$(echo "$LAST_COIN_BALANCES*$(echo "$LAST_COIN_PRICE_BUY" | awk '{ print $1 }')" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+        LAST_COIN_PROFIT_LOSS="$(echo "$LAST_COIN_VALUE_NOW-$LAST_COIN_BUY_VALUE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+        LAST_COIN_PROFIT_LOSS_PERC="$(echo "100/$LAST_COIN_BUY_VALUE*$LAST_COIN_VALUE_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+        # if zero
+        if [[ -z "$LAST_COIN_PROFIT_LOSS_PERC" ]] &>/dev/null; then
+          LAST_COIN_PROFIT_LOSS_PERC="0"
+        fi
+      fi
+
+      ##########################################################################
+
       # if zero
       if [[ -z "$(echo "$RESULT" | tail -1)" || -z "$COIN_TOKEN" ]] &>/dev/null; then
+        RESULT="No $COIN_TOKEN Position found!"
+      else
+        RESULT="$(echo "$RESULT" | column -t)"
+      fi
+
+      if [[ -n "$LOG_SEARCH_COIN_DATA" ]] &>/dev/null; then
+        # coin data output
         RESULT="No $COIN_TOKEN Position found!
-Balance...: $LAST_COIN_BALANCES $COIN_TOKEN
-Value Now.: $LAST_COIN_VALUE_NOW $LAST_COIN_PRICE_REFERENCE
-Last Buy..: $LAST_COIN_BUY_DATE @ $LAST_COIN_PRICE_BUY
-Last Sold.: $LAST_COIN_SOLD_TIME"
+Last Sold...: $LAST_COIN_SOLD_TIME
+Balance.....: $LAST_COIN_BALANCES $COIN_TOKEN
+Buy Date....: $LAST_COIN_BUY_DATE $LAST_COIN_BOUGHT_TIME
+Buy Value...: $LAST_COIN_BUY_VALUE $LAST_COIN_PRICE_REFERENCE @ $LAST_COIN_PRICE_BUY
+Value Now...: $LAST_COIN_VALUE_NOW $LAST_COIN_PRICE_REFERENCE @ $LAST_COIN_PRICE_NOW $LAST_COIN_PRICE_REFERENCE
+Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROFIT_LOSS_PERC:?}%"
         RESULT_COUNT="0"
         WIDTH="0"
         LENGTH="0"
-      else
-        RESULT="$(echo "$RESULT" | column -t)"
       fi
 
       display_result() {
