@@ -1518,23 +1518,35 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
 
       # if zero
       if [[ -z "$(echo "$RESULT" | tail -1)" || -z "$COIN_TOKEN" ]] &>/dev/null; then
-        RESULT="No $COIN_TOKEN Position found!"
-      else
-        RESULT="$(echo "$RESULT" | column -t)"
-      fi
-
-      if [[ -z "$(echo "$RESULT" | tail -1)" && -n "$LOG_SEARCH_COIN_DATA" ]] &>/dev/null; then
-        # coin data output
-        RESULT="Coin/Token..: $COIN_TOKEN (No positions)
+        # if no position but have data
+        if [[ -n "$LOG_SEARCH_COIN_DATA" ]] &>/dev/null; then
+          # coin data output
+          RESULT="Coin/Token..: $COIN_TOKEN (No positions)
 Last Sold...: $LAST_COIN_SOLD_TIME
 Balance.....: $LAST_COIN_BALANCES $COIN_TOKEN
 Buy Date....: $LAST_COIN_BUY_DATE $LAST_COIN_BOUGHT_TIME
 Buy Value...: $LAST_COIN_BUY_VALUE $LAST_COIN_PRICE_REFERENCE @ $LAST_COIN_PRICE_BUY
 Value Now...: $LAST_COIN_VALUE_NOW $LAST_COIN_PRICE_REFERENCE @ $LAST_COIN_PRICE_NOW $LAST_COIN_PRICE_REFERENCE
 Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROFIT_LOSS_PERC:?}%"
-        RESULT_COUNT="0"
-        WIDTH="0"
-        LENGTH="0"
+          RESULT_COUNT="0"
+          WIDTH="0"
+          LENGTH="0"
+        fi
+      fi
+
+      ##########################################################################
+
+      # if zero
+      if [[ -z "$(echo "$RESULT" | tail -1)" || -z "$COIN_TOKEN" ]] &>/dev/null; then
+        RESULT="No $COIN_TOKEN Position found!"
+      fi
+      # if any coint data
+      if [[ -n "$LOG_SEARCH_COIN_DATA" ]] &>/dev/null; then
+        # default (no column)
+        RESULT="$RESULT"
+      else
+        # default
+        RESULT="$(echo "$RESULT" | column -t)"
       fi
 
       display_result() {
