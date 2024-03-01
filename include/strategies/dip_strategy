@@ -149,6 +149,11 @@ function time_and_profit() {
   # adjust DIP_MAX_BUY_AGE and DIP_MAX_SELL_AGE using calculated percentages
   DIP_MAX_BUY_AGE=$(echo "$DIP_BUY_EXTRA_TIME+$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')
   DIP_MAX_SELL_AGE=$(echo "$DIP_SELL_EXTRA_TIME+$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')
+
+  # recalculate days into seconds
+  DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
+  # recalculate days into seconds
+  DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
 }
 
 ################################################################################
@@ -2397,8 +2402,8 @@ fi
 # removing old position (single buy order)
 ################################################################################
 
-time_and_profit
 bought_sold_age
+time_and_profit
 
 # if older than n seconds (using max buy age limit on both)
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
@@ -2449,8 +2454,8 @@ fi
 # removing old position (sell orders)
 ################################################################################
 
-time_and_profit
 bought_sold_age
+time_and_profit
 
 # if older than n seconds (using max sell age limit on both)
 if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
@@ -2516,8 +2521,8 @@ fi
 # sold order
 ################################################################################
 
-time_and_profit
 bought_sold_age
+time_and_profit
 decimal_market
 target_order_status
 
