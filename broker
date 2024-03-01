@@ -2065,8 +2065,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     # search robot logs
     coin_token_search
 
-    LOG_SEARCH_ALL="$(grep " $COIN_TOKEN/" "${LOG_DIR:?}"/leeloo/robot.log)"
-    LOG_SEARCH_TAIL="$(echo "$LOG_SEARCH_ALL" | tail -250 | sort -r)"
+    LOG_SEARCH_ALL="$(grep " $COIN_TOKEN/" "${LOG_DIR:?}"/leeloo/robot.log | sort -r -t '/' -k 2 -k 1 -k 3)"
+    LOG_SEARCH_HEAD="$(echo "$LOG_SEARCH_ALL" | head -250)"
     LOG_SEARCH_COUNT="$(echo "$LOG_SEARCH_ALL" | wc -l)"
     LOG_SEARCH_BUY="$(echo "$LOG_SEARCH_ALL" | grep -c "Buy " || true)"
     LOG_SEARCH_SELL="$(echo "$LOG_SEARCH_ALL" | grep -c "Sell " || true)"
@@ -2074,7 +2074,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     LOG_SEARCH_DUST="$(echo "$LOG_SEARCH_ALL" | grep -c "Dusting " || true)"
     LOG_SEARCH_AMOUNT="$(echo "$LOG_SEARCH_ALL" | egrep -o "[0-9]+.[0-9]+ $COIN_TOKEN" | awk '{ print $1 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.8f\n", $1 }')"
 
-    WIDTH="$(echo "$(echo "$LOG_SEARCH_TAIL" | wc -L)+5" | bc 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$LOG_SEARCH_HEAD" | wc -L)+5" | bc 2>/dev/null)"
     LENGTH="$(echo "$LOG_SEARCH_COUNT+4" | bc 2>/dev/null)"
 
     # if greater than log_length, zero, less than n, greater than n
@@ -2083,13 +2083,13 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     fi
 
     # if zero
-    if [[ -z "$LOG_SEARCH_TAIL" ]] &>/dev/null; then
+    if [[ -z "$LOG_SEARCH_HEAD" ]] &>/dev/null; then
       RESULT_TITLE="$COIN_TOKEN :: No data :: robot.log +$LOG_SEARCH_COUNT"
       RESULT="Nothing was found"
       WIDTH="45"
     else
       RESULT_TITLE="$COIN_TOKEN | Buy: $LOG_SEARCH_BUY | Sell: $LOG_SEARCH_SELL | Sold: $LOG_SEARCH_SOLD | Dust: $LOG_SEARCH_DUST | Amount: $LOG_SEARCH_AMOUNT $COIN_TOKEN | robot.log $LOG_SEARCH_COUNT"
-      RESULT="${LOG_SEARCH_TAIL:?}"
+      RESULT="${LOG_SEARCH_HEAD:?}"
     fi
 
     display_result() {
