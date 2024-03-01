@@ -90,9 +90,11 @@ decimal_market          # decimal market
 GET_EMA_DATA="$(get_ema "$EMA_SHORT" "$EMA_LONG" "$LISTING_CURRENCY")"
 # create temp
 echo "$GET_EMA_DATA" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema.tmp
+# get ema check
+GET_EMA_CHECK="$(echo "$GET_EMA_DATA" | awk '{ print $3 }' | egrep -c "[0-9]+" || true)"
 
 # if any data
-if [[ -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema.tmp ]] &>/dev/null; then
+if [[ "$GET_EMA_CHECK" -eq "1" ]] &>/dev/null; then
   # update ema
   mv "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema.tmp "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".ema
 fi
