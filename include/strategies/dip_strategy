@@ -2674,6 +2674,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/nu
           if [[ "$DIP_BROKEN_BOUGHT_PRICE" < "$DIP_BROKEN_BOUGHT_PRICE_NOW" && "$DIP_BROKEN_SELLING_PRICE" < "$DIP_BROKEN_BOUGHT_PRICE_NOW" ]] &>/dev/null; then
             # reset broken quest data (bought file)
             truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
+            reset_active_market_list
             # reset output (log)
             DIP_RESET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Reset slow order. (broken) Age: $DIP_BOUGHT_AGE_OUTPUT"
             echo "$DIP_RESET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
