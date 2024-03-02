@@ -3555,7 +3555,15 @@ DIP_INVESTED_PERCENTAGE="$(echo "100/$REFERENCE_BALANCE*$DIP_INVESTED_BALANCE" |
 
 # if zero
 if [[ -z "$DIP_INVESTED_PERCENTAGE" ]] &>/dev/null; then
-  DIP_INVESTED_PERCENTAGE="N/A"
+  DIP_INVESTED_PERCENTAGE="0"
+fi
+
+# total sum
+DIP_BALANCE_INVESTED_SUM="$(echo "$REFERENCE_BALANCE+$DIP_INVESTED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+# if zero
+if [[ -z "$DIP_BALANCE_INVESTED_SUM" ]] &>/dev/null; then
+  DIP_BALANCE_INVESTED_SUM="N/A"
 fi
 
 ################################################################################
@@ -3565,7 +3573,7 @@ fi
   echo "Targets.............: $DIP_DAILY_POTENTIAL | Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% PM: ${DIP_DAILY_MOVEMENT:?}%
 Active..............: $DIP_ACTIVE_FILE_COUNT | Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% PM: ${DIP_ACTIVE_FILE_A_PRICE_MOVEMENT:?}%
 Market..............: $ACTIVE_MARKET_PAIRS RSI: $ACTIVE_MARKET_RSI_AVERAGE ($ACTIVE_MARKET_RSI_STATUS)
-Market_Balance......: $REFERENCE_BALANCE $ACTIVE_MARKET_PAIRS
+Market_Balance......: $REFERENCE_BALANCE $ACTIVE_MARKET_PAIRS ($DIP_BALANCE_INVESTED_SUM $ACTIVE_MARKET_PAIRS)
 Market_Invested.....: $DIP_INVESTED_BALANCE $ACTIVE_MARKET_PAIRS (${DIP_INVESTED_PERCENTAGE:?}%)
 Exchange............: $EXCHANGE_OUTPUT_NAME $EXCHANGE_API
 Orders..............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Max: $DIP_MAX_ORDERS
