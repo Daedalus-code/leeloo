@@ -3496,6 +3496,9 @@ if [[ "$ACTIVE_MARKET_RSI_AVERAGE_CHECK" -gt "70" ]] &>/dev/null; then
   ACTIVE_MARKET_RSI_STATUS="Overbought"
 fi
 
+# total invested balance
+DIP_INVESTED_BALANCE="$(cat "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | grep "$STRATEGY_TYPE" | grep "/$ACTIVE_MARKET_PAIRS" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+
 ################################################################################
 
 # format and display output
@@ -3504,6 +3507,7 @@ fi
 Active..............: $DIP_ACTIVE_FILE_COUNT | Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% PM: ${DIP_ACTIVE_FILE_A_PRICE_MOVEMENT:?}%
 Market..............: $ACTIVE_MARKET_PAIRS RSI: $ACTIVE_MARKET_RSI_AVERAGE ($ACTIVE_MARKET_RSI_STATUS)
 Market_Balance......: $REFERENCE_BALANCE $ACTIVE_MARKET_PAIRS
+Market_Invested.....: $DIP_INVESTED_BALANCE $ACTIVE_MARKET_PAIRS
 Exchange............: $EXCHANGE_OUTPUT_NAME $EXCHANGE_API
 Orders..............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Max: $DIP_MAX_ORDERS
 DCA.................: $DIP_DCA_DATA Orders: $DIP_DCA_COUNT
