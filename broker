@@ -557,7 +557,7 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
   OPTIONS=(1 "Debug           Status"
     2 "Strategy        error.log"
     3 "TXid            null.log"
-    4 "Order           order.debug"
+    o "Order           order.debug"
     n "Reset           null ($(echo "$TXID_NULL_DATA_COUNT" | awk '{ print $1 }'))")
 
   CHOICE=$(dialog --clear \
@@ -789,7 +789,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     # order debug
 
-  "4")
+  "o")
 
     # max headroom of 250, disregard delisted
     DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | sort -t '.' -k 1.7,1.10n -k 1.4,1.5n -k 1.1,1.2n -k 2.1,2.2n -k 2.4,2.5n -k 2.7,2.8n | tac | column -t | head -250)"
@@ -1944,8 +1944,8 @@ $(ls -lSah "${SYS_DIR:?}"/robot/"$STRATEGY_NAME"* 2>/dev/null | column -t)"
       MENU="Choose one option:"
 
       OPTIONS=(1 "Status           Robot status"
-        2 "Re/Start         Start robot"
-        3 "Stop             Stop robot"
+        r "Re/Start         Start robot"
+        s "Stop             Stop robot"
         4 "Crontab          Linux jobs")
 
       CHOICE=$(dialog --clear \
@@ -2007,7 +2007,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
         ;;
 
-      "2")
+      "r")
 
         update_screen
 
@@ -2029,7 +2029,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
         ;;
 
-      "3")
+      "s")
 
         update_screen
 
