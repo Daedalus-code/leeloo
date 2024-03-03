@@ -2638,7 +2638,7 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
 fi
 
 ################################################################################
-# reset broken quest (bought file)
+# reset broken quest (bought file) - quest price lower than real price
 ################################################################################
 
 bought_sold_age
@@ -2668,6 +2668,10 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
         DIP_BROKEN_SELLING_PRICE="$(echo "$DIP_BROKEN_BOUGHT_DATA" | tail -1 | awk '{ print $16 }' | tr -d '()')"
         # broken bought price now
         DIP_BROKEN_BOUGHT_PRICE_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | grep "$LISTING_CURRENCY" | grep "$REFERENCE_CURRENCY" | awk '!a[$1]++' | awk '{ print $2 }')"
+        # broken difference
+        DIP_BROKEN_DIFF="$(echo "$DIP_BROKEN_BOUGHT_PRICE_NOW-$DIP_BROKEN_BOUGHT_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+        # broken difference percentage
+        DIP_BROKEN_DIFF_PERC="$(echo "100/$DIP_BROKEN_BOUGHT_PRICE_NOW*$DIP_BROKEN_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
         # if any data
         if [[ -n "$DIP_BROKEN_BOUGHT_PRICE" && -n "$DIP_BROKEN_SELLING_PRICE" ]] &>/dev/null; then
@@ -2677,7 +2681,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
             truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
             reset_active_market_list
             # reset output (log)
-            DIP_RESET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Reset slow order. (broken) Age: $DIP_BOUGHT_AGE_OUTPUT"
+            DIP_RESET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Reset slow order. (broken) Diff: ${DIP_BROKEN_DIFF_PERC:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
             echo "$DIP_RESET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           fi
         fi
