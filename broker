@@ -1488,6 +1488,12 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
         LAST_COIN_PRICE_BUY="$(echo "$LOG_SEARCH_COIN_DATA" | awk '{ print $10,$23 }')"
         LAST_COIN_PRICE_REFERENCE="$(echo "$LOG_SEARCH_COIN_DATA" | awk '{ print $23 }')"
         LAST_COIN_BUY_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/*/"${COIN_TOKEN:?}"_"${LAST_COIN_PRICE_REFERENCE:?}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+        # if zero
+        if [[ -z "$LAST_COIN_BUY_TIME_SECONDS" ]] &>/dev/null; then
+          LAST_COIN_BUY_TIME_SECONDS="0"
+        fi
+
         LAST_COIN_BOUGHT_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>&1)%60")))
         LAST_COIN_SOLD_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/*/"${COIN_TOKEN:?}"_"${LAST_COIN_PRICE_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
         LAST_COIN_SOLD_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)%60")))
