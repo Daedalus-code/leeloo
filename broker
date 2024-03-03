@@ -1494,7 +1494,7 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
           LAST_COIN_BUY_TIME_SECONDS="0"
         fi
 
-        LAST_COIN_BOUGHT_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>&1)%60")) 2>/dev/null)
+        LAST_COIN_BOUGHT_TIME=$(printf '%dh:%dm:%ds\n' $(($(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>/dev/null) / 3600)) $(($(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>/dev/null) % 3600 / 60)) $(($(echo "${LAST_COIN_BUY_TIME_SECONDS:?}" 2>/dev/null) % 60)) 2>/dev/null)
         LAST_COIN_SOLD_TIME_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/*/"${COIN_TOKEN:?}"_"${LAST_COIN_PRICE_REFERENCE:?}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
         # if zero
@@ -1502,7 +1502,7 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
           LAST_COIN_SOLD_TIME_SECONDS="0"
         fi
 
-        LAST_COIN_SOLD_TIME=$(printf '%dh:%dm:%ds\n' $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)/3600")) $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)%3600/60")) $(("$(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>&1)%60")) 2>/dev/null)
+        LAST_COIN_SOLD_TIME=$(printf '%dh:%dm:%ds\n' $(($(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>/dev/null) / 3600)) $(($(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>/dev/null) % 3600 / 60)) $(($(echo "${LAST_COIN_SOLD_TIME_SECONDS:?}" 2>/dev/null) % 60)) 2>/dev/null)
         LAST_COIN_PRICE_NOW="$(cat "${LOG_DIR:?}"/leeloo/*/raw.prices 2>/dev/null | tr '_:' ' ' | grep -w "${COIN_TOKEN:?}" | grep -w "$LAST_COIN_PRICE_REFERENCE" | awk '{ print $3 }' | head -1)"
         LAST_COIN_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/*/balances 2>/dev/null | grep -w "${COIN_TOKEN:?}" | sort -n -k 3 | head -1 | awk '{ print $3 }')"
         LAST_COIN_VALUE_NOW="$(echo "$LAST_COIN_BALANCES*$LAST_COIN_PRICE_NOW" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
