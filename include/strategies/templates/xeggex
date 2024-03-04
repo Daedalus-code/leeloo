@@ -570,8 +570,11 @@ function target_order_status() {
         fi
       fi
     fi
-    # track order amount being sold (constantly)
-    echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling
+    # if trades and orders id matches
+    if [[ "$DIP_SELL_TRADES_ID" == "$DIP_SELL_ORDERS_ID" ]]; then
+      # track order amount being sold (constantly)
+      echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling
+    fi
   fi
 }
 
