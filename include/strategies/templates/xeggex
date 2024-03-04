@@ -486,7 +486,7 @@ function reference_allocated() {
 
 function target_order_status() {
   # calculate the age of target orders file in seconds
-  TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades" 2>/dev/null || echo 0)
+  TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".trades 2>/dev/null || echo 0)
 
   # if age is zero, set it to 0
   [[ -z "$TARGET_ORDERS_AGE_SECONDS" ]] && TARGET_ORDERS_AGE_SECONDS=0
@@ -495,11 +495,11 @@ function target_order_status() {
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]]; then
 
     # check if target orders data is old enough or doesn't exist
-    if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades" ]]; then
+    if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/xeggex/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".trades ]]; then
       # get trades data and format it
-      getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.trades"
+      getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}"/leeloo/xeggex/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".trades
       # get orders data, remove duplicate ID
-      cat "${LOG_DIR:?}/leeloo/xeggex/orders"* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}/leeloo/xeggex/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.orders"
+      cat "${LOG_DIR:?}"/leeloo/xeggex/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}"/leeloo/xeggex/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".orders
     fi
 
     # extract relevant information
@@ -523,13 +523,13 @@ function target_order_status() {
     # if any data
     if [[ -n "$DIP_SELL_ORDERS_ID" ]]; then
       # keep sell order id
-      echo "$DIP_SELL_ORDERS_ID" | sed '/^$/d' >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sell_id"
+      echo "$DIP_SELL_ORDERS_ID" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id
     fi
 
     # if zero
     if [[ -z "$DIP_SELL_ORDERS_ID" ]]; then
       # use old id until (sold) is confirmed
-      DIP_SELL_ORDERS_ID="$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sell_id" 2>/dev/null || true)"
+      DIP_SELL_ORDERS_ID="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id 2>/dev/null || true)"
       # if still zero, again
       if [[ -z "$DIP_SELL_ORDERS_ID" ]]; then
         DIP_SELL_ORDERS_ID="012345678909876543210"
@@ -544,7 +544,7 @@ function target_order_status() {
     # sold quantity check
     DIP_ORDER_SOLD_QUANTITY_CHECK="$(echo "$DIP_ORDER_SOLD_QUANTITY" | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
     # target bought amount check
-    DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.bought" | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
+    DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
 
     # selling & sold sum #######################################################
 
@@ -561,7 +561,7 @@ function target_order_status() {
               # if not a new buy
               if [[ "$DIP_BUY_TRADES_STATUS" -eq "0" ]]; then
                 # update sold file
-                echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.sold"
+                echo "$DIP_ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold
                 # reset sell_id
                 truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
               fi
@@ -571,7 +571,7 @@ function target_order_status() {
       fi
     fi
     # track order amount being sold (constantly)
-    echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}/robot/${BASENAME_STRATEGY}/${LISTING_CURRENCY}_${REFERENCE_CURRENCY}.selling"
+    echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling
   fi
 }
 
