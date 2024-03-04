@@ -549,13 +549,13 @@ function target_order_status() {
     # selling & sold sum #######################################################
 
     # if any data
-    if [[ -n "$DIP_ORDER_SOLD_QUANTITY_CHECK" && -n "$DIP_TARGET_BOUGHT_CHECK" ]]; then
-      # if total sum is greater or equal to the target
-      if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BOUGHT_CHECK" ]]; then
+    if [[ -n "$DIP_SELL_TRADES_ID" && -n "$DIP_SELL_ORDERS_ID" ]]; then
+      # if trades and orders id matches
+      if [[ "$DIP_SELL_TRADES_ID" == "$DIP_SELL_ORDERS_ID" ]]; then
         # if any data
-        if [[ -n "$DIP_SELL_TRADES_ID" && -n "$DIP_SELL_ORDERS_ID" ]]; then
-          # if trades and orders id matches
-          if [[ "$DIP_SELL_TRADES_ID" == "$DIP_SELL_ORDERS_ID" ]]; then
+        if [[ -n "$DIP_ORDER_SOLD_QUANTITY_CHECK" && -n "$DIP_TARGET_BOUGHT_CHECK" ]]; then
+          # if total sum is greater or equal to the target
+          if [[ "$DIP_ORDER_SOLD_QUANTITY_CHECK" -ge "$DIP_TARGET_BOUGHT_CHECK" ]]; then
             # if bot are actually trading
             if [[ "$DIP_BUYING_STATUS" -gt "0" ]]; then
               # if not a new buy
@@ -566,10 +566,10 @@ function target_order_status() {
                 truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
               fi
             fi
-            # track order amount being sold (constantly if id matches)
-            echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling
           fi
         fi
+        # track order amount being sold (constantly if id matches)
+        echo "$DIP_ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling
       fi
     fi
   fi
