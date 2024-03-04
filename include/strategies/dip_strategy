@@ -2775,7 +2775,7 @@ DIP_CHANGE_PROFIT_LOSS="$(echo "100/$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_NEW_PRICE-
 # calculate profit or loss in coins/tokens
 DIP_CHANGE_PROFIT_LOSS_AMOUNT="$(echo "$DIP_CHANGE_NEW_AMOUNT-$DIP_CHANGE_OLD_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # if listing market already being spent
-DIP_CHANGE_ALREADY_SPENT="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | egrep -v "Reference|A/O" | sort -n -k 1 | tail -2048 | grep "$DIP_CHANGE_NAME" | egrep -c "Buy |Sell " || true)"
+DIP_CHANGE_ALREADY_SPENT="$(egrep -v "Reference|A/O" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | sort -n -k 1 | tail -2048 | grep "$DIP_CHANGE_NAME" | egrep -c "Buy |Sell " || true)"
 
 # not already spent
 if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" ]] &>/dev/null; then
