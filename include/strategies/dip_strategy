@@ -2290,16 +2290,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
       ##########################################################################
 
-      # if DCA exist
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
-        # trigger sell
-        DIP_LEFTOVER_TOTAL="100"
-      fi
-
-      ##########################################################################
-
-      # if percentage of total orders has not reached 100%
-      if [[ ! "$DIP_LEFTOVER_TOTAL" == "100" ]] &>/dev/null; then
+      # if percentage of total orders has not reached 100%, if DCA
+      if [[ ! "$DIP_LEFTOVER_TOTAL" == "100" || "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
 
         # if leftover size is greater than leftover size limit
         if [[ "$(echo "$DIP_LEFTOVER_SIZE" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_LEFTOVER_SIZE_LIMIT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
