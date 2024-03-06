@@ -2714,6 +2714,12 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
         # broken difference percentage
         DIP_BROKEN_DIFF_PERC="$(echo "100/$DIP_BROKEN_BOUGHT_PRICE_NOW*$DIP_BROKEN_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+        # if any zeros
+        if [[ -z "$DIP_BROKEN_BOUGHT_PRICE" || -z "$DIP_BROKEN_BOUGHT_PRICE_NOW" ]] &>/dev/null; then
+          # calculation not available
+          DIP_BROKEN_DIFF_PERC="N/A"
+        fi
+
         # if any data
         if [[ -n "$DIP_BROKEN_BOUGHT_PRICE" && -n "$DIP_BROKEN_SELLING_PRICE" ]] &>/dev/null; then
           # if price has changed drastically, bought price less than price now
