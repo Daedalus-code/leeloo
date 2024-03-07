@@ -2311,7 +2311,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       ##########################################################################
 
       # if percentage of total orders has not reached 100%, if DCA
-      if [[ ! "$DIP_LEFTOVER_TOTAL_CHECK" == "100" || "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+      if [[ "$DIP_LEFTOVER_TOTAL_CHECK" -lt "100" || "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
 
         # if leftover size is greater than leftover size limit
         if [[ "$(echo "$DIP_LEFTOVER_SIZE" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_LEFTOVER_SIZE_LIMIT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
@@ -2785,6 +2785,9 @@ fi
 ################################################################################
 # sell dip change (dust)
 ################################################################################
+
+bought_sold_age
+time_and_profit
 
 # balances
 DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$REFERENCE_CURRENCY:" | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | awk '!a[$2]++' | awk '!a[$3]++')"
