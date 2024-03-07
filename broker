@@ -1514,8 +1514,8 @@ $(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)"
           LAST_COIN_SOLD_TIME_SECONDS="0"
         fi
 
-        LAST_COIN_BOUGHT_TIME="$(printf '%dh:%dm:%ds\n' $(("$LAST_COIN_BUY_TIME_SECONDS/3600")) $(("$LAST_COIN_BUY_TIME_SECONDS%3600/60")) $(("$LAST_COIN_BUY_TIME_SECONDS%60")) 2>/dev/null)"
-        LAST_COIN_SOLD_TIME="$(printf '%dh:%dm:%ds\n' $(("$LAST_COIN_SOLD_TIME_SECONDS/3600")) $(("$LAST_COIN_SOLD_TIME_SECONDS%3600/60")) $(("$LAST_COIN_SOLD_TIME_SECONDS%60")) 2>/dev/null)"
+        LAST_COIN_BOUGHT_TIME="$(echo "$(printf '%dh:%dm:%ds\n' $(("$LAST_COIN_BUY_TIME_SECONDS/3600")) $(("$LAST_COIN_BUY_TIME_SECONDS%3600/60")) $(("$LAST_COIN_BUY_TIME_SECONDS%60")))" 2>/dev/null)"
+        LAST_COIN_SOLD_TIME="$(echo "$(printf '%dh:%dm:%ds\n' $(("$LAST_COIN_SOLD_TIME_SECONDS/3600")) $(("$LAST_COIN_SOLD_TIME_SECONDS%3600/60")) $(("$LAST_COIN_SOLD_TIME_SECONDS%60")))" 2>/dev/null)"
 
         LAST_COIN_PRICE_NOW="$(cat "${LOG_DIR:?}"/leeloo/*/raw.prices 2>/dev/null | tr '_:' ' ' | grep -w "${COIN_TOKEN:?}" | grep -w "$LAST_COIN_PRICE_REFERENCE" | awk '{ print $3 }' | head -1)"
         LAST_COIN_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/*/balances 2>/dev/null | grep -w "${COIN_TOKEN:?}" | sort -n -k 3 | head -1 | awk '{ print $3 }')"
