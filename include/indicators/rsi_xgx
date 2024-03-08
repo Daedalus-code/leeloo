@@ -64,36 +64,51 @@ fix_scientific_notation() {
 # main function to get RSI for a given currency pair
 get_rsi_xgx() {
 
-  # candlestick parameters
-  LISTING_CURRENCY="$1"
-  REFERENCE_CURRENCY="$2"
-  SYMBOL="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
-  INTERVAL="1440"
-  RESOLUTION="1440"
-  COUNTBACK="31"
-  FIRST_DATA_REQUEST="1"
-  SMA_PERIOD="14"
-
-  API_URL="https://api.xeggex.com/api/v2/market/candles?symbol=$SYMBOL&interval=$INTERVAL&resolution=$RESOLUTION&countBack=$COUNTBACK&firstDataRequest=$FIRST_DATA_REQUEST"
-
-  # retrieve data and store it in a variable
-  DATA=$(curl -s "$API_URL" | jq -r '.bars[]?.close')
-  # fix tiny n (e)
-  DATA="$(echo "${DATA[@]}" 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
-  # calculate RSI with SMA
-  RSI_WITH_SMA=$(calculate_rsi_with_sma "$DATA")
-
-  if (($(echo "$RSI_WITH_SMA > 70" | bc -l 2>/dev/null))); then
-    BEAR_BULL="Overbought"
-  elif (($(echo "$RSI_WITH_SMA < 30" | bc -l 2>/dev/null))); then
-    BEAR_BULL="Oversold"
-  else
-    BEAR_BULL="Neutral"
+  RSI_TIMER="300"
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" &>/dev/null
+    RSI_TIMER="0"
+    sleep 1
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" ]] &>/dev/null; then
+    RSI_TIMER="0"
+    sleep 1
   fi
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null)))" 2>/dev/null)" -gt "$RSI_TIMER" ]] &>/dev/null; then
 
-  RSI_OUTPUT="$BEAR_BULL RSI_14 $(echo "$RSI_WITH_SMA" | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')"
-  echo "$RSI_OUTPUT"
+    # candlestick parameters
+    LISTING_CURRENCY="$1"
+    REFERENCE_CURRENCY="$2"
+    SYMBOL="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
+    INTERVAL="1440"
+    RESOLUTION="1440"
+    COUNTBACK="31"
+    FIRST_DATA_REQUEST="1"
+    SMA_PERIOD="14"
+
+    API_URL="https://api.xeggex.com/api/v2/market/candles?symbol=$SYMBOL&interval=$INTERVAL&resolution=$RESOLUTION&countBack=$COUNTBACK&firstDataRequest=$FIRST_DATA_REQUEST"
+
+    # retrieve data and store it in a variable
+    DATA=$(curl -s "$API_URL" | jq -r '.bars[]?.close')
+    # fix tiny n (e)
+    DATA="$(echo "${DATA[@]}" 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+    # calculate RSI with SMA
+    RSI_WITH_SMA=$(calculate_rsi_with_sma "$DATA")
+
+    if (($(echo "$RSI_WITH_SMA > 70" | bc -l 2>/dev/null))); then
+      BEAR_BULL="Overbought"
+    elif (($(echo "$RSI_WITH_SMA < 30" | bc -l 2>/dev/null))); then
+      BEAR_BULL="Oversold"
+    else
+      BEAR_BULL="Neutral"
+    fi
+
+    RSI_OUTPUT="$BEAR_BULL RSI_14 $(echo "$RSI_WITH_SMA" | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')"
+    echo "$RSI_OUTPUT"
+
+  else
+    cat "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null
+  fi
 }
 
 # END
