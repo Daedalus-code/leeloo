@@ -774,11 +774,11 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
 
           # if zero
           if [[ -z "$RSI_BULLISH_CHECK" ]] &>/dev/null; then
-            RSI_BULLISH_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi | grep "L_NOW" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            RSI_BULLISH_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi 2>/dev/null | grep "L_NOW" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
           fi
 
           # if any data
-          if [[ -n "$RSI_BULLISH_CHECK" && "$(echo "$RSI_BULLISH_CHECK" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+          if [[ "$(echo "$RSI_BULLISH_CHECK" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
             # rsi below bullish
             if [[ "$RSI_BULLISH_CHECK" -lt "70" ]] &>/dev/null; then
 
@@ -929,11 +929,11 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
 
           # if zero
           if [[ -z "$RSI_BEARISH_CHECK" ]] &>/dev/null; then
-            RSI_BEARISH_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi | grep "L_NOW" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            RSI_BEARISH_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi 2>/dev/null | grep "L_NOW" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
           fi
 
           # if any data
-          if [[ -n "$RSI_BEARISH_CHECK" && "$(echo "$RSI_BEARISH_CHECK" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+          if [[ "$(echo "$RSI_BEARISH_CHECK" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
             # rsi above bearish
             if [[ "$RSI_BEARISH_CHECK" -gt "30" ]] &>/dev/null; then
 
