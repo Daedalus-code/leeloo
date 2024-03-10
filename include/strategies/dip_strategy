@@ -578,6 +578,9 @@ function target_data() {
     INEFFECTIVE_MARKET="0"
   fi
 
+  # ineffective market output (slow)
+  INEFFECTIVE_MARKET_OUTPUT="$INEFFECTIVE_MARKET"
+
   # if data
   if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
@@ -589,6 +592,8 @@ function target_data() {
 
       # calculate market virtual (RAW)
       EFFICIENT_MARKET="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
+      # efficient market output (fast)
+      EFFICIENT_MARKET_OUTPUT="$EFFICIENT_MARKET"
 
       # if less than n
       if [[ "$EFFICIENT_MARKET" -lt "0" ]] &>/dev/null; then
@@ -601,14 +606,14 @@ function target_data() {
         # calculate market virtual
         EFFICIENT_MARKET_VIRTUAL="$(echo "$EFFICIENT_MARKET/100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
         # calculate new allocated based on profit data
-        EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_VIRTUAL*$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+        EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_VIRTUAL*$DIP_ALLOCATED" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
         # recalculate efficient market limit
-        EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_LIMIT*10" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+        EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_LIMIT*10" | bc -l 2>/dev/null)"
         # reference allocated increased
-        DIP_ALLOCATED="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+        DIP_ALLOCATED="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
         # market above output (log)
-        DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET:?} (${INEFFECTIVE_MARKET:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+        DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_OUTPUT:?} (${INEFFECTIVE_MARKET_OUTPUT:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
         # select skip remove output (ssr)
         echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
 
@@ -1592,22 +1597,24 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     # amount of order filled (sold)
     DIP_LEFTOVER_FILLED_AMOUNT="$DIP_ORDER_SOLD_QUANTITY"
-
     # target amount (bought)
     DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
 
-    # if zero, equals zero
-    if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" || "$DIP_LEFTOVER_FILLED_AMOUNT" -eq "0" ]] &>/dev/null; then
+    # if zero
+    if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
       DIP_LEFTOVER_FILLED_AMOUNT="0"
-      DIP_LEFTOVER_FILLED="0"
-    else
-      # calculate leftover filled
-      DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
     fi
 
+    # calculate leftover filled
+    DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
+
     # if zero
-    if [[ -z "$DIP_LEFTOVER_FILLED" || "$DIP_LEFTOVER_FILLED" == "0.000000000" ]] &>/dev/null; then
+    if [[ -z "$DIP_LEFTOVER_FILLED" || "$DIP_LEFTOVER_FILLED" == "0.0000" ]] &>/dev/null; then
       DIP_LEFTOVER_FILLED="0"
+    fi
+    # if leftover filled greater or equal to n
+    if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
+      DIP_LEFTOVER_FILLED="100"
     fi
 
     ############################################################################
@@ -2258,9 +2265,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     # if total sum (sold) is less than target amount
     if [[ "$DIP_TOTAL_SOLD_SUM_CHECK" -lt "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
 
-      # target amount (bought)
-      DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
-
       ##########################################################################
 
       # if balance (available) are greater or equal to leftover
@@ -2280,27 +2284,25 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       ##########################################################################
 
       # total selling amount
-      DIP_TOTAL_SELLING="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $3 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
+      DIP_TOTAL_SELLING="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $3 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
 
       # calculate percentage of order size
-      DIP_LEFTOVER_SIZE="$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $LISTING_BALANCE; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.4f\n", $1 }')"
+      DIP_LEFTOVER_SIZE=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $LISTING_BALANCE; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.9f\n", $1 }')
+      # calculate percentage of total orders
+      DIP_LEFTOVER_TOTAL=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_TOTAL_SELLING; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.2f\n", $1 }')
 
       # if zero
       if [[ -z "$DIP_LEFTOVER_SIZE" ]] &>/dev/null; then
         DIP_LEFTOVER_SIZE="0"
       fi
 
-      # calculate percentage of total orders
-      DIP_LEFTOVER_TOTAL="$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_TOTAL_SELLING; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.4f\n", $1 }')"
+      DIP_LEFTOVER_SIZE_OUTPUT="$DIP_LEFTOVER_SIZE"
 
-      # if zero
-      if [[ -z "$DIP_LEFTOVER_TOTAL" ]] &>/dev/null; then
-        DIP_LEFTOVER_TOTAL="0"
-      fi
-
-      # if filled
-      if [[ "$(echo "$DIP_LEFTOVER_TOTAL" | awk -F. '{ print $1 }')" -eq "100" ]] &>/dev/null; then
-        DIP_LEFTOVER_TOTAL="100"
+      # if leftover size greater or equal to n
+      if [[ "$(echo "$DIP_LEFTOVER_SIZE" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
+        DIP_LEFTOVER_SIZE="100.000000000"
+        # dip leftover output
+        DIP_LEFTOVER_SIZE_OUTPUT="100"
       fi
 
       # default leftover size limit (0.005000000%)
@@ -2317,17 +2319,17 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       ##########################################################################
 
       # if zero
+      if [[ -z "$DIP_LEFTOVER_TOTAL" ]] &>/dev/null; then
+        DIP_LEFTOVER_TOTAL="0"
+      fi
+
+      # if zero
       if [[ -z "$DIP_LEFTOVER_FILLED" ]] &>/dev/null; then
         DIP_LEFTOVER_FILLED="0"
       fi
 
       # sell + selling + filled (sold)
-      DIP_LEFTOVER_TOTAL_CHECK="$(echo "${DIP_LEFTOVER_SIZE:?}+${DIP_LEFTOVER_TOTAL:?}+${DIP_LEFTOVER_FILLED:?}" | bc -l | awk '{ printf "%.0f\n", $1 }')"
-
-      # if zero
-      if [[ "$DIP_LEFTOVER_TOTAL_CHECK" ]] &>/dev/null; then
-        DIP_LEFTOVER_TOTAL_CHECK="0"
-      fi
+      DIP_LEFTOVER_TOTAL_CHECK="$(echo "${DIP_LEFTOVER_SIZE_OUTPUT:?}+${DIP_LEFTOVER_TOTAL:?}+${DIP_LEFTOVER_FILLED:?}" | bc -l | awk '{ printf "%.0f\n", $1 }')"
 
       # if greater
       if [[ "$DIP_LEFTOVER_TOTAL_CHECK" -gt "99" ]] &>/dev/null; then
@@ -2344,22 +2346,26 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
           # amount of order filled (sold)
           DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+          # target amount (bought)
+          DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
 
           # if zero, equals zero
           if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" || "$DIP_LEFTOVER_FILLED_AMOUNT" -eq "0" ]] &>/dev/null; then
             DIP_LEFTOVER_FILLED_AMOUNT="0"
+          fi
+
+          # calculate total filled
+          DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
+
+          # if zero
+          if [[ -z "$DIP_LEFTOVER_FILLED" ]] &>/dev/null; then
             DIP_LEFTOVER_FILLED="0"
-          else
-            # calculate total filled
-            DIP_LEFTOVER_FILLED=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_LEFTOVER_FILLED_AMOUNT; printf \"%.9f\", (result > 100 ? 100 : result) }" 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
           fi
 
           # if zero
-          if [[ -z "$DIP_LEFTOVER_FILLED" || "$DIP_LEFTOVER_FILLED" == "0.000000000" ]] &>/dev/null; then
-            DIP_LEFTOVER_FILLED="0"
+          if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
+            DIP_LEFTOVER_FILLED="100"
           fi
-
-          ######################################################################
 
           # re calculate receive amount based on order size
           DIP_SELL_AMOUNT_REFERENCE="$(echo "$(echo "$DIP_LEFTOVER_SIZE/100" | bc -l 2>/dev/null)*$DIP_GET_AMOUNT_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
@@ -2392,7 +2398,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
           echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           # filled output (log)
-          DIP_FILLED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell ${DIP_LEFTOVER_SIZE:?}% Selling: ${DIP_LEFTOVER_TOTAL:?}% Filled: ${DIP_LEFTOVER_FILLED:?}%"
+          DIP_FILLED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell ${DIP_LEFTOVER_SIZE_OUTPUT:?}% Selling: ${DIP_LEFTOVER_TOTAL:?}% Filled: ${DIP_LEFTOVER_FILLED:?}%"
           echo "$DIP_FILLED_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           # profit output (log)
           DIP_SELL_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Gains: $DIP_SELL_AMOUNT_PROFIT $REFERENCE_CURRENCY -> ${DIP_GET_RATIO_PROFIT:?}%"
@@ -2613,13 +2619,11 @@ if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
 
           # total sum check (confirmed sold)
           DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
-
           # if zero
           if [[ -z "$DIP_TOTAL_SOLD_FILE_CHECK" ]]; then
             # total sum check (confirmed sold)
             DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
           fi
-
           # target bought amount check
           DIP_TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
 
