@@ -2265,6 +2265,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     # if total sum (sold) is less than target amount
     if [[ "$DIP_TOTAL_SOLD_SUM_CHECK" -lt "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
 
+      # target amount (bought)
+      DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
+
       ##########################################################################
 
       # if balance (available) are greater or equal to leftover
@@ -2356,8 +2359,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
           # amount of order filled (sold)
           DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
-          # target amount (bought)
-          DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
 
           # if zero, equals zero
           if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" || "$DIP_LEFTOVER_FILLED_AMOUNT" -eq "0" ]] &>/dev/null; then
