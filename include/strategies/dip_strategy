@@ -1612,6 +1612,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     if [[ -z "$DIP_LEFTOVER_FILLED" || "$DIP_LEFTOVER_FILLED" == "0.0000" ]] &>/dev/null; then
       DIP_LEFTOVER_FILLED="0"
     fi
+
     # if leftover filled greater or equal to n
     if [[ "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
       DIP_LEFTOVER_FILLED="100"
@@ -2296,6 +2297,11 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         DIP_LEFTOVER_SIZE="0"
       fi
 
+      # if zero
+      if [[ -z "$DIP_LEFTOVER_TOTAL" ]] &>/dev/null; then
+        DIP_LEFTOVER_TOTAL="0"
+      fi
+
       DIP_LEFTOVER_SIZE_OUTPUT="$DIP_LEFTOVER_SIZE"
 
       # if leftover size greater or equal to n
@@ -2317,16 +2323,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       fi
 
       ##########################################################################
-
-      # if zero
-      if [[ -z "$DIP_LEFTOVER_TOTAL" ]] &>/dev/null; then
-        DIP_LEFTOVER_TOTAL="0"
-      fi
-
-      # if zero
-      if [[ -z "$DIP_LEFTOVER_FILLED" ]] &>/dev/null; then
-        DIP_LEFTOVER_FILLED="0"
-      fi
 
       # sell + selling + filled (sold)
       DIP_LEFTOVER_TOTAL_CHECK="$(echo "${DIP_LEFTOVER_SIZE_OUTPUT:?}+${DIP_LEFTOVER_TOTAL:?}+${DIP_LEFTOVER_FILLED:?}" | bc -l | awk '{ printf "%.0f\n", $1 }')"
