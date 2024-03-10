@@ -2284,16 +2284,21 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       ##########################################################################
 
       # total selling amount
-      DIP_TOTAL_SELLING="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $3 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+      DIP_TOTAL_SELLING="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $3 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DIP_DECIMAL_LIMIT' "f\n", int($0 * 10^'$DIP_DECIMAL_LIMIT') / 10^'$DIP_DECIMAL_LIMIT' }')"
 
       # calculate percentage of order size
-      DIP_LEFTOVER_SIZE=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $LISTING_BALANCE; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.9f\n", $1 }')
+      DIP_LEFTOVER_SIZE=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $LISTING_BALANCE; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.4f\n", $1 }')
       # calculate percentage of total orders
-      DIP_LEFTOVER_TOTAL=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_TOTAL_SELLING; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.2f\n", $1 }')
+      DIP_LEFTOVER_TOTAL=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $DIP_TOTAL_SELLING; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.4f\n", $1 }')
 
       # if zero
       if [[ -z "$DIP_LEFTOVER_SIZE" ]] &>/dev/null; then
         DIP_LEFTOVER_SIZE="0"
+      fi
+
+      # if zero
+      if [[ -z "$DIP_LEFTOVER_TOTAL" ]] &>/dev/null; then
+        DIP_LEFTOVER_TOTAL="0"
       fi
 
       DIP_LEFTOVER_SIZE_OUTPUT="$DIP_LEFTOVER_SIZE"
@@ -2319,8 +2324,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       ##########################################################################
 
       # if zero
-      if [[ -z "$DIP_LEFTOVER_TOTAL" ]] &>/dev/null; then
-        DIP_LEFTOVER_TOTAL="0"
+      if [[ -z "$DIP_LEFTOVER_SIZE_OUTPUT" ]] &>/dev/null; then
+        DIP_LEFTOVER_SIZE_OUTPUT="0"
       fi
 
       # if zero
@@ -2330,6 +2335,11 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
       # sell + selling + filled (sold)
       DIP_LEFTOVER_TOTAL_CHECK="$(echo "${DIP_LEFTOVER_SIZE_OUTPUT:?}+${DIP_LEFTOVER_TOTAL:?}+${DIP_LEFTOVER_FILLED:?}" | bc -l | awk '{ printf "%.0f\n", $1 }')"
+
+      # if zero
+      if [[ "$DIP_LEFTOVER_TOTAL_CHECK" ]] &>/dev/null; then
+        DIP_LEFTOVER_TOTAL_CHECK="0"
+      fi
 
       # if greater
       if [[ "$DIP_LEFTOVER_TOTAL_CHECK" -gt "99" ]] &>/dev/null; then
