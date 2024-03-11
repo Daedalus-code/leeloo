@@ -517,6 +517,13 @@ function target_order_status() {
 
     # extract last sell order ID from trades file
     DIP_SELL_TRADES_ID=$(echo "$DIP_LISTING_TRADES" | grep "sell" | head -1 | awk '{ print $3 }' || true)
+
+    # if still zero
+    if [[ -z "$DIP_SELL_TRADES_ID" ]]; then
+      # unique trade id
+      DIP_SELL_TRADES_ID="k123456789e987654321k"
+    fi
+
     # extract last sell order ID from orders file
     DIP_SELL_ORDERS_ID=$(echo "$DIP_LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }' | tr -d ':' || true)
 
@@ -532,6 +539,7 @@ function target_order_status() {
       DIP_SELL_ORDERS_ID="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id 2>/dev/null || true)"
       # if still zero, again
       if [[ -z "$DIP_SELL_ORDERS_ID" ]]; then
+        # unique order id
         DIP_SELL_ORDERS_ID="012345678909876543210"
       fi
     fi
