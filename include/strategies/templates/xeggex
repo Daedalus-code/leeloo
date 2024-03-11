@@ -191,7 +191,7 @@ function decimal_market() {
 
       ##########################################################################
       # insufficient null data
-      DIP_INSUFFICIENT_NULL="$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log || true)"
+      DIP_INSUFFICIENT_NULL="$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log 2>/dev/null)"
       # if zero
       if [[ -z "$DIP_INSUFFICIENT_NULL" ]] &>/dev/null; then
         DIP_INSUFFICIENT_NULL="null"
@@ -202,12 +202,12 @@ function decimal_market() {
         DIP_DECIMAL_LIMIT="$(echo "$DIP_DECIMAL_LIMIT-1" | bc 2>/dev/null | awk -F. '{ print $1 }')"
       fi
       # if any insufficient funds errors
-      if [[ "$(echo "$DIP_INSUFFICIENT_NULL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
+      if [[ "$(echo "$DIP_INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
         # disregard another decimal
         DIP_DECIMAL_LIMIT="$(echo "$DIP_DECIMAL_LIMIT-2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
       fi
       # if any persistence insufficient funds errors
-      if [[ "$(echo "$DIP_INSUFFICIENT_NULL" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
+      if [[ "$(echo "$DIP_INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
         # disregard all decimal
         DIP_DECIMAL_LIMIT="0"
       fi
@@ -657,7 +657,7 @@ function tx_id {
   fi
 
   # keep n lines, disregard <HTTP ERROR>
-  echo "$(tail -1024 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log | grep -v "META HTTP")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
+  echo "$(tail -1024 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log 2>/dev/null | grep -v "META HTTP")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log
   # cleanup txid
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid 2>/dev/null | egrep -v "error|null|Amount|below|minimum" | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".txid
 }
