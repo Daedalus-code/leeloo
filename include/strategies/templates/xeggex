@@ -527,6 +527,8 @@ function target_order_status() {
       SELL_TRADES_ID="K123456789E987654321K"
     fi
 
+    ############################################################################
+
     # extract last sell order ID from orders file
     SELL_ORDERS_ID=$(echo "$LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }' | tr -d ':' || true)
 
@@ -538,10 +540,8 @@ function target_order_status() {
 
     # if zero
     if [[ -z "$SELL_ORDERS_ID" ]]; then
-
       # use old id until (sold) is confirmed
       SELL_ORDERS_ID="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id 2>/dev/null || true)"
-
       # if still zero, again
       if [[ -z "$SELL_ORDERS_ID" ]]; then
         # unique order id
