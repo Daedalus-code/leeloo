@@ -2612,8 +2612,10 @@ if [[ "$DIP_BOUGHT_AGE_OUTPUT" == "0m" ]] &>/dev/null; then
   truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
 fi
 
-# target has bought data
-DIP_TARGET_BOUGHT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null)"
+if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  # target has bought data
+  DIP_TARGET_BOUGHT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null)"
+fi
 
 # if target has bought data
 if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
