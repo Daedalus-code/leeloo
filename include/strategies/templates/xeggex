@@ -190,27 +190,30 @@ function decimal_market() {
       DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY:" | awk '{ print $2 }')"
 
       ##########################################################################
+
       # insufficient null data
       INSUFFICIENT_NULL="$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log 2>/dev/null)"
-      # if zero
-      if [[ -z "$INSUFFICIENT_NULL" ]] &>/dev/null; then
-        INSUFFICIENT_NULL="null"
+
+      # if any data
+      if [[ -n "$INSUFFICIENT_NULL" ]] &>/dev/null; then
+
+        # if any insufficient funds error
+        if [[ "$(echo "$INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
+          # disregard one decimal
+          DECIMAL_LIMIT="$(echo "$DECIMAL_LIMIT-1" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+        fi
+        # if any insufficient funds errors
+        if [[ "$(echo "$INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
+          # disregard another decimal
+          DECIMAL_LIMIT="$(echo "$DECIMAL_LIMIT-2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+        fi
+        # if any persistence insufficient funds errors
+        if [[ "$(echo "$INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
+          # disregard all decimal
+          DECIMAL_LIMIT="0"
+        fi
       fi
-      # if any insufficient funds error
-      if [[ "$(echo "$INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
-        # disregard one decimal
-        DECIMAL_LIMIT="$(echo "$DECIMAL_LIMIT-1" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-      fi
-      # if any insufficient funds errors
-      if [[ "$(echo "$INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
-        # disregard another decimal
-        DECIMAL_LIMIT="$(echo "$DECIMAL_LIMIT-2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-      fi
-      # if any persistence insufficient funds errors
-      if [[ "$(echo "$INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
-        # disregard all decimal
-        DECIMAL_LIMIT="0"
-      fi
+
       ##########################################################################
 
     fi
