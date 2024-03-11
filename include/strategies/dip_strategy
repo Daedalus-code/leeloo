@@ -905,36 +905,40 @@ fi
 # cat profit
 DIP_CAT_PROFIT=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null)
 
-# wc profit (count)
-DIP_WC_PROFIT=$(echo "$DIP_CAT_PROFIT" | wc -l)
+# if any data
+if [[ -z "$DIP_CAT_PROFIT" ]] &>/dev/null; then
 
-# generate top markets based on count
-generate_top_markets() {
-  PERCENTAGE=$1
-  ABOVE_FILE="${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
-  # calculate the count for top markets dynamically
-  SPLIT_COUNT=$((DIP_WC_PROFIT * PERCENTAGE / 100))
-  # generate top most efficient market, disregard slow/wrong orders (n+d)
-  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d|0m" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n $SPLIT_COUNT | awk '{ print $1,$2 }')" >"$ABOVE_FILE"
-}
+  # wc profit (count)
+  DIP_WC_PROFIT=$(echo "$DIP_CAT_PROFIT" | wc -l)
 
-# generate bottom markets based on count
-generate_bottom_markets() {
-  PERCENTAGE=$1
-  BELOW_FILE="${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
-  # calculate the count for bottom markets dynamically
-  SPLIT_COUNT=$((DIP_WC_PROFIT * PERCENTAGE / 100))
-  # generate top most slowest market
-  echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d|0m" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $SPLIT_COUNT | awk '{ print $1,$2 }')" >"$BELOW_FILE"
-}
+  # generate top markets based on count
+  generate_top_markets() {
+    PERCENTAGE=$1
+    ABOVE_FILE="${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    # calculate the count for top markets dynamically
+    SPLIT_COUNT=$((DIP_WC_PROFIT * PERCENTAGE / 100))
+    # generate top most efficient market, disregard slow/wrong orders (n+d)
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d|0m" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n $SPLIT_COUNT | awk '{ print $1,$2 }')" >"$ABOVE_FILE"
+  }
 
-# calculate the percentage for top and bottom markets dynamically
-DEFAULT_PERCENTAGE="10"
+  # generate bottom markets based on count
+  generate_bottom_markets() {
+    PERCENTAGE=$1
+    BELOW_FILE="${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+    # calculate the count for bottom markets dynamically
+    SPLIT_COUNT=$((DIP_WC_PROFIT * PERCENTAGE / 100))
+    # generate top most slowest market
+    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d|0m" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $SPLIT_COUNT | awk '{ print $1,$2 }')" >"$BELOW_FILE"
+  }
 
-# check profit ranges and generate top and bottom markets accordingly
-if [[ "$DIP_WC_PROFIT" -gt "1" ]] &>/dev/null; then
-  generate_top_markets $DEFAULT_PERCENTAGE
-  generate_bottom_markets $DEFAULT_PERCENTAGE
+  # calculate the percentage for top and bottom markets dynamically
+  DEFAULT_PERCENTAGE="10"
+
+  # check profit ranges and generate top and bottom markets accordingly
+  if [[ "$DIP_WC_PROFIT" -gt "1" ]] &>/dev/null; then
+    generate_top_markets $DEFAULT_PERCENTAGE
+    generate_bottom_markets $DEFAULT_PERCENTAGE
+  fi
 fi
 
 ################################################################################
