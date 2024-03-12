@@ -630,6 +630,7 @@ function target_data() {
         fi
       fi
     fi
+
     ############################################################################
 
     # if data
@@ -671,29 +672,33 @@ function target_data() {
 
     ############################################################################
 
-    # if non existing (no profits yet)
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
+    # if data
+    if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
-        # reference allocated decreased (first buy)
-        DIP_ALLOCATED="0.10"
+      # if non existing (no profits yet)
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
 
-        # if equal values
-        if [[ "$DIP_ALLOCATED_ORIGINAL" == "$DIP_ALLOCATED" ]] &>/dev/null; then
-          DIP_ALLOCATED_OUTPUT="Equals at ${DIP_ALLOCATED_ORIGINAL:?}% - ${DIP_ALLOCATED:?}%"
-        else
-          # not equal
-          DIP_ALLOCATED_OUTPUT="Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
-        fi
+          # reference allocated decreased (first buy)
+          DIP_ALLOCATED="0.10"
 
-        # market first output (log)
-        DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x0 : $DIP_ALLOCATED_OUTPUT"
-        # select skip remove output (ssr)
-        echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+          # if equal values
+          if [[ "$DIP_ALLOCATED_ORIGINAL" == "$DIP_ALLOCATED" ]] &>/dev/null; then
+            DIP_ALLOCATED_OUTPUT="Equals at ${DIP_ALLOCATED_ORIGINAL:?}% - ${DIP_ALLOCATED:?}%"
+          else
+            # not equal
+            DIP_ALLOCATED_OUTPUT="Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+          fi
 
-        # if extra logs are set
-        if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
-          echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+          # market first output (log)
+          DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x0 : $DIP_ALLOCATED_OUTPUT"
+          # select skip remove output (ssr)
+          echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+
+          # if extra logs are set
+          if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
+            echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+          fi
         fi
       fi
     fi
