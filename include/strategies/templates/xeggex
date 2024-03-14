@@ -535,14 +535,15 @@ function target_order_status() {
     # if zero
     if [[ -z "$SELL_ORDERS_ID" ]]; then
       if [[ -f "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought ]]; then
-        # extract last sell order ID from orders file using bought file
+        # bought data
         BOUGHT_DATA=$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null)
-        # get latest sell id from bought
+        # quest value
         BOUGHT_SELL_VALUE_QUEST="$(echo "$BOUGHT_DATA" | tail -1 | awk '{ print $4 }')"
-        # get latest sell id on top
+        # sell value
         BOUGHT_SELL_VALUE="$(echo "$LISTING_TRADES" | head -1 | grep "sell" | awk '{ print $6 }')"
         # if same value
         if [[ "$BOUGHT_SELL_VALUE" == "$BOUGHT_SELL_VALUE_QUEST" ]]; then
+          # id based on identical values
           SELL_ORDERS_ID="$(echo "$LISTING_TRADES" | head -1 | awk '{ print $3 }')"
         fi
       fi
