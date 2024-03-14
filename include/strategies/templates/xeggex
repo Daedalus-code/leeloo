@@ -516,7 +516,7 @@ function target_order_status() {
     # extract a buy order from trades file
     BUYING_STATUS=$(echo "$LISTING_TRADES" | grep -c "buy" || true)
 
-    # sell order data ##########################################################
+    # sell trades data #########################################################
 
     # extract last sell order ID from trades file
     SELL_TRADES_ID=$(echo "$LISTING_TRADES" | grep "sell" | head -1 | awk '{ print $3 }' || true)
@@ -527,7 +527,7 @@ function target_order_status() {
       SELL_TRADES_ID="K123456789EEEE987654321K"
     fi
 
-    ############################################################################
+    # sell orders data #########################################################
 
     # extract last sell order ID from orders file
     SELL_ORDERS_ID=$(echo "$LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }' | tr -d ':' || true)
@@ -566,10 +566,10 @@ function target_order_status() {
       SELL_ORDERS_ID="001234567890098765432100"
     fi
 
+    # quantity & target ########################################################
+
     # extract sell order quantity based on ID from trades file
     ORDER_SOLD_QUANTITY="$(echo "$LISTING_TRADES" | grep "$SELL_TRADES_ID" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
-
-    # quantity & target ########################################################
 
     # sold quantity check
     ORDER_SOLD_QUANTITY_CHECK="$(echo "$ORDER_SOLD_QUANTITY" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
