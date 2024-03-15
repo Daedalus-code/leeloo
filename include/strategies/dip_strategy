@@ -268,14 +268,16 @@ function amount_to_buy_sell() {
 
   ##############################################################################
 
-  function active_order_just_trading() {
-    # if active order already exist
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
-      # if market is just trading (no trading)
-      if [[ "$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$LISTING_CURRENCY"/"$REFERENCE_CURRENCY" | grep -c "Trading" || true)" -gt "0" ]] &>/dev/null; then
-        # remove old (active) order
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
-      fi
+  # target bid now
+  DIP_TARGET_BID_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
+  # target ask now
+  DIP_TARGET_ASK_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $3 }')"
+
+  # if any data
+  if [[ -n "$DIP_TARGET_BID_NOW" && -n "$DIP_TARGET_ASK_NOW" ]] &>/dev/null; then
+    # if prices has moved too fast (bid above target), if prices has moved too fast (ask above target)
+    if [[ "$(echo "$DIP_TARGET_BID" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_TARGET_BID_NOW" | tr -d '.' | sed 's/^0*//')" || "$(echo "$DIP_TARGET_ASK" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_TARGET_ASK_NOW" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+
       # active order id
       ACTIVE_ORDER_ID="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $1 }' | tr -d ':')"
       # order id found
@@ -286,43 +288,41 @@ function amount_to_buy_sell() {
           cancelOrder "$ACTIVE_ORDER_ID" 2>>"${LOG_ERROR:?}"
         done
       fi
+
+      # calculate bid difference
+      DIP_TARGET_BID_DIFF_PERC="$(echo "100/$DIP_TARGET_BID*$DIP_TARGET_BID_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+      # buying output (log)
+      DIP_ABOVE_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
+      echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      # new bid price
+      DIP_TARGET_BID="$DIP_TARGET_BID_NOW"
+
+      # calculate ask difference
+      DIP_TARGET_ASK_DIFF_PERC="$(echo "100/$DIP_TARGET_ASK*$DIP_TARGET_ASK_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+      # selling output (log)
+      DIP_ABOVE_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
+      echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+      # new ask price
+      DIP_TARGET_ASK="$DIP_TARGET_ASK_NOW"
+
+      # bought data (static)
+      BOUGHT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null)"
+
+      BOUGHT_AMOUNT_LISTING="$(echo "$BOUGHT_DATA" | awk '{ print $4 }')"
+      BOUGHT_AMOUNT_REFERENCE="$(echo "$BOUGHT_DATA" | awk '{ print $7 }')"
+
+      # new bid
+      BOUGHT_AMOUNT_TARGET_BID="$DIP_TARGET_BID"
+      # new ask
+      BOUGHT_AMOUNT_TARGET_ASK="$DIP_TARGET_ASK"
+
+      BOUGHT_AMOUNT_GET_AMOUNT_REFERENCE="$(echo "$BOUGHT_DATA" | awk '{ print $19 }' | tr -d '()')"
+      BOUGHT_AMOUNT_GET_AMOUNT_PROFIT="$(echo "$BOUGHT_DATA" | awk '{ print $21 }')"
+      BOUGHT_AMOUNT_GET_RATIO_PROFIT="$(echo "$BOUGHT_DATA" | awk '{ print $23 }')"
+
+      # update bought data
+      echo "$LOG_DATE : Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for ($BOUGHT_AMOUNT_REFERENCE $REFERENCE_CURRENCY) @ $(echo "$BOUGHT_AMOUNT_TARGET_BID" | awk '{ printf "%.9f\n", $1 }') Price -> Quest: Selling @ $(echo "$BOUGHT_AMOUNT_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }') Price for ($BOUGHT_AMOUNT_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY) Earning: $BOUGHT_AMOUNT_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought
     fi
-  }
-
-  ##############################################################################
-
-  # target bid now
-  DIP_TARGET_BID_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
-
-  # if prices has moved too fast (bid above target)
-  if [[ "$(echo "$DIP_TARGET_BID" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_TARGET_BID_NOW" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-    # trading with no orders
-    active_order_just_trading
-    # calculate bid difference
-    DIP_TARGET_BID_DIFF_PERC="$(echo "100/$DIP_TARGET_BID*$DIP_TARGET_BID_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-    # buying output (log)
-    DIP_ABOVE_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
-    echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    # new bid price
-    DIP_TARGET_BID="$DIP_TARGET_BID_NOW"
-  fi
-
-  ##############################################################################
-
-  # target ask now
-  DIP_TARGET_ASK_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $3 }')"
-
-  # if prices has moved too fast (ask above target)
-  if [[ "$(echo "$DIP_TARGET_ASK" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_TARGET_ASK_NOW" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-    # trading with no orders
-    active_order_just_trading
-    # calculate ask difference
-    DIP_TARGET_ASK_DIFF_PERC="$(echo "100/$DIP_TARGET_ASK*$DIP_TARGET_ASK_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-    # selling output (log)
-    DIP_ABOVE_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
-    echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    # new ask price
-    DIP_TARGET_ASK="$DIP_TARGET_ASK_NOW"
   fi
 
   ##############################################################################
