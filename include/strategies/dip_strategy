@@ -271,7 +271,7 @@ function amount_to_buy_sell() {
   function active_order_just_trading() {
     # if active order already exist
     if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
-      # if market is just trading (no orders)
+      # if market is just trading (no trading)
       if [[ "$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$LISTING_CURRENCY"/"$REFERENCE_CURRENCY" | grep -c "Trading" || true)" -gt "0" ]] &>/dev/null; then
         # remove old (active) order
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
