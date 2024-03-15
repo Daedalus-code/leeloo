@@ -276,6 +276,16 @@ function amount_to_buy_sell() {
         # remove old (active) order
         echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       fi
+      # active order id
+      ACTIVE_ORDER_ID="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $1 }' | tr -d ':')"
+      # order id found
+      if [[ -n "$ACTIVE_ORDER_ID" ]] &>/dev/null; then
+        # use a while loop to read each line of the string into the variable order_id
+        echo "$ACTIVE_ORDER_ID" | while IFS= read -r ORDER_ID; do
+          # cancel old order (all)
+          cancelOrder "$ORDER_ID" 2>>"${LOG_ERROR:?}"
+        done
+      fi
     fi
   }
 
