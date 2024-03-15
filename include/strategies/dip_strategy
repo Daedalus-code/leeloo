@@ -256,11 +256,26 @@ function amount_to_buy_sell() {
 
   ##############################################################################
 
+  function active_order_just_trading() {
+    # if active order already exist
+    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
+      # if market is just trading (no orders)
+      if [[ "$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$LISTING_CURRENCY"/"$REFERENCE_CURRENCY" | grep -c "Trading" || true)" -gt "0" ]] &>/dev/null; then
+        # remove old (active) order
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      fi
+    fi
+  }
+
+  ##############################################################################
+
   # target bid now
   DIP_TARGET_BID_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
 
   # if prices has moved too fast (bid above target)
   if [[ "$(echo "$DIP_TARGET_BID" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_TARGET_BID_NOW" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+    # trading with no orders
+    active_order_just_trading
     # calculate bid difference
     DIP_TARGET_BID_DIFF_PERC="$(echo "100/$DIP_TARGET_BID*$DIP_TARGET_BID_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # buying output (log)
@@ -277,6 +292,8 @@ function amount_to_buy_sell() {
 
   # if prices has moved too fast (ask above target)
   if [[ "$(echo "$DIP_TARGET_ASK" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_TARGET_ASK_NOW" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+    # trading with no orders
+    active_order_just_trading
     # calculate ask difference
     DIP_TARGET_ASK_DIFF_PERC="$(echo "100/$DIP_TARGET_ASK*$DIP_TARGET_ASK_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # selling output (log)
