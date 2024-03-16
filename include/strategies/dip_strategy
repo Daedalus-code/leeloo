@@ -297,9 +297,15 @@ function amount_to_buy_sell() {
 
         # calculate bid difference
         DIP_TARGET_BID_DIFF_PERC="$(echo "100/$DIP_TARGET_BID*$DIP_TARGET_BID_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
         # buying output (log)
         DIP_ABOVE_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
-        echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        # if extra logs are set
+        if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
+          echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+        else
+          echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+        fi
         # new bid price
         DIP_TARGET_BID="$DIP_TARGET_BID_NOW"
 
@@ -314,7 +320,6 @@ function amount_to_buy_sell() {
         else
           echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
         fi
-
         # new ask price
         DIP_TARGET_ASK="$DIP_TARGET_ASK_NOW"
 
