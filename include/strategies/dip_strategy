@@ -274,6 +274,9 @@ function amount_to_buy_sell() {
   DIP_TARGET_BID_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
   # target ask now
   DIP_TARGET_ASK_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $3 }')"
+  # target volume now
+  DIP_TARGET_VOLUME_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $NF }')"
+
   # bought file age (seconds)
   DIP_BOUGHT_SLOW_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # active orders
@@ -333,7 +336,7 @@ function amount_to_buy_sell() {
           DIP_GET_RATIO_PROFIT="$(echo "100/$DIP_BUY_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
           # log market new spread output
-          DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: (New) Spread: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% Bid: ${DIP_TARGET_BID_DIFF_PERC:?}% Ask: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_SECONDS}s"
+          DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: (!) S: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% B: ${DIP_TARGET_BID_DIFF_PERC:?}% A: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_SECONDS}s V: $DIP_TARGET_VOLUME_NOW"
           echo "$DIP_MARKET_UPDATE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
           # update bought data
