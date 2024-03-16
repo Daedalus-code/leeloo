@@ -275,14 +275,14 @@ function amount_to_buy_sell() {
   # target ask now
   DIP_TARGET_ASK_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $3 }')"
   # bought file age (seconds)
-  DIP_BOUGHT_GHOST_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  DIP_BOUGHT_SLOW_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
   # if any data
   if [[ -n "$DIP_TARGET_BID_NOW" && -n "$DIP_TARGET_ASK_NOW" ]] &>/dev/null; then
     # if prices has moved too fast (bid above target), if prices has moved too fast (ask above target)
     if [[ "$(echo "$DIP_TARGET_BID" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_TARGET_BID_NOW" | tr -d '.' | sed 's/^0*//')" || "$(echo "$DIP_TARGET_ASK" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_TARGET_ASK_NOW" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
       # if bought older than n seconds
-      if [[ "$DIP_BOUGHT_GHOST_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
+      if [[ "$DIP_BOUGHT_SLOW_AGE_SECONDS" -gt "1800" ]] &>/dev/null; then
 
         # active order id
         ACTIVE_ORDER_ID="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $1 }' | tr -d ':')"
