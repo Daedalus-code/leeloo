@@ -279,6 +279,11 @@ function amount_to_buy_sell() {
   # active orders
   DIP_ORDERS_COUNT=$(cat "${LOG_DIR:?}"/leeloo/xeggex/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".orders 2>/dev/null | wc -l)
 
+  # if zero
+  if [[ -z "$DIP_ORDERS_COUNT" ]] &>/dev/null; then
+    DIP_ORDERS_COUNT="0"
+  fi
+
   # if any data
   if [[ -n "$DIP_TARGET_BID_NOW" && -n "$DIP_TARGET_ASK_NOW" ]] &>/dev/null; then
     # if no active orders
