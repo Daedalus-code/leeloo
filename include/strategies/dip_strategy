@@ -335,8 +335,15 @@ function amount_to_buy_sell() {
           # amount to profit (reference percentage)
           DIP_GET_RATIO_PROFIT="$(echo "100/$DIP_BUY_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+          # target spread status
+          if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+            DIP_TARGET_SPREAD_STATUS="(!)"
+          else
+            DIP_TARGET_SPREAD_STATUS="(OK)"
+          fi
+
           # log market new spread output
-          DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: (!) S: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% B: ${DIP_TARGET_BID_DIFF_PERC:?}% A: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_SECONDS}s V: $DIP_TARGET_VOLUME_NOW"
+          DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_TARGET_SPREAD_STATUS S: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% B: ${DIP_TARGET_BID_DIFF_PERC:?}% A: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_SECONDS}s V: $DIP_TARGET_VOLUME_NOW"
           echo "$DIP_MARKET_UPDATE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
           # update bought data
