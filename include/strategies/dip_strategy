@@ -1592,7 +1592,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # old order id (buy)
       DIP_ORDER_ID_BUY="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
       # last order profit
-      DIP_LAST_ORDER_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | awk '{ print $NF }' | tail -1 | tr -d '%.' | sed 's/^0*//')"
+      DIP_LAST_ORDER_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $NF }' | tr -d '%.' | sed 's/^0*//')"
 
       # if zero
       if [[ -z "$DIP_LAST_ORDER_PROFIT" ]] &>/dev/null; then
@@ -2712,7 +2712,7 @@ fi
 # if any listing and reference data available
 if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
   # target bought data
-  DIP_TARGET_BOUGHT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null)"
+  DIP_TARGET_BOUGHT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | sed '/^$/d')"
 fi
 
 # if target has bought data
@@ -2756,9 +2756,9 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
               # if data exist
               if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
                 # use original percentage value from bought
-                DIP_GET_RATIO_PROFIT="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | sed '/^$/d' | awk '{ print $NF }' | tr -d '%')"
+                DIP_GET_RATIO_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $NF }' | tr -d '%')"
                 # use original get amount value from bought
-                DIP_GET_AMOUNT_PROFIT="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | sed '/^$/d' | awk '{ print $22 }')"
+                DIP_GET_AMOUNT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $22 }')"
               fi
 
               # if zero
@@ -2949,7 +2949,7 @@ decimal_market
 DIP_CHANGE_ASSET_BALANCE="$(echo "$DIP_CHANGE_ASSET" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($3 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
 
 # old ask price (bought)
-DIP_CHANGE_OLD_PRICE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".bought 2>/dev/null | awk '{ print $10 }' | tail -1 | sed '/^$/d')"
+DIP_CHANGE_OLD_PRICE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | sed '/^$/d')"
 
 # if no data
 if [[ -z "$DIP_CHANGE_OLD_PRICE" ]] &>/dev/null; then
