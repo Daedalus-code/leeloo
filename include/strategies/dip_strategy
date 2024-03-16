@@ -341,8 +341,8 @@ function amount_to_buy_sell() {
           # keep n lines
           echo "$(tail -3 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
 
-          # if active order keep updating
-          if [[ "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".log | grep -c "Order updated from pool!" || true)" -gt "3" ]] &>/dev/null; then
+          # if active order profit is below minimum spread limit (ruled by configuration)
+          if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
             # reset/remove old (active) order
             echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
           fi
@@ -2883,7 +2883,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
             truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
             reset_active_market_list
             # reset output (log)
-            DIP_RESET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Reset slow order. (broken) Diff: ${DIP_BROKEN_DIFF_PERC:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
+            DIP_RESET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Reset slow order. (failed) Diff: ${DIP_BROKEN_DIFF_PERC:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
             echo "$DIP_RESET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           fi
         fi
@@ -2924,7 +2924,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
       reset_active_market_list
 
       # cleanup output (log)
-      DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (broken) Age: $DIP_BOUGHT_AGE_OUTPUT"
+      DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (failed) Age: $DIP_BOUGHT_AGE_OUTPUT"
       echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       # pause broken market (listing)
       echo "$LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
@@ -3525,11 +3525,11 @@ DIP_SELECT_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAM
 DIP_SKIP_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Skip" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "Removing sell" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_GHOST_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "Removing ghost order" 2>/dev/null | awk '!a[$12]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
-DIP_BROKEN_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "(broken)" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
+DIP_FAILED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "(failed)" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_DUSTING_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "Dusting" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 
 # total
-DIP_TOTAL_COUNT="$(echo "$DIP_SOLD_COUNT+$DIP_SELECT_COUNT+$DIP_SKIP_COUNT+$DIP_REMOVED_COUNT+$DIP_GHOST_COUNT+$DIP_BROKEN_COUNT+$DIP_DUSTING_COUNT" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+DIP_TOTAL_COUNT="$(echo "$DIP_SOLD_COUNT+$DIP_SELECT_COUNT+$DIP_SKIP_COUNT+$DIP_REMOVED_COUNT+$DIP_GHOST_COUNT+$DIP_FAILED_COUNT+$DIP_DUSTING_COUNT" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 
 # percentage
 DIP_SELECT_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SELECT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
@@ -3537,7 +3537,7 @@ DIP_SKIP_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SKIP_COUNT" | bc -l 2>/de
 DIP_SOLD_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_SOLD_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 DIP_REMOVED_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_REMOVED_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 DIP_GHOST_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_GHOST_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-DIP_BROKEN_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_BROKEN_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+DIP_FAILED_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_FAILED_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 DIP_DUSTING_COUNT_PERC="$(echo "100/$DIP_TOTAL_COUNT*$DIP_DUSTING_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 # if zero
@@ -3566,8 +3566,8 @@ if [[ -z "$DIP_GHOST_COUNT_PERC" ]] &>/dev/null; then
 fi
 
 # if zero
-if [[ -z "$DIP_BROKEN_COUNT_PERC" ]] &>/dev/null; then
-  DIP_BROKEN_COUNT_PERC="0.00"
+if [[ -z "$DIP_FAILED_COUNT_PERC" ]] &>/dev/null; then
+  DIP_FAILED_COUNT_PERC="0.00"
 fi
 
 # if zero
@@ -3577,8 +3577,8 @@ fi
 
 # combined output of select, skip and removed
 DIP_SELECT_SKIP_REMOVED="${DIP_SELECT_COUNT_PERC:?}% ($DIP_SELECT_COUNT) ${DIP_SKIP_COUNT_PERC:?}% ($DIP_SKIP_COUNT) ${DIP_REMOVED_COUNT_PERC:?}% ($DIP_REMOVED_COUNT)"
-# combined output of ghosts, broken and dust
-DIP_GHOST_BROKEN_DUST="${DIP_GHOST_COUNT_PERC:?}% ($DIP_GHOST_COUNT) ${DIP_BROKEN_COUNT_PERC:?}% ($DIP_BROKEN_COUNT) ${DIP_DUSTING_COUNT_PERC:?}% ($DIP_DUSTING_COUNT)"
+# combined output of ghosts, failed and dust
+DIP_GHOST_FAILED_DUST="${DIP_GHOST_COUNT_PERC:?}% ($DIP_GHOST_COUNT) ${DIP_FAILED_COUNT_PERC:?}% ($DIP_FAILED_COUNT) ${DIP_DUSTING_COUNT_PERC:?}% ($DIP_DUSTING_COUNT)"
 
 # completed profit
 DIP_COMPLETED_PROFIT="$(grep -w "$ACTIVE_MARKET_PAIRS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '{ print $2 }' | tr -d ':')"
@@ -3761,7 +3761,7 @@ Slowest_Market......: $DIP_SLOWEST_MARKET ($DIP_SLOWEST_COUNT) ${DIP_SLOWEST_AVE
 Completed_Today.....: ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT) $DIP_SOLD_TODAY $ACTIVE_MARKET_PAIRS
 Completed_Profit....: $DIP_COMPLETED_PROFIT $ACTIVE_MARKET_PAIRS ($DIP_PROFIT_COUNT) ${DIP_COMPLETED_PROFIT_PERCENTAGE:?}%
 Select/Skip/Removed.: $DIP_SELECT_SKIP_REMOVED
-Ghosts/Broken/Dust..: $DIP_GHOST_BROKEN_DUST
+Ghosts/Failed/Dust..: $DIP_GHOST_FAILED_DUST
 Last_Profit.........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
 Highest_Profit......: $DIP_HIGHEST_PROFIT
 Lowest_Profit.......: $DIP_LOWEST_PROFIT
