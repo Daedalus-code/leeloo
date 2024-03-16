@@ -276,14 +276,6 @@ function insufficient_funds {
 
 function delisted_market() {
 
-  # raw prices age (seconds)
-  RAW_PRICES_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/raw.prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  # if old enough
-  if [[ "$RAW_PRICES_AGE_SECONDS" -gt "90" ]] &>/dev/null; then
-    # create raw.prices file, readonly
-    echo "$(cat "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/xeggex/raw.prices 2>/dev/null
-  fi
-
   # check if delisted_xeggex file exists, create it if not
   if [[ ! -f "${SYS_DIR:?}/delisted_xeggex" ]] &>/dev/null; then
     touch "${SYS_DIR:?}/delisted_xeggex"
