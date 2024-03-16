@@ -2465,14 +2465,14 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       DIP_LEFTOVER_TOTAL_CHECK="$(echo "${DIP_LEFTOVER_SIZE_OUTPUT:?}+${DIP_LEFTOVER_TOTAL:?}+${DIP_LEFTOVER_FILLED:?}" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 
       # if greater
-      if [[ "$(echo "$DIP_LEFTOVER_TOTAL_CHECK" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+      if [[ "$(echo "$DIP_LEFTOVER_TOTAL_CHECK" | awk -F. '{ print $1 }')" -ge "99" ]] &>/dev/null; then
         DIP_LEFTOVER_TOTAL_CHECK="100"
       fi
 
       ##########################################################################
 
       # if percentage of total orders has not reached 100%, if DCA
-      if [[ "$DIP_LEFTOVER_TOTAL_CHECK" -lt "100" || "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+      if [[ "$(echo "$DIP_LEFTOVER_TOTAL_CHECK" | awk -F. '{ print $1 }')" -lt "100" || "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
 
         # if leftover size is greater than leftover size limit
         if [[ "$(echo "$DIP_LEFTOVER_SIZE" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_LEFTOVER_SIZE_LIMIT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
