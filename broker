@@ -806,12 +806,16 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     DEBUG_DATA_FILE="$(cat "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null | head -250)"
     # data count
     DEBUG_DATA_COUNT="$(echo "$DEBUG_DATA" | wc -l)"
+    # dusting count
+    DEBUG_DUSTING_COUNT="$(echo "$DEBUG_DATA" | grep -c "Dusting" || true)"
     # buy count
     DEBUG_BUY_COUNT="$(echo "$DEBUG_DATA" | grep -c "buy" || true)"
     # sell count
     DEBUG_SELL_COUNT="$(echo "$DEBUG_DATA" | grep -c "sell" || true)"
     # total count
-    DEBUG_TOTAL_COUNT="$(echo "$DEBUG_BUY_COUNT+$DEBUG_SELL_COUNT" | bc 2>/dev/null)"
+    DEBUG_TOTAL_COUNT="$(echo "$DEBUG_DUSTING_COUNT+$DEBUG_BUY_COUNT+$DEBUG_SELL_COUNT" | bc 2>/dev/null)"
+    # dusting percentage
+    DEBUG_DUSTING_PERCENTAGE="$(echo "100/$DEBUG_TOTAL_COUNT+$DEBUG_DUSTING_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # buy percentage
     DEBUG_BUY_PERCENTAGE="$(echo "100/$DEBUG_TOTAL_COUNT+$DEBUG_BUY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
     # sell percentage
@@ -842,7 +846,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     fi
 
     display_result() {
-      dialog --title "Leeloo/Strategy Order Debug :: +$DEBUG_DATA_COUNT :: Buy: $DEBUG_BUY_COUNT (${DEBUG_BUY_PERCENTAGE}%) Sell: $DEBUG_SELL_COUNT (${DEBUG_SELL_PERCENTAGE}%)" \
+      dialog --title "Leeloo/Strategy Order Debug :: +$DEBUG_DATA_COUNT :: Dusting: $DEBUG_DUSTING_COUNT (${DEBUG_DUSTING_PERCENTAGE}%) Buy: $DEBUG_BUY_COUNT (${DEBUG_BUY_PERCENTAGE}%) Sell: $DEBUG_SELL_COUNT (${DEBUG_SELL_PERCENTAGE}%)" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
