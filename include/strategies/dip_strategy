@@ -355,7 +355,7 @@ function amount_to_buy_sell() {
             echo "$(tail -3 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
 
             # update active file (updated spread)
-            DIP_ACTIVE_MARKET_DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk -v bid="$DIP_TARGET_BID_NOW" -v ask="$DIP_TARGET_ASK_NOW" -v spread="$DIP_GET_RATIO_PROFIT" -v volume="$DIP_TARGET_VOLUME_NOW" -v amount="$DIP_BUY_AMOUNT_LISTING" '{ printf "%s %s %s %.9f %s %s %.9f %s %s %s %s %s %s %s %.9f %s %s %s %s %s %s %.9f %s %s %.9f %s\n", $1,$2,$3,bid,$5,$6,ask,$8,$9,$10,$11,$12,$13,$14,$15,DIP_GET_RATIO_PROFIT,$17,$18,$19,$20,$21,$22,DIP_TARGET_VOLUME_NOW,$24,$25,DIP_BUY_AMOUNT_LISTING,$27 }')
+            DIP_ACTIVE_MARKET_DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk -v bid="$DIP_TARGET_BID_NOW" -v ask="$DIP_TARGET_ASK_NOW" -v spread="$DIP_GET_RATIO_PROFIT" -v volume="$DIP_TARGET_VOLUME_NOW" -v amount="$DIP_BUY_AMOUNT_LISTING" '{ printf "%s %s %s %.9f %s %s %.9f %s %s %s %s %s %s %s %.9f %s %s %s %s %s %s %.9f %s %s %.9f %s\n", $1,$2,$3,bid,$5,$6,ask,$8,$9,$10,$11,$12,$13,$14,$15,spread,$17,$18,$19,$20,$21,$22,volume,$24,$25,amount,$27 }')
             # reset old (active) order
             echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
             # update reset (active) order
