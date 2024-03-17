@@ -806,6 +806,16 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null)"
     # data count
     DEBUG_DATA_COUNT="$(echo "$DEBUG_DATA" | wc -l)"
+    # buy count
+    DEBUG_BUY_COUNT="$(echo "$DEBUG_DATA" | grep -c "buy" || true)"
+    # sell count
+    DEBUG_SELL_COUNT="$(echo "$DEBUG_DATA" | grep -c "sell" || true)"
+    # total count
+    DEBUG_TOTAL_COUNT="$(echo "$DEBUG_BUY_COUNT+$DEBUG_SELL_COUNT" | bc 2>/dev/null)"
+    # buy percentage
+    DEBUG_BUY_PERCENTAGE="$(echo "100/$DEBUG_TOTAL_COUNT+$DEBUG_BUY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    # sell percentage
+    DEBUG_SELL_PERCENTAGE="$(echo "100/$DEBUG_TOTAL_COUNT+$DEBUG_SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
     WIDTH=$(echo "$(echo "$DEBUG_DATA" | wc -L)+4" | bc 2>/dev/null)
     LENGTH=$(echo "$(echo "$DEBUG_DATA" | wc -l)+4" | bc 2>/dev/null)
@@ -832,7 +842,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     fi
 
     display_result() {
-      dialog --title "Leeloo/Strategy Order Debug :: +$DEBUG_DATA_COUNT" \
+      dialog --title "Leeloo/Strategy Order Debug :: +$DEBUG_DATA_COUNT :: Buy: $DEBUG_BUY_COUNT (${DEBUG_BUY_PERCENTAGE}%) Sell: $DEBUG_SELL_COUNT (${DEBUG_SELL_PERCENTAGE}%)" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
