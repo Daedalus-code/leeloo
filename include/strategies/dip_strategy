@@ -277,6 +277,10 @@ function amount_to_buy_sell() {
     DIP_TARGET_BID_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
     # target ask now
     DIP_TARGET_ASK_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
+    # target last now
+    DIP_TARGET_LAST_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
+    # target dip now
+    DIP_TARGET_DIP_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $6 }' | awk '{ printf "%.9f\n", $1 }')"
     # target volume now
     DIP_TARGET_VOLUME_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $NF }')"
 
@@ -342,6 +346,9 @@ function amount_to_buy_sell() {
             # amount to profit (reference percentage)
             DIP_GET_RATIO_PROFIT="$(echo "100/$DIP_BUY_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+            # new last price
+            DIP_TARGET_LAST="$DIP_TARGET_LAST_NOW"
+
             # target spread status
             if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
               DIP_TARGET_SPREAD_STATUS="(!)"
@@ -360,8 +367,8 @@ function amount_to_buy_sell() {
 
             # update active file with updated spread data
             DIP_ACTIVE_MARKET_DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" |
-              awk -v bid="$DIP_TARGET_BID_NOW" -v ask="$DIP_TARGET_ASK_NOW" -v spread="$DIP_GET_RATIO_PROFIT" -v volume="$DIP_TARGET_VOLUME_NOW" -v amount="$DIP_BUY_AMOUNT_LISTING" '{
-                printf "%s: | Bid: %.9f | Ask: %.9f | Last: %.9f | Dip: %.2f%% | Spread: %.2f%% | Price Movement: %.2f%% | Volume: %.2f | Amount: %.9f\n", $1, bid, ask, last, dip, spread, price_movement, volume, amount
+              awk -v bid="$DIP_TARGET_BID_NOW" -v ask="$DIP_TARGET_ASK_NOW" -v last="$DIP_TARGET_LAST_NOW" -v dip="$DIP_TARGET_DIP_NOW" -v spread="$DIP_GET_RATIO_PROFIT" -v volume="$DIP_TARGET_VOLUME_NOW" -v amount="$DIP_BUY_AMOUNT_LISTING $REFERENCE_CURRENCY" '{
+                printf "%s: | Bid: %.9f | Ask: %.9f | Last: %.9f | Dip: %.2f%% | Spread: %.2f%% | Price Movement: %.2f%% | Volume: %.2f | Amount: %s\n", $1 "/" $2, bid, ask, last, dip, spread, price_movement, volume, amount
             }')
 
             # reset old (active) order
