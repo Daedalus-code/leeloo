@@ -1453,15 +1453,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 ################################################################
                 ################################################################
 
-                # if target is new
-                if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.new ]] &>/dev/null; then
-                  # create/update target file
-                  mv "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.new "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
-                fi
-
-                ################################################################
-                ################################################################
-
                 # target status output (log)
                 POTENTIAL_RSI_STRENGTH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $POTENTIAL_RSI_OUTPUT"
                 # select skip remove output (ssr)
@@ -1478,6 +1469,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       fi
     fi
   done <"$DIP_PRICES_FILE" 2>/dev/null
+
+  ##############################################################################
+  ##############################################################################
+
+  # if target is new
+  if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.new ]] &>/dev/null; then
+    # create/update target file
+    mv "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.new "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
+  fi
 
   ##############################################################################
   ##############################################################################
