@@ -304,12 +304,14 @@ function amount_to_buy_sell() {
 
             # buying output (log)
             DIP_ABOVE_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
+
             # if extra logs are set
             if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
               echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
             else
               echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
             fi
+
             # new bid price
             DIP_TARGET_BID="$DIP_TARGET_BID_NOW"
 
@@ -318,12 +320,14 @@ function amount_to_buy_sell() {
 
             # selling output (log)
             DIP_ABOVE_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
+
             # if extra logs are set
             if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
               echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
             else
               echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
             fi
+
             # new ask price
             DIP_TARGET_ASK="$DIP_TARGET_ASK_NOW"
 
@@ -357,7 +361,7 @@ function amount_to_buy_sell() {
             # update active file with updated spread data
             DIP_ACTIVE_MARKET_DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" |
               awk -v bid="$DIP_TARGET_BID_NOW" -v ask="$DIP_TARGET_ASK_NOW" -v spread="$DIP_GET_RATIO_PROFIT" -v volume="$DIP_TARGET_VOLUME_NOW" -v amount="$DIP_BUY_AMOUNT_LISTING" '{
-                printf "%s: | Bid: %.9f | Ask: %.9f | Last: %.9f | Dip: %.2f%% | Spread: %.2f%% | Price Movement: %.2f%% | Volume: %.2f | Amount: %.3f\n", $1 "/" $2, bid, ask, last, dip, spread, price_movement, volume, amount
+                printf "%s: | Bid: %.9f | Ask: %.9f | Last: %.9f | Dip: %.2f%% | Spread: %.2f%% | Price Movement: %.2f%% | Volume: %.2f | Amount: %.9f\n", $1, bid, ask, last, dip, spread, price_movement, volume, amount
             }')
 
             # reset old (active) order
