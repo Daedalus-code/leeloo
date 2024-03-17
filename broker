@@ -791,8 +791,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "o")
 
-    # max headroom of 250, disregard delisted
-    DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | sort -t '.' -k 1.7,1.10n -k 1.4,1.5n -k 1.1,1.2n -k 2.1,2.2n -k 2.4,2.5n -k 2.7,2.8n | tac | column -t | awk '!a[$0]++' | head -250)"
+    # debug data
+    DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | sort -t '.' -k 1.7,1.10n -k 1.4,1.5n -k 1.1,1.2n -k 2.1,2.2n -k 2.4,2.5n -k 2.7,2.8n | tac | column -t | awk '!a[$0]++')"
     # debug data age (seconds)
     DEBUG_DATA_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -802,8 +802,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
       echo "$DEBUG_DATA" >"${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null
     fi
 
-    # debug data
-    DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null)"
+    # debug data, max headroom of 300
+    DEBUG_DATA_FILE="$(cat "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null | head -300)"
     # data count
     DEBUG_DATA_COUNT="$(echo "$DEBUG_DATA" | wc -l)"
     # buy count
@@ -817,8 +817,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     # sell percentage
     DEBUG_SELL_PERCENTAGE="$(echo "100/$DEBUG_TOTAL_COUNT+$DEBUG_SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-    WIDTH=$(echo "$(echo "$DEBUG_DATA" | wc -L)+4" | bc 2>/dev/null)
-    LENGTH=$(echo "$(echo "$DEBUG_DATA" | wc -l)+4" | bc 2>/dev/null)
+    WIDTH=$(echo "$(echo "$DEBUG_DATA_FILE" | wc -L)+4" | bc 2>/dev/null)
+    LENGTH=$(echo "$(echo "$DEBUG_DATA_FILE" | wc -l)+4" | bc 2>/dev/null)
 
     # if zero, less than
     if [[ -z "$WIDTH" || "$WIDTH" -lt "64" ]] &>/dev/null; then
@@ -847,7 +847,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
-    RESULT="$(echo "$DEBUG_DATA")"
+    RESULT="$(echo "$DEBUG_DATA_FILE")"
     display_result 2>/dev/null
 
     ;;
