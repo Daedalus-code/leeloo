@@ -351,12 +351,14 @@ function amount_to_buy_sell() {
             # new last price
             DIP_TARGET_LAST="$DIP_TARGET_LAST_NOW"
 
-            # target spread status
+            # target status (default)
+            DIP_TARGET_SPREAD_STATUS="(OK)"
+
+            # if active order profit is below minimum spread limit (ruled by configuration)
             if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+              # target status
               DIP_TARGET_SPREAD_STATUS="(NO)"
               reset_active_market_list
-            else
-              DIP_TARGET_SPREAD_STATUS="(OK)"
             fi
 
             # log market new spread output
