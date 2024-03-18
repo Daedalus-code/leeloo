@@ -1476,6 +1476,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
   # if target is new
   if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.new ]] &>/dev/null; then
+    # potential buy symbol
+    POTENTIAL_BUY_SYMBOL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.new 2>/dev/null | awk '{ print $1 }' | tr -d ':')"
     # create/update target file
     mv "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target.new "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target &>/dev/null
   fi
