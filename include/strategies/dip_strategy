@@ -273,16 +273,19 @@ function amount_to_buy_sell() {
   # if any data
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
+    # target prices data
+    DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+
     # target bid now
-    DIP_TARGET_BID_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+    DIP_TARGET_BID_NOW="$(echo "$DIP_TARGET_PRICES_DATA" | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
     # target ask now
-    DIP_TARGET_ASK_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
+    DIP_TARGET_ASK_NOW="$(echo "$DIP_TARGET_PRICES_DATA" | awk '{ print $4 }' | awk '{ printf "%.9f\n", $1 }')"
     # target last now
-    DIP_TARGET_LAST_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
+    DIP_TARGET_LAST_NOW="$(echo "$DIP_TARGET_PRICES_DATA" | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
     # target dip now
-    DIP_TARGET_DIP_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $6 }' | awk '{ printf "%.9f\n", $1 }')"
+    DIP_TARGET_DIP_NOW="$(echo "$DIP_TARGET_PRICES_DATA" | awk '{ print $6 }' | awk '{ printf "%.9f\n", $1 }')"
     # target volume now
-    DIP_TARGET_VOLUME_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '{ print $NF }')"
+    DIP_TARGET_VOLUME_NOW="$(echo "$DIP_TARGET_PRICES_DATA" | awk '{ print $NF }')"
     # price movement
     DIP_PRICE_MOVEMENT_NOW=$(awk -v last="$DIP_TARGET_LAST_NOW" -v bid="$DIP_TARGET_BID_NOW" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
 
