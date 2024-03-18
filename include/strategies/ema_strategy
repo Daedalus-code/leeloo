@@ -793,14 +793,17 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
                 # new bullish output
                 BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bullish+Signal : Buying $LISTING_AMOUNT $LISTING_CURRENCY $(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')+$(echo "$REFERENCE_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)% > ${REFERENCE_ALLOCATED:?}%"
 
-                # if any data
-                if [[ -n "$LISTING_ALLOCATED_REAL_CHECK" && -n "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                  # is this bullish signal allocated correctly? (without decimal)
-                  if [[ "$LISTING_ALLOCATED_REAL_CHECK" -lt "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                    # trigger a buy for fear of missing out
-                    echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-                    echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-                    echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                # has value
+                if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+                  # if any data
+                  if [[ -n "$LISTING_ALLOCATED_REAL_CHECK" && -n "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                    # is this bullish signal allocated correctly? (without decimal)
+                    if [[ "$LISTING_ALLOCATED_REAL_CHECK" -lt "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                      # trigger a buy for fear of missing out
+                      echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+                      echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                      echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                    fi
                   fi
                 fi
               fi
@@ -954,14 +957,17 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
                 # new bearish output
                 BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')+$(echo "$LISTING_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)% > ${LISTING_ALLOCATED:?}%"
 
-                # if any data
-                if [[ -n "$REFERENCE_ALLOCATED_REAL_CHECK" && -n "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                  # is this bearish signal allocated correctly? (without decimal)
-                  if [[ "$REFERENCE_ALLOCATED_REAL_CHECK" -lt "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                    # trigger a sell for fear of missing out
-                    echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-                    echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-                    echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                # has value
+                if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+                  # if any data
+                  if [[ -n "$REFERENCE_ALLOCATED_REAL_CHECK" && -n "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                    # is this bearish signal allocated correctly? (without decimal)
+                    if [[ "$REFERENCE_ALLOCATED_REAL_CHECK" -lt "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                      # trigger a sell for fear of missing out
+                      echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+                      echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                      echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                    fi
                   fi
                 fi
               fi
