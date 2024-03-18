@@ -353,7 +353,7 @@ function amount_to_buy_sell() {
 
             # target spread status
             if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-              DIP_TARGET_SPREAD_STATUS="(!)"
+              DIP_TARGET_SPREAD_STATUS="(NO)"
               reset_active_market_list
             else
               DIP_TARGET_SPREAD_STATUS="(OK)"
@@ -388,12 +388,6 @@ function amount_to_buy_sell() {
               echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
               # update market.list, disregard amount at end
               echo "$DIP_ACTIVE_MARKET_DATA" | awk '{ print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23 }' >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
-            fi
-
-            # if active order profit is below minimum spread limit (ruled by configuration)
-            if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-              # remove old (active) order
-              echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
             fi
 
             # if active order profit is above minimum spread limit (ruled by configuration)
