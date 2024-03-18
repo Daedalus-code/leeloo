@@ -503,7 +503,7 @@ if [[ "$GHOST_MARKET" -gt "0" ]] &>/dev/null; then
       # reset null
       truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null &>/dev/null
       # pause ghost market (listing)
-      echo "$GHOST_TARGET_LISTING" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+      echo "$GHOST_TARGET_LISTING" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
     fi
   fi
 fi
@@ -571,7 +571,7 @@ function remove_ghost_orders() {
             DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing ghost order: ${DIP_ORDER_STATUS_ID:0:9}$DIP_ORDER_ID_DOTS ($DIP_ORDER_STATUS/$DIP_ORDER_STATUS_ACTIVE) (${DIP_BOUGHT_GHOST_AGE_DAYS:?}d/${DIP_SOLD_GHOST_AGE_DAYS:?}d)"
             echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
             # pause ghost market (listing)
-            echo "$LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+            echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
           fi
         fi
       fi
@@ -3006,7 +3006,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
       DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (failed) Age: $DIP_BOUGHT_AGE_OUTPUT"
       echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       # pause failed market (listing)
-      echo "$LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+      echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
     fi
   fi
 fi
