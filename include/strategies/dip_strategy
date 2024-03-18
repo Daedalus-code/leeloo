@@ -150,11 +150,6 @@ function time_and_profit() {
   DIP_MAX_BUY_AGE=$(echo "$DIP_BUY_EXTRA_TIME+$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')
   DIP_MAX_SELL_AGE=$(echo "$DIP_SELL_EXTRA_TIME+$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')
 
-  # recalculate days into seconds
-  DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
-  # recalculate days into seconds
-  DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
-
   # if zero (ruled by configuration)
   if [[ -z "$DIP_MAX_BUY_AGE" ]] &>/dev/null; then
     # use default n days
@@ -166,6 +161,11 @@ function time_and_profit() {
     # use default n days
     DIP_MAX_SELL_AGE="14"
   fi
+
+  # recalculate days into seconds
+  DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
+  # recalculate days into seconds
+  DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
 }
 
 ################################################################################
