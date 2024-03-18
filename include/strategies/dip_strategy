@@ -2997,7 +2997,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
       # cleanup output (log)
       DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (failed) Age: $DIP_BOUGHT_AGE_OUTPUT"
       echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-      # pause broken market (listing)
+      # pause failed market (listing)
       echo "$LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
     fi
   fi
@@ -3436,6 +3436,8 @@ if [[ "$DIP_D_P_FILE_AGE_SECONDS" -gt "86300" || "$DIP_TIME_CHECK" -eq "1" ]] &>
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl &>/dev/null
 fi
 
+################################################################################
+
 if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp ]] &>/dev/null; then
   DIP_DAY_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dp 2>/dev/null | tr -d '(%)' | sort -n -k 8)"
   # low target data
@@ -3462,6 +3464,24 @@ if [[ -z "$DIP_HIGH_DAY" || -z "$DIP_HIGH_TARGETS" || -z "$DIP_HIGH_MOVEMENTS" ]
   DIP_HIGH_DAY="0"
   DIP_HIGH_TARGETS="0"
   DIP_HIGH_MOVEMENTS="0"
+fi
+
+################################################################################
+
+# paused markets age (seconds)
+DIP_PAUSED_MARKET_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+# calculate seconds into hours
+DIP_PAUSED_MARKET_AGE_HOURS="$(echo "$DIP_PAUSED_MARKET_AGE/3600" | bc 2>/dev/null)"
+
+# if zero
+if [[ -z "$DIP_PAUSE_MARKETS" ]] &>/dev/null; then
+  DIP_PAUSE_MARKETS="$(echo "$DIP_PAUSED_MARKET_AGE_HOURS+1" | bc 2>/dev/null)"
+fi
+
+# if paused markets is old
+if [[ "$DIP_PAUSED_MARKET_AGE_HOURS" -gt "$DIP_PAUSE_MARKETS" ]] &>/dev/null; then
+  # reset paused markets
+  truncate -s 0 "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause &>/dev/null
 fi
 
 ################################################################################
