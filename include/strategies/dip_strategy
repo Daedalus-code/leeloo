@@ -3468,18 +3468,11 @@ fi
 
 ################################################################################
 
-# paused markets age (seconds)
-DIP_PAUSED_MARKET_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-# calculate seconds into hours
-DIP_PAUSED_MARKET_AGE_HOURS="$(echo "$DIP_PAUSED_MARKET_AGE/3600" | bc 2>/dev/null)"
+# paused markets count
+DIP_PAUSE_MARKETS_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause | awk '{ print $1 }')"
 
-# if zero
-if [[ -z "$DIP_PAUSE_MARKETS" ]] &>/dev/null; then
-  DIP_PAUSE_MARKETS="$(echo "$DIP_PAUSED_MARKET_AGE_HOURS+1" | bc 2>/dev/null)"
-fi
-
-# if paused markets is old
-if [[ "$DIP_PAUSED_MARKET_AGE_HOURS" -gt "$DIP_PAUSE_MARKETS" ]] &>/dev/null; then
+# if paused market count is greater than n (ruled by configuration)
+if [[ "$DIP_PAUSE_MARKETS_COUNT" -gt "$DIP_PAUSE_MARKETS" ]] &>/dev/null; then
   # reset paused markets
   truncate -s 0 "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause &>/dev/null
 fi
