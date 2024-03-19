@@ -221,17 +221,17 @@ function decimal_market() {
     if [[ -z "$DECIMAL_LIMIT" || "$(echo "$DECIMAL_LIMIT" | wc -w)" -gt "1" ]] &>/dev/null; then
       DECIMAL_LIMIT="9"
     fi
+  fi
 
-    ############################################################################
+  ##############################################################################
 
-    # decimal random ruler
-    RANDOM_DECIMAL_RULER=$((((RANDOM % 2) + 1)))
+  # decimal random ruler
+  RANDOM_DECIMAL_RULER=$((((RANDOM % 2) + 1)))
 
-    # if equal
-    if [[ "$RANDOM_DECIMAL_RULER" -eq "1" ]] &>/dev/null; then
-      # random check (try to include exchange fees eating up order) half-life
-      DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-    fi
+  # if equal
+  if [[ "$RANDOM_DECIMAL_RULER" -eq "1" ]] &>/dev/null; then
+    # random check (try to include exchange fees eating up order) half-life
+    DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
   fi
 }
 
