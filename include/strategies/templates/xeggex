@@ -224,15 +224,38 @@ function decimal_market() {
   fi
 
   ##############################################################################
+  # include exchange fees eating up order, through decimals
+  ##############################################################################
 
   # decimal random ruler
-  RANDOM_DECIMAL_RULER=$((((RANDOM % 2) + 1)))
+  RANDOM_DECIMAL_RULER=$((((RANDOM % 4) + 1)))
+  # default
+  DECIMAL_LIMIT_FLICKER="$DECIMAL_LIMIT"
 
   # if equal
   if [[ "$RANDOM_DECIMAL_RULER" -eq "1" ]] &>/dev/null; then
-    # random check (try to include exchange fees eating up order) half-life
+    # random check negative 1
+    DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT-1" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+  fi
+  # if equal
+  if [[ "$RANDOM_DECIMAL_RULER" -eq "2" ]] &>/dev/null; then
+    # random check negative 2
+    DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT-2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+  fi
+  # if equal
+  if [[ "$RANDOM_DECIMAL_RULER" -eq "3" ]] &>/dev/null; then
+    # random check negative 3
+    DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT-3" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+  fi
+  # if equal
+  if [[ "$RANDOM_DECIMAL_RULER" -eq "4" ]] &>/dev/null; then
+    # random check half-life
     DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-  else
+  fi
+
+  # if zero
+  if [[ "$DECIMAL_LIMIT_FLICKER" -lt "0" || -z "$DECIMAL_LIMIT_FLICKER" ]] &>/dev/null; then
+    # default
     DECIMAL_LIMIT_FLICKER="$DECIMAL_LIMIT"
   fi
 }
