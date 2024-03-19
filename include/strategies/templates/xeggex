@@ -234,13 +234,13 @@ function decimal_market() {
 
   # if equal
   if [[ "$RANDOM_DECIMAL_RULER" -eq "1" ]] &>/dev/null; then
-    # random check negative 1 + random decimal ruler + decimal limit / half-life
+    # random check (1 + decimal limit) - (random decimal ruler + decimal limit / half-life)
     DECIMAL_LIMIT_FLICKER="$(echo "1+$DECIMAL_LIMIT-$(echo "$RANDOM_DECIMAL_RULER+$DECIMAL_LIMIT/2" | bc 2>/dev/null | awk -F. '{ print $1 }')" | bc 2>/dev/null | awk -F. '{ print $1 }')"
   fi
 
   # if equal
   if [[ "$RANDOM_DECIMAL_RULER" -eq "2" ]] &>/dev/null; then
-    # random check decimal limit / half-life
+    # random check (decimal limit / half-life)
     DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
   fi
 
