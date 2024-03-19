@@ -43,8 +43,6 @@ for (( ; ; )); do
     # get poloniex prices
     function result_prices() {
       echo "$(getPrices 2>/dev/null | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
-      # raw prices
-      cp "${LOG_DIR:?}"/leeloo/poloniex/prices "${LOG_DIR:?}"/leeloo/poloniex/raw.prices &>/dev/null
     }
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
@@ -109,8 +107,6 @@ for (( ; ; )); do
     # get xeggex prices
     function result_prices() {
       echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
-      # raw prices
-      cp "${LOG_DIR:?}"/leeloo/xeggex/prices "${LOG_DIR:?}"/leeloo/xeggex/raw.prices &>/dev/null
     }
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
@@ -123,6 +119,13 @@ for (( ; ; )); do
       result_prices
     fi
   fi
+
+  ##############################################################################
+
+  # raw prices
+  cp "${LOG_DIR:?}"/leeloo/poloniex/prices "${LOG_DIR:?}"/leeloo/poloniex/raw.prices &>/dev/null
+  # raw prices
+  cp "${LOG_DIR:?}"/leeloo/xeggex/prices "${LOG_DIR:?}"/leeloo/xeggex/raw.prices &>/dev/null
 
   ##############################################################################
   # strategy pool & fetch, sort logs
