@@ -2823,27 +2823,16 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
             # fully sold order
             ####################################################################
 
-            # decimal random ruler
-            RANDOM_DECIMAL_RULER=$((((RANDOM % 2) + 1)))
-
-            # if equal
-            if [[ "$RANDOM_DECIMAL_RULER" -eq "1" ]] &>/dev/null; then
-              # random check (try to include exchange fees eating up order) half-life
-              DECIMAL_LIMIT="$(echo "$DECIMAL_LIMIT/2" | bc 2>/dev/null)"
-            fi
-
-            ####################################################################
-
             # total sum check (confirmed sold)
-            DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
+            DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
             # if zero
             if [[ -z "$DIP_TOTAL_SOLD_FILE_CHECK" ]]; then
               # total sum check (confirmed sold)
-              DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
+              DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
             fi
 
             # target bought amount check
-            TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
+            TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
 
             ####################################################################
 

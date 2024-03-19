@@ -221,6 +221,17 @@ function decimal_market() {
     if [[ -z "$DECIMAL_LIMIT" || "$(echo "$DECIMAL_LIMIT" | wc -w)" -gt "1" ]] &>/dev/null; then
       DECIMAL_LIMIT="9"
     fi
+
+    ############################################################################
+
+    # decimal random ruler
+    RANDOM_DECIMAL_RULER=$((((RANDOM % 2) + 1)))
+
+    # if equal
+    if [[ "$RANDOM_DECIMAL_RULER" -eq "1" ]] &>/dev/null; then
+      # random check (try to include exchange fees eating up order) half-life
+      DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+    fi
   fi
 }
 
@@ -565,21 +576,10 @@ function target_order_status() {
 
     ############################################################################
 
-    # decimal random ruler
-    RANDOM_DECIMAL_RULER=$((((RANDOM % 2) + 1)))
-
-    # if equal
-    if [[ "$RANDOM_DECIMAL_RULER" -eq "1" ]] &>/dev/null; then
-      # random check (try to include exchange fees eating up order) half-life
-      DECIMAL_LIMIT="$(echo "$DECIMAL_LIMIT/2" | bc 2>/dev/null)"
-    fi
-
-    ############################################################################
-
     # sold quantity check
-    ORDER_SOLD_QUANTITY_CHECK="$(echo "$ORDER_SOLD_QUANTITY" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
+    ORDER_SOLD_QUANTITY_CHECK="$(echo "$ORDER_SOLD_QUANTITY" | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
     # target bought amount check
-    TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
+    TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
 
     # selling & sold sum #######################################################
 
