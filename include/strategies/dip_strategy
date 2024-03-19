@@ -2823,6 +2823,17 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
             # fully sold order
             ####################################################################
 
+            # decimal random ruler
+            RANDOM_DECIMAL_RULER=$((((RANDOM % 2) + 1)))
+
+            # if equal
+            if [[ "$RANDOM_DECIMAL_RULER" -eq "1" ]] &>/dev/null; then
+              # random check (try to include exchange fees eating up order) half-life
+              DECIMAL_LIMIT="$(echo "$DECIMAL_LIMIT/2" | bc 2>/dev/null)"
+            fi
+
+            ####################################################################
+
             # total sum check (confirmed sold)
             DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
             # if zero
