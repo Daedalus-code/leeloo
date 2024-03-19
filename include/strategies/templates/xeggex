@@ -563,6 +563,19 @@ function target_order_status() {
     # extract sell order quantity based on ID from trades file
     ORDER_SOLD_QUANTITY="$(echo "$LISTING_TRADES" | grep "$SELL_TRADES_ID" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
 
+    ############################################################################
+
+    # decimal random ruler
+    RANDOM_DECIMAL_RULER=$((((RANDOM % 2) + 1)))
+
+    # if equal
+    if [[ "$RANDOM_DECIMAL_RULER" -eq "1" ]] &>/dev/null; then
+      # random check (try to include exchange fees eating up order) half-life
+      DECIMAL_LIMIT="$(echo "$DECIMAL_LIMIT/2" | bc 2>/dev/null)"
+    fi
+
+    ############################################################################
+
     # sold quantity check
     ORDER_SOLD_QUANTITY_CHECK="$(echo "$ORDER_SOLD_QUANTITY" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
     # target bought amount check
