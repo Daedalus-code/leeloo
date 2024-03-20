@@ -3488,20 +3488,8 @@ fi
 
 ################################################################################
 
-# paused markets count
-DIP_PAUSE_MARKETS_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause | awk '{ print $1 }')"
-
-# if lese than n
-if [[ "$DIP_PAUSE_MARKETS" -lt "11" ]] &>/dev/null; then
-  # make n
-  DIP_PAUSE_MARKETS="11"
-fi
-
-# if paused market count is greater than n (ruled by configuration)
-if [[ "$DIP_PAUSE_MARKETS_COUNT" -gt "$DIP_PAUSE_MARKETS" ]] &>/dev/null; then
-  # reset paused markets
-  truncate -s 0 "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause &>/dev/null
-fi
+# keep n lines
+echo "$(tail -11 "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause 2>/dev/null
 
 ################################################################################
 # profits & gains
