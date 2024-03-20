@@ -783,9 +783,9 @@ function target_data() {
           # calculate market virtual
           EFFICIENT_MARKET_VIRTUAL="$(echo "$EFFICIENT_MARKET/100" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # calculate new allocated based on profit data
-          EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_VIRTUAL*$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          EFFICIENT_MARKET_LIMIT="$(echo "$DIP_ALLOCATED*$EFFICIENT_MARKET_VIRTUAL" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # recalculate efficient market limit
-          EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_LIMIT*12-0.$(echo "$EFFICIENT_MARKET/10" | bc 2>/dev/null)+0.$(echo "$INEFFECTIVE_MARKET/5" | bc 2>/dev/null)" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+          EFFICIENT_MARKET_LIMIT="$(echo "36.9*$EFFICIENT_MARKET_LIMIT-$(echo "$EFFICIENT_MARKET/100" | bc -l 2>/dev/null)+$(echo "$INEFFECTIVE_MARKET/50" | bc -l 2>/dev/null)" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
           # reference allocated increased
           DIP_ALLOCATED="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 
