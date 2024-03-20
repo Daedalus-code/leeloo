@@ -773,14 +773,20 @@ function target_data() {
         # if market are greater than n
         if [[ "$EFFICIENT_MARKET" -gt "1" ]] &>/dev/null; then
 
+          ######################################################################
+          ######################################################################
+
           # calculate market virtual
           EFFICIENT_MARKET_VIRTUAL="$(echo "$EFFICIENT_MARKET/100" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # calculate new allocated based on profit data
-          EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_VIRTUAL*$DIP_ALLOCATED" | bc 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_VIRTUAL*$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # recalculate efficient market limit
-          EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_LIMIT*10" | bc -l 2>/dev/null)"
+          EFFICIENT_MARKET_LIMIT="$(echo "$EFFICIENT_MARKET_LIMIT*10" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # reference allocated increased
-          DIP_ALLOCATED="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          DIP_ALLOCATED="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+          ######################################################################
+          ######################################################################
 
           # market above output (log)
           DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_OUTPUT:?} (${INEFFECTIVE_MARKET_OUTPUT:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
