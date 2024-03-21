@@ -294,10 +294,16 @@ function amount_to_buy_sell() {
     # sold file age (seconds)
     DIP_SOLD_SLOW_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-    # active orders
+    # active orders (.orders)
     DIP_ORDERS_COUNT=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".orders 2>/dev/null | wc -l)
 
     # if zero
+    if [[ -z "$DIP_ORDERS_COUNT" || "$DIP_ORDERS_COUNT" == "0" ]] &>/dev/null; then
+      # active orders (orders)
+      DIP_ORDERS_COUNT=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY" || true)
+    fi
+
+    # if still zero
     if [[ -z "$DIP_ORDERS_COUNT" ]] &>/dev/null; then
       DIP_ORDERS_COUNT="0"
     fi
