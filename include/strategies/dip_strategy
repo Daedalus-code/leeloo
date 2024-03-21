@@ -367,11 +367,7 @@ function amount_to_buy_sell() {
               DIP_TARGET_SPREAD_STATUS="[NO]"
               # if sold older than n seconds
               if [[ "$DIP_SOLD_SLOW_AGE_SECONDS" -gt "300" ]] &>/dev/null; then
-                # if sold has no data
-                if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | egrep -c "[0-9]+" || true)" -eq "0" ]] &>/dev/null; then
-                  DIP_TARGET_SPREAD_STATUS="[N0]"
-                  reset_active_market_list
-                fi
+                DIP_TARGET_SPREAD_STATUS="[N0]"
               fi
             fi
 
@@ -2916,6 +2912,16 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
         fi
       fi
     fi
+  fi
+fi
+
+################################################################################
+
+# if sold has a signal
+if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
+  # if sold has no data
+  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | egrep -c "[0-9]+" || true)" -eq "0" ]] &>/dev/null; then
+    reset_active_market_list
   fi
 fi
 
