@@ -404,6 +404,8 @@ function amount_to_buy_sell() {
               if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -cw "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
                 # reset old (market) order
                 echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+                # update market, disregard amount at end
+                echo "$DIP_AMD_NO_AMOUNT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
               fi
 
               # if data exist
