@@ -2117,7 +2117,10 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     coin_token_search
 
     LOG_SEARCH_ALL="$(grep " $COIN_TOKEN/" "${LOG_DIR:?}"/leeloo/robot.log | sort -t '.' -k 1.7,1.10n -k 1.4,1.5n -k 1.1,1.2n -k 2.1,2.2n -k 2.4,2.5n -k 2.7,2.8n | tac)"
-    LOG_SEARCH_ORDERS="$(grep -cw "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/orders || true)"
+    LOG_SEARCH_ORDERS_DATA="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/orders)"
+    LOG_SEARCH_ORDERS="$(echo "$LOG_SEARCH_ORDERS_DATA" | grep -cw "$COIN_TOKEN" || true)"
+    LOG_SEARCH_BUY_ORDERS="$(echo "$LOG_SEARCH_ORDERS_DATA" | grep -w "$COIN_TOKEN" | grep -c "buy" || true)"
+    LOG_SEARCH_SELL_ORDERS="$(echo "$LOG_SEARCH_ORDERS_DATA" | grep -w "$COIN_TOKEN" | grep -c "sell" || true)"
     LOG_SEARCH_HEAD="$(echo "$LOG_SEARCH_ALL" | head -250)"
     LOG_SEARCH_COUNT="$(echo "$LOG_SEARCH_ALL" | wc -l)"
     LOG_SEARCH_BUY="$(echo "$LOG_SEARCH_ALL" | grep -c "Buy " || true)"
@@ -2140,7 +2143,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
       RESULT="Nothing was found"
       RESULT_TITLE="$COIN_TOKEN :: No data :: robot.log +0"
     else
-      RESULT_TITLE="$COIN_TOKEN | O: $LOG_SEARCH_ORDERS | Buy: $LOG_SEARCH_BUY | Sell: $LOG_SEARCH_SELL | Sold: $LOG_SEARCH_SOLD | Dust: $LOG_SEARCH_DUST | Amount: $LOG_SEARCH_AMOUNT $COIN_TOKEN | robot.log $LOG_SEARCH_COUNT"
+      RESULT_TITLE="$COIN_TOKEN | O/B/S: $LOG_SEARCH_ORDERS/$LOG_SEARCH_BUY_ORDERS/$LOG_SEARCH_SELL_ORDERS | Buy: $LOG_SEARCH_BUY | Sell: $LOG_SEARCH_SELL | Sold: $LOG_SEARCH_SOLD | Dust: $LOG_SEARCH_DUST | Amount: $LOG_SEARCH_AMOUNT $COIN_TOKEN | log: $LOG_SEARCH_COUNT"
       RESULT="${LOG_SEARCH_HEAD:?}"
     fi
 
