@@ -799,10 +799,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
                   if [[ -n "$LISTING_ALLOCATED_REAL_CHECK" && -n "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
                     # is this bullish signal allocated correctly? (without decimal)
                     if [[ "$LISTING_ALLOCATED_REAL_CHECK" -lt "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                      # trigger a buy for fear of missing out
-                      echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-                      echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-                      echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                      # if not equal
+                      if [[ ! "$LISTING_ALLOCATED_REAL_CHECK" -eq "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                        # trigger a buy for fear of missing out
+                        echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+                        echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                        echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                      fi
                     fi
                   fi
                 fi
@@ -963,10 +966,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
                   if [[ -n "$REFERENCE_ALLOCATED_REAL_CHECK" && -n "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
                     # is this bearish signal allocated correctly? (without decimal)
                     if [[ "$REFERENCE_ALLOCATED_REAL_CHECK" -lt "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                      # trigger a sell for fear of missing out
-                      echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-                      echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-                      echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                      # if not equal
+                      if [[ ! "$REFERENCE_ALLOCATED_REAL_CHECK" -eq "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                        # trigger a sell for fear of missing out
+                        echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+                        echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                        echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                      fi
                     fi
                   fi
                 fi
