@@ -1858,6 +1858,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
       log_date
 
+      # buy order count
+      DIP_BUY_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "buy" || true)"
+      # sell order count
+      DIP_SELL_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
+
       # log target output
       DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Active Target: $DIP_BOUGHT_AGE_OUTPUT F: ${DIP_LEFTOVER_FILLED:?}% D: $DIP_TARGET_DIP S: $DIP_TARGET_SPREAD PM: $DIP_TARGET_PRICE_MOVEMENT B/S: $DIP_BUY_ORDER_COUNT/$DIP_SELL_ORDER_COUNT"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
