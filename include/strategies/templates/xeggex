@@ -578,9 +578,9 @@ function target_order_status() {
         # bought data
         BOUGHT_DATA=$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null)
         # quest value
-        BOUGHT_SELL_VALUE_QUEST="$(echo "$BOUGHT_DATA" | tail -1 | awk '{ print $4 }')"
+        BOUGHT_SELL_VALUE_QUEST="$(echo "$BOUGHT_DATA" | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }')"
         # sell value
-        BOUGHT_SELL_VALUE="$(echo "$LISTING_TRADES" | head -1 | grep "sell" | awk '{ print $6 }')"
+        BOUGHT_SELL_VALUE="$(echo "$LISTING_TRADES" | head -1 | grep "sell" | awk '{ print $6 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }')"
         # if same value
         if [[ "$BOUGHT_SELL_VALUE" == "$BOUGHT_SELL_VALUE_QUEST" ]] &>/dev/null; then
           # id based on identical values
@@ -630,9 +630,9 @@ function target_order_status() {
           # trades data
           TRADES_DATA=$(cat "${LOG_DIR:?}"/leeloo/xeggex/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades 2>/dev/null)
           # quest value
-          BOUGHT_SELL_VALUE_QUEST="$(echo "$BOUGHT_DATA" | tail -1 | awk '{ print $4 }')"
+          BOUGHT_SELL_VALUE_QUEST="$(echo "$BOUGHT_DATA" | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }')"
           # sell value
-          BOUGHT_SELL_VALUE="$(echo "$TRADES_DATA" | grep -B500 "$BUY_TRADES_ID" | grep "sell" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }')"
+          BOUGHT_SELL_VALUE="$(echo "$TRADES_DATA" | grep -B500 "$BUY_TRADES_ID" | grep "sell" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }')"
           # if same value
           if [[ "$BOUGHT_SELL_VALUE" == "$BOUGHT_SELL_VALUE_QUEST" ]] &>/dev/null; then
             # value based on equal sell values
