@@ -3025,8 +3025,13 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
 
   # bought file age (seconds)
   DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # bought buy / sell amount
+  DIP_BOUGHT_BUY_SELL_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | awk '{ print $4 }' | tail -1 | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }')"
+
   # sold file age (seconds)
   DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # selling sell amount
+  DIP_BOUGHT_SELL_SELL_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }')"
 
   # partially ok (waiting)
   DIP_TARGET_SPREAD_STATUS="[0K]"
@@ -3046,8 +3051,13 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
       # if sold is old enough (1800 seconds = 1/2 hour)
       if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "1800" ]] &>/dev/null; then
 
-        # if selling has no data
-        if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null | egrep -c "[0-9]+" || true)" -eq "0" ]] &>/dev/null; then
+        # if selling is less than target
+        if [[ "$DIP_BOUGHT_SELL_SELL_AMOUNT" < "$DIP_BOUGHT_BUY_SELL_AMOUNT" ]] &>/dev/null; then
+          DIP_BOUGHT_IS_LESS="1"
+        fi
+
+        # if selling has no data, is less than target
+        if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null | egrep -c "[0-9]+" || true)" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" ]] &>/dev/null; then
           # if sold has no data
           if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | egrep -c "[0-9]+" || true)" -eq "0" ]] &>/dev/null; then
             # not good enough anymore
