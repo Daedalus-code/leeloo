@@ -3002,7 +3002,7 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
   DIP_TARGET_SPREAD_STATUS="[0K]"
 
   # if balance is not available
-  if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
+  if [[ "$(echo "$LISTING_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')" -eq "0" ]] &>/dev/null; then
     # if bought is old enough (1800 seconds = 1/2 hour)
     if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "1800" ]] &>/dev/null; then
       # if sold is old enough (1800 seconds = 1/2 hour)
