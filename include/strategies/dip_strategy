@@ -273,10 +273,15 @@ function amount_to_buy_sell() {
   # if any data
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # if market exist
-    if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
 
       # target prices data
-      DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+      if [[ "$(cat "${SYS_DIR:?}"/delisted_"$EXCHANGE_DIR_NAME" 2>/dev/null | egrep -c "[A-Z]+|[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+        # disregard delisted markets
+        DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | grep -vf "${SYS_DIR:?}"/delisted_"$EXCHANGE_DIR_NAME" | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+      else
+        DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+      fi
 
       # target bid now
       DIP_TARGET_BID_NOW="$(echo "$DIP_TARGET_PRICES_DATA" | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
