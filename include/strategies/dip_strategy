@@ -3199,7 +3199,7 @@ if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" ]] &>/dev/null; then
       # if decimal limit is working
       if [[ "$DECIMAL_LIMIT" -lt "9" || "$DECIMAL_LIMIT" -eq "9" ]] &>/dev/null; then
         # if balance is enough
-        if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
+        if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($3 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
           # if prices exist, not zero
           if [[ ! -z "$DIP_CHANGE_OLD_PRICE" && ! -z "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
             # if market exist
