@@ -326,13 +326,13 @@ function amount_to_buy_sell() {
                 DIP_TARGET_BID_DIFF_PERC="$(echo "100/$DIP_TARGET_BID*$DIP_TARGET_BID_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
                 # buying output (log)
-                DIP_ABOVE_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
+                DIP_BUY_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
 
                 # if extra logs are set
                 if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
-                  echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                  echo "$DIP_BUY_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
                 else
-                  echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+                  echo "$DIP_BUY_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
                 fi
 
                 # new bid price
@@ -342,13 +342,13 @@ function amount_to_buy_sell() {
                 DIP_TARGET_ASK_DIFF_PERC="$(echo "100/$DIP_TARGET_ASK*$DIP_TARGET_ASK_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
                 # selling output (log)
-                DIP_ABOVE_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
+                DIP_SELL_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
 
                 # if extra logs are set
                 if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
-                  echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                  echo "$DIP_SELL_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
                 else
-                  echo "$DIP_ABOVE_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+                  echo "$DIP_SELL_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
                 fi
 
                 # new ask price
@@ -823,12 +823,12 @@ function target_data() {
 
           # market above output (log)
           DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_OUTPUT:?} (${INEFFECTIVE_MARKET_OUTPUT:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
-          # select skip remove output (ssr)
-          echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
 
           # if extra logs are set
           if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
             echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+          else
+            echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
           fi
         fi
       fi
@@ -862,12 +862,12 @@ function target_data() {
 
           # market below output (log)
           DIP_SLOW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market below: x${NORMAL_MARKET:?} : $DIP_ALLOCATED_OUTPUT"
-          # select skip remove output (ssr)
-          echo "$DIP_SLOW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
 
           # if extra logs are set
           if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
             echo "$DIP_SLOW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+          else
+            echo "$DIP_SLOW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
           fi
         fi
       fi
@@ -895,12 +895,12 @@ function target_data() {
 
           # market first output (log)
           DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x0 : $DIP_ALLOCATED_OUTPUT"
-          # select skip remove output (ssr)
-          echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
 
           # if extra logs are set
           if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
             echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+          else
+            echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
           fi
         fi
       fi
@@ -1515,12 +1515,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
                 # target status output (log)
                 POTENTIAL_RSI_STRENGTH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $POTENTIAL_RSI_OUTPUT"
-                # select skip remove output (ssr)
-                echo "$POTENTIAL_RSI_STRENGTH_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
 
                 # if extra logs are set
                 if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
                   echo "$POTENTIAL_RSI_STRENGTH_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                else
+                  echo "$POTENTIAL_RSI_STRENGTH_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
                 fi
               fi
             fi
@@ -3525,13 +3525,14 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     fi
   fi
 
+  # dump output (log)
+  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$REFERENCE_CURRENCY :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
+
   # if extra logs are set
   if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
-    if [[ "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep -c "Dumping!" || true)" -eq "0" ]] &>/dev/null; then
-      # dump output (log)
-      DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$REFERENCE_CURRENCY :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
-      echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-    fi
+    echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+  else
+    echo "$DIP_DUMP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
   fi
 
   ##############################################################################
