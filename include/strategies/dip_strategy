@@ -129,6 +129,28 @@ function reset_active_market_list() {
 
 ################################################################################
 
+function reset_dumped_market_list() {
+  if [[ -n "$LISTING_CURRENCY" ]] &>/dev/null; then
+    # if (active) order exist
+    if [[ "$(grep -wc "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+      # remove old (active) order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+    fi
+    # if (market) order exist
+    if [[ "$(grep -wc "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market || true)" -eq "1" ]] &>/dev/null; then
+      # remove old (market) order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+    fi
+    # if (market.list) order exist
+    if [[ "$(grep -wc "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list || true)" -eq "1" ]] &>/dev/null; then
+      # remove old (market.list) order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+    fi
+  fi
+}
+
+################################################################################
+
 function time_and_profit() {
   # if listing and reference data exist
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
@@ -3474,6 +3496,8 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
   # removing output (log)
   DIP_REMOVING_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING :: Removing order! $DIP_DUMP_LISTING_ORDER_ID. (Delisted)"
   echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+  reset_dumped_market_list
 
   # if xeggex order
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
