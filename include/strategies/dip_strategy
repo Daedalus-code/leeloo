@@ -3052,7 +3052,7 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
       if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "1800" ]] &>/dev/null; then
 
         # if selling is less than target
-        if [[ "$DIP_BOUGHT_SELL_SELL_AMOUNT" < "$DIP_BOUGHT_BUY_SELL_AMOUNT" ]] &>/dev/null; then
+        if [[ "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
           DIP_BOUGHT_IS_LESS="1"
         fi
 
