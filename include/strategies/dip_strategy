@@ -850,7 +850,7 @@ function target_data() {
           ######################################################################
 
           # max allocate (ruled by configuration)
-          if [[ "$(echo "$DIP_ALLOCATED" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MAX_ALLOCATED" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+          if [[ "$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MAX_ALLOCATED" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
             # use max allowed (ruled by configuration)
             DIP_ALLOCATED="$DIP_MAX_ALLOCATED"
           fi
