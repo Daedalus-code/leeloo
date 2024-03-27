@@ -50,8 +50,10 @@ DIP_MIN_VOLUME="$(egrep "DIP_MIN_VOLUME=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATE
 DIP_RSI_LIMIT="$(egrep "DIP_RSI_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # markets to consider
 DIP_MARKETS="$(egrep "DIP_MARKETS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk '{ print $1 }' | awk -F= '{ print $2 }' | tr -d '"#')"
-# dip allocated (1% of balance)
+# dip allocated (0.1% of balance)
 DIP_ALLOCATED="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# max allocated (1% of balance)
+DIP_MAX_ALLOCATED="$(egrep "DIP_MAX_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # max open orders
 DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # dip margin
@@ -774,6 +776,14 @@ function target_data() {
   if [[ "$IS_HIGH_RISK" == "true" ]] &>/dev/null; then
     # half-life, regardless (risky market)
     DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED_ORIGINAL/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+  fi
+
+  ##############################################################################
+
+  # max allocate (ruled by configuration)
+  if [[ "$(echo "$DIP_ALLOCATED" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MAX_ALLOCATED" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+    # use max allowed (ruled by configuration)
+    DIP_ALLOCATED="$DIP_MAX_ALLOCATED"
   fi
 
   ##############################################################################
