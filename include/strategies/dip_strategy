@@ -3061,10 +3061,14 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
       # if sold is old enough (1800 seconds = 1/2 hour)
       if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "1800" ]] &>/dev/null; then
 
+        ########################################################################
+
         # if selling is less than target
         if [[ "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
           DIP_BOUGHT_IS_LESS="1"
         fi
+
+        ########################################################################
 
         # dip target data
         DIP_TARGET_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '_' ' ' | tr '/' ' ' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1,$2]++')"
@@ -3076,6 +3080,8 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
         if [[ "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_ASK" && "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_LAST" ]] &>/dev/null; then
           DIP_IDENTICAL_PRICES="1"
         fi
+
+        ########################################################################
 
         # if selling has no data, is less than target
         if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null | egrep -c "[0-9]+" || true)" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" ]] &>/dev/null; then
