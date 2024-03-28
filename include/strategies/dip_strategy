@@ -3067,7 +3067,7 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
         fi
 
         # dip target data
-        DIP_TARGET_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | grep -w "$LISTING_CURRENCY" | tr '_' ' ' | tr '/' ' ' | awk '!a[$1,$2]++' | grep -w "$REFERENCE_CURRENCY")"
+        DIP_TARGET_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '_' ' ' | tr '/' ' ' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1,$2]++')"
         DIP_TARGET_DATA_BID="$(echo "$DIP_TARGET_DATA" | awk '{ print $3 }')"
         DIP_TARGET_DATA_ASK="$(echo "$DIP_TARGET_DATA" | awk '{ print $4 }')"
         DIP_TARGET_DATA_LAST="$(echo "$DIP_TARGET_DATA" | awk '{ print $5 }')"
