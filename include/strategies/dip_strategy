@@ -2577,6 +2577,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # buying status
   DIP_BUYING_STATUS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | grep -c "buy" || true)"
+  # buying count
+  DIP_BUYING_COUNT="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -c "buy" || true)"
 
   # if greater than n
   if [[ "$DIP_BUYING_STATUS" -gt "0" ]] &>/dev/null; then
@@ -2587,7 +2589,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # if any data
   if [[ -f "${LOG_DIR}"/leeloo/buying_status ]] &>/dev/null; then
     # if greater than n
-    if [[ "$(cat "${LOG_DIR}"/leeloo/buying_status 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk -F. '{ print $1 }')" -gt "60" ]] &>/dev/null; then
+    if [[ "$(cat "${LOG_DIR}"/leeloo/buying_status 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk -F. '{ print $1 }')" -gt "$DIP_BUYING_COUNT" ]] &>/dev/null; then
       DIP_BUYING_STATUS="0"
     fi
   fi
