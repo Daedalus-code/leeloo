@@ -3368,7 +3368,13 @@ $(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null)" >"$SYS_DIR"/
       ##########################################################################
 
       # total profit count
-      DIP_PROFIT_COUNT_HALF="$(echo "$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit | awk '{ print $1 }')/2" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+      DIP_PROFIT_COUNT_HALF="$(echo "$(echo "$DIP_CAT_PROFIT" | wc -l)/2" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+
+      # if zero, less than n
+      if [[ -z "$DIP_PROFIT_COUNT_HALF" || "$DIP_PROFIT_COUNT_HALF" -eq "0" || "$DIP_PROFIT_COUNT_HALF" -lt "2" ]] &>/dev/null; then
+        DIP_PROFIT_COUNT_HALF="1"
+      fi
+
       # reset 1/2 of last year profit, gains
       echo "$(tail -"$DIP_PROFIT_COUNT_HALF" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null
     fi
