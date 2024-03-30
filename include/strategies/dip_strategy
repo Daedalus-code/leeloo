@@ -3290,19 +3290,43 @@ DIP_CHANGE_PROFIT_LOSS_AMOUNT="$(echo "$DIP_CHANGE_NEW_AMOUNT-$DIP_CHANGE_OLD_AM
 # if listing market already being spent
 DIP_CHANGE_ALREADY_SPENT="$(cat "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n | egrep -v "Reference|A/O" | tail -"$LOG_LENGTH" | grep "$DIP_CHANGE_NAME" | egrep -c "Buy |Sell " || true)"
 
+# time now (epoch)
+DIP_EPOCH_TIME_NOW="$(date '+%s' | awk '{ printf "%.10f\n", $1 }')"
+# bought trade time (epoch)
+DIP_BOUGHT_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | awk '{ print $NF }' | head -1)"
+# sold trade time (epoch)
+DIP_SOLD_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "sell" | awk '{ print $NF }' | head -1)"
+
+# bought age (seconds)
+DIP_BOUGHT_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_BOUGHT_TRADE_TIME:0:10}" | bc 2>/dev/null)"
+# sold age (seconds)
+DIP_SOLD_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_SOLD_TRADE_TIME:0:10}" | bc 2>/dev/null)"
+
+# calculate seconds
+DIP_BOUGHT_FILE_AGE_MINUTES="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+DIP_BOUGHT_FILE_AGE_HOURS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
+# if greater than n seconds (day)
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
+  DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_DAYS:?}d"
+  # if greater than n seconds (hours)
+elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
+  DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_HOURS:?}h"
+  # if greater than n seconds (minutes)
+elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "60" ]] &>/dev/null; then
+  DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_MINUTES:?}m"
+  # if less than n seconds (minutes)
+elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -lt "60" ]] &>/dev/null; then
+  DIP_BOUGHT_AGE_OUTPUT="0m"
+fi
+
 # not already spent
 if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" ]] &>/dev/null; then
-
-  # bought file age (seconds)
-  DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_CHANGE_NAME}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  # sold file age (seconds)
-  DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_CHANGE_NAME}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
   # if dust is old enough (43200 seconds = 1/2 day), or just dust regardless if no bought file
   if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "43200" ]] &>/dev/null; then
     # if dust is old enough (86400 seconds = 1 day), or just dust regardless if no sold file
     if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
-
       # if decimal limit is working
       if [[ "$DECIMAL_LIMIT" -lt "9" || "$DECIMAL_LIMIT" -eq "9" ]] &>/dev/null; then
         # if balance is enough
