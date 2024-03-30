@@ -3302,6 +3302,9 @@ DIP_BOUGHT_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_BOUGHT_TRA
 # sold age (seconds)
 DIP_SOLD_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_SOLD_TRADE_TIME:0:10}" | bc 2>/dev/null)"
 
+# time format
+DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
+
 # calculate seconds
 DIP_BOUGHT_FILE_AGE_MINUTES="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 DIP_BOUGHT_FILE_AGE_HOURS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
