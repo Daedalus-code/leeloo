@@ -3291,6 +3291,8 @@ DIP_CHANGE_ALREADY_SPENT="$(cat "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | 
 # not already spent
 if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" ]] &>/dev/null; then
 
+  echo "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY not spent OK" >>/tmp/TESTING
+
   # bought file age (seconds)
   DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_CHANGE_NAME}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # sold file age (seconds)
@@ -3298,8 +3300,11 @@ if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" ]] &>/dev/null; then
 
   # if dust is old enough (43200 seconds = 1/2 day), or just dust regardless if no bought file
   if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "43200" ]] &>/dev/null; then
+    echo "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY bought is old OK" >>/tmp/TESTING
+
     # if dust is old enough (86400 seconds = 1 day), or just dust regardless if no sold file
     if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
+      echo "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY sold is old OK" >>/tmp/TESTING
 
       # if decimal limit is working
       if [[ "$DECIMAL_LIMIT" -lt "9" || "$DECIMAL_LIMIT" -eq "9" ]] &>/dev/null; then
