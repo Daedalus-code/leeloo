@@ -3242,10 +3242,18 @@ fi
 bought_sold_age
 time_and_profit
 
-# list balances with active orders
+################################################################################
+
+# extract active markets (active)
+DIP_ACTIVE_ORDERS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | tr '/' ' ' | tr '_' ' ' | awk '{ print $1 }' | awk '!a[$1]++')"
+# extract active markets (orders)
 DIP_ACTIVE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk '{ print $6 }' | awk '!a[$1]++')"
+
 # balances, disregard reference, disregard available balances with zero, disregard balances with active orders
-DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$REFERENCE_CURRENCY:" | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | grep -v "$DIP_ACTIVE_BALANCES")"
+DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "$REFERENCE_CURRENCY:" | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
+
+################################################################################
+
 # asset (random)
 DIP_CHANGE_ASSET="$(echo "$DIP_CHANGE_BALANCES" | sort -R | tail -1)"
 # asset name
