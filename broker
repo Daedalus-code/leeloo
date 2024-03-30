@@ -792,7 +792,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
   "o")
 
     # debug data
-    DEBUG_DATA="$(cat "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | sort -t '.' -k 1.7,1.10n -k 1.4,1.5n -k 1.1,1.2n -k 2.1,2.2n -k 2.4,2.5n -k 2.7,2.8n | tac | column -t | awk '!a[$0]++')"
+    DEBUG_DATA="$(head -250 "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | grep -v "==" | sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n | tac | column -t | awk '!a[$0]++')"
     # debug data age (seconds)
     DEBUG_DATA_AGE_SECONDS="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -803,7 +803,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     fi
 
     # debug data, max headroom of 250
-    DEBUG_DATA_FILE="$(head -250 "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null)"
+    DEBUG_DATA_FILE="$(cat "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null)"
     # data count
     DEBUG_DATA_COUNT="$(echo "$DEBUG_DATA" | wc -l)"
     # dusting count
