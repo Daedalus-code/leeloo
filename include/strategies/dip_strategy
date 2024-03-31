@@ -3298,7 +3298,7 @@ DIP_BOUGHT_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CH
 DIP_SOLD_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "sell" | awk '{ print $NF }' | head -1)"
 
 # if any data
-if [[ -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades ]] &>/dev/null; then
+if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | egrep "buy|sell" | egrep -c "buy|sell" || true)" -gt "0" ]] &>/dev/null; then
 
   # bought age (seconds)
   DIP_BOUGHT_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_BOUGHT_TRADE_TIME:0:10}" | bc 2>/dev/null)"
