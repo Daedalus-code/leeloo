@@ -641,31 +641,35 @@ function remove_ghost_orders() {
       if [[ -z "$DIP_BOUGHT_TRADE_TIME" && -n "$DIP_SOLD_TRADE_TIME" || "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_BUY_AGE*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" && "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_SELL_AGE*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" ]] &>/dev/null; then
         # if order status as active equal null
         if [[ "$DIP_ORDER_STATUS_ACTIVE" -eq "0" ]] &>/dev/null; then
-          # cancel ghost order
-          cancelOrder "$DIP_ORDER_STATUS_ID" 2>>"${LOG_ERROR:?}"
+          # if any data
+          if [[ -n "$DIP_ORDER_STATUS_ID" ]] &>/dev/null; then
 
-          # order n greater than n
-          if [[ "$(echo "$DIP_ORDER_STATUS_ID" | wc -L)" -gt "9" ]] &>/dev/null; then
-            DIP_ORDER_ID_DOTS=".."
-          else
-            DIP_ORDER_ID_DOTS=""
+            # cancel ghost order
+            cancelOrder "$DIP_ORDER_STATUS_ID" 2>>"${LOG_ERROR:?}"
+
+            # order n greater than n
+            if [[ "$(echo "$DIP_ORDER_STATUS_ID" | wc -L)" -gt "9" ]] &>/dev/null; then
+              DIP_ORDER_ID_DOTS=".."
+            else
+              DIP_ORDER_ID_DOTS=""
+            fi
+
+            # reset bought file (reset data, age)
+            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_GHOST_LISTING}"_"${DIP_GHOST_REFERENCE}".bought &>/dev/null
+            # reset sold file (reset data, age)
+            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_GHOST_LISTING}"_"${DIP_GHOST_REFERENCE}".sold &>/dev/null
+            # reset sell_id file (reset data)
+            truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${DIP_GHOST_LISTING}"_"${DIP_GHOST_REFERENCE}".sell_id &>/dev/null
+            # reset selling file (reset data)
+            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_GHOST_LISTING}"_"${DIP_GHOST_REFERENCE}".selling &>/dev/null
+
+            # removing ghost order output (log)
+            DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_GHOST_LISTING/$DIP_GHOST_REFERENCE :: Removing ghost order: ${DIP_ORDER_STATUS_ID:0:9}$DIP_ORDER_ID_DOTS (${DIP_BOUGHT_GHOST_AGE_DAYS:?}d/${DIP_SOLD_GHOST_AGE_DAYS:?}d)"
+            echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+            # pause ghost market (listing)
+            echo "$DIP_GHOST_LISTING" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
           fi
-
-          # reset bought file (reset data, age)
-          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_GHOST_LISTING}"_"${DIP_GHOST_REFERENCE}".bought &>/dev/null
-          # reset sold file (reset data, age)
-          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_GHOST_LISTING}"_"${DIP_GHOST_REFERENCE}".sold &>/dev/null
-          # reset sell_id file (reset data)
-          truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${DIP_GHOST_LISTING}"_"${DIP_GHOST_REFERENCE}".sell_id &>/dev/null
-          # reset selling file (reset data)
-          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${DIP_GHOST_LISTING}"_"${DIP_GHOST_REFERENCE}".selling &>/dev/null
-
-          # removing ghost order output (log)
-          DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_GHOST_LISTING/$DIP_GHOST_REFERENCE :: Removing ghost order: ${DIP_ORDER_STATUS_ID:0:9}$DIP_ORDER_ID_DOTS (${DIP_BOUGHT_GHOST_AGE_DAYS:?}d/${DIP_SOLD_GHOST_AGE_DAYS:?}d)"
-          echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-          # pause ghost market (listing)
-          echo "$DIP_GHOST_LISTING" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
         fi
       fi
     fi
