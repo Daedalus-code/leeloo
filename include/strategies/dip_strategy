@@ -637,8 +637,8 @@ function remove_ghost_orders() {
 
       time_and_profit
 
-      # if bought and sold is too old (ruled by configuration * 3)
-      if [[ "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_BUY_AGE*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" && "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_SELL_AGE*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" ]] &>/dev/null; then
+      # if trades has only selling data available, if bought and sold is too old (ruled by configuration * 3)
+      if [[ -z "$DIP_BOUGHT_TRADE_TIME" && -n "$DIP_SOLD_TRADE_TIME" || "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_BUY_AGE*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" && "$DIP_BOUGHT_GHOST_AGE_DAYS" -gt "$(echo "$DIP_MAX_SELL_AGE*3" | bc 2>/dev/null | awk -F. '{ print $1 }')" ]] &>/dev/null; then
         # if order status as active equal null
         if [[ "$DIP_ORDER_STATUS_ACTIVE" -eq "0" ]] &>/dev/null; then
           # cancel ghost order
