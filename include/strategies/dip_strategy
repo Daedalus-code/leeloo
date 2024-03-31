@@ -3292,13 +3292,14 @@ DIP_CHANGE_ALREADY_SPENT="$(cat "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | 
 
 # time now (epoch)
 DIP_EPOCH_TIME_NOW="$(date '+%s' | awk '{ printf "%.10f\n", $1 }')"
+
 # bought trade time (epoch)
 DIP_BOUGHT_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | awk '{ print $NF }' | head -1)"
 # sold trade time (epoch)
 DIP_SOLD_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "sell" | awk '{ print $NF }' | head -1)"
 
 # if any data
-if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | egrep "buy|sell" | egrep -c "buy|sell" || true)" -gt "0" ]] &>/dev/null; then
+if [[ -n "$DIP_BOUGHT_TRADE_TIME" && -n "$DIP_SOLD_TRADE_TIME" ]] &>/dev/null; then
 
   # bought age (seconds)
   DIP_BOUGHT_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_BOUGHT_TRADE_TIME:0:10}" | bc 2>/dev/null)"
