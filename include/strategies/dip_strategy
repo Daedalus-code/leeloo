@@ -4130,6 +4130,11 @@ DIP_BI_PROFIT_LOSSES_DIFF="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM" | bc 
 DIP_BI_PROFIT_LOSSES_PERCENTAGE="$(echo "100/$DIP_BI_STATIC_SUM*$DIP_BI_PROFIT_LOSSES_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 # if zero
+if [[ -z "$DIP_BI_PROFIT_LOSSES_PERCENTAGE" ]] &>/dev/null; then
+  DIP_BI_PROFIT_LOSSES_PERCENTAGE="0"
+fi
+
+# if zero
 if [[ -z "$DIP_BI_DYNAMIC_SUM" ]] &>/dev/null; then
   DIP_BI_DYNAMIC_SUM="N/A"
 fi
@@ -4138,11 +4143,6 @@ fi
 if [[ "$DIP_BI_DYNAMIC_SUM" == "0.000000000" || "$DIP_BI_STATIC_SUM" == "0.000000000" ]] &>/dev/null; then
   DIP_BI_PROFIT_LOSSES_PERCENTAGE="0"
   DIP_BI_PROFIT_LOSSES_DIFF="0"
-fi
-
-# if zero
-if [[ -z "$DIP_BI_PROFIT_LOSSES_PERCENTAGE" ]] &>/dev/null; then
-  DIP_BI_PROFIT_LOSSES_PERCENTAGE="0"
 fi
 
 ################################################################################
