@@ -3275,6 +3275,11 @@ fi
 # sell dip change (dust)
 ################################################################################
 
+# if zero
+if [[ -z "$DIP_DUST" ]] &>/dev/null; then
+  DIP_DUST="0"
+fi
+
 # if dusting is active
 if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
@@ -3391,10 +3396,15 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
                   if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | grep -c "-" || true)" -eq "0" ]] &>/dev/null; then
 
                     # track possible dusting
-                    DIP_POSSIBLE_DUSTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT ($DIP_CHANGE_PROFIT_LOSS/${DIP_DUST_PROFIT:?})"
+                    DIP_POSSIBLE_DUSTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT ($DIP_CHANGE_PROFIT_LOSS/${DIP_DUST_PROFIT:?})"
                     echo "$DIP_POSSIBLE_DUSTING" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>>"${LOG_ERROR:?}"
                     # keep lines, remove duplicates
                     echo "$(tail -100 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null | awk '!a[$11]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null
+
+                    # if less than n
+                    if [[ "$DIP_DUST_PROFIT" -lt "10" ]] &>/dev/null; then
+                      DIP_DUST_PROFIT="10"
+                    fi
 
                     # if profit are adequate (above minimum dust profit, ruled by configuration)
                     if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "${DIP_DUST_PROFIT:?}" ]] &>/dev/null; then
