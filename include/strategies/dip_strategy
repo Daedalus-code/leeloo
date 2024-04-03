@@ -3394,7 +3394,7 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
                     DIP_POSSIBLE_DUSTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT ($DIP_CHANGE_PROFIT_LOSS/${DIP_DUST_PROFIT:?})"
                     echo "$DIP_POSSIBLE_DUSTING" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".dusting 2>>"${LOG_ERROR:?}"
                     # keep lines, remove duplicates
-                    echo "$(tail -100 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".dusting | awk '!a[$11]++')" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".dusting
+                    echo "$(tail -100 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".dusting 2>/dev/null | awk '!a[$11]++')" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".dusting 2>/dev/null
 
                     # if profit are adequate (above minimum dust profit, ruled by configuration)
                     if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "${DIP_DUST_PROFIT:?}" ]] &>/dev/null; then
