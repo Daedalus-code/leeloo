@@ -3275,152 +3275,163 @@ fi
 # sell dip change (dust)
 ################################################################################
 
-bought_sold_age
-time_and_profit
+# if dusting is active
+if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
-################################################################################
+  bought_sold_age
+  time_and_profit
 
-# extract all active reference
-DIP_REFERENCE_CURRENCY="$(cat "${SYS_DIR:?}"/robot/*.active 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '{ print $2 }' | awk '!a[$1]++')"
-# extract active markets (active)
-DIP_ACTIVE_ORDERS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '{ print $1 }' | awk '!a[$1]++')"
-# extract active markets (orders)
-DIP_ACTIVE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk '{ print $6 }' | awk '!a[$1]++')"
+  ##############################################################################
 
-# balances, disregard with dip_active_orders, dip_active_balances markets and reference_currency
-DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "$DIP_REFERENCE_CURRENCY:" | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
+  # extract all active reference
+  DIP_REFERENCE_CURRENCY="$(cat "${SYS_DIR:?}"/robot/*.active 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '{ print $2 }' | awk '!a[$1]++')"
+  # extract active markets (active)
+  DIP_ACTIVE_ORDERS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '{ print $1 }' | awk '!a[$1]++')"
+  # extract active markets (orders)
+  DIP_ACTIVE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk '{ print $6 }' | awk '!a[$1]++')"
 
-################################################################################
+  # balances, disregard with dip_active_orders, dip_active_balances markets and reference_currency
+  DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "$DIP_REFERENCE_CURRENCY:" | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
 
-# asset (random)
-DIP_CHANGE_ASSET="$(echo "$DIP_CHANGE_BALANCES" | sort -R | tail -1)"
-# asset name
-DIP_CHANGE_NAME="$(echo "$DIP_CHANGE_ASSET" | awk '{ print $1 }' | tr -d ':')"
+  ##############################################################################
 
-# variable for decimal market
-LISTING_CURRENCY="$DIP_CHANGE_NAME"
-decimal_market
+  # asset (random)
+  DIP_CHANGE_ASSET="$(echo "$DIP_CHANGE_BALANCES" | sort -R | tail -1)"
+  # asset name
+  DIP_CHANGE_NAME="$(echo "$DIP_CHANGE_ASSET" | awk '{ print $1 }' | tr -d ':')"
 
-# asset balance (available)
-DIP_CHANGE_ASSET_BALANCE="$(echo "$DIP_CHANGE_ASSET" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($3 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+  # variable for decimal market
+  LISTING_CURRENCY="$DIP_CHANGE_NAME"
+  decimal_market
 
-# old ask price (trades)
-DIP_CHANGE_OLD_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | sed '/^$/d')"
-# new ask price (prices.dip)
-DIP_CHANGE_NEW_PRICE="$(grep -w "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip | awk '{ print $3 }')"
-# old amount priced
-DIP_CHANGE_OLD_AMOUNT="$(echo "$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-# new amount priced
-DIP_CHANGE_NEW_AMOUNT="$(echo "$DIP_CHANGE_NEW_PRICE*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-# calculate profit or loss (percentage)
-DIP_CHANGE_PROFIT_LOSS="$(echo "100/$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_NEW_PRICE-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-# calculate profit or loss in coins/tokens
-DIP_CHANGE_PROFIT_LOSS_AMOUNT="$(echo "$DIP_CHANGE_NEW_AMOUNT-$DIP_CHANGE_OLD_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-# if listing market already being spent
-DIP_CHANGE_ALREADY_SPENT="$(cat "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n | egrep -v "Reference|A/O" | tail -"$LOG_LENGTH" | grep "$DIP_CHANGE_NAME" | egrep -c "Buy |Sell " || true)"
+  # asset balance (available)
+  DIP_CHANGE_ASSET_BALANCE="$(echo "$DIP_CHANGE_ASSET" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($3 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
 
-# time now (epoch)
-DIP_EPOCH_TIME_NOW="$(date '+%s' | awk '{ printf "%.10f\n", $1 }')"
+  # old ask price (trades)
+  DIP_CHANGE_OLD_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | sed '/^$/d')"
+  # new ask price (prices.dip)
+  DIP_CHANGE_NEW_PRICE="$(grep -w "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip | awk '{ print $3 }')"
+  # old amount priced
+  DIP_CHANGE_OLD_AMOUNT="$(echo "$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # new amount priced
+  DIP_CHANGE_NEW_AMOUNT="$(echo "$DIP_CHANGE_NEW_PRICE*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # calculate profit or loss (percentage)
+  DIP_CHANGE_PROFIT_LOSS="$(echo "100/$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_NEW_PRICE-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  # calculate profit or loss in coins/tokens
+  DIP_CHANGE_PROFIT_LOSS_AMOUNT="$(echo "$DIP_CHANGE_NEW_AMOUNT-$DIP_CHANGE_OLD_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # if listing market already being spent
+  DIP_CHANGE_ALREADY_SPENT="$(cat "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n | egrep -v "Reference|A/O" | tail -"$LOG_LENGTH" | grep "$DIP_CHANGE_NAME" | egrep -c "Buy |Sell " || true)"
 
-# bought trade time (epoch)
-DIP_BOUGHT_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | awk '{ print $NF }' | head -1)"
-# sold trade time (epoch)
-DIP_SOLD_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "sell" | awk '{ print $NF }' | head -1)"
+  # time now (epoch)
+  DIP_EPOCH_TIME_NOW="$(date '+%s' | awk '{ printf "%.10f\n", $1 }')"
 
-# if any data
-if [[ -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_BOUGHT_TRADE_TIME" && -n "$DIP_SOLD_TRADE_TIME" ]] &>/dev/null; then
+  # bought trade time (epoch)
+  DIP_BOUGHT_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | awk '{ print $NF }' | head -1)"
+  # sold trade time (epoch)
+  DIP_SOLD_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "sell" | awk '{ print $NF }' | head -1)"
 
-  # bought age (seconds)
-  DIP_BOUGHT_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_BOUGHT_TRADE_TIME:0:10}" | bc 2>/dev/null)"
-  # sold age (seconds)
-  DIP_SOLD_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_SOLD_TRADE_TIME:0:10}" | bc 2>/dev/null)"
+  # if any data
+  if [[ -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_BOUGHT_TRADE_TIME" && -n "$DIP_SOLD_TRADE_TIME" ]] &>/dev/null; then
 
-  # if zero
-  if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
-    DIP_BOUGHT_FILE_AGE_SECONDS="0"
+    # bought age (seconds)
+    DIP_BOUGHT_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_BOUGHT_TRADE_TIME:0:10}" | bc 2>/dev/null)"
+    # sold age (seconds)
+    DIP_SOLD_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_SOLD_TRADE_TIME:0:10}" | bc 2>/dev/null)"
+
+    # if zero
+    if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
+      DIP_BOUGHT_FILE_AGE_SECONDS="0"
+    fi
+
+    # if zero
+    if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
+      DIP_SOLD_FILE_AGE_SECONDS="0"
+    fi
+
+    # time format
+    DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
+
+    # calculate seconds
+    DIP_BOUGHT_FILE_AGE_MINUTES="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+    DIP_BOUGHT_FILE_AGE_HOURS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+    DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
+    # if greater than n seconds (day)
+    if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
+      DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_DAYS:?}d"
+      # if greater than n seconds (hours)
+    elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
+      DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_HOURS:?}h"
+      # if greater than n seconds (minutes)
+    elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "60" ]] &>/dev/null; then
+      DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_MINUTES:?}m"
+      # if less than n seconds (minutes)
+    elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -lt "60" ]] &>/dev/null; then
+      DIP_BOUGHT_AGE_OUTPUT="0m"
+    fi
   fi
 
-  # if zero
-  if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
-    DIP_SOLD_FILE_AGE_SECONDS="0"
-  fi
+  # not already spent
+  if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" ]] &>/dev/null; then
+    # if dust is old enough (43200 seconds = 1/2 day), or just dust regardless if no bought file
+    if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "43200" ]] &>/dev/null; then
+      # if dust is old enough (86400 seconds = 1 day), or just dust regardless if no sold file
+      if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
+        # if decimal limit is working
+        if [[ "$DECIMAL_LIMIT" -lt "9" || "$DECIMAL_LIMIT" -eq "9" ]] &>/dev/null; then
+          # if balance is enough
+          if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
+            # if prices exist, not zero
+            if [[ ! -z "$DIP_CHANGE_OLD_PRICE" && ! -z "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
+              # if market exist
+              if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$DIP_CHANGE_NAME" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
+                # if (active) order does not exist, overall
+                if [[ "$(cat "${SYS_DIR:?}"/robot/*"$EXCHANGE_API"*.active 2>/dev/null | grep -c "$DIP_CHANGE_NAME/" || true)" -eq "0" ]] &>/dev/null; then
+                  # if no losses (negative symbol)
+                  if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | grep -c "-" || true)" -eq "0" ]] &>/dev/null; then
 
-  # time format
-  DIP_BOUGHT_FILE_AGE=$(printf '%dh:%dm:%ds\n' $(("$DIP_BOUGHT_FILE_AGE_SECONDS/3600")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%3600/60")) $(("$DIP_BOUGHT_FILE_AGE_SECONDS%60")))
+                    # possible dusting (dusting)
+                    DIP_POSSIBLE_DUSTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT ($DIP_CHANGE_PROFIT_LOSS/${DIP_DUST_PROFIT:?})"
+                    echo "$DIP_POSSIBLE_DUSTING" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".dusting 2>>"${LOG_ERROR:?}"
+                    # keep lines, remove duplicates
+                    echo "$(tail -100 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".dusting | awk '!a[$11]++')" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".dusting
 
-  # calculate seconds
-  DIP_BOUGHT_FILE_AGE_MINUTES="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/60" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-  DIP_BOUGHT_FILE_AGE_HOURS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-  DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+                    # if profit are adequate (above minimum dust profit, ruled by configuration)
+                    if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "${DIP_DUST_PROFIT:?}" ]] &>/dev/null; then
 
-  # if greater than n seconds (day)
-  if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
-    DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_DAYS:?}d"
-    # if greater than n seconds (hours)
-  elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
-    DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_HOURS:?}h"
-    # if greater than n seconds (minutes)
-  elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "60" ]] &>/dev/null; then
-    DIP_BOUGHT_AGE_OUTPUT="${DIP_BOUGHT_FILE_AGE_MINUTES:?}m"
-    # if less than n seconds (minutes)
-  elif [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -lt "60" ]] &>/dev/null; then
-    DIP_BOUGHT_AGE_OUTPUT="0m"
-  fi
-fi
-
-# not already spent
-if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" ]] &>/dev/null; then
-  # if dust is old enough (43200 seconds = 1/2 day), or just dust regardless if no bought file
-  if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "43200" ]] &>/dev/null; then
-    # if dust is old enough (86400 seconds = 1 day), or just dust regardless if no sold file
-    if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
-      # if decimal limit is working
-      if [[ "$DECIMAL_LIMIT" -lt "9" || "$DECIMAL_LIMIT" -eq "9" ]] &>/dev/null; then
-        # if balance is enough
-        if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
-          # if prices exist, not zero
-          if [[ ! -z "$DIP_CHANGE_OLD_PRICE" && ! -z "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
-            # if market exist
-            if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$DIP_CHANGE_NAME" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
-              # if (active) order does not exist, overall
-              if [[ "$(cat "${SYS_DIR:?}"/robot/*"$EXCHANGE_API"*.active 2>/dev/null | grep -c "$DIP_CHANGE_NAME/" || true)" -eq "0" ]] &>/dev/null; then
-                # if no losses (negative symbol)
-                if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | grep -c "-" || true)" -eq "0" ]] &>/dev/null; then
-                  # if profit are adequate (above minimum spread, ruled by configuration)
-                  if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "10" ]] &>/dev/null; then
-
-                    ############################################################
-                    ############################################################
-
-                    # if xeggex order
-                    if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-                      # CreateOrder market #####################################
-                      PLACE_ORDER="$(CreateOrder "" "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
-                      # debug line #############################################
-                      echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$REFERENCE_CURRENCY sell market $DIP_CHANGE_ASSET_BALANCE '' false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                       ##########################################################
-                      sleep 1
+                      ##########################################################
+
+                      # if xeggex order
+                      if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+                        # CreateOrder market ###################################
+                        PLACE_ORDER="$(CreateOrder "" "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
+                        # debug line ###########################################
+                        echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$REFERENCE_CURRENCY sell market $DIP_CHANGE_ASSET_BALANCE '' false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                        ########################################################
+                        sleep 1
+                      fi
+
+                      ##########################################################
+                      ##########################################################
+
+                      tx_id
+
+                      # sell output (trade history)
+                      DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : dust :: $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: $DIP_CHANGE_ASSET_BALANCE $REFERENCE_BALANCE ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_FILE_AGE"
+                      echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+                      # dusting output (log)
+                      DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: ${DIP_CHANGE_PROFIT_LOSS:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
+                      echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                      # profit output (log)
+                      DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT"
+                      echo "$DIP_SOLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+                      # track profit
+                      echo "$LOG_DATE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY > $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_AGE_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
+                      # column file
+                      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
                     fi
-
-                    ############################################################
-                    ############################################################
-
-                    tx_id
-
-                    # sell output (trade history)
-                    DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : dust :: $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: $DIP_CHANGE_ASSET_BALANCE $REFERENCE_BALANCE ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_FILE_AGE"
-                    echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-                    # dusting output (log)
-                    DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: ${DIP_CHANGE_PROFIT_LOSS:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
-                    echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-                    # profit output (log)
-                    DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT"
-                    echo "$DIP_SOLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-                    # track profit
-                    echo "$LOG_DATE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY > $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_AGE_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
-                    # column file
-                    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
                   fi
                 fi
               fi
