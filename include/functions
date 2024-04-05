@@ -1077,16 +1077,17 @@ function open_orders {
 
   ##############################################################################
 
-  HEIGHT=10
+  HEIGHT=11
   WIDTH=40
-  CHOICE_HEIGHT=3
+  CHOICE_HEIGHT=4
   BACKTITLE="Leeloo (Multipass)"
   TITLE="$EXCHANGE_API Order Menu"
   MENU="${DATE:?}"
 
   OPTIONS=(1 "Buy              Buy Order"
     2 "Sell             Sell Order"
-    3 "Status           Open Orders")
+    3 "Status           Open Orders"
+    4 "Order history    History")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -1328,6 +1329,55 @@ function open_orders {
       dialog --title "Open Orders: +$ORDER_TOTAL :: Buy: $ORDER_TOTAL_BUY (${ORDER_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_TOTAL_SELL (${ORDER_PERCENTAGE_SELL:?}%)" \
         --no-collapse \
         --msgbox "$(echo "$RESULT" | column -t)" "$ORDER_TOTAL_LENGTH" "$ORDER_TOTAL_WIDTH"
+    }
+
+    display_result 2>/dev/null
+
+    ;;
+
+    # order history
+
+  "4")
+
+    # if not found
+    if [[ ! -f "${SYS_DIR:?}"/robot/history.view || ! -f "${SYS_DIR:?}"/robot/history.raw ]] &>/dev/null; then
+      # create a copy of history (orders)
+      cat "${LOG_DIR:?}"/leeloo/*/*.trades 2>/dev/null | tr -d '{}"' | tr ',:' ' ' | awk '{ print $1,$3,$5,$6,$7,$8,$9,$NF }' | column -t | sort -n -k 8 | tac >"${SYS_DIR:?}"/robot/history.raw 2>/dev/null
+      # create a copy of history (orders)
+      echo "$(head -100 "${SYS_DIR:?}"/robot/history.raw 2>/dev/null)" >"${SYS_DIR:?}"/robot/history.view
+    fi
+
+    # history data
+    ORDER_HISTORY_DATA="$(cat "${LOG_DIR:?}"/leeloo/*/*.trades 2>/dev/null)"
+
+    # total history count
+    ORDER_HISTORY_TOTAL="$(echo "$ORDER_HISTORY_DATA" | wc -l)"
+
+    ORDER_HISTORY_TOTAL_BUY="$(echo "$ORDER_HISTORY_DATA" | grep -c "buy" || true)"
+    ORDER_HISTORY_TOTAL_SELL="$(echo "$ORDER_HISTORY_DATA" | grep -c "sell" || true)"
+    ORDER_HISTORY_PERCENTAGE_BUY="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    ORDER_HISTORY_PERCENTAGE_SELL="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_SELL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    # if zero
+    if [[ -z "$ORDER_HISTORY_PERCENTAGE_BUY" ]] &>/dev/null; then
+      ORDER_HISTORY_PERCENTAGE_BUY="0"
+    fi
+    # if zero
+    if [[ -z "$ORDER_HISTORY_PERCENTAGE_SELL" ]] &>/dev/null; then
+      ORDER_HISTORY_PERCENTAGE_SELL="0"
+    fi
+
+    RESULT="$(head -200 "${SYS_DIR:?}"/robot/history.view)"
+
+    # if zero
+    if [[ -z "$RESULT" ]] &>/dev/null; then
+      RESULT="No history found"
+    fi
+
+    display_result() {
+      dialog --title "Order history: +$ORDER_HISTORY_TOTAL :: Buy: $ORDER_HISTORY_TOTAL_BUY (${ORDER_HISTORY_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_HISTORY_TOTAL_SELL (${ORDER_HISTORY_PERCENTAGE_SELL:?}%)" \
+        --no-collapse \
+        --msgbox "$(echo "$RESULT" | column -t)" 0 0
     }
 
     display_result 2>/dev/null
