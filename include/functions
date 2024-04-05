@@ -1339,6 +1339,9 @@ function open_orders {
 
   "4")
 
+    # lower caps
+    ORDER_EXCHANGE_NAME="$(echo "$ORDER_EXCHANGE" | tr '[A-Z]' '[a-z]')"
+
     # if not found
     if [[ ! -f "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view || ! -f "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw ]] &>/dev/null; then
       # create a copy of history (orders)
@@ -1371,6 +1374,11 @@ function open_orders {
 
     # if zero
     if [[ -z "$RESULT" ]] &>/dev/null; then
+      ORDER_HISTORY_PERCENTAGE_BUY="0"
+      ORDER_HISTORY_TOTAL_BUY="0"
+      ORDER_HISTORY_PERCENTAGE_SELL="0"
+      ORDER_HISTORY_TOTAL_SELL="0"
+      ORDER_HISTORY_TOTAL="0"
       RESULT="No history found"
     fi
 
