@@ -197,6 +197,14 @@ incoming_reference
 
 ################################################################################
 
+# if zero
+if [[ -z "$LISTING_PRICE" || "$LISTING_PRICE" == "0.000000000" ]] &>/dev/null; then
+  # listing price backup
+  LISTING_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $3 }')"
+fi
+
+################################################################################
+
 # rogue profit using rsi
 
 ROGUE_TIMER_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
@@ -381,12 +389,6 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
 
   # backup prices
   backup_prices
-
-  # if zero
-  if [[ -z "$LISTING_PRICE" || "$LISTING_PRICE" == "0.000000000" ]] &>/dev/null; then
-    # listing price backup
-    LISTING_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $3 }')"
-  fi
 
   # rogue listing price
   ROGUE_LISTING_PRICE="$LISTING_PRICE"
@@ -714,14 +716,6 @@ if [[ -n "$EMA_REAL_SHORT" && -n "$EMA_REAL_LONG" ]] 2>>"${LOG_ERROR:?}"; then
     # create signal line based on ema values
     echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>>"${LOG_ERROR:?}"
   fi
-fi
-
-################################################################################
-
-# if zero
-if [[ -z "$LISTING_PRICE" || "$LISTING_PRICE" == "0.000000000" ]] &>/dev/null; then
-  # listing price backup
-  LISTING_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $3 }')"
 fi
 
 ################################################################################
