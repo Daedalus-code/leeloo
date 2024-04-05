@@ -1340,15 +1340,15 @@ function open_orders {
   "4")
 
     # if not found
-    if [[ ! -f "${SYS_DIR:?}"/robot/history.view || ! -f "${SYS_DIR:?}"/robot/history.raw ]] &>/dev/null; then
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view || ! -f "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw ]] &>/dev/null; then
       # create a copy of history (orders)
-      cat "${LOG_DIR:?}"/leeloo/*/*.trades 2>/dev/null | tr -d '{}"' | tr ',:' ' ' | awk '{ print $1,$3,$5,$6,$7,$8,$9,$NF }' | column -t | sort -n -k 8 | tac >"${SYS_DIR:?}"/robot/history.raw 2>/dev/null
+      cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/*.trades 2>/dev/null | tr -d '{}"' | tr ',:' ' ' | awk '{ print $1,$3,$5,$6,$7,$8,$9,$NF }' | column -t | sort -n -k 8 | tac >"${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw 2>/dev/null
       # create a copy of history (orders)
-      echo "$(head -100 "${SYS_DIR:?}"/robot/history.raw 2>/dev/null)" >"${SYS_DIR:?}"/robot/history.view
+      echo "$(head -100 "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view
     fi
 
     # history data
-    ORDER_HISTORY_DATA="$(cat "${SYS_DIR:?}"/robot/history.raw 2>/dev/null)"
+    ORDER_HISTORY_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw 2>/dev/null)"
 
     # total history count
     ORDER_HISTORY_TOTAL="$(echo "$ORDER_HISTORY_DATA" | wc -l)"
@@ -1367,7 +1367,7 @@ function open_orders {
       ORDER_HISTORY_PERCENTAGE_SELL="0"
     fi
 
-    RESULT="$(cat "${SYS_DIR:?}"/robot/history.view 2>/dev/null)"
+    RESULT="$(cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view 2>/dev/null)"
 
     # if zero
     if [[ -z "$RESULT" ]] &>/dev/null; then
