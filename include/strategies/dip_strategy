@@ -284,8 +284,8 @@ function amount_to_buy_sell() {
     REFERENCE_BALANCE="0.000000000"
   fi
 
-  # if zero
-  if [[ -z "$LISTING_BALANCE" ]] &>/dev/null; then
+  # if zero, if below zero
+  if [[ -z "$LISTING_BALANCE" || "$LISTING_BALANCE" -lt "0" ]] &>/dev/null; then
     LISTING_BALANCE="$(echo "0.000000000" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
   fi
 
