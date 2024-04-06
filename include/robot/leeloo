@@ -192,15 +192,6 @@ for (( ; ; )); do
   # include dip strategies (positions)
   cat "${SYS_DIR:?}"/robot/*.pool >>"${SYS_DIR:?}"/robot/pool.view 2>/dev/null
 
-  # target orders age (seconds)
-  TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/*/history 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk -F. '{ print $1 }')
-
-  # if greater than n
-  if [[ "$TARGET_ORDERS_AGE_SECONDS" -gt "180" ]] &>/dev/null; then
-    # create a copy of history (orders)
-    getTrades | tr -d '{}"' | tr ',:' ' ' | awk '{ print $1,$3,$5,$6,$7,$8,$9,$NF }' | column -t | sort -n -k 8 | tac | head -100 >"${SYS_DIR:?}"/robot/history.view 2>/dev/null
-  fi
-
   # cleanup pool.view
   echo "$(cat "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | awk '!a[$3]++' | column -t)" >"${SYS_DIR:?}"/robot/pool.view
 
