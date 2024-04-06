@@ -1343,7 +1343,7 @@ function open_orders {
     ORDER_EXCHANGE_NAME="$(echo "$ORDER_EXCHANGE" | tr '[A-Z]' '[a-z]')"
 
     # target orders age (seconds)
-    TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/orders 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk -F. '{ print $1 }')
+    TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk -F. '{ print $1 }')
 
     # if greater than n
     if [[ "$TARGET_ORDERS_AGE_SECONDS" -gt "180" || ! -f "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view || ! -f "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw ]] &>/dev/null; then
