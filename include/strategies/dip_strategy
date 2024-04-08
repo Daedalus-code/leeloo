@@ -3371,62 +3371,65 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
                 if [[ "$(cat "${SYS_DIR:?}"/robot/*"$EXCHANGE_API"*.active 2>/dev/null | grep -c "$DIP_CHANGE_NAME/" || true)" -eq "0" ]] &>/dev/null; then
                   # if no losses (negative symbol)
                   if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | grep -c "-" || true)" -eq "0" ]] &>/dev/null; then
+                    # if profit losses data exist
+                    if [[ -n "$DIP_CHANGE_PROFIT_LOSS" ]] &>/dev/null; then
 
-                    # track possible dusting
-                    DIP_POSSIBLE_DUSTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT ($DIP_CHANGE_PROFIT_LOSS/${DIP_DUST_PROFIT:?})"
+                      # track possible dusting
+                      DIP_POSSIBLE_DUSTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT ($DIP_CHANGE_PROFIT_LOSS/${DIP_DUST_PROFIT:?})"
 
-                    # if profit are adequate (above minimum dust profit, ruled by configuration)
-                    if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "${DIP_DUST_PROFIT:?}" ]] &>/dev/null; then
-                      # market are dusted
-                      echo "$DIP_POSSIBLE_DUSTING <-- Dusted!" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>>"${LOG_ERROR:?}"
-                    else
-                      # market are below minimum
-                      echo "$DIP_POSSIBLE_DUSTING" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>>"${LOG_ERROR:?}"
-                    fi
-
-                    # keep lines, sort by date, column
-                    echo "$(tail -100 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null | column -t | sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n | grep -v " 0% ")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null
-
-                    # if less than n
-                    if [[ "$DIP_DUST_PROFIT" -lt "10" ]] &>/dev/null; then
-                      DIP_DUST_PROFIT="10"
-                    fi
-
-                    # if profit are adequate (above minimum dust profit, ruled by configuration)
-                    if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "${DIP_DUST_PROFIT:?}" ]] &>/dev/null; then
-
-                      ##########################################################
-                      ##########################################################
-
-                      # if xeggex order
-                      if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-                        # CreateOrder market ###################################
-                        PLACE_ORDER="$(CreateOrder "" "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
-                        # debug line ###########################################
-                        echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$REFERENCE_CURRENCY sell market $DIP_CHANGE_ASSET_BALANCE '' false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
-                        ########################################################
-                        sleep 1
+                      # if profit are adequate (above minimum dust profit, ruled by configuration)
+                      if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "${DIP_DUST_PROFIT:?}" ]] &>/dev/null; then
+                        # market are dusted
+                        echo "$DIP_POSSIBLE_DUSTING <-- Dusted!" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>>"${LOG_ERROR:?}"
+                      else
+                        # market are below minimum
+                        echo "$DIP_POSSIBLE_DUSTING" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>>"${LOG_ERROR:?}"
                       fi
 
-                      ##########################################################
-                      ##########################################################
+                      # keep lines, sort by date, column
+                      echo "$(tail -100 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null | column -t | sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n | grep -v " 0% ")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null
 
-                      tx_id
+                      # if less than n
+                      if [[ "$DIP_DUST_PROFIT" -lt "10" ]] &>/dev/null; then
+                        DIP_DUST_PROFIT="10"
+                      fi
 
-                      # sell output (trade history)
-                      DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : dust :: $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: $DIP_CHANGE_ASSET_BALANCE $REFERENCE_BALANCE ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_FILE_AGE"
-                      echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
-                      # dusting output (log)
-                      DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: ${DIP_CHANGE_PROFIT_LOSS:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
-                      echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-                      # profit output (log)
-                      DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT"
-                      echo "$DIP_SOLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                      # if profit are adequate (above minimum dust profit, ruled by configuration)
+                      if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "${DIP_DUST_PROFIT:?}" ]] &>/dev/null; then
 
-                      # track profit
-                      echo "$LOG_DATE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY > $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_AGE_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
-                      # column file
-                      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
+                        ########################################################
+                        ########################################################
+
+                        # if xeggex order
+                        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+                          # CreateOrder market #################################
+                          PLACE_ORDER="$(CreateOrder "" "$DIP_CHANGE_NAME/$REFERENCE_CURRENCY" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
+                          # debug line #########################################
+                          echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$REFERENCE_CURRENCY sell market $DIP_CHANGE_ASSET_BALANCE '' false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                          ######################################################
+                          sleep 1
+                        fi
+
+                        ########################################################
+                        ########################################################
+
+                        tx_id
+
+                        # sell output (trade history)
+                        DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : dust :: $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: $DIP_CHANGE_ASSET_BALANCE $REFERENCE_BALANCE ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_FILE_AGE"
+                        echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+                        # dusting output (log)
+                        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: ${DIP_CHANGE_PROFIT_LOSS:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
+                        echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                        # profit output (log)
+                        DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY :: Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT"
+                        echo "$DIP_SOLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+                        # track profit
+                        echo "$LOG_DATE : $DIP_CHANGE_NAME/$REFERENCE_CURRENCY > $DIP_CHANGE_PROFIT_LOSS_AMOUNT $REFERENCE_CURRENCY ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_AGE_OUTPUT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
+                        # column file
+                        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
+                      fi
                     fi
                   fi
                 fi
