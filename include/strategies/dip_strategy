@@ -3282,11 +3282,11 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   ##############################################################################
 
   # old ask price (trades)
-  DIP_CHANGE_OLD_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -10 | awk '{ print $5 }' | sed '/^$/d' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+  DIP_CHANGE_OLD_PRICE_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -10 | awk '{ print $5 }' | sed '/^$/d' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
   # old ask price count (max 10)
-  DIP_CHANGE_BUYING_COUNT="$(echo "$DIP_CHANGE_OLD_PRICE" | wc -l)"
+  DIP_CHANGE_BUYING_COUNT="$(echo "$DIP_CHANGE_OLD_PRICE_TRADES" | wc -l)"
   # old ask price (trades) average
-  DIP_CHANGE_OLD_PRICE="$(echo "$DIP_CHANGE_OLD_PRICE/$DIP_CHANGE_BUYING_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  DIP_CHANGE_OLD_PRICE="$(echo "$DIP_CHANGE_OLD_PRICE_TRADES/$DIP_CHANGE_BUYING_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   ##############################################################################
 
