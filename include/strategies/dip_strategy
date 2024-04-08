@@ -3298,6 +3298,12 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   DIP_CHANGE_NEW_AMOUNT="$(echo "$DIP_CHANGE_NEW_PRICE*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # calculate profit or loss (percentage)
   DIP_CHANGE_PROFIT_LOSS="$(echo "100/$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_NEW_PRICE-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  # if zero
+  if [[ -z "$DIP_CHANGE_PROFIT_LOSS" ]] &>/dev/null; then
+    DIP_CHANGE_PROFIT_LOSS="0"
+  fi
+
   # calculate profit or loss in coins/tokens
   DIP_CHANGE_PROFIT_LOSS_AMOUNT="$(echo "$DIP_CHANGE_NEW_AMOUNT-$DIP_CHANGE_OLD_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # if listing market already being spent
