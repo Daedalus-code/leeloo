@@ -3307,6 +3307,15 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   # time now (epoch)
   DIP_EPOCH_TIME_NOW="$(date '+%s' | awk '{ printf "%.10f\n", $1 }')"
 
+  # calculate the age of target orders file in seconds
+  TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${REFERENCE_CURRENCY:?}".trades 2>/dev/null || echo 0)
+
+  # check if target orders data is old enough or doesn't exist
+  if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${REFERENCE_CURRENCY:?}".trades ]]; then
+    # get trades data and format it
+    getTrades "$DIP_CHANGE_NAME" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${REFERENCE_CURRENCY:?}".trades
+  fi
+
   # bought trade time (epoch)
   DIP_BOUGHT_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | awk '{ print $NF }' | head -1)"
   # sold trade time (epoch)
