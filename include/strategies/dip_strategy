@@ -3307,15 +3307,19 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   # time now (epoch)
   DIP_EPOCH_TIME_NOW="$(date '+%s' | awk '{ printf "%.10f\n", $1 }')"
 
-  # calculate the age of target orders file in seconds
-  TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${REFERENCE_CURRENCY:?}".trades 2>/dev/null || echo 0)
+  # if any data
+  if [[ -n "$DIP_CHANGE_NAME" && -n "$REFERENCE_CURRENCY" ]]; then
 
-  # check if target orders data is old enough or doesn't exist
-  if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${REFERENCE_CURRENCY:?}".trades ]]; then
-    # if market exist
-    if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$DIP_CHANGE_NAME" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
-      # get trades data and format it
-      getTrades "$DIP_CHANGE_NAME" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${REFERENCE_CURRENCY:?}".trades
+    # calculate the age of target orders file in seconds
+    TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${REFERENCE_CURRENCY:?}".trades 2>/dev/null || echo 0)
+
+    # check if target orders data is old enough or doesn't exist
+    if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${REFERENCE_CURRENCY:?}".trades ]]; then
+      # if market exist
+      if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$DIP_CHANGE_NAME" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
+        # get trades data and format it
+        getTrades "$DIP_CHANGE_NAME" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${REFERENCE_CURRENCY:?}".trades
+      fi
     fi
   fi
 
