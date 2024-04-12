@@ -372,19 +372,19 @@ function listing_data() {
   LISTING_AMOUNT="$(echo "$(echo "$LISTING_ALLOCATED/100" | bc -l 2>/dev/null)*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   # listing price bid ##########################################################
-  LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | awk '{ print $2 }')"
+  LISTING_PRICE="$(cat "${LOG_DIR:?}"/leeloo/xeggex/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $3 }')"
   LISTING_AMOUNT_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_UNCONFIRMED_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   # listing price ask ##########################################################
-  LISTING_PRICE_ASK="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | awk '{ print $3 }')"
+  LISTING_PRICE_ASK="$(cat "${LOG_DIR:?}"/leeloo/xeggex/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $4 }')"
   LISTING_AMOUNT_ASK_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_AVAILABLE_ASK_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_UNCONFIRMED_ASK_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   # listing price last #########################################################
-  LISTING_PRICE_LAST="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | awk '{ print $4 }')"
+  LISTING_PRICE_LAST="$(cat "${LOG_DIR:?}"/leeloo/xeggex/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $5 }')"
   LISTING_AMOUNT_LAST_VALUED="$(echo "$LISTING_AMOUNT*$LISTING_PRICE_LAST" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_AVAILABLE_LAST_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE_LAST" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_UNCONFIRMED_LAST_VALUED="$(echo "$LISTING_UNCONFIRMED_BALANCE*$LISTING_PRICE_LAST" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
@@ -426,19 +426,19 @@ function reference_data() {
   REFERENCE_AMOUNT="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   # listing price bid ##########################################################
-  REFERENCE_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | awk '{ print $2 }')"
+  REFERENCE_PRICE="$(cat "${LOG_DIR:?}"/leeloo/xeggex/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $3 }')"
   REFERENCE_AMOUNT_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_UNCONFIRMED_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   # listing price ask ##########################################################
-  REFERENCE_PRICE_ASK="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | awk '{ print $3 }')"
+  REFERENCE_PRICE_ASK="$(cat "${LOG_DIR:?}"/leeloo/xeggex/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $4 }')"
   REFERENCE_AMOUNT_ASK_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_AVAILABLE_ASK_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_UNCONFIRMED_ASK_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   # listing price last #########################################################
-  REFERENCE_PRICE_LAST="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | awk '{ print $4 }')"
+  REFERENCE_PRICE_LAST="$(cat "${LOG_DIR:?}"/leeloo/xeggex/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $5 }')"
   REFERENCE_AMOUNT_LAST_VALUED="$(echo "$REFERENCE_AMOUNT/$REFERENCE_PRICE_LAST" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_AVAILABLE_LAST_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE_LAST" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_UNCONFIRMED_LAST_VALUED="$(echo "$REFERENCE_UNCONFIRMED_BALANCE/$REFERENCE_PRICE_LAST" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
