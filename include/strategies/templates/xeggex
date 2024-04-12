@@ -227,15 +227,9 @@ function decimal_market() {
   # include exchange fees eating up order, through decimals
   ##############################################################################
 
-  # if decimal is less than n
-  if [[ "$DECIMAL_LIMIT" -lt "5" ]] &>/dev/null; then
-    DECIMAL_LIMIT_RULER="4"
-  else
-    DECIMAL_LIMIT_RULER="3"
-  fi
-
   # decimal random ruler
-  RANDOM_DECIMAL_RULER=$((((RANDOM % $DECIMAL_LIMIT_RULER) + 1)))
+  RANDOM_DECIMAL_RULER=$((((RANDOM % 4) + 1)))
+
   # default
   DECIMAL_LIMIT_FLICKER="$DECIMAL_LIMIT"
 
@@ -253,14 +247,14 @@ function decimal_market() {
 
   # if equal
   if [[ "$RANDOM_DECIMAL_RULER" -eq "3" ]] &>/dev/null; then
-    # random check (default)
+    # default
     DECIMAL_LIMIT_FLICKER="$DECIMAL_LIMIT"
   fi
 
   # if equal
   if [[ "$RANDOM_DECIMAL_RULER" -eq "4" ]] &>/dev/null; then
-    # random check (0)
-    DECIMAL_LIMIT_FLICKER="0"
+    # default - 1
+    DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT-1" | bc | awk -F. '{ print $1 }')"
   fi
 
   # if zero
