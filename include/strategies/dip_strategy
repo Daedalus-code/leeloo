@@ -4178,23 +4178,21 @@ fi
 # weekly tracking
 ################################################################################
 
-# if no weekly data
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly || true)" -eq "0" ]] &>/dev/null; then
-  # track daily profit and losses
-  echo "$DIP_BI_DYNAMIC_SUM" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
-fi
-
 # profit losses weekly age (seconds)
 DIP_BI_WEEKLY_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-# if greater than n
-if [[ "$DIP_BI_WEEKLY_AGE_SECONDS" -gt "604800" ]] &>/dev/null; then
-  # reset weekly profit and losses
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly &>/dev/null
+# if greater than n (daily)
+if [[ "$DIP_BI_WEEKLY_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
+  # track daily profit and losses
+  echo "$DIP_BI_DYNAMIC_SUM" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
+  # keep n lines, weekly profit and losses
+  echo "$(tail -7 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
 fi
 
-# static weekly total sum
-DIP_BI_STATIC_SUM_WEEKLY="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly 2>/dev/null)"
+# weekly count
+DIP_BI_STATIC_SUM_WEEKLY_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly | awk -F. '{ print $1 }')"
+# static weekly total sum (average)
+DIP_BI_STATIC_SUM_WEEKLY="$(echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly 2>/dev/null | awk '{ SUM += $1} END { print SUM }')/$DIP_BI_STATIC_SUM_WEEKLY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # balance invested profit losses difference
 DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM_WEEKLY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # calculate difference percentage
@@ -4220,23 +4218,21 @@ fi
 # monthly tracking
 ################################################################################
 
-# if no monthly data
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly || true)" -eq "0" ]] &>/dev/null; then
-  # track daily profit and losses
-  echo "$DIP_BI_DYNAMIC_SUM" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
-fi
-
 # profit losses monthly age (seconds)
 DIP_BI_MONTHLY_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
-# if greater than n
-if [[ "$DIP_BI_MONTHLY_AGE_SECONDS" -gt "2678400" ]] &>/dev/null; then
-  # reset monthly profit and losses
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly &>/dev/null
+# if greater than n (daily)
+if [[ "$DIP_BI_MONTHLY_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
+  # track daily profit and losses
+  echo "$DIP_BI_DYNAMIC_SUM" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
+  # keep n lines, monthly profit and losses
+  echo "$(tail -31 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
 fi
 
-# static monthly total sum
-DIP_BI_STATIC_SUM_MONTHLY="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly 2>/dev/null)"
+# monthly count
+DIP_BI_STATIC_SUM_MONTHLY_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly | awk -F. '{ print $1 }')"
+# static monthly total sum (average)
+DIP_BI_STATIC_SUM_MONTHLY="$(echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly 2>/dev/null | awk '{ SUM += $1} END { print SUM }')/$DIP_BI_STATIC_SUM_MONTHLY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # balance invested profit losses difference
 DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM_MONTHLY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # calculate difference percentage
