@@ -206,9 +206,8 @@ ROGUE_TIMER="3600"         # n seconds (default: 3600 seconds/1 hour cooldown)
 ROGUE_HOURS="6"            # n hours of data (default: 6 hours)
 ROGUE_MAX_DAY="3"          # n trades a day (default: 3)
 
-# n% reference, listing amount
-REFERENCE_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | head -1)"
-LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | head -1)"
+# n% listing amount
+ROGUE_LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | head -1)"
 
 ################################################################################
 
@@ -251,7 +250,7 @@ function rogue_buying() {
     if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
       # buy output
-      echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       # if market order
       if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
 
@@ -261,7 +260,7 @@ function rogue_buying() {
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # createorder buy market #############################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$LISTING_AMOUNT" "" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
           ######################################################################
         fi
 
@@ -283,7 +282,7 @@ function rogue_buying() {
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # createorder buy limit ##############################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
           ######################################################################
         fi
         ########################################################################
@@ -303,7 +302,7 @@ function rogue_selling() {
     if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
       # sell output
-      echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
       # if market order
       if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
 
@@ -313,7 +312,7 @@ function rogue_selling() {
         # if xeggex
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder market #################################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$LISTING_AMOUNT" "" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
           ######################################################################
         fi
         ########################################################################
@@ -334,7 +333,7 @@ function rogue_selling() {
         # if xeggex order
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # createorder sell limit #############################################
-          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+          PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
           ######################################################################
         fi
         ########################################################################
@@ -787,7 +786,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
                   LISTING_AMOUNT="$REFERENCE_AMOUNT_FOMO"
 
                   # new bullish output
-                  BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bullish+Signal : Buying $LISTING_AMOUNT $LISTING_CURRENCY $(echo "$REFERENCE_ALLOCATED_REAL" | awk -F. '{ print $1 }')+$(echo "$REFERENCE_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)% > ${REFERENCE_ALLOCATED:?}%"
+                  BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bullish+Signal : Buying $LISTING_AMOUNT $LISTING_CURRENCY $REFERENCE_ALLOCATED_REAL_CHECK+$REFERENCE_ALL_DIFF_CHECK% > ${REFERENCE_ALLOCATED:?}%"
 
                   # has value
                   if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
@@ -957,7 +956,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
                   LISTING_AMOUNT="$REFERENCE_AMOUNT_FOMO"
 
                   # new bearish output
-                  BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $(echo "$LISTING_ALLOCATED_REAL" | awk -F. '{ print $1 }')+$(echo "$LISTING_ALL_DIFF" | egrep -o "[0-9][0-9]" | head -1)% > ${LISTING_ALLOCATED:?}%"
+                  BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_ALLOCATED_REAL_CHECK+$LISTING_ALL_DIFF_CHECK% > ${LISTING_ALLOCATED:?}%"
 
                   # has value
                   if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
