@@ -878,7 +878,7 @@ function incoming_listing() {
       backup_prices
 
       LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
-      LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | awk '{ print $2 }')"
+      LISTING_PRICE="$(cat "${LOG_DIR:?}"/leeloo/xeggex/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $3 }')"
       LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
       if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
@@ -1004,7 +1004,7 @@ function signal_age_selling() {
 function open_positions() {
 
   LISTING_OPEN_CURRENCY="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
-  LISTING_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | awk '{ print $2 }')"
+  LISTING_PRICE="$(cat "${LOG_DIR:?}"/leeloo/xeggex/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $3 }')"
   LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
   LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   LISTING_OPEN_AMOUNT="$LISTING_AVAILABLE_BALANCE"
