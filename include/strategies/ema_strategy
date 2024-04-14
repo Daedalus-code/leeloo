@@ -788,7 +788,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
                   LISTING_AMOUNT="$REFERENCE_AMOUNT_FOMO"
 
                   # new bullish output
-                  BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bullish+Signal : Buying $LISTING_AMOUNT $LISTING_CURRENCY $REFERENCE_ALLOCATED_REAL_CHECK+$REFERENCE_ALL_DIFF_CHECK% > ${REFERENCE_ALLOCATED:?}%"
+                  BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: FOMO : Bullish+Signal : Buying $LISTING_AMOUNT $LISTING_CURRENCY $REFERENCE_ALLOCATED_REAL_CHECK+$REFERENCE_ALL_DIFF_CHECK% > ${REFERENCE_ALLOCATED:?}%"
 
                   # has value
                   if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
@@ -952,13 +952,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
               # rsi above bearish, below bullish
               if [[ "$RSI_BEARISH_CHECK" -gt "30" && "$RSI_BEARISH_CHECK" -lt "70" ]] &>/dev/null; then
                 # if valued (check)
-                if [[ "$LISTING_ALL_DIFF_CHECK" -gt "0" ]] &>/dev/null; then
+                if [[ "$REFERENCE_ALL_DIFF_CHECK" -gt "0" ]] &>/dev/null; then
 
                   # new listing amount (missing difference)
                   LISTING_AMOUNT="$REFERENCE_AMOUNT_FOMO"
 
                   # new bearish output
-                  BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Trigger : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_ALLOCATED_REAL_CHECK+$LISTING_ALL_DIFF_CHECK% > ${LISTING_ALLOCATED:?}%"
+                  BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: FOMO : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_ALLOCATED_REAL_CHECK+$LISTING_ALL_DIFF_CHECK% > ${LISTING_ALLOCATED:?}%"
 
                   # has value
                   if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
