@@ -92,13 +92,24 @@ get_rsi_xgx() {
     # fix tiny n (e)
     DATA="$(echo "${DATA[@]}" 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
+    # if any candles data
+    if [[ -n "$DATA" ]] &>/dev/null; then
+      CANDLES_DATA="OK"
+    fi
+
     # calculate RSI with SMA
     RSI_WITH_SMA=$(calculate_rsi_with_sma "$DATA")
 
+    # rsi above 70
     if (($(echo "$RSI_WITH_SMA > 70" | bc -l 2>/dev/null))); then
       BEAR_BULL="Overbought"
+      # rsi below 30
     elif (($(echo "$RSI_WITH_SMA < 30" | bc -l 2>/dev/null))); then
       BEAR_BULL="Oversold"
+      # rsi zero with candles data (new listing)
+    elif [[ "$(echo "$RSI_WITH_SMA" | awk -F. '{ print $1 }')" -eq "0" && "$CANDLES_DATA" == "OK" ]] &>/dev/null; then
+      BEAR_BULL="Oversold_zwcd"
+      # rsi neutral
     else
       BEAR_BULL="Neutral"
     fi
