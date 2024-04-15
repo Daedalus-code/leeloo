@@ -4192,6 +4192,12 @@ if [[ "$DIP_BI_WEEKLY_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
   fi
 fi
 
+# if no original amount
+if [[ ! "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" == "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" ]] &>/dev/null; then
+  # track weekly profit and losses
+  echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
+fi
+
 # weekly count
 DIP_BI_STATIC_SUM_WEEKLY_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly | awk '{ print $1 }')"
 # static weekly total sum (average)
@@ -4217,6 +4223,12 @@ if [[ "$DIP_BI_MONTHLY_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
     # keep n lines, monthly profit and losses
     echo "$(tail -31 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
   fi
+fi
+
+# if no original amount
+if [[ ! "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" == "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" ]] &>/dev/null; then
+  # track monthly profit and losses
+  echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
 fi
 
 # monthly count
