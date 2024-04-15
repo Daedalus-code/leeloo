@@ -4187,14 +4187,19 @@ if [[ "$DIP_BI_WEEKLY_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
   if [[ "$(echo "$DIP_BI_DYNAMIC_SUM" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     # track daily profit and losses
     echo "$DIP_BI_DYNAMIC_SUM" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
+
+    # track original weekly profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
     # keep n lines, weekly profit and losses
     echo "$(tail -7 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
+    # track original weekly profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
   fi
 fi
 
 # if no original amount
 if [[ ! "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" == "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" ]] &>/dev/null; then
-  # track weekly profit and losses
+  # track original weekly profit and losses
   echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
 fi
 
@@ -4220,14 +4225,19 @@ if [[ "$DIP_BI_MONTHLY_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
   if [[ "$(echo "$DIP_BI_DYNAMIC_SUM" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
     # track daily profit and losses
     echo "$DIP_BI_DYNAMIC_SUM" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
+
+    # track original monthly profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
     # keep n lines, monthly profit and losses
     echo "$(tail -31 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
+    # track original monthly profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
   fi
 fi
 
 # if no original amount
 if [[ ! "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" == "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" ]] &>/dev/null; then
-  # track monthly profit and losses
+  # track original monthly profit and losses
   echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
 fi
 
