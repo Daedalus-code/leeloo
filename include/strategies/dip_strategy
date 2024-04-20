@@ -296,7 +296,7 @@ function amount_to_buy_sell() {
         # disregard delisted markets
         DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | grep -vf "${SYS_DIR:?}"/delisted_"$EXCHANGE_DIR_NAME" | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
       else
-        DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+        DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
       fi
 
       # target bid now
@@ -356,6 +356,8 @@ function amount_to_buy_sell() {
                   echo "$DIP_BUY_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
                 fi
 
+                # old bid price (bought)
+                DIP_TARGET_OLD_BID="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades | grep "buy" | awk '{ print $5 }' | head -1 | awk '{ printf "%.9f\n", $1 }')"
                 # new bid price
                 DIP_TARGET_BID="$DIP_TARGET_BID_NOW"
 
@@ -396,6 +398,14 @@ function amount_to_buy_sell() {
 
                 # if active order profit is below minimum spread limit (ruled by configuration)
                 if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+                  # target status
+                  DIP_TARGET_SPREAD_STATUS="[N0]"
+                fi
+
+                ################################################################
+
+                # if active order old buy price is greater than new sell price
+                if [[ "$(echo "$DIP_TARGET_OLD_BID" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_TARGET_BID" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
                   # target status
                   DIP_TARGET_SPREAD_STATUS="[N0]"
                 fi
