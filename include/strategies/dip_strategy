@@ -141,8 +141,10 @@ function reset_dumped_market_list() {
 function time_and_profit() {
   # if listing and reference data exist
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+
     # market spread
     EXTRA_TIME_WITH_SPREAD=$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')
+
     # if data is present
     if [[ -n "$EXTRA_TIME_WITH_SPREAD" ]] &>/dev/null; then
       # increase limit based on spread
@@ -173,9 +175,9 @@ function time_and_profit() {
   fi
 
   # recalculate days into seconds
-  DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
+  DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
   # recalculate days into seconds
-  DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
+  DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 }
 
 ################################################################################
