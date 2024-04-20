@@ -94,25 +94,6 @@ paused_market   # paused markets
 
 ################################################################################
 
-# if zero (ruled by configuration)
-if [[ -z "$DIP_MAX_BUY_AGE" ]] &>/dev/null; then
-  # use default n days
-  DIP_MAX_BUY_AGE="7"
-fi
-
-# if zero (ruled by configuration)
-if [[ -z "$DIP_MAX_SELL_AGE" ]] &>/dev/null; then
-  # use default n days
-  DIP_MAX_SELL_AGE="14"
-fi
-
-# calculate days into seconds
-DIP_MAX_BUY_AGE_SECONDS="$(echo "$DIP_MAX_BUY_AGE*86400" | bc 2>/dev/null)"
-# calculate days into seconds
-DIP_MAX_SELL_AGE_SECONDS="$(echo "$DIP_MAX_SELL_AGE*86400" | bc 2>/dev/null)"
-
-################################################################################
-
 function reset_active_market_list() {
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # if (active) order exist
@@ -169,6 +150,7 @@ function time_and_profit() {
       DIP_SELL_EXTRA_TIME=$(echo "$EXTRA_TIME_WITH_SPREAD*3.69/10" | bc -l 2>/dev/null)
     fi
   fi
+
   # max buy order age (days) (default)
   DIP_MAX_BUY_AGE=$(egrep "DIP_MAX_BUY_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')
   # max sell order age (days) (default)
