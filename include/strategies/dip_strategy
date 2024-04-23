@@ -1299,6 +1299,13 @@ fi
 
 ################################################################################
 
+# if no data, profit data exist
+if [[ -z "$REFERENCE_CURRENCY" && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
+  REFERENCE_CURRENCY="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $6 }' | head -1)"
+fi
+
+################################################################################
+
 # create specific dip_markets list
 echo "$(echo "$CAT_PRICES_DIP_FILE" | grep "/$DIP_MARKETS" 2>/dev/null)" >"${LOG_DIR:?}/leeloo/$EXCHANGE_DIR_NAME/prices.$DIP_MARKETS" 2>/dev/null
 
@@ -2039,13 +2046,6 @@ decimal_market
 bought_sold_age
 remove_ghost_orders
 target_order_status
-
-################################################################################
-
-# if no data, profit data exist
-if [[ -z "$REFERENCE_CURRENCY" && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
-  REFERENCE_CURRENCY="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $6 }' | head -1)"
-fi
 
 ################################################################################
 
