@@ -683,6 +683,13 @@ function remove_ghost_orders() {
 }
 
 ################################################################################
+
+# if no data, profit data exist
+if [[ -z "$REFERENCE_CURRENCY" && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
+  REFERENCE_CURRENCY="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $6 }' | head -1)"
+fi
+
+################################################################################
 ################################################################################
 # specific target & specific active variables
 ################################################################################
@@ -2064,11 +2071,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # active market pairs
   ACTIVE_MARKET_PAIRS="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | sort -n | awk '!a[$0]++' | xargs | sed '/^$/d')"
-
-  # if no data, profit data exist
-  if [[ -z "$ACTIVE_MARKET_PAIRS" && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
-    ACTIVE_MARKET_PAIRS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $6 }' | head -1)"
-  fi
 
   ##############################################################################
 
