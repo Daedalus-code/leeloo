@@ -4162,7 +4162,7 @@ fi
 # static daily total sum
 DIP_BI_STATIC_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl 2>/dev/null)"
 # balance invested profit losses difference
-DIP_BI_PROFIT_LOSSES_DIFF="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+DIP_BI_PROFIT_LOSSES_DIFF="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | tr -d '-')"
 # calculate difference percentage
 DIP_BI_PROFIT_LOSSES_PERCENTAGE="$(echo "100/$DIP_BI_STATIC_SUM*$DIP_BI_PROFIT_LOSSES_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
@@ -4216,7 +4216,7 @@ DIP_BI_STATIC_SUM_WEEKLY_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY
 # static weekly total sum (average)
 DIP_BI_STATIC_SUM_WEEKLY="$(echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly 2>/dev/null | grep -v "0.000000000" | awk '{ SUM += $1} END { print SUM }')/$DIP_BI_STATIC_SUM_WEEKLY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # balance invested profit losses difference
-DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM_WEEKLY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM_WEEKLY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | tr -d '-')"
 # calculate difference percentage
 DIP_BI_PL_PERCENTAGE_WEEKLY="$(echo "100/$DIP_BI_STATIC_SUM_WEEKLY*$DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
@@ -4254,7 +4254,7 @@ DIP_BI_STATIC_SUM_MONTHLY_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEG
 # static monthly total sum (average)
 DIP_BI_STATIC_SUM_MONTHLY="$(echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly 2>/dev/null | grep -v "0.000000000" | awk '{ SUM += $1} END { print SUM }')/$DIP_BI_STATIC_SUM_MONTHLY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 # balance invested profit losses difference
-DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM_MONTHLY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM_MONTHLY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | tr -d '-')"
 # calculate difference percentage
 DIP_BI_PL_PERCENTAGE_MONTHLY="$(echo "100/$DIP_BI_STATIC_SUM_MONTHLY*$DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
