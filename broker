@@ -122,14 +122,19 @@ case $CHOICE in
       # coin token search
       coin_token_search
 
-      # result
-      RESULT="Coins: Deposited Available Unconfirmed
-$COIN_TOKEN: $(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/balances | awk '{ print $2,$3,$4 }')"
+      # search data
+      COIN_TOKEN_SEARCH="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/balances | awk '{ print $2,$3,$4 }')"
 
       # if any data
-      if [[ -n "$COIN_TOKEN" ]] &>/dev/null; then
+      if [[ -n "$COIN_TOKEN" && -n "$COIN_TOKEN_SEARCH" ]] &>/dev/null; then
 
+        # result
+        RESULT="Coins: Deposited Available Unconfirmed
+  $COIN_TOKEN: $COIN_TOKEN_SEARCH"
+
+        # result
         RESULT="$(echo "$RESULT" | column -t)"
+        # width
         WIDTH="$(echo "$RESULT" | wc -L)"
 
         display_result() {
