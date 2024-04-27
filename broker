@@ -93,7 +93,7 @@ case $CHOICE in
 
   if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-    HEIGHT="10"
+    HEIGHT="11"
     WIDTH="21"
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Account Balances"
@@ -101,7 +101,8 @@ case $CHOICE in
 
     OPTIONS=(1 "Poloniex"
       2 "StakeCube"
-      3 "XeggeX")
+      3 "XeggeX"
+      0 "Search")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
@@ -113,6 +114,46 @@ case $CHOICE in
 
     clear
     case $CHOICE in
+
+    # search balances ##########################################################
+
+    "0")
+
+      # coin token search
+      coin_token_search
+
+      # result
+      RESULT="Coins: Deposited Available Unconfirmed
+$COIN_TOKEN: $(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/balances | awk '{ print $2,$3,$4 }')"
+
+      # if any data
+      if [[ -n "$COIN_TOKEN" ]] &>/dev/null; then
+
+        RESULT="$(echo "$RESULT" | column -t)"
+        WIDTH="$(echo "$RESULT" | wc -L)"
+
+        display_result() {
+          dialog --title "$COIN_TOKEN Balances" \
+            --no-collapse \
+            --msgbox "$RESULT" 6 $(echo "$WIDTH+5" | bc 2>/dev/null)
+        }
+
+      else
+
+        # no result
+        RESULT="Nothing found!"
+
+        display_result() {
+          dialog --title "No Data" \
+            --no-collapse \
+            --msgbox "$RESULT" 5 20
+        }
+
+      fi
+
+      display_result 2>/dev/null
+
+      ;;
 
     # poloniex balances ########################################################
 
