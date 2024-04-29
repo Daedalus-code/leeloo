@@ -833,6 +833,11 @@ function target_data() {
   # if any data
   if [[ -n "$DIP_CAT_PROFIT" ]] &>/dev/null; then
 
+    ############################################################################
+
+    # generate above list, fetch profits that took less than a day to complete
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+
     # efficient market (fast)
     EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | awk '{ print $1 }')"
 
@@ -841,16 +846,20 @@ function target_data() {
       EFFICIENT_MARKET="0"
     fi
 
-    # generate slow list
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow
+    ############################################################################
+
+    # generate below list, fetch profits that took more than a day to complete
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 
     # ineffective market (slow)
-    INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow | awk '{ print $2 }')"
+    INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $1 }')"
 
     # if zero
     if [[ -z "$INEFFECTIVE_MARKET" ]] &>/dev/null; then
       INEFFECTIVE_MARKET="0"
     fi
+
+    ############################################################################
 
     # ineffective market output (slow)
     INEFFECTIVE_MARKET_OUTPUT="$INEFFECTIVE_MARKET"
@@ -865,12 +874,13 @@ function target_data() {
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
 
         # calculate market virtual (RAW)
-        EFFICIENT_MARKET="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
+        EFFICIENT_MARKET="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+
         # efficient market output (fast)
         EFFICIENT_MARKET_OUTPUT="$EFFICIENT_MARKET"
 
-        # if less than n
-        if [[ "$EFFICIENT_MARKET" -lt "0" ]] &>/dev/null; then
+        # if less than n, is zero
+        if [[ "$EFFICIENT_MARKET" -lt "0" || "$EFFICIENT_MARKET" -eq "0" ]] &>/dev/null; then
           EFFICIENT_MARKET="1"
         fi
 
@@ -1159,47 +1169,6 @@ if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
   echo "$(echo "$CAT_PRICES_DIP_FILE" | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null
-fi
-
-################################################################################
-
-# cat profit
-DIP_CAT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null || true)"
-
-# if any data
-if [[ -n "$DIP_CAT_PROFIT" ]] &>/dev/null; then
-
-  # wc profit (count)
-  DIP_WC_PROFIT=$(echo "$DIP_CAT_PROFIT" | wc -l)
-
-  # generate top markets based on count
-  generate_top_markets() {
-    PERCENTAGE=$1
-    ABOVE_FILE="${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
-    # calculate the count for top markets dynamically
-    SPLIT_COUNT=$((DIP_WC_PROFIT * PERCENTAGE / 100))
-    # generate top most efficient market, disregard slow/wrong orders (n+d)
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[0-9]+d|0m" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | head -n $SPLIT_COUNT | awk '{ print $1,$2 }')" >"$ABOVE_FILE"
-  }
-
-  # generate bottom markets based on count
-  generate_bottom_markets() {
-    PERCENTAGE=$1
-    BELOW_FILE="${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
-    # calculate the count for bottom markets dynamically
-    SPLIT_COUNT=$((DIP_WC_PROFIT * PERCENTAGE / 100))
-    # generate top most slowest market
-    echo "$(echo "$DIP_CAT_PROFIT" 2>/dev/null | egrep -v "[1-9]+m|[0-9]+h|0m" | awk '{ print $3 }' | sort | uniq -c | awk '!a[$1,$2]++' | sort -nr | tail -n $SPLIT_COUNT | awk '{ print $1,$2 }')" >"$BELOW_FILE"
-  }
-
-  # calculate the percentage for top and bottom markets dynamically
-  DEFAULT_PERCENTAGE="42"
-
-  # check profit ranges and generate top and bottom markets accordingly
-  if [[ "$DIP_WC_PROFIT" -gt "1" ]] &>/dev/null; then
-    generate_top_markets $DEFAULT_PERCENTAGE
-    generate_bottom_markets $DEFAULT_PERCENTAGE
-  fi
 fi
 
 ################################################################################
@@ -4067,9 +4036,9 @@ DIP_FASTEST_TOTAL_PROFIT="$(grep "$DIP_FASTEST_MARKET" "${SYS_DIR:?}"/robot/"$BA
 DIP_FASTEST_AVERAGE_PROFIT="$(echo "$DIP_FASTEST_TOTAL_PROFIT/$DIP_FASTEST_PROFIT_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 # slowest market (more than a day)
-DIP_SLOWEST_MARKET="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow 2>/dev/null | awk '{ print $1 }')"
+DIP_SLOWEST_MARKET="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below 2>/dev/null | awk '{ print $2 }')"
 # slowest count
-DIP_SLOWEST_COUNT="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".slow 2>/dev/null | awk '{ print $2 }')"
+DIP_SLOWEST_COUNT="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below 2>/dev/null | awk '{ print $1 }')"
 # fastest profit count
 DIP_SLOWEST_PROFIT_COUNT="$(grep -c "$DIP_SLOWEST_MARKET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null || true)"
 # fastest total profit
