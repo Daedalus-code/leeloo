@@ -904,8 +904,11 @@ function target_data() {
           ######################################################################
           ######################################################################
 
+          # total market data combined
+          DIP_TOTAL_MARKET_DATA="$(echo "$EFFICIENT_MARKET_CALCULATED+$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
+
           # market above output (log)
-          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_CALCULATED:?} (${INEFFECTIVE_MARKET:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x$DIP_TOTAL_MARKET_DATA - x${INEFFECTIVE_MARKET:?} = x${EFFICIENT_MARKET_CALCULATED:?} : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
 
           # if extra logs are set
           if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
