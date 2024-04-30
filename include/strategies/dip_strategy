@@ -839,7 +839,7 @@ function target_data() {
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2 | tac)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
 
     # efficient market (fast)
-    EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | awk '{ print $1 }')"
+    EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | awk '{ print $2 }')"
 
     # if zero
     if [[ -z "$EFFICIENT_MARKET" ]] &>/dev/null; then
@@ -852,7 +852,7 @@ function target_data() {
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 
     # ineffective market (slow)
-    INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $1 }')"
+    INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $2 }')"
 
     # if zero
     if [[ -z "$INEFFECTIVE_MARKET" ]] &>/dev/null; then
