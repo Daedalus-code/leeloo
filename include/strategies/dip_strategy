@@ -874,28 +874,25 @@ function target_data() {
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
 
         # calculate market virtual (RAW)
-        EFFICIENT_MARKET="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
-
-        # efficient market output (fast)
-        EFFICIENT_MARKET_OUTPUT="$EFFICIENT_MARKET"
+        EFFICIENT_MARKET_CALCULATED="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
 
         # if less than n, is zero
-        if [[ "$EFFICIENT_MARKET" -lt "0" || "$EFFICIENT_MARKET" -eq "0" ]] &>/dev/null; then
-          EFFICIENT_MARKET="1"
+        if [[ "$EFFICIENT_MARKET_CALCULATED" -lt "0" || "$EFFICIENT_MARKET_CALCULATED" -eq "0" ]] &>/dev/null; then
+          EFFICIENT_MARKET_CALCULATED="1"
         fi
 
         # if market are greater than n
-        if [[ "$EFFICIENT_MARKET" -gt "1" ]] &>/dev/null; then
+        if [[ "$EFFICIENT_MARKET_CALCULATED" -gt "1" ]] &>/dev/null; then
 
           ######################################################################
           ######################################################################
 
           # calculate market virtual
-          EFFICIENT_MARKET_VIRTUAL="$(echo "$EFFICIENT_MARKET/100" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          EFFICIENT_MARKET_VIRTUAL="$(echo "$EFFICIENT_MARKET_CALCULATED/100" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # calculate new allocated based on profit data
           EFFICIENT_MARKET_DATA="$(echo "$DIP_ALLOCATED*$EFFICIENT_MARKET_VIRTUAL" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # recalculate efficient market limit
-          EFFICIENT_MARKET_LIMIT="$(echo "36.9*$EFFICIENT_MARKET_DATA-$(echo "$EFFICIENT_MARKET/100" | bc -l 2>/dev/null)+$(echo "$INEFFECTIVE_MARKET/50" | bc -l 2>/dev/null)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          EFFICIENT_MARKET_LIMIT="$(echo "36.9*$EFFICIENT_MARKET_DATA-$(echo "$EFFICIENT_MARKET_CALCULATED/100" | bc -l 2>/dev/null)+$(echo "$INEFFECTIVE_MARKET/50" | bc -l 2>/dev/null)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # reference allocated increased
           DIP_ALLOCATED="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 
@@ -911,7 +908,7 @@ function target_data() {
           ######################################################################
 
           # market above output (log)
-          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_OUTPUT:?} (${INEFFECTIVE_MARKET_OUTPUT:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_CALCULATED:?} (${INEFFECTIVE_MARKET_OUTPUT:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
 
           # if extra logs are set
           if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
