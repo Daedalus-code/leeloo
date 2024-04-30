@@ -861,9 +861,6 @@ function target_data() {
 
     ############################################################################
 
-    # ineffective market output (slow)
-    INEFFECTIVE_MARKET_OUTPUT="$INEFFECTIVE_MARKET"
-
     # if data
     if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
@@ -878,11 +875,11 @@ function target_data() {
 
         # if less than n, is zero
         if [[ "$EFFICIENT_MARKET_CALCULATED" -lt "0" || "$EFFICIENT_MARKET_CALCULATED" -eq "0" ]] &>/dev/null; then
-          EFFICIENT_MARKET_CALCULATED="1"
+          EFFICIENT_MARKET_CALCULATED="0"
         fi
 
-        # if market are greater than n
-        if [[ "$EFFICIENT_MARKET_CALCULATED" -gt "1" ]] &>/dev/null; then
+        # if efficient market are greater than n
+        if [[ "$EFFICIENT_MARKET_CALCULATED" -gt "0" ]] &>/dev/null; then
 
           ######################################################################
           ######################################################################
@@ -908,7 +905,7 @@ function target_data() {
           ######################################################################
 
           # market above output (log)
-          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_CALCULATED:?} (${INEFFECTIVE_MARKET_OUTPUT:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x${EFFICIENT_MARKET_CALCULATED:?} (${INEFFECTIVE_MARKET:?}) : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
 
           # if extra logs are set
           if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
