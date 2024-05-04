@@ -1285,8 +1285,11 @@ if [[ -z "$CAT_ORDERS_FILE" ]] &>/dev/null; then
   CAT_ORDERS_FILE="0"
 fi
 
-# market.list file output, disregard lines less than n words
-CAT_MARKET_LIST_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk 'NF < 21' | sed '/^$/d')"
+# disregard lines less than n words
+echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | awk 'NF < 21' | sed '/^$/d')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+
+# market.list file output
+CAT_MARKET_LIST_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null)"
 
 # if zero
 if [[ -z "$CAT_MARKET_LIST_FILE" ]] &>/dev/null; then
