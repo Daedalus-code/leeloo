@@ -861,6 +861,18 @@ function target_data() {
 
     ############################################################################
 
+    # calculate market virtual (RAW)
+    EFFICIENT_MARKET_CALCULATED="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+
+    # if less than n, is zero
+    if [[ "$EFFICIENT_MARKET_CALCULATED" -lt "0" || "$EFFICIENT_MARKET_CALCULATED" -eq "0" ]] &>/dev/null; then
+      EFFICIENT_MARKET_CALCULATED="0"
+      # reference allocated decreased (first buy)
+      DIP_ALLOCATED="0.10"
+    fi
+
+    ############################################################################
+
     # if data
     if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
@@ -869,14 +881,6 @@ function target_data() {
 
       # if above (fast profits)
       if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
-
-        # calculate market virtual (RAW)
-        EFFICIENT_MARKET_CALCULATED="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
-
-        # if less than n, is zero
-        if [[ "$EFFICIENT_MARKET_CALCULATED" -lt "0" || "$EFFICIENT_MARKET_CALCULATED" -eq "0" ]] &>/dev/null; then
-          EFFICIENT_MARKET_CALCULATED="0"
-        fi
 
         # if efficient market are greater than n
         if [[ "$EFFICIENT_MARKET_CALCULATED" -gt "0" ]] &>/dev/null; then
