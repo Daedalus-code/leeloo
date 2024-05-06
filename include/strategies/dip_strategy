@@ -862,136 +862,139 @@ function target_data() {
 
 ################################################################################
 
-# cat profit
-DIP_CAT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null || true)"
+function target_profit() {
 
-# if any data
-if [[ -n "$DIP_CAT_PROFIT" ]] &>/dev/null; then
+  # cat profit
+  DIP_CAT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null || true)"
 
-  ##############################################################################
+  # if any data
+  if [[ -n "$DIP_CAT_PROFIT" ]] &>/dev/null; then
 
-  # generate above list, fetch profits that took less than a day to complete
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2 | tac)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    ############################################################################
 
-  # efficient market (fast)
-  EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | awk '{ print $2 }')"
+    # generate above list, fetch profits that took less than a day to complete
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2 | tac)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
 
-  # if zero
-  if [[ -z "$EFFICIENT_MARKET" ]] &>/dev/null; then
-    EFFICIENT_MARKET="0"
-  fi
+    # efficient market (fast)
+    EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | awk '{ print $2 }')"
 
-  ##############################################################################
+    # if zero
+    if [[ -z "$EFFICIENT_MARKET" ]] &>/dev/null; then
+      EFFICIENT_MARKET="0"
+    fi
 
-  # generate below list, fetch profits that took more than a day to complete
-  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+    ############################################################################
 
-  # ineffective market (slow)
-  INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $2 }')"
+    # generate below list, fetch profits that took more than a day to complete
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 
-  # if zero
-  if [[ -z "$INEFFECTIVE_MARKET" ]] &>/dev/null; then
-    INEFFECTIVE_MARKET="0"
-  fi
+    # ineffective market (slow)
+    INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $2 }')"
 
-  ##############################################################################
+    # if zero
+    if [[ -z "$INEFFECTIVE_MARKET" ]] &>/dev/null; then
+      INEFFECTIVE_MARKET="0"
+    fi
 
-  # calculate market virtual (RAW)
-  EFFICIENT_MARKET_CALCULATED="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+    ############################################################################
 
-  # if less than n, is zero
-  if [[ "$EFFICIENT_MARKET_CALCULATED" -lt "0" || "$EFFICIENT_MARKET_CALCULATED" -eq "0" ]] &>/dev/null; then
-    EFFICIENT_MARKET_CALCULATED="0"
-    # reference allocated decreased (first buy)
-    DIP_ALLOCATED="0.10"
-  fi
+    # calculate market virtual (RAW)
+    EFFICIENT_MARKET_CALCULATED="$(echo "$EFFICIENT_MARKET-$INEFFECTIVE_MARKET" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
 
-  ##############################################################################
+    # if less than n, is zero
+    if [[ "$EFFICIENT_MARKET_CALCULATED" -lt "0" || "$EFFICIENT_MARKET_CALCULATED" -eq "0" ]] &>/dev/null; then
+      EFFICIENT_MARKET_CALCULATED="0"
+      # reference allocated decreased (first buy)
+      DIP_ALLOCATED="0.10"
+    fi
 
-  # if data
-  if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    ############################################################################
 
-    # cleanup below file (wrong reference side)
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | egrep -v "$REFERENCE_CURRENCY/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    # if data
+    if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
-    # if above (fast profits)
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
+      # cleanup below file (wrong reference side)
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | egrep -v "$REFERENCE_CURRENCY/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
 
-      # if efficient market are greater than n
-      if [[ "$EFFICIENT_MARKET_CALCULATED" -gt "0" ]] &>/dev/null; then
+      # if above (fast profits)
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
 
-        ########################################################################
-        ########################################################################
+        # if efficient market are greater than n
+        if [[ "$EFFICIENT_MARKET_CALCULATED" -gt "0" ]] &>/dev/null; then
 
-        # calculate market virtual
-        EFFICIENT_MARKET_VIRTUAL="$(echo "$EFFICIENT_MARKET_CALCULATED/100" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-        # calculate new allocated based on profit data
-        EFFICIENT_MARKET_DATA="$(echo "$DIP_ALLOCATED*$EFFICIENT_MARKET_VIRTUAL" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-        # recalculate efficient market limit
-        EFFICIENT_MARKET_LIMIT="$(echo "36.9*$EFFICIENT_MARKET_DATA-$(echo "$EFFICIENT_MARKET_CALCULATED/100" | bc -l 2>/dev/null)+$(echo "$INEFFECTIVE_MARKET/50" | bc -l 2>/dev/null)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-        # reference allocated increased
-        DIP_ALLOCATED="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+          ######################################################################
+          ######################################################################
 
-        ########################################################################
+          # calculate market virtual
+          EFFICIENT_MARKET_VIRTUAL="$(echo "$EFFICIENT_MARKET_CALCULATED/100" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          # calculate new allocated based on profit data
+          EFFICIENT_MARKET_DATA="$(echo "$DIP_ALLOCATED*$EFFICIENT_MARKET_VIRTUAL" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          # recalculate efficient market limit
+          EFFICIENT_MARKET_LIMIT="$(echo "36.9*$EFFICIENT_MARKET_DATA-$(echo "$EFFICIENT_MARKET_CALCULATED/100" | bc -l 2>/dev/null)+$(echo "$INEFFECTIVE_MARKET/50" | bc -l 2>/dev/null)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+          # reference allocated increased
+          DIP_ALLOCATED="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 
-        # max allocate (ruled by configuration)
-        if [[ "$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MAX_ALLOCATED" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-          # use max allowed (ruled by configuration)
-          DIP_ALLOCATED="$DIP_MAX_ALLOCATED"
+          ######################################################################
+
+          # max allocate (ruled by configuration)
+          if [[ "$(echo "$DIP_ALLOCATED" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MAX_ALLOCATED" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+            # use max allowed (ruled by configuration)
+            DIP_ALLOCATED="$DIP_MAX_ALLOCATED"
+          fi
+
+          ######################################################################
+          ######################################################################
+
+          # total market data combined
+          DIP_TOTAL_MARKET_DATA="$(echo "$EFFICIENT_MARKET_CALCULATED+$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
+
+          # market above output (log)
+          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x$DIP_TOTAL_MARKET_DATA - x${INEFFECTIVE_MARKET:?} = x${EFFICIENT_MARKET_CALCULATED:?} : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+
+          # if extra logs are set
+          if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
+            echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+          else
+            echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+          fi
         fi
+      fi
+    fi
 
-        ########################################################################
-        ########################################################################
+    ############################################################################
 
-        # total market data combined
-        DIP_TOTAL_MARKET_DATA="$(echo "$EFFICIENT_MARKET_CALCULATED+$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
+    # if data
+    if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
-        # market above output (log)
-        DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x$DIP_TOTAL_MARKET_DATA - x${INEFFECTIVE_MARKET:?} = x${EFFICIENT_MARKET_CALCULATED:?} : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+      # if non existing (no profits yet)
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
+        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
 
-        # if extra logs are set
-        if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
-          echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-        else
-          echo "$DIP_FAST_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+          # reference allocated decreased (first buy)
+          DIP_ALLOCATED="0.10"
+
+          # if equal values
+          if [[ "$DIP_ALLOCATED_ORIGINAL" == "$DIP_ALLOCATED" ]] &>/dev/null; then
+            DIP_ALLOCATED_OUTPUT="Equals at ${DIP_ALLOCATED_ORIGINAL:?}% - ${DIP_ALLOCATED:?}%"
+          else
+            # not equal
+            DIP_ALLOCATED_OUTPUT="Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+          fi
+
+          # market first output (log)
+          DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x0 : $DIP_ALLOCATED_OUTPUT"
+
+          # if extra logs are set
+          if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
+            echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+          else
+            echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+          fi
         fi
       fi
     fi
   fi
-
-  ##############################################################################
-
-  # if data
-  if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-
-    # if non existing (no profits yet)
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
-
-        # reference allocated decreased (first buy)
-        DIP_ALLOCATED="0.10"
-
-        # if equal values
-        if [[ "$DIP_ALLOCATED_ORIGINAL" == "$DIP_ALLOCATED" ]] &>/dev/null; then
-          DIP_ALLOCATED_OUTPUT="Equals at ${DIP_ALLOCATED_ORIGINAL:?}% - ${DIP_ALLOCATED:?}%"
-        else
-          # not equal
-          DIP_ALLOCATED_OUTPUT="Decreased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
-        fi
-
-        # market first output (log)
-        DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x0 : $DIP_ALLOCATED_OUTPUT"
-
-        # if extra logs are set
-        if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
-          echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-        else
-          echo "$DIP_NEW_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
-        fi
-      fi
-    fi
-  fi
-fi
+}
 
 ################################################################################
 
@@ -1578,6 +1581,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # target data
   TARGET_ACTIVE="TARGET"
   target_data
+  target_profit
   decimal_market
   bought_sold_age
   remove_ghost_orders
