@@ -2946,8 +2946,17 @@ if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>
         if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | egrep -c "sell|buy" || true)" -eq "0" ]] &>/dev/null; then
           # if specific market does exist in active file
           if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)" -eq "1" ]] &>/dev/null; then
+
+            # now
+            DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+            DIP_SOLD_FILE_AGE_DAYS="$(echo "$DIP_SOLD_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
+            # limit
+            DIP_MAX_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_MAX_BUY_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+            DIP_MAX_SOLD_FILE_AGE_DAYS="$(echo "$DIP_MAX_SELL_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
+
             # removing active order output (log)
-            DIP_OLD_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing old active quest (no orders) ! Bought: ${DIP_BOUGHT_FILE_AGE_SECONDS:?}s/${DIP_MAX_SELL_AGE_SECONDS:?}s Sold: ${DIP_SOLD_FILE_AGE_SECONDS:?}s/${DIP_MAX_BUY_AGE_SECONDS:?}s"
+            DIP_OLD_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing old active quest (no orders) ! Bought: ${DIP_BOUGHT_FILE_AGE_DAYS:?}d/${DIP_MAX_BOUGHT_FILE_AGE_DAYS:?}d Sold: ${DIP_SOLD_FILE_AGE_DAYS:?}d/${DIP_MAX_SOLD_FILE_AGE_DAYS:?}d"
             echo "$DIP_OLD_ACTIVE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
             # remove active order
             echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
