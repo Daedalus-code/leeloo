@@ -2836,6 +2836,7 @@ if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>
               DIP_ORDER_ID_BUY_DOTS=""
             fi
 
+            # reset active
             reset_active_market_list
 
             # reset sold file (reset data, age)
@@ -2907,6 +2908,7 @@ if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>
               DIP_ORDER_ID_SELL_DOTS=""
             fi
 
+            # reset active
             reset_active_market_list
 
             # reset sold file (reset data, age)
@@ -2958,8 +2960,9 @@ if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>
             # removing active order output (log)
             DIP_OLD_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing old active quest (no orders) ! Bought: ${DIP_BOUGHT_FILE_AGE_DAYS:?}d/${DIP_MAX_BOUGHT_FILE_AGE_DAYS:?}d Sold: ${DIP_SOLD_FILE_AGE_DAYS:?}d/${DIP_MAX_SOLD_FILE_AGE_DAYS:?}d"
             echo "$DIP_OLD_ACTIVE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-            # remove active order
-            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+
+            # reset active
+            reset_active_market_list
           fi
         fi
       fi
@@ -3089,6 +3092,7 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
                 # reset sell_id file (reset data)
                 truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
 
+                # reset active
                 reset_active_market_list
               fi
             fi
@@ -3160,7 +3164,10 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
           if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | egrep -c "[0-9]+" || true)" -eq "0" || "$DIP_IDENTICAL_PRICES" == "1" ]] &>/dev/null; then
             # not good enough anymore
             DIP_TARGET_SPREAD_STATUS="[N0]"
+
+            # reset active
             reset_active_market_list
+
             # log market new spread output
             DIP_MARKET_RESET="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_TARGET_SPREAD_STATUS Active order was removed from pool."
             echo "$DIP_MARKET_RESET" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -3236,7 +3243,10 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
           if [[ "$DIP_BROKEN_BOUGHT_PRICE" < "$DIP_BROKEN_BOUGHT_PRICE_NOW" && "$DIP_BROKEN_SELLING_PRICE" < "$DIP_BROKEN_BOUGHT_PRICE_NOW" ]] &>/dev/null; then
             # reset broken quest data (bought file)
             truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
+
+            # reset active
             reset_active_market_list
+
             # reset output (log)
             DIP_RESET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Reset slow order. (failed) Diff: ${DIP_BROKEN_DIFF_PERC:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
             echo "$DIP_RESET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
@@ -3275,6 +3285,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
       # reset selling file (reset data)
       truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
 
+      # reset active
       reset_active_market_list
 
       # cleanup output (log)
