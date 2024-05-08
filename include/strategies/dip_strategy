@@ -2497,9 +2497,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
       # if sell percentage equals buy percentage
     elif [[ "$DIP_SELL_PERCENTAGE" == "$DIP_BUY_PERCENTAGE" ]] &>/dev/null; then
       DIP_BS_STATUS="Broker $DIP_BUY_ORDER_COUNT:$DIP_SELL_ORDER_COUNT"
-      # if sell count and buy count equals zero
-    elif [[ "$DIP_BUY_ORDER_COUNT" == "0" && "$DIP_SELL_ORDER_COUNT" == "0" ]] &>/dev/null; then
-      DIP_BS_STATUS="Waiting $DIP_BUY_ORDER_COUNT:$DIP_SELL_ORDER_COUNT"
     fi
   else # no active, no orders
     DIP_BS_STATUS="Waiting"
@@ -3285,14 +3282,8 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
     # if no orders
     if [[ "$DIP_ACTIVE_BROKEN_ORDERS" -eq "0" ]] &>/dev/null; then
 
-      # reset bought file (reset data, age)
-      truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
-      # reset sold file (reset data, age)
-      truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
-      # reset sell_id file (reset data)
-      truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
-      # reset selling file (reset data)
-      truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+      # reset all file (reset data, age)
+      truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".* &>/dev/null
 
       # reset active
       reset_active_market_list
