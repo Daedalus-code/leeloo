@@ -4171,8 +4171,11 @@ if [[ -z "$DIP_SLOWEST_AVERAGE_PROFIT" ]] &>/dev/null; then
   DIP_SLOWEST_AVERAGE_PROFIT="0"
 fi
 
-# keep n lines
-echo "$(tail -101 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr
+# if n lines
+if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr | awk '{ print $1 }')" -gt "512" ]] &>/dev/null; then
+  # keep n lines
+  echo "$(tail -101 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr
+fi
 
 # active market rsi data
 ACTIVE_MARKET_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep -v "RSI: 0" | grep "RSI:" | tail -11)"
