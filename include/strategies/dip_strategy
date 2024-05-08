@@ -3166,6 +3166,9 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
             # not good enough anymore
             DIP_TARGET_SPREAD_STATUS="[N0]"
 
+            # reset broken quest data (bought file)
+            truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
+
             # reset active
             reset_active_market_list
 
@@ -3242,6 +3245,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
         if [[ -n "$DIP_BROKEN_BOUGHT_PRICE" && -n "$DIP_BROKEN_SELLING_PRICE" ]] &>/dev/null; then
           # if price has changed drastically, bought price less than price now
           if [[ "$DIP_BROKEN_BOUGHT_PRICE" < "$DIP_BROKEN_BOUGHT_PRICE_NOW" && "$DIP_BROKEN_SELLING_PRICE" < "$DIP_BROKEN_BOUGHT_PRICE_NOW" ]] &>/dev/null; then
+
             # reset broken quest data (bought file)
             truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
 
