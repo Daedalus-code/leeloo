@@ -2492,8 +2492,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_TARGET_SPREAD_STATUS="[N0]"
     # update missing file with waiting (active with no orders)
     echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
-    # format missing file
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null | xargs)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
+    # format missing file, disregard duplicates
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null | xargs | awk '{for(i=1;i<=NF;i++) if(!seen[$i]++) printf("%s ",$i); print""}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
   fi
 
   ##############################################################################
