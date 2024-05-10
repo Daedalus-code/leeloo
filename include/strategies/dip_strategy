@@ -111,6 +111,11 @@ function reset_active_market_list() {
       # remove old (market.list) order
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
     fi
+    # if (pool) order exist
+    if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool || true)" -eq "1" ]] &>/dev/null; then
+      # remove old (pool) order
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
+    fi
   fi
 }
 
@@ -3132,7 +3137,12 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
   fi
 
   # sell id status
-  DIP_SELL_ID_STATUS="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sell_id | awk '{ print $1 }')"
+  DIP_SELL_ID_STATUS="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sell_id 2>/dev/null | awk '{ print $1 }')"
+
+  # if zero
+  if [[ -z "$DIP_SELL_ID_STATUS" ]] &>/dev/null; then
+    DIP_SELL_ID_STATUS="0"
+  fi
 
   # if balance is not available and if sell_id is empty
   if [[ "$DIP_LISTING_BALANCE_CHECK" == "0" && "$DIP_SELL_ID_STATUS" -eq "0" ]] &>/dev/null; then
