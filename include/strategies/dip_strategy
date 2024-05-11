@@ -3210,14 +3210,9 @@ fi
 bought_sold_age
 time_and_profit
 
-# broken buy age check x n
-DIP_MAX_BUY_AGE_SECONDS_BROKEN="$(echo "$DIP_MAX_BUY_AGE_SECONDS*1.369" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-# broken sell age check x n
-DIP_MAX_SELL_AGE_SECONDS_BROKEN="$(echo "$DIP_MAX_SELL_AGE_SECONDS*1.369" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-
 # if older than n seconds (using max 1 hour)
-if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
-  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
+  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
 
     # active check
     DIP_CHECK_ACTIVE="$(grep -w "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$REFERENCE_CURRENCY" || true)"
