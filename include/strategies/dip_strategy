@@ -3213,13 +3213,53 @@ fi
 bought_sold_age
 time_and_profit
 
-# sell id status
+# selling status
 DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
+# sold status
 DIP_SOLD_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | egrep -c "[0-9]+" || true)"
+# broken bought data
+DIP_BROKEN_BOUGHT_DATA="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null)"
+# broken selling price from data
+DIP_BROKEN_SELLING_PRICE="$(echo "$DIP_BROKEN_BOUGHT_DATA" | tail -1 | awk '{ print $16 }' | tr -d '()')"
+# broken bought price from data
+DIP_BROKEN_BOUGHT_PRICE="$(echo "$DIP_BROKEN_BOUGHT_DATA" | tail -1 | awk '{ print $10 }' | tr -d '()')"
 
-# if older than n seconds (using max 1 hour)
-if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" && "$DIP_SELLING_STATUS" -eq "0" && "$DIP_SOLD_STATUS" -eq "0" ]] &>/dev/null; then
-  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "3600" && "$DIP_SELLING_STATUS" -eq "0" && "$DIP_SOLD_STATUS" -eq "0" ]] &>/dev/null; then
+# if zero
+if [[ -z "$DIP_BROKEN_BOUGHT_PRICE" ]] &>/dev/null; then
+  DIP_BROKEN_BOUGHT_PRICE="0"
+fi
+
+# broken bought amount from data
+DIP_BROKEN_BOUGHT_AMOUNT="$(echo "$DIP_BROKEN_BOUGHT_DATA" | tail -1 | awk '{ print $4 }')"
+
+# if zero
+if [[ -z "$DIP_BROKEN_BOUGHT_AMOUNT" ]] &>/dev/null; then
+  DIP_BROKEN_BOUGHT_AMOUNT="0"
+fi
+
+# broken bought price now
+DIP_BROKEN_BOUGHT_PRICE_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | grep "$LISTING_CURRENCY" | grep "$REFERENCE_CURRENCY" | awk '!a[$1]++' | awk '{ print $2 }')"
+
+# if zero
+if [[ -z "$DIP_BROKEN_BOUGHT_PRICE_NOW" ]] &>/dev/null; then
+  DIP_BROKEN_BOUGHT_PRICE_NOW="0"
+fi
+
+# reset broken selling file (missing amount)
+if [[ "$DIP_BROKEN_BOUGHT_AMOUNT" -gt "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null)" ]] &>/dev/null; then
+  # reset selling file
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling &>/dev/null
+fi
+
+# reset broken selling file (missing amount)
+if [[ "$DIP_BROKEN_BOUGHT_AMOUNT" -gt "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null)" ]] &>/dev/null; then
+  # reset selling file
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold &>/dev/null
+fi
+
+# if older than n seconds (using max 1.5 min)
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "90" && "$DIP_SELLING_STATUS" -eq "0" && "$DIP_SOLD_STATUS" -eq "0" ]] &>/dev/null; then
+  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "90" && "$DIP_SELLING_STATUS" -eq "0" && "$DIP_SOLD_STATUS" -eq "0" ]] &>/dev/null; then
 
     # active check
     DIP_CHECK_ACTIVE="$(grep -w "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$REFERENCE_CURRENCY" || true)"
@@ -3228,30 +3268,8 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" && "$DIP_SELLING_STATUS" -eq "0"
 
     # if true active, no orders
     if [[ "$DIP_CHECK_ACTIVE" -gt "0" && "$DIP_CHECK_ORDERS" -eq "0" ]] &>/dev/null; then
-
-      # broken bought data
-      DIP_BROKEN_BOUGHT_DATA="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null)"
-
       # if any data
       if [[ -n "$DIP_BROKEN_BOUGHT_DATA" ]] &>/dev/null; then
-
-        # broken selling price from data
-        DIP_BROKEN_SELLING_PRICE="$(echo "$DIP_BROKEN_BOUGHT_DATA" | tail -1 | awk '{ print $16 }' | tr -d '()')"
-        # broken bought price from data
-        DIP_BROKEN_BOUGHT_PRICE="$(echo "$DIP_BROKEN_BOUGHT_DATA" | tail -1 | awk '{ print $10 }' | tr -d '()')"
-
-        # if zero
-        if [[ -z "$DIP_BROKEN_BOUGHT_PRICE" ]] &>/dev/null; then
-          DIP_BROKEN_BOUGHT_PRICE="0"
-        fi
-
-        # broken bought price now
-        DIP_BROKEN_BOUGHT_PRICE_NOW="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | grep "$LISTING_CURRENCY" | grep "$REFERENCE_CURRENCY" | awk '!a[$1]++' | awk '{ print $2 }')"
-
-        # if zero
-        if [[ -z "$DIP_BROKEN_BOUGHT_PRICE_NOW" ]] &>/dev/null; then
-          DIP_BROKEN_BOUGHT_PRICE_NOW="0"
-        fi
 
         # broken difference
         DIP_BROKEN_DIFF="$(echo "$DIP_BROKEN_BOUGHT_PRICE_NOW-$DIP_BROKEN_BOUGHT_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
