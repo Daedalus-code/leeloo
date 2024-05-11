@@ -323,8 +323,13 @@ function amount_to_buy_sell() {
 
       # bought file age (seconds)
       DIP_BOUGHT_SLOW_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+      # bought file age (days)
+      DIP_BOUGHT_SLOW_AGE_DAYS="$(echo "$DIP_BOUGHT_SLOW_AGE_SECONDS/1440" | bc 2>/dev/null)"
+
       # sold file age (seconds)
       DIP_SOLD_SLOW_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+      # sold file age (days)
+      DIP_SOLD_SLOW_AGE_DAYS="$(echo "$DIP_SOLD_SLOW_AGE_SECONDS/1440" | bc 2>/dev/null)"
 
       # active orders (.orders)
       DIP_ORDERS_COUNT=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".orders 2>/dev/null | wc -l)
@@ -2498,8 +2503,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_BS_STATUS="Waiting"
     # probably not good enough
     DIP_TARGET_SPREAD_STATUS="[N0]"
-    # update missing file with waiting (active with no orders)
-    echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
     # format missing file, disregard duplicates
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null | xargs | awk '{for(i=1;i<=NF;i++) if(!seen[$i]++) printf("%s ",$i); print""}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
   fi
@@ -3197,7 +3200,7 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
             reset_active_market_list
 
             # log market new spread output
-            DIP_MARKET_RESET="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_TARGET_SPREAD_STATUS Active order was removed from pool."
+            DIP_MARKET_RESET="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_TARGET_SPREAD_STATUS Active order was removed from pool. Age: $DIP_BOUGHT_AGE_OUTPUT"
             echo "$DIP_MARKET_RESET" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
             # pause failed market (listing)
