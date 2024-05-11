@@ -3210,9 +3210,12 @@ fi
 bought_sold_age
 time_and_profit
 
+# sell id status
+DIP_SOLD_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | egrep -c "[0-9]+" || true)"
+
 # if older than n seconds (using max 1 hour)
-if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
-  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "3600" ]] &>/dev/null; then
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" && "$DIP_SOLD_STATUS" -eq "0" ]] &>/dev/null; then
+  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "3600" && "$DIP_SOLD_STATUS" -eq "0" ]] &>/dev/null; then
 
     # active check
     DIP_CHECK_ACTIVE="$(grep -w "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$REFERENCE_CURRENCY" || true)"
