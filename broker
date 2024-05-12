@@ -939,9 +939,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   ##############################################################################
 
-  HEIGHT=17
+  HEIGHT=18
   WIDTH=53
-  CHOICE_HEIGHT=10
+  CHOICE_HEIGHT=11
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
@@ -949,14 +949,15 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
   OPTIONS=(
     1 "Config           Leeloo config"
     2 "API              Secret & Key config"
-    3 "Reset            All Configurations!"
-    4 "Reset            Leeloo Config"
+    3 "Reset            All configurations!"
+    4 "Reset            Leeloo config"
     5 "Reset            Secret & Key config"
+    P "Reset            Paused markets"
     G "Graph            Reference graphs"
     8 "Locale           English (United States)"
     9 "Dialog           Edit dialogrc"
     F "Filter           robot/orders log filters"
-    0 "Delist           Delisting Markets")
+    0 "Delist           Delisting markets")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -1023,6 +1024,22 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
     clear
+
+    ;;
+
+    # reset paused markets
+
+  "5")
+
+    if dialog --stdout --title "Reset paused markets?" \
+      --backtitle "Reset pause file?" \
+      --yesno "Yes: Reset! No: Go back!" 5 33; then
+      wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null
+      sleep 1
+      truncate -s 0 "$LOG_DIR"/leeloo/*/pause &>/dev/null
+      echo "Paused Markets are reset!"
+      sleep 1
+    fi
 
     ;;
 
