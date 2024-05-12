@@ -2503,8 +2503,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_BS_STATUS="Waiting"
     # probably not good enough
     DIP_TARGET_SPREAD_STATUS="[N0]"
-    # format missing file, disregard duplicates
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null | xargs | awk '{for(i=1;i<=NF;i++) if(!seen[$i]++) printf("%s ",$i); print""}')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
   fi
 
   ##############################################################################
@@ -2602,7 +2600,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   decimal_market
 
-  # balance has selling power (available), not buying, good enough
+  # balance has selling power (available), not buying, good enough to sell
   if [[ "$DIP_LISTING_BALANCE_CHECK" -gt "0" && "$DIP_BUYING_STATUS" -eq "0" && ! "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
     # if total sum (sold) is less than target amount
     if [[ "$DIP_TOTAL_SOLD_SUM_CHECK" -lt "$DIP_TARGET_BALANCE_CHECK" ]] &>/dev/null; then
@@ -3175,7 +3173,7 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" ]] &>/dev/null
         # if too old
         if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
           DIP_QUEST_IS_TOO_OLD="1"
-          DIP_TARGET_SPREAD_STATUS="Too old!"
+          DIP_TARGET_SPREAD_STATUS="Order too old!"
         fi
 
         ########################################################################
