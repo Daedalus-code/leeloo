@@ -2957,16 +2957,8 @@ if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>
           # if specific market does exist in active file
           if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)" -eq "1" ]] &>/dev/null; then
 
-            # now
-            DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-            DIP_SOLD_FILE_AGE_DAYS="$(echo "$DIP_SOLD_FILE_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-
-            # limit
-            DIP_MAX_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_MAX_BUY_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-            DIP_MAX_SOLD_FILE_AGE_DAYS="$(echo "$DIP_MAX_SELL_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
-
             # removing active order output (log)
-            DIP_OLD_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing old active quest (no orders) ! Bought: ${DIP_BOUGHT_FILE_AGE_DAYS:?}d/${DIP_MAX_BOUGHT_FILE_AGE_DAYS:?}d Sold: ${DIP_SOLD_FILE_AGE_DAYS:?}d/${DIP_MAX_SOLD_FILE_AGE_DAYS:?}d"
+            DIP_OLD_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (no orders!) Age: $DIP_BOUGHT_AGE_OUTPUT"
             echo "$DIP_OLD_ACTIVE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
             # reset active
@@ -2989,6 +2981,9 @@ bought_sold_age
 time_and_profit
 decimal_market
 target_order_status
+
+# it was not sold (default)
+DIP_SOLD="0"
 
 # active target
 DIP_ACTIVE_TARGET="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
@@ -3105,6 +3100,9 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
 
                 # reset active
                 reset_active_market_list
+
+                # it was sold
+                DIP_SOLD="1"
               fi
             fi
           fi
@@ -3116,8 +3114,8 @@ fi
 
 ################################################################################
 
-# if sold has a signal
-if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
+# if spread status is bad, if sold status equals zero
+if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" ]] &>/dev/null; then
 
   time_and_profit
 
