@@ -2956,7 +2956,7 @@ if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>
           if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)" -eq "1" ]] &>/dev/null; then
 
             # removing active order output (log)
-            DIP_OLD_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (no orders!) Age: $DIP_BOUGHT_AGE_OUTPUT"
+            DIP_OLD_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (No orders) Age: $DIP_BOUGHT_AGE_OUTPUT"
             echo "$DIP_OLD_ACTIVE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
             # reset active
@@ -3167,19 +3167,19 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" ]] &>/dev/null
         # if selling is less than target
         if [[ "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
           DIP_BOUGHT_IS_LESS="1"
-          DIP_TARGET_SPREAD_OUTPUT="Potential loss!"
+          DIP_TARGET_SPREAD_OUTPUT="Potential loss"
         fi
 
         # if bid ask and last is identical
         if [[ "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_ASK" && "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_LAST" ]] &>/dev/null; then
           DIP_IDENTICAL_PRICES="1"
-          DIP_TARGET_SPREAD_OUTPUT="Identical prices!"
+          DIP_TARGET_SPREAD_OUTPUT="Identical prices"
         fi
 
         # if too old
         if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
           DIP_QUEST_IS_TOO_OLD="1"
-          DIP_TARGET_SPREAD_OUTPUT="Order too old!"
+          DIP_TARGET_SPREAD_OUTPUT="Order too old"
         fi
 
         ########################################################################
