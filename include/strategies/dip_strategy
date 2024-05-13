@@ -435,6 +435,7 @@ function amount_to_buy_sell() {
                 if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
                   # target status
                   DIP_TARGET_SPREAD_STATUS="[N0]"
+                  #
                 fi
 
                 ################################################################
@@ -3170,8 +3171,8 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" ]] &>/dev/null
     DIP_SELL_ID_STATUS="0"
   fi
 
-  # if balance is not available and if sell_id is empty
-  if [[ "$DIP_LISTING_BALANCE_CHECK" == "0" && "$DIP_SELL_ID_STATUS" -eq "0" ]] &>/dev/null; then
+  # if sell_id is empty
+  if [[ "$DIP_SELL_ID_STATUS" -eq "0" ]] &>/dev/null; then
     # if bought is old enough (1800 seconds = 1 hour), if sell_id is empty
     if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" || "$DIP_SELL_ID_STATUS" -eq "0" ]] &>/dev/null; then
       # if sold is old enough (1800 seconds = 1 hour), if sell_id is empty
