@@ -3171,69 +3171,66 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" ]] &>/dev/null
     DIP_SELL_ID_STATUS="0"
   fi
 
-  # if sell_id is empty
-  if [[ "$DIP_SELL_ID_STATUS" -eq "0" ]] &>/dev/null; then
-    # if bought is old enough (1800 seconds = 1 hour), if sell_id is empty
-    if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "3600" || "$DIP_SELL_ID_STATUS" -eq "0" ]] &>/dev/null; then
-      # if sold is old enough (1800 seconds = 1 hour), if sell_id is empty
-      if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "3600" || "$DIP_SELL_ID_STATUS" -eq "0" ]] &>/dev/null; then
+  # if bought is old enough (1800 seconds = 30 min), if sell_id is empty
+  if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "1800" && "$DIP_SELL_ID_STATUS" -eq "0" ]] &>/dev/null; then
+    # if sold is old enough (1800 seconds = 30 min), if sell_id is empty
+    if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "1800" && "$DIP_SELL_ID_STATUS" -eq "0" ]] &>/dev/null; then
 
-        ########################################################################
+      ##########################################################################
 
-        # dip target data
-        DIP_TARGET_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '_' ' ' | tr '/' ' ' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1,$2]++')"
-        DIP_TARGET_DATA_BID="$(echo "$DIP_TARGET_DATA" | awk '{ print $3 }')"
-        DIP_TARGET_DATA_ASK="$(echo "$DIP_TARGET_DATA" | awk '{ print $4 }')"
-        DIP_TARGET_DATA_LAST="$(echo "$DIP_TARGET_DATA" | awk '{ print $5 }')"
+      # dip target data
+      DIP_TARGET_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '_' ' ' | tr '/' ' ' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1,$2]++')"
+      DIP_TARGET_DATA_BID="$(echo "$DIP_TARGET_DATA" | awk '{ print $3 }')"
+      DIP_TARGET_DATA_ASK="$(echo "$DIP_TARGET_DATA" | awk '{ print $4 }')"
+      DIP_TARGET_DATA_LAST="$(echo "$DIP_TARGET_DATA" | awk '{ print $5 }')"
 
-        ########################################################################
+      ##########################################################################
 
-        # default
-        DIP_TARGET_SPREAD_OUTPUT="Too slow"
+      # default
+      DIP_TARGET_SPREAD_OUTPUT="Too slow"
 
-        # if selling is less than target
-        if [[ "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-          DIP_BOUGHT_IS_LESS="1"
-          DIP_TARGET_SPREAD_OUTPUT="Potential loss"
-        fi
+      # if selling is less than target
+      if [[ "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+        DIP_BOUGHT_IS_LESS="1"
+        DIP_TARGET_SPREAD_OUTPUT="Potential loss"
+      fi
 
-        # if bid ask and last is identical
-        if [[ "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_ASK" && "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_LAST" ]] &>/dev/null; then
-          DIP_IDENTICAL_PRICES="1"
-          DIP_TARGET_SPREAD_OUTPUT="Identical prices"
-        fi
+      # if bid ask and last is identical
+      if [[ "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_ASK" && "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_LAST" ]] &>/dev/null; then
+        DIP_IDENTICAL_PRICES="1"
+        DIP_TARGET_SPREAD_OUTPUT="Identical prices"
+      fi
 
-        ########################################################################
+      ##########################################################################
 
-        # selling status
-        DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
-        # sold status
-        DIP_SOLD_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | egrep -c "[0-9]+" || true)"
+      # selling status
+      DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
+      # sold status
+      DIP_SOLD_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | egrep -c "[0-9]+" || true)"
 
-        # if selling has no data, is less than target, if sell_id is empty, too old
-        if [[ "$DIP_SELLING_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
-          # if sold has no data, is less than target, if sell_id is empty, too old
-          if [[ "$DIP_SOLD_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
+      # if selling has no data, is less than target, if sell_id is empty, too old
+      if [[ "$DIP_SELLING_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
+        # if sold has no data, is less than target, if sell_id is empty, too old
+        if [[ "$DIP_SOLD_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
 
-            # reset broken quest age (bought file)
-            echo "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought)" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
+          # reset broken quest age (bought file)
+          echo "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought)" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
 
-            # log market new spread output
-            DIP_MARKET_RESET="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. ($DIP_TARGET_SPREAD_OUTPUT) Age: $DIP_BOUGHT_AGE_OUTPUT"
-            echo "$DIP_MARKET_RESET" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+          # log market new spread output
+          DIP_MARKET_RESET="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. ($DIP_TARGET_SPREAD_OUTPUT) Age: $DIP_BOUGHT_AGE_OUTPUT"
+          echo "$DIP_MARKET_RESET" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-            # reset active
-            reset_active_market_list
+          # reset active
+          reset_active_market_list
 
-            # if any data
-            if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
-              # remove failed order (orders)
-              echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
-            fi
-
-            # pause failed market (listing)
-            echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+          # if any data
+          if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
+            # remove failed order (orders)
+            echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
           fi
+
+          # pause failed market (listing)
+          echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
         fi
       fi
     fi
