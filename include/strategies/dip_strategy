@@ -3164,6 +3164,9 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" ]] &>/dev/null
 
         ########################################################################
 
+        # default
+        DIP_TARGET_SPREAD_OUTPUT="Too slow"
+
         # if selling is less than target
         if [[ "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
           DIP_BOUGHT_IS_LESS="1"
@@ -3174,12 +3177,6 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" ]] &>/dev/null
         if [[ "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_ASK" && "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_LAST" ]] &>/dev/null; then
           DIP_IDENTICAL_PRICES="1"
           DIP_TARGET_SPREAD_OUTPUT="Identical prices"
-        fi
-
-        # if too old
-        if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
-          DIP_QUEST_IS_TOO_OLD="1"
-          DIP_TARGET_SPREAD_OUTPUT="Order too old"
         fi
 
         ########################################################################
