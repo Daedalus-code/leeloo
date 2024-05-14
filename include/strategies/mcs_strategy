@@ -36,25 +36,16 @@ STRATEGY_TYPE="MCS"
 EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # listing currency
 LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# account allocated (n%)
+# account allocated (n%) use 'MIN' for minimum possible
 LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # reference currency
 REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# account allocated (n%)
-REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
 ################################################################################
 # exchange template
 ################################################################################
 
 exchange_template
-
-################################################################################
-
-# random n
-RANDOM_ORDER_VALUE=$((((RANDOM % 1111) + 1)))
-# account allocated (n%)
-LISTING_ALLOCATED="${LISTING_ALLOCATED}${RANDOM_ORDER_VALUE}"
 
 ################################################################################
 # data
@@ -65,17 +56,26 @@ tx_id_data              # txid data
 listing_data            # get available listing data
 reference_data          # get available reference data
 listing_allocated       # total listing allocated
-reference_allocated     # total reference allocated
 listing_balance_check   # check for listing balance
 reference_balance_check # check for reference balance
 insufficient_funds      # check for available funds
 
 ################################################################################
 
-# listing amount below limit
-if (($(echo "$LISTING_AMOUNT < 0.01" | bc -l 2>/dev/null))); then
-  # set minimum listing amount
-  LISTING_AMOUNT="$(echo "0.01${RANDOM_ORDER_VALUE:?}101" | awk '{ printf "%.9f\n", $1 }')"
+# if any data
+if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  # listing equals min (minimum), listing amount below n
+  if [[ "$LISTING_ALLOCATED" == "MIN" || "$LISTING_ALLOCATED" < "1" ]] &>/dev/null; then
+    # if any files
+    if [[ -f "${LOG_DIR:?}"/leeloo/getlist ]] &>/dev/null; then
+      # minimum decimal
+      MCS_MINIMUM_LISTING_AMOUNT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
+      # minimum decimal calculation
+      MCS_MINIMUM_LISTING_AMOUNT="$(echo "$MCS_MINIMUM_LISTING_AMOUNT-1" | bc -l 2>/dev/null)"
+      # set minimum listing amount
+      LISTING_AMOUNT="$(echo "0" | awk '{ printf "%.'$MCS_MINIMUM_LISTING_AMOUNT'f\n", $1 }')1"
+    fi
+  fi
 fi
 
 ################################################################################
@@ -169,11 +169,6 @@ if [[ -z "$LISTING_ALLOCATED_REAL_CHECK" ]] &>/dev/null; then
   LISTING_ALLOCATED_REAL_CHECK="N/A"
 fi
 
-# if zero
-if [[ -z "$REFERENCE_ALLOCATED_REAL_CHECK" ]] &>/dev/null; then
-  REFERENCE_ALLOCATED_REAL_CHECK="N/A"
-fi
-
 ################################################################################
 
 # get data
@@ -189,7 +184,6 @@ Listing_Allocated.....: ${LISTING_ALLOCATED_REAL_CHECK:?}%/${LISTING_ALLOCATED:?
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY ($LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY)
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY ($LISTING_AVAILABLE_VALUED $REFERENCE_CURRENCY)
 Listing_Unconfirmed...: $LISTING_UNCONFIRMED_BALANCE $LISTING_CURRENCY ($LISTING_UNCONFIRMED_VALUED $REFERENCE_CURRENCY)
-Reference_Allocated...: ${REFERENCE_ALLOCATED_REAL_CHECK:?}%/${REFERENCE_ALLOCATED:?}%
 Reference_Amount......: $REFERENCE_AMOUNT $REFERENCE_CURRENCY ($REFERENCE_AMOUNT_VALUED $LISTING_CURRENCY)
 Reference_Available...: $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY ($REFERENCE_AVAILABLE_VALUED $LISTING_CURRENCY)
 Reference_Unconfirmed.: $REFERENCE_UNCONFIRMED_BALANCE $REFERENCE_CURRENCY ($REFERENCE_UNCONFIRMED_VALUED $LISTING_CURRENCY)
