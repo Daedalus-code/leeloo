@@ -3904,8 +3904,11 @@ fi
 
 ################################################################################
 
-# keep n lines
-echo "$(tail -11 "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause 2>/dev/null
+# if lines are greater than n
+if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause | awk '{ print $1 }')" -gt "10" ]] &>/dev/null; then
+  # reset pause file
+  truncate -s 0 "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause &>/dev/null
+fi
 
 ################################################################################
 # profits & gains
