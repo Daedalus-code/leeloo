@@ -462,8 +462,11 @@ function amount_to_buy_sell() {
 
                 ################################################################
 
-                # if old buy price is greater than new sell price, active order profit is above minimum spread limit (ruled by configuration)
-                if [[ "$DIP_TARGET_SPREAD_STATUS" == "[OK]" && "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+                # selling status
+                DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
+
+                # if selling status equals zero, old buy price is greater than new sell price, active order profit is above minimum spread limit (ruled by configuration)
+                if [[ "$DIP_SELLING_STATUS" -eq "0" || "$DIP_TARGET_SPREAD_STATUS" == "[OK]" && "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
 
                   # update bought data
                   echo "$LOG_DATE : Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for ($DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY) @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }') Price -> Quest: Selling @ $(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }') Price for ($DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY) Earning: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
