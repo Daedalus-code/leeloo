@@ -3214,29 +3214,32 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLI
       # sold status
       DIP_SOLD_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | egrep -c "[0-9]+" || true)"
 
-      # if selling has no data, is less than target, if sell_id is empty, too old
-      if [[ "$DIP_SELLING_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
-        # if sold has no data, is less than target, if sell_id is empty, too old
-        if [[ "$DIP_SOLD_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
+      # if selling has no data
+      if [[ "$DIP_SELLING_STATUS" -eq "0" ]] &>/dev/null; then
+        # if less than target, if sell_id is empty, too old
+        if [[ "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
+          # if sold has no data, is less than target, if sell_id is empty, too old
+          if [[ "$DIP_SOLD_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
 
-          # reset broken quest age (bought file)
-          echo "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought)" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
+            # reset broken quest age (bought file)
+            echo "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought)" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
 
-          # log market new spread output
-          DIP_MARKET_RESET="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. ($DIP_TARGET_SPREAD_OUTPUT) Age: $DIP_BOUGHT_AGE_OUTPUT"
-          echo "$DIP_MARKET_RESET" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+            # log market new spread output
+            DIP_MARKET_RESET="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. ($DIP_TARGET_SPREAD_OUTPUT) Age: $DIP_BOUGHT_AGE_OUTPUT"
+            echo "$DIP_MARKET_RESET" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
-          # reset active
-          reset_active_market_list
+            # reset active
+            reset_active_market_list
 
-          # if any data
-          if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
-            # remove failed order (orders)
-            echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
+            # if any data
+            if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
+              # remove failed order (orders)
+              echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
+            fi
+
+            # pause failed market (listing)
+            echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
           fi
-
-          # pause failed market (listing)
-          echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
         fi
       fi
     fi
