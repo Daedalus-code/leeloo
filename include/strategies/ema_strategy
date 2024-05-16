@@ -713,8 +713,8 @@ fi
 
 ################################################################################
 
-# if no data
-if [[ "$LISTING_PRICE" == "0.000000000" ]] &>/dev/null; then
+# if no data, only zeros, not sure n error
+if [[ "$LISTING_PRICE" == "0.000000000" || "$LISTING_PRICE" == "10000.00" ]] &>/dev/null; then
   # use last data point from logs
   LISTING_PRICE="$(egrep -o "[0-9]+.[0-9]+ Bullish|[0-9]+.[0-9]+ Bearish" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | egrep "[0-9]+.[0-9]+" | grep -v "0.000000000" | awk '{ print $1 }' | tail -1)"
 fi
