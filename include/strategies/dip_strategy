@@ -2782,6 +2782,17 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   fi
 fi
 
+# if above n when selling
+if [[ "$(echo "$DIP_LEFTOVER_SIZE_OUTPUT" | awk -F. '{ print $1 }')" -gt "99" || "$(echo "$DIP_LEFTOVER_TOTAL" | awk -F. '{ print $1 }')" -gt "99" || "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
+  # if missing
+  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing || true)" -eq "0" ]] &>/dev/null; then
+    # update missing
+    echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
+    # format correctly
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing | xargs 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
+  fi
+fi
+
 ################################################################################
 
 # if active file has zero orders
