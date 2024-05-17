@@ -3073,6 +3073,7 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
 
               # total sum check (confirmed sold)
               DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
+
               # if zero
               if [[ -z "$DIP_TOTAL_SOLD_FILE_CHECK" ]] &>/dev/null; then
                 # total sum check (confirmed sold)
@@ -3218,6 +3219,12 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLI
         DIP_TARGET_SPREAD_OUTPUT="Identical prices"
       fi
 
+      # if old data (already sold)
+      if [[ "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep -c "(sold)" || true)" -eq "1" ]] &>/dev/null; then
+        DIP_OLD_DATA="1"
+        DIP_TARGET_SPREAD_OUTPUT="Old data"
+      fi
+
       ##########################################################################
 
       # selling status
@@ -3227,10 +3234,10 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLI
 
       # if selling has no data
       if [[ "$DIP_SELLING_STATUS" -eq "0" ]] &>/dev/null; then
-        # if less than target, if sell_id is empty, too old
-        if [[ "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
+        # if less than target, if sell_id is empty, too old, old data
+        if [[ "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" || "$DIP_OLD_DATA" -eq "1" ]] &>/dev/null; then
           # if sold has no data, is less than target, if sell_id is empty, too old
-          if [[ "$DIP_SOLD_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" ]] &>/dev/null; then
+          if [[ "$DIP_SOLD_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" || "$DIP_OLD_DATA" -eq "1" ]] &>/dev/null; then
 
             # reset broken quest age (bought file)
             echo "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought)" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
