@@ -3157,8 +3157,21 @@ fi
 
 ################################################################################
 
-# selling status
-DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
+# if data is missing (bought)
+if [[ "$(grep "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+  # selling status
+  DIP_SELLING_STATUS="0"
+  # reset data points
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sell_id &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".bought &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold &>/dev/null
+else
+  # selling status
+  DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
+fi
+
+################################################################################
 
 # if spread status is bad, if sold status equals zero
 if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLING_STATUS" -eq "0" ]] &>/dev/null; then
