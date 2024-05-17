@@ -3225,6 +3225,12 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLI
         DIP_TARGET_SPREAD_OUTPUT="Old data"
       fi
 
+      # if data is missing (bought)
+      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".bought || true)" -eq "1" ]] &>/dev/null; then
+        DIP_DATA_MISSING="1"
+        DIP_TARGET_SPREAD_OUTPUT="Missing data"
+      fi
+
       ##########################################################################
 
       # selling status
@@ -3235,9 +3241,9 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLI
       # if selling has no data
       if [[ "$DIP_SELLING_STATUS" -eq "0" ]] &>/dev/null; then
         # if less than target, if sell_id is empty, too old, old data
-        if [[ "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" || "$DIP_OLD_DATA" -eq "1" ]] &>/dev/null; then
+        if [[ "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" || "$DIP_OLD_DATA" -eq "1" || "$DIP_DATA_MISSING" -eq "1" ]] &>/dev/null; then
           # if sold has no data, is less than target, if sell_id is empty, too old
-          if [[ "$DIP_SOLD_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" || "$DIP_OLD_DATA" -eq "1" ]] &>/dev/null; then
+          if [[ "$DIP_SOLD_STATUS" -eq "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" || "$DIP_OLD_DATA" -eq "1" || "$DIP_DATA_MISSING" -eq "1" ]] &>/dev/null; then
 
             # reset broken quest age (bought file)
             echo "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought)" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
