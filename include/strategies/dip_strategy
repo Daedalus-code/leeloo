@@ -1636,14 +1636,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   fi
 
   ##############################################################################
-
-  # if bought data has negative profit
-  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | awk '{ print $NF }' | grep -c "-" || true)" -gt "0" ]] &>/dev/null; then
-    # reset bought file
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
-  fi
-
-  ##############################################################################
   # potential buy target
   ##############################################################################
 
@@ -2072,6 +2064,14 @@ decimal_market
 bought_sold_age
 remove_ghost_orders
 target_order_status
+
+################################################################################
+
+# if bought data has negative profit
+if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | awk '{ print $NF }' | grep -c "-" || true)" -gt "0" ]] &>/dev/null; then
+  # reset bought file
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
+fi
 
 ################################################################################
 
