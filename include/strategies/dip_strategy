@@ -2752,8 +2752,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           # re calculate profit amount based on order size
           DIP_SELL_AMOUNT_PROFIT="$(echo "$(echo "$DIP_LEFTOVER_SIZE/100" | bc -l 2>/dev/null)*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
-          # if order has no losses (negative symbol)
-          if [[ "$(echo "$DIP_SELL_AMOUNT_PROFIT" | grep -c "-" || true)" -eq "0" ]] &>/dev/null; then
+          # if order has no losses (negative symbol), is not 100
+          if [[ "$(echo "$DIP_SELL_AMOUNT_PROFIT" | grep -c "-" || true)" -eq "0" && ! "$DIP_LEFTOVER_FILLED" == "100" ]] &>/dev/null; then
 
             ####################################################################
 
