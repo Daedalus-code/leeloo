@@ -170,7 +170,7 @@ function decimal_market() {
   DECIMAL_LIMIT="9"
   # market list age (seconds)
   GET_LIST_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  # if greater than n, if not found
+  # if greater than n, if not found, if empty
   if [[ "$GET_LIST_AGE" -gt "3600" || ! -f "${LOG_DIR:?}"/leeloo/getlist || -s "${LOG_DIR:?}"/leeloo/getlist ]] &>/dev/null; then
     # quantity decimals
     echo "$(getlist 2>/dev/null | column -t | sort -n -k 2)" >"${LOG_DIR:?}"/leeloo/getlist.tmp 2>/dev/null
@@ -179,8 +179,6 @@ function decimal_market() {
       # update data
       mv "${LOG_DIR:?}"/leeloo/getlist.tmp "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null
     fi
-    # remove tmp
-    rm "${LOG_DIR:?}"/leeloo/getlist.tmp &>/dev/null
   fi
   # if any data points
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
