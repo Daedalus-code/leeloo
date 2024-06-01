@@ -26,33 +26,21 @@ BASENAME_STRATEGY="$(basename "$0" | awk -F. '{ print $1 }')"
 log_date
 
 ################################################################################
-# custom strategy configuration (static)
+# sniper strategy configuration (static)
 ################################################################################
 
-STRATEGY_TYPE="CST"
+STRATEGY_TYPE="SNP"
 
 # exchange template
 EXCHANGE_API="$(egrep "EXCHANGE_API=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # market or limit order
 MARKET_LIMIT="$(egrep "MARKET_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# sell or buy order
-TYPE="$(egrep "TYPE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# execute cooldown (days)
-CST_COOLDOWN="$(egrep "CST_COOLDOWN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# reference status
-REFERENCE_STATUS="$(egrep "REFERENCE_STATUS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# listing currency
-LISTING_CURRENCY="$(egrep "LISTING_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# listing trigger  (execute when amount is reached)
-LISTING_TRIGGER="$(egrep "LISTING_TRIGGER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# account allocated (n%)
-LISTING_ALLOCATED="$(egrep "LISTING_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # reference currency
 REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# listing trigger (execute when amount is reached)
-REFERENCE_TRIGGER="$(egrep "REFERENCE_TRIGGER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # account allocated (n%)
 REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# minimum rsi before buying
+SNP_RST_LIMIT="$(egrep "SNP_RST_LIMIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
 ################################################################################
 # exchange template
