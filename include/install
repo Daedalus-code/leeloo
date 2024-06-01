@@ -314,4 +314,24 @@ if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | grep "DIP" | grep ".config" | wc -l
   done
 fi
 
+################################################################################
+
+# if configuration exist
+if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | grep "DST" | grep ".config" | wc -l)" -gt "0" ]] &>/dev/null; then
+  # update DST strategy
+  for DST_UPDATES in "$SYS_DIR"/robot/DST*.strategy; do
+    cat "${HOME_DIR:?}"/leeloo/include/strategies/dst_strategy >"$DST_UPDATES" 2>/dev/null
+  done
+fi
+
+################################################################################
+
+# if configuration exist
+if [[ "$(echo "$(ls -l "$SYS_DIR"/robot/)" | grep "SNP" | grep ".config" | wc -l)" -gt "0" ]] &>/dev/null; then
+  # update SNP strategy
+  for SNP_UPDATES in "$SYS_DIR"/robot/SNP*.strategy; do
+    cat "${HOME_DIR:?}"/leeloo/include/strategies/snp_strategy >"$SNP_UPDATES" 2>/dev/null
+  done
+fi
+
 # END
