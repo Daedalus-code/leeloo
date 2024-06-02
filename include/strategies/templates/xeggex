@@ -657,12 +657,21 @@ function target_order_status() {
               if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
                 # update sold file
                 echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+              else
+                # reset sold file
+                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
               fi
             fi
           fi
         fi
-        # track order amount being sold (constantly if id matches)
-        echo "$ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
+        # if not a new buy
+        if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
+          # track order amount being sold (constantly if id matches)
+          echo "$ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
+        else
+          # reset selling file
+          truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
+        fi
       fi
     fi
   fi
