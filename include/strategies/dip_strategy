@@ -3247,8 +3247,8 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLI
       # default
       DIP_TARGET_SPREAD_OUTPUT="Too slow"
 
-      # if selling is less than target
-      if [[ "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+      # if buying started & selling is less than target
+      if [[ "$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep "Buying" | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY")" -gt "0" && "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
         DIP_BOUGHT_IS_LESS="1"
         DIP_TARGET_SPREAD_OUTPUT="Potential loss"
       fi
