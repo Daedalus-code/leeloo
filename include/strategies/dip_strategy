@@ -3242,13 +3242,18 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLI
       DIP_TARGET_DATA_ASK="$(echo "$DIP_TARGET_DATA" | awk '{ print $4 }')"
       DIP_TARGET_DATA_LAST="$(echo "$DIP_TARGET_DATA" | awk '{ print $5 }')"
 
+      # buying has started
+      DIP_BUYING_STARTED="$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "Buying" | grep -w "$LISTING_CURRENCY" | egrep -wc "$REFERENCE_CURRENCY")"
+      # orders has started
+      DIP_ORDERS_STARTED="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep "buy" | grep -w "$LISTING_CURRENCY" | egrep -wc "$REFERENCE_CURRENCY")"
+
       ##########################################################################
 
       # default
       DIP_TARGET_SPREAD_OUTPUT="Too slow"
 
-      # if buying started & selling is less than target
-      if [[ "$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | egrep "Buying" | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY")" -gt "0" && "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+      # if buying started & orders started & selling is less than target
+      if [[ "$DIP_BUYING_STARTED" -gt "0" && "$DIP_ORDERS_STARTED" -gt "0" && "$(echo "$DIP_BOUGHT_SELL_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_BOUGHT_BUY_SELL_AMOUNT" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
         DIP_BOUGHT_IS_LESS="1"
         DIP_TARGET_SPREAD_OUTPUT="Potential loss"
       fi
