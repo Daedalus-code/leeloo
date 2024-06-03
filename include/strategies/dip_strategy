@@ -3200,7 +3200,7 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLI
       ##########################################################################
 
       # default
-      DIP_TARGET_SPREAD_OUTPUT="Too slow"
+      DIP_TARGET_SPREAD_OUTPUT=""
 
       # if bid ask and last is identical
       if [[ "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_ASK" && "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_LAST" ]] &>/dev/null; then
@@ -3227,8 +3227,8 @@ if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SOLD" == "0" && "$DIP_SELLI
       # sold status
       DIP_SOLD_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | egrep -c "[0-9]+" || true)"
 
-      # if selling has no data
-      if [[ "$DIP_SELLING_STATUS" -eq "0" ]] &>/dev/null; then
+      # if selling has no data, no input
+      if [[ "$DIP_SELLING_STATUS" -eq "0" && ! -z "$DIP_TARGET_SPREAD_OUTPUT" ]] &>/dev/null; then
         # if less than target, if sell_id is empty, too old, old data
         if [[ "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" -eq "0" || "$DIP_QUEST_IS_TOO_OLD" -eq "1" || "$DIP_OLD_DATA" -eq "1" || "$DIP_DATA_MISSING" -eq "1" ]] &>/dev/null; then
           # if sold has no data, is less than target, if sell_id is empty, too old
