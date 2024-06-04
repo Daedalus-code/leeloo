@@ -825,14 +825,32 @@ function target_data() {
   REFERENCE_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $2 }')"
 
   ##############################################################################
+  ##############################################################################
 
-  # target bid
-  DIP_TARGET_BID="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $4 }')"
-  # target ask
-  DIP_TARGET_ASK="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $7 }')"
-  # target last
-  DIP_TARGET_LAST="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $10 }')"
+  # random n
+  RANDOM_MARKET_QUEST_PRICING=$((((RANDOM % 2) + 1)))
 
+  # based on market price
+  if [[ "$RANDOM_MARKET_QUEST_PRICING" -eq "1" ]] &>/dev/null; then
+    # target bid
+    DIP_TARGET_BID="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' | awk '{ print $2 }')"
+    # target ask
+    DIP_TARGET_ASK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' | awk '{ print $3 }')"
+    # target last
+    DIP_TARGET_LAST="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' | awk '{ print $4 }')"
+  fi
+
+  # based on quest price
+  if [[ "$RANDOM_MARKET_QUEST_PRICING" -eq "2" ]] &>/dev/null; then
+    # target bid
+    DIP_TARGET_BID="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $4 }')"
+    # target ask
+    DIP_TARGET_ASK="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $7 }')"
+    # target last
+    DIP_TARGET_LAST="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $10 }')"
+  fi
+
+  ##############################################################################
   ##############################################################################
 
   # target dip
