@@ -674,8 +674,10 @@ function target_order_status() {
         fi
         # if not a new buy
         if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
+          # dip selling value
+          DIP_SELLING_VALUE="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling)"
           # if total selling value is unique
-          if [[ ! "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling)" -eq "$ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+          if [[ "$DIP_SELLING_VALUE" -ne "$ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
             # track order amount being sold
             echo "$ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
           fi
