@@ -187,8 +187,8 @@ function decimal_market() {
       # decimal limit
       DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY:" | awk '{ print $2 }')"
 
-      # if zero
-      if [[ -z "$DECIMAL_LIMIT" ]] &>/dev/null; then
+      # if zero, more than one word, less than zero, has a negative
+      if [[ -z "$DECIMAL_LIMIT" || "$(echo "$DECIMAL_LIMIT" | wc -w)" -gt "1" || "$DECIMAL_LIMIT" -lt "0" || "$(echo "$DECIMAL_LIMIT" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then
         DECIMAL_LIMIT="9"
       fi
 
@@ -198,7 +198,7 @@ function decimal_market() {
       INSUFFICIENT_NULL="$(grep "Insufficient funds" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log 2>/dev/null || true)"
 
       # if any data
-      if [[ -n "$INSUFFICIENT_NULL" ]] &>/dev/null; then
+      if [[ -n "$INSUFFICIENT_NULL" && -n "$DECIMAL_LIMIT" ]] &>/dev/null; then
 
         # if any insufficient funds error
         if [[ "$(echo "$INSUFFICIENT_NULL" | grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
