@@ -687,8 +687,8 @@ function target_order_status() {
             ORDER_SOLD_QUANTITY="0"
           fi
 
-          # if total selling value is unique
-          if [[ "$DIP_SELLING_VALUE_CHECK" -ne "$(echo "$ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+          # if any data & total selling value is unique
+          if [[ -n "$ORDER_SOLD_QUANTITY" && "$DIP_SELLING_VALUE_CHECK" -ne "$(echo "$ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
             # track order amount being sold
             echo "$ORDER_SOLD_QUANTITY" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
           fi
