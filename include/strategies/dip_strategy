@@ -260,6 +260,11 @@ backup_orders   # backup orders
 
 ################################################################################
 
+# it was removed (default)
+DIP_REMOVED="0"
+
+################################################################################
+
 # amount to buy sell
 function amount_to_buy_sell() {
 
@@ -725,6 +730,9 @@ function remove_ghost_orders() {
 
           # pause ghost market (listing)
           echo "$DIP_GHOST_LISTING" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+
+          # it was removed
+          DIP_REMOVED="1"
         fi
       fi
     fi
@@ -1971,6 +1979,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         cancelOrder "$DIP_OLDEST_ORDER_ID" 2>>"${LOG_ERROR:?}"
         sleep 1
       fi
+
+      # it was removed
+      DIP_REMOVED="1"
     fi
 
     ############################################################################
@@ -1998,8 +2009,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # minimum spread check (ruled by configuration)
     DIP_MIN_SPREAD_CHECK="$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')"
 
-    # if any orders with reference, listing currency does not exist
-    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+    # if any orders with reference, listing currency does not exist, not removed
+    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" && "$DIP_REMOVED" == "0" ]] &>/dev/null; then
       # if profit is greater or equal than minimum spread
       if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -ge "$DIP_MIN_SPREAD_CHECK" ]] &>/dev/null; then
         # has buying power (balance)
@@ -2636,8 +2647,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   decimal_market
 
-  # balance has selling power (available), not buying, good enough to sell
-  if [[ "$DIP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
+  # balance has selling power (available), not buying, good enough to sell, not removed
+  if [[ "$DIP_LISTING_BALANCE_CHECK" -gt "0" && "$DIP_REMOVED" == "0" ]] &>/dev/null; then
 
     ############################################################################
 
@@ -2887,6 +2898,9 @@ if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>
             # removing buy order output (log)
             DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing buy order: ${DIP_ORDER_ID_BUY:0:9}$DIP_ORDER_ID_BUY_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
             echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+            # it was removed
+            DIP_REMOVED="1"
           fi
         fi
       fi
@@ -3002,6 +3016,9 @@ if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>
 
             # pause no order market (listing)
             echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+
+            # it was removed
+            DIP_REMOVED="1"
           fi
         fi
       fi
@@ -3140,6 +3157,8 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
 
                 # it was sold
                 DIP_SOLD="1"
+                # it was removed
+                DIP_REMOVED="1"
               fi
             fi
           fi
@@ -3260,6 +3279,9 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_SELLING_STATUS" -eq "
 
             # pause failed market (listing)
             echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+
+            # it was removed
+            DIP_REMOVED="1"
           fi
         fi
       fi
@@ -3303,6 +3325,9 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
       echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       # pause failed market (listing)
       echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+
+      # it was removed
+      DIP_REMOVED="1"
     fi
   fi
 fi
@@ -3753,6 +3778,9 @@ if [[ "$(grep -c "$DIP_DUMP_LISTING" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".a
   echo "$DIP_REMOVING_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
   # remove old data
   rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$DIP_DUMP_LISTING"* &>/dev/null
+
+  # it was removed
+  DIP_REMOVED="1"
 fi
 
 # if dump listing has data
@@ -3784,6 +3812,9 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
     echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null
   fi
+
+  # it was removed
+  DIP_REMOVED="1"
 fi
 
 # variable for decimal market
