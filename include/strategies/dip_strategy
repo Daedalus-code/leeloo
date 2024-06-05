@@ -262,6 +262,10 @@ backup_orders   # backup orders
 
 # it was removed (default)
 DIP_REMOVED="0"
+# it is buying (default)
+DIP_BUYING="0"
+# it is selling (default)
+DIP_SELLING="0"
 
 ################################################################################
 
@@ -2071,6 +2075,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           # remove duplicates
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
+
+          # it is buying
+          DIP_BUYING="1"
         fi
       fi
     fi
@@ -2124,9 +2131,6 @@ fi
 
 # if active file has any orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
-
-  # default
-  DIP_SELLING="0"
 
   time_and_profit
 
@@ -2587,6 +2591,30 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # dca status
   if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
     DIP_DCA_STATUS="(DCA)"
+  fi
+
+  ##############################################################################
+
+  if [[ "$DIP_REMOVED" == "1" ]] &>/dev/null; then
+    DIP_BS_STATUS="Removed"
+  fi
+
+  ##############################################################################
+
+  if [[ "$DIP_SOLD" == "1" ]] &>/dev/null; then
+    DIP_BS_STATUS="Sold"
+  fi
+
+  ##############################################################################
+
+  if [[ "$DIP_BUYING" == "1" ]] &>/dev/null; then
+    DIP_BS_STATUS="Buying"
+  fi
+
+  ##############################################################################
+
+  if [[ "$DIP_SELLING" == "1" ]] &>/dev/null; then
+    DIP_BS_STATUS="Selling"
   fi
 
   ##############################################################################
