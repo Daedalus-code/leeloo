@@ -676,6 +676,17 @@ function target_order_status() {
         if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
           # dip selling value
           DIP_SELLING_VALUE_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling | tr -d '.' | sed 's/^0*//')"
+
+          # if no data
+          if [[ -z "$DIP_SELLING_VALUE_CHECK" ]] &>/dev/null; then
+            DIP_SELLING_VALUE_CHECK="0"
+          fi
+
+          # if no data
+          if [[ -z "$ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+            ORDER_SOLD_QUANTITY="0"
+          fi
+
           # if total selling value is unique
           if [[ "$DIP_SELLING_VALUE_CHECK" -ne "$(echo "$ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
             # track order amount being sold
