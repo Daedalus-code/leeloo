@@ -187,6 +187,11 @@ function decimal_market() {
       # decimal limit
       DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY:" | awk '{ print $2 }')"
 
+      # if zero
+      if [[ -z "$DECIMAL_LIMIT" ]] &>/dev/null; then
+        DECIMAL_LIMIT="9"
+      fi
+
       ##########################################################################
 
       # insufficient null data
