@@ -959,8 +959,11 @@ function target_profit() {
     # generate below list, fetch profits that took more than a day to complete
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 
-    # ineffective market (slow)
-    INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $2 }')"
+    # if any data
+    if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      # ineffective market (slow)
+      INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $2 }')"
+    fi
 
     # if zero
     if [[ -z "$INEFFECTIVE_MARKET" ]] &>/dev/null; then
