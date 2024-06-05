@@ -2664,12 +2664,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   fi
 
   ##############################################################################
-
-  # status output (log)
-  DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_BS_STATUS - $DIP_DCA_STATUS Dip: ${DIP_TARGET_DIP:?}% Spread: ${DIP_TARGET_SPREAD:?}% Age: $DIP_BOUGHT_AGE_OUTPUT ${DIP_MAX_BUY_AGE_OUTPUT:?}/${DIP_MAX_SELL_AGE_OUTPUT:?}"
-  echo "$DIP_ACTIVE_CHECK_OUTPUT" | xargs >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-  ##############################################################################
   # selling block
   ##############################################################################
 
@@ -2826,6 +2820,13 @@ if [[ "$(echo "$DIP_LEFTOVER_SIZE_OUTPUT" | awk -F. '{ print $1 }')" -gt "99" ||
   fi
 fi
 
+################################################################################
+################################################################################
+# status output (log)
+DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_BS_STATUS - $DIP_DCA_STATUS Dip: ${DIP_TARGET_DIP:?}% Spread: ${DIP_TARGET_SPREAD:?}% Age: $DIP_BOUGHT_AGE_OUTPUT ${DIP_MAX_BUY_AGE_OUTPUT:?}/${DIP_MAX_SELL_AGE_OUTPUT:?}"
+echo "$DIP_ACTIVE_CHECK_OUTPUT" | xargs >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+################################################################################
 ################################################################################
 
 # if active file has zero orders
