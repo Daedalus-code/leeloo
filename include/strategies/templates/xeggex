@@ -632,10 +632,10 @@ function target_order_status() {
           BOUGHT_SELL_VALUE="$(echo "$TRADES_DATA" | grep -B500 "$BUY_TRADES_ID" | grep "sell" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }')"
           # if greater or equal value
           if [[ "$(echo "$BOUGHT_SELL_VALUE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$BOUGHT_SELL_VALUE_QUEST" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-            # track order amount being sold
-            echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
             # value based on equal sell values
             ORDER_SOLD_QUANTITY="$BOUGHT_SELL_VALUE"
+            # track order amount being sold
+            echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
           fi
         fi
       fi
