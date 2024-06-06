@@ -677,6 +677,12 @@ function target_order_status() {
 
           # dip selling value
           DIP_SELLING_VALUE_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling | tr -d '.' | sed 's/^0*//')"
+
+          # if no data
+          if [[ -z "$DIP_SELLING_VALUE_CHECK" ]] &>/dev/null; then
+            DIP_SELLING_VALUE_CHECK="0"
+          fi
+
           # order sold quantity
           ORDER_SOLD_QUANTITY="$(echo "$ORDER_SOLD_QUANTITY" | sed '/^$/d')"
 
