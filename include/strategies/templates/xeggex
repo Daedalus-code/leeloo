@@ -644,6 +644,8 @@ function target_order_status() {
 
     # sold quantity check
     ORDER_SOLD_QUANTITY_CHECK="$(echo "$ORDER_SOLD_QUANTITY" | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
+    # dip selling value
+    DIP_SELLING_VALUE_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling | tr -d '.' | sed 's/^0*//')"
     # target bought amount check
     TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
 
@@ -661,8 +663,14 @@ function target_order_status() {
             if [[ "$BUYING_STATUS" -gt "0" ]] &>/dev/null; then
               # if not a new buy
               if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
-                # update sold file
-                echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+                # if any data
+                if [[ -n "$DIP_SELLING_VALUE_CHECK" ]] &>/dev/null; then
+                  # total selling value is unique
+                  if [[ "$DIP_SELLING_VALUE_CHECK" -ne "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
+                    # update sold file
+                    echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+                  fi
+                fi
               else
                 # if any data
                 if [[ "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
@@ -675,16 +683,13 @@ function target_order_status() {
         fi
         # if not a new buy
         if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
-
-          # dip selling value
-          DIP_SELLING_VALUE_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling | tr -d '.' | sed 's/^0*//')"
-          # order sold quantity
-          ORDER_SOLD_QUANTITY="$(echo "$ORDER_SOLD_QUANTITY" | sed '/^$/d')"
-
-          # if any data & total selling value is unique
-          if [[ ! -z "$DIP_SELLING_VALUE_CHECK" && ! -z "$ORDER_SOLD_QUANTITY" && "$DIP_SELLING_VALUE_CHECK" -ne "$(echo "$ORDER_SOLD_QUANTITY" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
-            # track order amount being sold
-            echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
+          # if any data
+          if [[ -n "$DIP_SELLING_VALUE_CHECK" ]] &>/dev/null; then
+            # total selling value is unique
+            if [[ "$DIP_SELLING_VALUE_CHECK" -ne "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
+              # track order amount being sold
+              echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
+            fi
           fi
         else
           # if any data
