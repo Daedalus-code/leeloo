@@ -561,12 +561,14 @@ function target_order_status() {
       SELL_TRADES_ID="K123456789EEEE987654321K"
     fi
 
-    # sell orders data #########################################################
+    # extract sell order quantity based on ID from trades file
+    ORDER_SOLD_QUANTITY="$(echo "$LISTING_TRADES" | grep "$SELL_TRADES_ID" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+
+    ############################################################################
+    ############################################################################
 
     # extract last sell order ID from orders file
     SELL_ORDERS_ID=$(echo "$LISTING_ORDERS" | grep "sell" | head -1 | awk '{ print $1 }' | tr -d ':')
-
-    ############################################################################
 
     # if zero
     if [[ -z "$SELL_ORDERS_ID" ]] &>/dev/null; then
@@ -587,30 +589,6 @@ function target_order_status() {
     fi
 
     ############################################################################
-
-    # if any data
-    if [[ -n "$SELL_ORDERS_ID" ]] &>/dev/null; then
-      # keep sell order id
-      echo "$SELL_ORDERS_ID" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sell_id
-    fi
-
-    # if zero
-    if [[ -z "$SELL_ORDERS_ID" ]] &>/dev/null; then
-      # use old id until (sold) is confirmed
-      SELL_ORDERS_ID="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sell_id 2>/dev/null || true)"
-    fi
-
-    # if still zero, again
-    if [[ -z "$SELL_ORDERS_ID" ]] &>/dev/null; then
-      # unique order id
-      SELL_ORDERS_ID="001234567890098765432100"
-    fi
-
-    # quantity & target ########################################################
-
-    # extract sell order quantity based on ID from trades file
-    ORDER_SOLD_QUANTITY="$(echo "$LISTING_TRADES" | grep "$SELL_TRADES_ID" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
-
     ############################################################################
 
     # extract last buy order ID from trades file
@@ -639,6 +617,27 @@ function target_order_status() {
           fi
         fi
       fi
+    fi
+
+    ############################################################################
+    ############################################################################
+
+    # if any data
+    if [[ -n "$SELL_ORDERS_ID" ]] &>/dev/null; then
+      # keep sell order id
+      echo "$SELL_ORDERS_ID" | sed '/^$/d' >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sell_id
+    fi
+
+    # if zero
+    if [[ -z "$SELL_ORDERS_ID" ]] &>/dev/null; then
+      # use old id until (sold) is confirmed
+      SELL_ORDERS_ID="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sell_id 2>/dev/null || true)"
+    fi
+
+    # if still zero, again
+    if [[ -z "$SELL_ORDERS_ID" ]] &>/dev/null; then
+      # unique order id
+      SELL_ORDERS_ID="001234567890098765432100"
     fi
 
     ############################################################################
