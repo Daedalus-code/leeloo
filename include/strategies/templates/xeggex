@@ -579,7 +579,7 @@ function target_order_status() {
         # sell value
         BOUGHT_SELL_VALUE="$(echo "$LISTING_TRADES" | head -1 | grep "sell" | awk '{ print $6 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }')"
         # if greater or equal value
-        if [[ "$BOUGHT_SELL_VALUE" -ge "$BOUGHT_SELL_VALUE_QUEST" ]] &>/dev/null; then
+        if [[ "$(echo "$BOUGHT_SELL_VALUE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$BOUGHT_SELL_VALUE_QUEST" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
           # id based on identical values
           SELL_ORDERS_ID="$(echo "$LISTING_TRADES" | head -1 | awk '{ print $3 }')"
         fi
@@ -631,7 +631,7 @@ function target_order_status() {
           # sell value
           BOUGHT_SELL_VALUE="$(echo "$TRADES_DATA" | grep -B500 "$BUY_TRADES_ID" | grep "sell" | awk '{ print $6 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }')"
           # if greater or equal value
-          if [[ "$BOUGHT_SELL_VALUE" -ge "$BOUGHT_SELL_VALUE_QUEST" ]] &>/dev/null; then
+          if [[ "$(echo "$BOUGHT_SELL_VALUE" | tr -d '.' | sed 's/^0*//')" -ge "$(echo "$BOUGHT_SELL_VALUE_QUEST" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
             # value based on equal sell values
             ORDER_SOLD_QUANTITY="$BOUGHT_SELL_VALUE"
           fi
