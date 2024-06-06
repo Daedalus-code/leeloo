@@ -663,10 +663,10 @@ function target_order_status() {
             if [[ "$BUYING_STATUS" -gt "0" ]] &>/dev/null; then
               # if not a new buy
               if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
-                # if any data
-                if [[ -n "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
-                  # total selling value is greater
-                  if [[ "$DIP_SELLING_VALUE_CHECK" -gt "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
+                # total selling value is greater
+                if [[ "$DIP_SELLING_VALUE_CHECK" -gt "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
+                  # if any data
+                  if [[ "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
                     # update sold file
                     echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
                   fi
@@ -683,10 +683,10 @@ function target_order_status() {
         fi
         # if not a new buy
         if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
-          # if any data
-          if [[ -n "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
-            # total selling value is greater
-            if [[ "$DIP_SELLING_VALUE_CHECK" -gt "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
+          # total selling value is greater
+          if [[ "$DIP_SELLING_VALUE_CHECK" -gt "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
+            # if any data
+            if [[ "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
               # track order amount being sold
               echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
             fi
