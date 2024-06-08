@@ -4324,16 +4324,16 @@ if [[ -z "$DIP_INVESTED_PERCENTAGE" ]] &>/dev/null; then
 fi
 
 ################################################################################
-# daily tracking
-################################################################################
 
 # dynamic total sum
 DIP_BI_DYNAMIC_SUM="$(echo "$REFERENCE_BALANCE+$DIP_INVESTED_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
 ################################################################################
+# daily tracking
+################################################################################
 
 # if no daily data
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl || true)" -eq "0" ]] &>/dev/null; then
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl || "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl || true)" -eq "0" ]] &>/dev/null; then
   # track daily profit and losses
   echo "$DIP_BI_DYNAMIC_SUM" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl
 fi
@@ -4364,6 +4364,12 @@ fi
 ################################################################################
 # weekly tracking
 ################################################################################
+
+# if no weekly data
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly || "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly || true)" -eq "0" ]] &>/dev/null; then
+  # track weekly profit and losses
+  echo "$DIP_BI_DYNAMIC_SUM" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly
+fi
 
 # profit losses weekly age (seconds)
 DIP_BI_WEEKLY_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.weekly 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
@@ -4403,6 +4409,12 @@ DIP_BI_PL_PERCENTAGE_WEEKLY="$(echo "100/$DIP_BI_STATIC_SUM_WEEKLY*$DIP_BI_PROFI
 # monthly tracking
 ################################################################################
 
+# if no monthly data
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly || "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly || true)" -eq "0" ]] &>/dev/null; then
+  # track monthly profit and losses
+  echo "$DIP_BI_DYNAMIC_SUM" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly
+fi
+
 # profit losses monthly age (seconds)
 DIP_BI_MONTHLY_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.monthly 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -4441,6 +4453,12 @@ DIP_BI_PL_PERCENTAGE_MONTHLY="$(echo "100/$DIP_BI_STATIC_SUM_MONTHLY*$DIP_BI_PRO
 # half year tracking
 ################################################################################
 
+# if no half year data
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year || "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year || true)" -eq "0" ]] &>/dev/null; then
+  # track half year profit and losses
+  echo "$DIP_BI_DYNAMIC_SUM" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year
+fi
+
 # profit losses half year age (seconds)
 DIP_BI_H_YEAR_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -4478,6 +4496,12 @@ DIP_BI_PL_PERCENTAGE_H_YEAR="$(echo "100/$DIP_BI_STATIC_SUM_H_YEAR*$DIP_BI_PROFI
 ################################################################################
 # year tracking
 ################################################################################
+
+# if no year data
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly || "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly || true)" -eq "0" ]] &>/dev/null; then
+  # track year profit and losses
+  echo "$DIP_BI_DYNAMIC_SUM" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly
+fi
 
 # profit losses yearly age (seconds)
 DIP_BI_YEARLY_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
@@ -4531,11 +4555,6 @@ if [[ -z "$DIP_BI_PL_PERCENTAGE_MONTHLY" ]] &>/dev/null; then
 fi
 
 # if zero
-if [[ -z "$DIP_BI_DYNAMIC_SUM" ]] &>/dev/null; then
-  DIP_BI_DYNAMIC_SUM="N/A"
-fi
-
-# if zero
 if [[ "$DIP_BI_DYNAMIC_SUM" == "0.000000000" || "$DIP_BI_STATIC_SUM_WEEKLY" == "0.000000000" ]] &>/dev/null; then
   DIP_BI_PL_PERCENTAGE_WEEKLY="0"
   DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY="0"
@@ -4545,6 +4564,18 @@ fi
 if [[ "$DIP_BI_DYNAMIC_SUM" == "0.000000000" || "$DIP_BI_STATIC_SUM_MONTHLY" == "0.000000000" ]] &>/dev/null; then
   DIP_BI_PL_PERCENTAGE_MONTHLY="0"
   DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY="0"
+fi
+
+# if zero
+if [[ "$DIP_BI_DYNAMIC_SUM" == "0.000000000" || "$DIP_BI_STATIC_SUM_H_YEAR" == "0.000000000" ]] &>/dev/null; then
+  DIP_BI_PL_PERCENTAGE_H_YEAR="0"
+  DIP_BI_PROFIT_LOSSES_DIFF_H_YEAR="0"
+fi
+
+# if zero
+if [[ "$DIP_BI_DYNAMIC_SUM" == "0.000000000" || "$DIP_BI_STATIC_SUM_YEARLY" == "0.000000000" ]] &>/dev/null; then
+  DIP_BI_PL_PERCENTAGE_YEARLY="0"
+  DIP_BI_PROFIT_LOSSES_DIFF_YEARLY="0"
 fi
 
 ################################################################################
