@@ -4438,6 +4438,82 @@ DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SU
 DIP_BI_PL_PERCENTAGE_MONTHLY="$(echo "100/$DIP_BI_STATIC_SUM_MONTHLY*$DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
+# half year tracking
+################################################################################
+
+# profit losses half year age (seconds)
+DIP_BI_H_YEAR_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+# if greater than n (half year)
+if [[ "$DIP_BI_H_YEAR_AGE_SECONDS" -gt "15724800" ]] &>/dev/null; then
+  # if greater than n
+  if [[ "$(echo "$DIP_BI_DYNAMIC_SUM" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+    # track half year profit and losses
+    echo "$DIP_BI_DYNAMIC_SUM" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year
+
+    # track original half year profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year
+    # keep n lines, half year profit and losses
+    echo "$(tail -3 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year
+    # track original half year profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year
+  fi
+fi
+
+# if no original amount
+if [[ ! "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year)" == "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year)" ]] &>/dev/null; then
+  # track original half year profit and losses
+  echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year
+fi
+
+# half year count
+DIP_BI_STATIC_SUM_H_YEAR_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year | awk '{ print $1 }')"
+# static half year total sum (average)
+DIP_BI_STATIC_SUM_H_YEAR="$(echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.half_year 2>/dev/null | grep -v "0.000000000" | awk '{ SUM += $1} END { print SUM }')/$DIP_BI_STATIC_SUM_H_YEAR_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+# balance invested profit losses difference
+DIP_BI_PROFIT_LOSSES_DIFF_H_YEAR="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM_H_YEAR" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+# calculate difference percentage
+DIP_BI_PL_PERCENTAGE_H_YEAR="$(echo "100/$DIP_BI_STATIC_SUM_H_YEAR*$DIP_BI_PROFIT_LOSSES_DIFF_H_YEAR" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+################################################################################
+# year tracking
+################################################################################
+
+# profit losses yearly age (seconds)
+DIP_BI_YEARLY_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+# if greater than n (yearly)
+if [[ "$DIP_BI_YEARLY_AGE_SECONDS" -gt "31536000" ]] &>/dev/null; then
+  # if greater than n
+  if [[ "$(echo "$DIP_BI_DYNAMIC_SUM" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+    # track yearly profit and losses
+    echo "$DIP_BI_DYNAMIC_SUM" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly
+
+    # track original yearly profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly
+    # keep n lines, yearly profit and losses
+    echo "$(tail -3 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly
+    # track original yearly profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly
+  fi
+fi
+
+# if no original amount
+if [[ ! "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly)" == "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly)" ]] &>/dev/null; then
+  # track original yearly profit and losses
+  echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly
+fi
+
+# yearly count
+DIP_BI_STATIC_SUM_YEARLY_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly | awk '{ print $1 }')"
+# static yearly total sum (average)
+DIP_BI_STATIC_SUM_YEARLY="$(echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.yearly 2>/dev/null | grep -v "0.000000000" | awk '{ SUM += $1} END { print SUM }')/$DIP_BI_STATIC_SUM_YEARLY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+# balance invested profit losses difference
+DIP_BI_PROFIT_LOSSES_DIFF_YEARLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM_YEARLY" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+# calculate difference percentage
+DIP_BI_PL_PERCENTAGE_YEARLY="$(echo "100/$DIP_BI_STATIC_SUM_YEARLY*$DIP_BI_PROFIT_LOSSES_DIFF_YEARLY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+################################################################################
 
 # if zerp
 if [[ -z "$DIP_BI_PL_PERCENTAGE_WEEKLY" ]] &>/dev/null; then
@@ -4478,11 +4554,13 @@ fi
   echo "Targets.............: $DIP_DAILY_POTENTIAL | Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% PM: ${DIP_DAILY_MOVEMENT:?}%
 Active..............: $DIP_ACTIVE_FILE_COUNT | Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% PM: ${DIP_ACTIVE_FILE_A_PRICE_MOVEMENT:?}%
 Market..............: $ACTIVE_MARKET_PAIRS RSI: $ACTIVE_MARKET_RSI_AVERAGE ($ACTIVE_MARKET_RSI_STATUS)
-Market_Balance......: $REFERENCE_BALANCE $ACTIVE_MARKET_PAIRS ($DIP_BI_DYNAMIC_SUM $ACTIVE_MARKET_PAIRS)
-Market_Invested.....: $DIP_INVESTED_BALANCE $ACTIVE_MARKET_PAIRS (${DIP_INVESTED_PERCENTAGE:?}%)
-1__day_Movements....: $DIP_BI_PROFIT_LOSSES_DIFF $ACTIVE_MARKET_PAIRS (${DIP_BI_PROFIT_LOSSES_PERCENTAGE:?}%)
-7__day_Movements....: $DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_WEEKLY:?}%)
-31_day_Movements....: $DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_MONTHLY:?}%)
+Market___Balance....: $REFERENCE_BALANCE $ACTIVE_MARKET_PAIRS ($DIP_BI_DYNAMIC_SUM $ACTIVE_MARKET_PAIRS)
+Market___Invested...: $DIP_INVESTED_BALANCE $ACTIVE_MARKET_PAIRS (${DIP_INVESTED_PERCENTAGE:?}%)
+1_Day____Movements..: $DIP_BI_PROFIT_LOSSES_DIFF $ACTIVE_MARKET_PAIRS (${DIP_BI_PROFIT_LOSSES_PERCENTAGE:?}%)
+1_Week___Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_WEEKLY:?}%)
+1_Month__Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_MONTHLY:?}%)
+6_Months_Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_H_YEAR $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_H_YEAR:?}%)
+1_Year___Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_YEARLY $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_YEARLY:?}%)
 Exchange............: $EXCHANGE_OUTPUT_NAME $EXCHANGE_API
 Orders..............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Max: $DIP_MAX_ORDERS
 DCA.................: $DIP_DCA_DATA Orders: $DIP_DCA_COUNT
