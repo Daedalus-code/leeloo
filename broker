@@ -328,7 +328,7 @@ case $CHOICE in
 
   if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-    HEIGHT="10"
+    HEIGHT="11"
     WIDTH="21"
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Orders"
@@ -336,7 +336,8 @@ case $CHOICE in
 
     OPTIONS=(1 "Poloniex"
       2 "StakeCube"
-      3 "XeggeX")
+      3 "XeggeX"
+      0 "Search")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
@@ -354,7 +355,7 @@ case $CHOICE in
       # set exchange template
       EXCHANGE_API="POL"
       exchange_template
-      open_orders
+      order_history
 
       # set broker template
       EXCHANGE_API=""
@@ -367,7 +368,7 @@ case $CHOICE in
       # set exchange template
       EXCHANGE_API="SCE"
       exchange_template
-      open_orders
+      order_history
 
       # set broker template
       EXCHANGE_API=""
@@ -380,11 +381,18 @@ case $CHOICE in
       # set exchange template
       EXCHANGE_API="XGX"
       exchange_template
-      open_orders
+      order_history
 
       # set broker template
       EXCHANGE_API=""
       exchange_template
+
+      ;;
+
+    "0") # order search
+
+      order_history_search
+      order_history_data
 
       ;;
 

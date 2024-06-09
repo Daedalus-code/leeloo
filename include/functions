@@ -217,15 +217,17 @@ function pool_duration {
   fi
 
   while IFS=: read -r DURATION; do
+
     # remove any non-numeric characters
     DURATION_NUMERIC=$(echo "$DURATION" | tr -cd '0-9hms')
+
     # parse the duration into HOURS, MINUTES, and SECONDS
     HOURS=$(echo "$DURATION_NUMERIC" | sed 's/h.*//')
     MINUTES=$(echo "$DURATION_NUMERIC" | sed 's/.*h//' | sed 's/m.*//')
     SECONDS=$(echo "$DURATION_NUMERIC" | sed 's/.*m//' | sed 's/s.*//')
+
     # check if the values are non-empty and numeric
-    if [[ -n "$HOURS" && -n "$MINUTES" && -n "$SECONDS" && \
-      "$HOURS" =~ ^[0-9]+$ && "$MINUTES" =~ ^[0-9]+$ && "$SECONDS" =~ ^[0-9]+$ ]]; then
+    if [[ -n "$HOURS" && -n "$MINUTES" && -n "$SECONDS" && "$HOURS" =~ ^[0-9]+$ && "$MINUTES" =~ ^[0-9]+$ && "$SECONDS" =~ ^[0-9]+$ ]]; then
       TOTAL_SECONDS=$((TOTAL_SECONDS + HOURS * 3600 + MINUTES * 60 + SECONDS))
     fi
   done <"$DURATIONS_FILE"
@@ -1010,9 +1012,9 @@ function last_log_robot {
   display_result 2>/dev/null
 }
 
-# open orders ##################################################################
+# order history ################################################################
 
-function open_orders {
+function order_history {
 
   # poloniex data
   if [[ "$EXCHANGE_API" == "POL" ]] &>/dev/null; then
@@ -1396,6 +1398,40 @@ function open_orders {
     ;;
 
   esac
+}
+
+# order history data ###########################################################
+
+function order_history_data {
+
+  RESULT="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/history.raw)"
+
+  ORDER_HISTORY_TOTAL="$(grep -c "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/history.raw || true)"
+  ORDER_HISTORY_TOTAL_BUY="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/history.raw | grep -c "buy" || true)"
+  ORDER_HISTORY_PERCENTAGE_BUY="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  ORDER_HISTORY_TOTAL_SELL="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/history.raw | grep -c "sell" || true)"
+  ORDER_HISTORY_PERCENTAGE_SELL="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_SELL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+  display_result() {
+    dialog --title "Order history: +$ORDER_HISTORY_TOTAL :: Buy: $ORDER_HISTORY_TOTAL_BUY (${ORDER_HISTORY_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_HISTORY_TOTAL_SELL (${ORDER_HISTORY_PERCENTAGE_SELL:?}%)" \
+      --no-collapse \
+      --msgbox "$(echo "$RESULT" | column -t)" 0 0
+  }
+
+  display_result 2>/dev/null
+}
+
+# order history search #########################################################
+
+function order_history_search {
+  COIN_TOKEN=$(
+    dialog --title "Coin/Token (Example: BTC)" \
+      --inputbox "Enter name:" 8 40 \
+      3>&1 1>&2 2>&3 3>&-
+  )
+  # upper case
+  COIN_TOKEN="$(echo "$COIN_TOKEN" | tr '[:lower:]' '[:upper:]')"
 }
 
 # market info ##################################################################
