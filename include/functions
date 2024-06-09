@@ -1404,24 +1404,29 @@ function order_history {
 
 function order_history_data {
 
-  # target orders age (seconds)
-  TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk -F. '{ print $1 }')
-
-  # if greater than n
-  if [[ "$TARGET_ORDERS_AGE_SECONDS" -gt "180" || ! -f "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view || ! -f "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw ]] &>/dev/null; then
-    # create a copy of history (orders)
-    cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/*.trades 2>/dev/null | tr -d '{}"' | tr ',:' ' ' | awk '{ print $1,$3,$5,$6,$7,$8,$9,$NF }' | column -t | sort -n -k 8 | tac >"${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw 2>/dev/null
-    # create a copy of history (orders)
-    echo "$(head -100 "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view
+  # if missing directory
+  if [[ ! -d "${LOG_DIR:?}"/leeloo/orders ]] &>/dev/null; then
+    mkdir "${LOG_DIR:?}"/leeloo/orders &>/dev/null
   fi
 
-  RESULT="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/history.raw 2>/dev/null | head -101)"
+  # target orders age (seconds)
+  TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/orders/history 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk -F. '{ print $1 }')
 
-  ORDER_HISTORY_TOTAL="$(grep -c "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/history.raw || true)"
-  ORDER_HISTORY_TOTAL_BUY="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/history.raw | grep -c "buy" || true)"
+  # if greater than n
+  if [[ "$TARGET_ORDERS_AGE_SECONDS" -gt "180" || ! -f "${LOG_DIR:?}"/leeloo/orders/history ]] &>/dev/null; then
+    # create a copy of history (orders)
+    cat "${LOG_DIR:?}"/leeloo/*/*.trades 2>/dev/null | tr -d '{}"' | tr ',:' ' ' | awk '{ print $1,$3,$5,$6,$7,$8,$9,$NF }' | column -t | sort -n -k 8 | tac >"${LOG_DIR:?}"/leeloo/orders/history 2>/dev/null
+    # create a copy of history (orders)
+    echo "$(head -100 "${LOG_DIR:?}"/leeloo/orders/history 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/orders/history
+  fi
+
+  RESULT="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history 2>/dev/null | head -101)"
+
+  ORDER_HISTORY_TOTAL="$(grep -c "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history || true)"
+  ORDER_HISTORY_TOTAL_BUY="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history | grep -c "buy" || true)"
   ORDER_HISTORY_PERCENTAGE_BUY="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-  ORDER_HISTORY_TOTAL_SELL="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/history.raw | grep -c "sell" || true)"
+  ORDER_HISTORY_TOTAL_SELL="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history | grep -c "sell" || true)"
   ORDER_HISTORY_PERCENTAGE_SELL="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_SELL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   display_result() {
