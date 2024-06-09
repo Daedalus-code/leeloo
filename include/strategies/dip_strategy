@@ -2634,8 +2634,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_BS_STATUS="Selling"
   fi
 
-  ##############################################################################
-
   time_and_profit
 
   # default
@@ -2679,6 +2677,13 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   if [[ "$DIP_MAX_SELL_AGE" -gt "364" ]] &>/dev/null; then
     DIP_MAX_SELL_AGE_OUTPUT="$(echo "$DIP_MAX_SELL_AGE/365" | bc -l 2>/dev/null | awk -F. '{ print $1 }')y"
   fi
+
+  ##############################################################################
+  ##############################################################################
+
+  # status output (log)
+  DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_BS_STATUS - $DIP_DCA_STATUS Dip: ${DIP_TARGET_DIP:?}% Spread: ${DIP_TARGET_SPREAD:?}% Age: $DIP_BOUGHT_AGE_OUTPUT ${DIP_MAX_BUY_AGE_OUTPUT:?}/${DIP_MAX_SELL_AGE_OUTPUT:?}"
+  echo "$DIP_ACTIVE_CHECK_OUTPUT" | xargs >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   ##############################################################################
   # selling block
@@ -2842,15 +2847,6 @@ if [[ "$(echo "$DIP_LEFTOVER_SIZE_OUTPUT" | awk -F. '{ print $1 }')" -gt "99" ||
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing | xargs 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
   fi
 fi
-
-################################################################################
-################################################################################
-# status output (log)
-DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_BS_STATUS - $DIP_DCA_STATUS Dip: ${DIP_TARGET_DIP:?}% Spread: ${DIP_TARGET_SPREAD:?}% Age: $DIP_BOUGHT_AGE_OUTPUT ${DIP_MAX_BUY_AGE_OUTPUT:?}/${DIP_MAX_SELL_AGE_OUTPUT:?}"
-echo "$DIP_ACTIVE_CHECK_OUTPUT" | xargs >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-################################################################################
-################################################################################
 
 # if active file has zero orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
