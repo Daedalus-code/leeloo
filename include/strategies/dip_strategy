@@ -3288,6 +3288,7 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
 
       # if bid ask and last is identical
       if [[ "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_ASK" && "$DIP_TARGET_DATA_BID" == "$DIP_TARGET_DATA_LAST" ]] &>/dev/null; then
+        reset_sell_data
         DIP_IDENTICAL_PRICES="1"
         DIP_TARGET_SPREAD_OUTPUT="Identical prices"
       fi
@@ -3295,6 +3296,7 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
       # if old data (already sold), if not a new buy
       if [[ "$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
         if [[ "$(tail -101 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep "Buy" | grep -c "for" || true)" -eq "0" ]] &>/dev/null; then
+          reset_sell_data
           DIP_OLD_DATA="1"
           DIP_TARGET_SPREAD_OUTPUT="Old data"
         fi
