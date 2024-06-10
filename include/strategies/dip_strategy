@@ -3251,7 +3251,7 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
   DIP_SELL_ID_STATUS="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sell_id 2>/dev/null | awk '{ print $1 }')"
 
   # if old data (already sold), if not a new buy
-  if [[ "$(tail -"$MAX_LOG" "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
+  if [[ "$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
     if [[ "$(tail -101 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep "Buy" | grep -c "for" || true)" -eq "0" ]] &>/dev/null; then
       reset_sell_data
       DIP_SELL_ID_STATUS="0"
@@ -3293,7 +3293,7 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
       fi
 
       # if old data (already sold), if not a new buy
-      if [[ "$(tail -"$MAX_LOG" "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
+      if [[ "$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
         if [[ "$(tail -101 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep "Buy" | grep -c "for" || true)" -eq "0" ]] &>/dev/null; then
           DIP_OLD_DATA="1"
           DIP_TARGET_SPREAD_OUTPUT="Old data"
