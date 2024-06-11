@@ -2091,6 +2091,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           # it is buying
           DIP_BUYING="1"
+          # status
+          DIP_BS_STATUS="Buying"
         fi
       fi
     fi
@@ -2571,6 +2573,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # orders check
   DIP_CHECK_ORDERS="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)"
 
+  # default
+  DIP_BS_STATUS="Working"
+
   # target status (default)
   DIP_TARGET_SPREAD_STATUS="[OK]"
 
@@ -2607,28 +2612,6 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   fi
 
   ##############################################################################
-
-  if [[ "$DIP_REMOVED" == "1" ]] &>/dev/null; then
-    DIP_BS_STATUS="Removed"
-  fi
-
-  ##############################################################################
-
-  if [[ "$DIP_SOLD" == "1" ]] &>/dev/null; then
-    DIP_BS_STATUS="Sold"
-  fi
-
-  ##############################################################################
-
-  if [[ "$DIP_BUYING" == "1" ]] &>/dev/null; then
-    DIP_BS_STATUS="Buying"
-  fi
-
-  ##############################################################################
-
-  if [[ "$DIP_SELLING" == "1" ]] &>/dev/null; then
-    DIP_BS_STATUS="Selling"
-  fi
 
   time_and_profit
 
@@ -2828,6 +2811,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
         # it was selling
         DIP_SELLING="1"
+        # status
+        DIP_BS_STATUS="Selling"
       fi
     fi
   fi
@@ -3206,6 +3191,8 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
                 DIP_SOLD="1"
                 # it was removed
                 DIP_REMOVED="1"
+                # status
+                DIP_BS_STATUS="Sold"
               fi
             fi
           fi
