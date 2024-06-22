@@ -2892,54 +2892,60 @@ fi
 bought_sold_age
 time_and_profit
 
-# if any data
-if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
-  # if older than n seconds (using max buy age limit on both)
-  if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
-    if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
-      # data exist
-      if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+# if not buying
+if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
+  # if not selling
+  if [[ "$DIP_SELLING" == "0" ]] &>/dev/null; then
+    # if any data
+    if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
+      # if older than n seconds (using max buy age limit on both)
+      if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
+        if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
+          # data exist
+          if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
-        # if specific market exist in orders file (buy)
-        if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
-          # old order id (buy)
-          DIP_ORDER_ID_BUY="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
-          # order id found
-          if [[ -n "$DIP_ORDER_ID_BUY" ]] &>/dev/null; then
-            # cancel old order (buy)
-            cancelOrder "$DIP_ORDER_ID_BUY" 2>>"${LOG_ERROR:?}"
-            sleep 1
-            # remove old order
-            echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -v "$DIP_ORDER_ID_BUY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders
-            # if specific market dont exist in orders file (sell)
-            if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -c "sell" || true)" -eq "0" ]] &>/dev/null; then
-              # remove old (active) order (buy & sell does not exist)
-              echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+            # if specific market exist in orders file (buy)
+            if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
+              # old order id (buy)
+              DIP_ORDER_ID_BUY="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
+              # order id found
+              if [[ -n "$DIP_ORDER_ID_BUY" ]] &>/dev/null; then
+                # cancel old order (buy)
+                cancelOrder "$DIP_ORDER_ID_BUY" 2>>"${LOG_ERROR:?}"
+                sleep 1
+                # remove old order
+                echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -v "$DIP_ORDER_ID_BUY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders
+                # if specific market dont exist in orders file (sell)
+                if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -c "sell" || true)" -eq "0" ]] &>/dev/null; then
+                  # remove old (active) order (buy & sell does not exist)
+                  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+                fi
+                log_date
+                # order n greater than n
+                if [[ "$(echo "$DIP_ORDER_ID_BUY" | wc -L)" -gt "9" ]] &>/dev/null; then
+                  DIP_ORDER_ID_BUY_DOTS=".."
+                else
+                  DIP_ORDER_ID_BUY_DOTS=""
+                fi
+
+                # reset active
+                reset_active_market_list
+
+                # reset sold file (reset data, age)
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+                # reset selling file (reset data)
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+                # reset sell_id file (reset data)
+                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+
+                # removing buy order output (log)
+                DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing buy order: ${DIP_ORDER_ID_BUY:0:9}$DIP_ORDER_ID_BUY_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
+                echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+                # it was removed
+                DIP_REMOVED="1"
+              fi
             fi
-            log_date
-            # order n greater than n
-            if [[ "$(echo "$DIP_ORDER_ID_BUY" | wc -L)" -gt "9" ]] &>/dev/null; then
-              DIP_ORDER_ID_BUY_DOTS=".."
-            else
-              DIP_ORDER_ID_BUY_DOTS=""
-            fi
-
-            # reset active
-            reset_active_market_list
-
-            # reset sold file (reset data, age)
-            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
-            # reset selling file (reset data)
-            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
-            # reset sell_id file (reset data)
-            truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
-
-            # removing buy order output (log)
-            DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing buy order: ${DIP_ORDER_ID_BUY:0:9}$DIP_ORDER_ID_BUY_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
-            echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-            # it was removed
-            DIP_REMOVED="1"
           fi
         fi
       fi
@@ -2954,70 +2960,76 @@ fi
 bought_sold_age
 time_and_profit
 
-# if any data
-if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
-  # if older than n seconds (using max sell age limit on both)
-  if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
-    if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
-      # data exist
-      if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+# if not buying
+if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
+  # if not selling
+  if [[ "$DIP_SELLING" == "0" ]] &>/dev/null; then
+    # if any data
+    if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
+      # if older than n seconds (using max sell age limit on both)
+      if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
+        if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
+          # data exist
+          if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
-        # if specific market exist in orders file (sell)
-        if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "sell" || true)" -gt "0" ]] &>/dev/null; then
+            # if specific market exist in orders file (sell)
+            if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "sell" || true)" -gt "0" ]] &>/dev/null; then
 
-          # old order id (sell)
-          DIP_ORDER_ID_SELL="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
+              # old order id (sell)
+              DIP_ORDER_ID_SELL="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
 
-          # order id found
-          if [[ -n "$DIP_ORDER_ID_SELL" ]] &>/dev/null; then
-            # use a while loop to read each line of the string into the variable order_id
-            echo "$DIP_ORDER_ID_SELL" | while IFS= read -r ORDER_ID; do
-              # cancel old order (sell)
-              cancelOrder "$ORDER_ID" 2>>"${LOG_ERROR:?}"
-            done
+              # order id found
+              if [[ -n "$DIP_ORDER_ID_SELL" ]] &>/dev/null; then
+                # use a while loop to read each line of the string into the variable order_id
+                echo "$DIP_ORDER_ID_SELL" | while IFS= read -r ORDER_ID; do
+                  # cancel old order (sell)
+                  cancelOrder "$ORDER_ID" 2>>"${LOG_ERROR:?}"
+                done
 
-            sleep 1
+                sleep 1
 
-            # use a while loop to read each line of the string into the variable order_id
-            echo "$DIP_ORDER_ID_SELL" | while IFS= read -r ORDER_ID; do
-              # remove old order
-              echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -v "$ORDER_ID")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders
-            done
+                # use a while loop to read each line of the string into the variable order_id
+                echo "$DIP_ORDER_ID_SELL" | while IFS= read -r ORDER_ID; do
+                  # remove old order
+                  echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -v "$ORDER_ID")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders
+                done
 
-            # if specific market dont exist in orders file (buy)
-            if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -c "buy" || true)" -eq "0" ]] &>/dev/null; then
-              # remove old (active) order (buy & sell does not exist)
-              echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+                # if specific market dont exist in orders file (buy)
+                if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -c "buy" || true)" -eq "0" ]] &>/dev/null; then
+                  # remove old (active) order (buy & sell does not exist)
+                  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+                fi
+
+                log_date
+
+                # order n greater than n
+                if [[ "$(echo "$(echo "$DIP_ORDER_ID_SELL" | tail -1)" | wc -L)" -gt "9" ]] &>/dev/null; then
+                  DIP_ORDER_ID_SELL_DOTS=".."
+                else
+                  DIP_ORDER_ID_SELL_DOTS=""
+                fi
+
+                # reset active
+                reset_active_market_list
+
+                # reset sold file (reset data, age)
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+                # reset selling file (reset data)
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+                # reset sell_id file (reset data)
+                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+
+                # use a while loop to read each line of the string into the variable order_id
+                echo "$DIP_ORDER_ID_SELL" | while IFS= read -r ORDER_ID; do
+                  # removing sell order output (log)
+                  DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing sell order: ${ORDER_ID:0:9}$DIP_ORDER_ID_SELL_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
+                  echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                done
+
+                # it was removed
+                DIP_REMOVED="1"
+              fi
             fi
-
-            log_date
-
-            # order n greater than n
-            if [[ "$(echo "$(echo "$DIP_ORDER_ID_SELL" | tail -1)" | wc -L)" -gt "9" ]] &>/dev/null; then
-              DIP_ORDER_ID_SELL_DOTS=".."
-            else
-              DIP_ORDER_ID_SELL_DOTS=""
-            fi
-
-            # reset active
-            reset_active_market_list
-
-            # reset sold file (reset data, age)
-            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
-            # reset selling file (reset data)
-            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
-            # reset sell_id file (reset data)
-            truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
-
-            # use a while loop to read each line of the string into the variable order_id
-            echo "$DIP_ORDER_ID_SELL" | while IFS= read -r ORDER_ID; do
-              # removing sell order output (log)
-              DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing sell order: ${ORDER_ID:0:9}$DIP_ORDER_ID_SELL_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
-              echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-            done
-
-            # it was removed
-            DIP_REMOVED="1"
           fi
         fi
       fi
