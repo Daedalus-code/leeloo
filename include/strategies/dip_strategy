@@ -1257,31 +1257,37 @@ if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
 fi
 
 ################################################################################
+# dip chaos, find more beneath the veil
+################################################################################
 
-# disregard already active bots from market (orders)
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
+# dip chaos configuration
+if [[ "$DIP_CHAOS" == "1" ]] &>/dev/null; then
+  # disregard already active bots from market (orders)
+  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
 
-  # random n
-  RANDOM_CLEARED_MARKET=$((((RANDOM % 2) + 1)))
+    # random n
+    RANDOM_CLEARED_MARKET=$((((RANDOM % 2) + 1)))
 
-  # if zero
-  if [[ -z "$RANDOM_CLEARED_MARKET" ]] &>/dev/null; then
-    RANDOM_CLEARED_MARKET="2"
-  fi
+    # if zero
+    if [[ -z "$RANDOM_CLEARED_MARKET" ]] &>/dev/null; then
+      RANDOM_CLEARED_MARKET="2"
+    fi
 
-  # disregard already active markets (positions)
-  if [[ "$RANDOM_CLEARED_MARKET" == "1" ]] &>/dev/null; then
+    # disregard already active markets (positions)
+    if [[ "$RANDOM_CLEARED_MARKET" == "1" ]] &>/dev/null; then
 
-    # set the paths for the files
-    PRICES_FILE="${LOG_DIR}/leeloo/$EXCHANGE_DIR_NAME/prices.dip"
+      # set the paths for the files
+      PRICES_FILE="${LOG_DIR}/leeloo/$EXCHANGE_DIR_NAME/prices.dip"
 
-    # extract the active markets from active file
-    ALREADY_ACTIVE_BOTS="$(egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)"
+      # extract the active markets from active file
+      ALREADY_ACTIVE_BOTS="$(egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)"
 
-    # filter out markets with found data
-    grep -vf <(echo "$ALREADY_ACTIVE_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp" 2>/dev/null
-    # replace the original prices file with the filtered version
-    mv "${PRICES_FILE}.temp" "$PRICES_FILE"
+      # filter out markets with found data
+      grep -vf <(echo "$ALREADY_ACTIVE_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp" 2>/dev/null
+
+      # replace the original prices file with the filtered version
+      mv "${PRICES_FILE}.temp" "$PRICES_FILE"
+    fi
   fi
 fi
 
