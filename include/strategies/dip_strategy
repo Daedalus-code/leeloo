@@ -628,9 +628,10 @@ cat_active_target
 # market does not exist ########################################################
 
 # ghost data
+GHOST_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)"
 GHOST_ACTIVE="$(grep -c "$GHOST_TARGET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
-GHOST_MARKET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -c "Market Not Found" || true)"
-GHOST_TARGET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '{ print $7 }')"
+GHOST_MARKET="$(echo "$GHOST_DATA" | grep -c "Market Not Found" || true)"
+GHOST_TARGET="$(echo "$GHOST_DATA" | awk '{ print $7 }')"
 GHOST_TARGET_LISTING="$(echo "$GHOST_TARGET" | awk '{ print $1 }' | awk -F/ '{ print $1 }')"
 GHOST_TARGET_REFERENCE="$(echo "$GHOST_TARGET" | awk '{ print $1 }' | awk -F/ '{ print $2 }')"
 GHOST_ORDERS="$(grep "$GHOST_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$GHOST_TARGET_REFERENCE" || true)"
