@@ -627,18 +627,20 @@ cat_active_target
 
 # market does not exist ########################################################
 
-# markets
+# ghost data
+GHOST_ACTIVE="$(grep -c "$GHOST_TARGET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
 GHOST_MARKET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep -c "Market Not Found" || true)"
 GHOST_TARGET="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | awk '{ print $7 }')"
 GHOST_TARGET_LISTING="$(echo "$GHOST_TARGET" | awk '{ print $1 }' | awk -F/ '{ print $1 }')"
 GHOST_TARGET_REFERENCE="$(echo "$GHOST_TARGET" | awk '{ print $1 }' | awk -F/ '{ print $2 }')"
+GHOST_ORDERS="$(grep "$GHOST_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$GHOST_TARGET_REFERENCE" || true)"
 
 # if true
 if [[ "$GHOST_MARKET" -gt "0" ]] &>/dev/null; then
   # if active order exist
-  if [[ "$(grep -c "$GHOST_TARGET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
+  if [[ "$GHOST_ACTIVE" -gt "0" ]] &>/dev/null; then
     # orders does not exist
-    if [[ "$(grep "$GHOST_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$GHOST_TARGET_REFERENCE" || true)" -eq "0" ]] &>/dev/null; then
+    if [[ "$GHOST_ORDERS" -eq "0" ]] &>/dev/null; then
       # remove active order
       echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$GHOST_TARGET")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       # log removing output
