@@ -752,6 +752,9 @@ BULLISH_EMA_STATUS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURREN
 
 if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
 
+  # earmark signal signal (bullish)
+  echo "Bullish" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo
+
   # if zero, skip log
   if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
     if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
@@ -764,6 +767,9 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
   # F O M O - B U Y
   ##############################################################################
 
+  # fomo signal
+  FOMO_SIGNAL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>/dev/null)"
+
   # check if balances, prices exist
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
     if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
@@ -772,48 +778,48 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
 
       # if fear of missing out is true
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
+        # if fomo signal is bullish while bearish
+        if [[ "$FOMO_SIGNAL" == "Bullish" ]] &>/dev/null; then
 
-        # earmark signal signal (bullish)
-        echo "Bullish" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo
+          # ready to buy (signal age)
+          if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-        # ready to buy (signal age)
-        if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
+            # rsi bullish check
+            RSI_BULLISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
 
-          # rsi bullish check
-          RSI_BULLISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            # if zero
+            if [[ -z "$RSI_BULLISH_CHECK" ]] &>/dev/null; then
+              RSI_BULLISH_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi 2>/dev/null | grep "L_NOW" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            fi
 
-          # if zero
-          if [[ -z "$RSI_BULLISH_CHECK" ]] &>/dev/null; then
-            RSI_BULLISH_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi 2>/dev/null | grep "L_NOW" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
-          fi
+            # if not zero, has data
+            if [[ ! -z "$RSI_BULLISH_CHECK" && -n "$RSI_BULLISH_CHECK" ]] &>/dev/null; then
+              # if any data
+              if [[ "$(echo "$RSI_BULLISH_CHECK" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+                # rsi below bullish, above bearish
+                if [[ "$RSI_BULLISH_CHECK" -lt "70" && "$RSI_BULLISH_CHECK" -gt "30" ]] &>/dev/null; then
+                  # if valued (check)
+                  if [[ "$LISTING_ALL_DIFF_CHECK" -gt "0" ]] &>/dev/null; then
 
-          # if not zero, has data
-          if [[ ! -z "$RSI_BULLISH_CHECK" && -n "$RSI_BULLISH_CHECK" ]] &>/dev/null; then
-            # if any data
-            if [[ "$(echo "$RSI_BULLISH_CHECK" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
-              # rsi below bullish, above bearish
-              if [[ "$RSI_BULLISH_CHECK" -lt "70" && "$RSI_BULLISH_CHECK" -gt "30" ]] &>/dev/null; then
-                # if valued (check)
-                if [[ "$LISTING_ALL_DIFF_CHECK" -gt "0" ]] &>/dev/null; then
+                    # new listing amount (missing difference)
+                    LISTING_AMOUNT="$REFERENCE_AMOUNT_FOMO"
 
-                  # new listing amount (missing difference)
-                  LISTING_AMOUNT="$REFERENCE_AMOUNT_FOMO"
+                    # new bullish output
+                    BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: FOMO : Bullish+Signal : Buying $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_ALLOCATED_REAL_CHECK+$LISTING_ALL_DIFF_CHECK% > ${LISTING_ALLOCATED:?}%"
 
-                  # new bullish output
-                  BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: FOMO : Bullish+Signal : Buying $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_ALLOCATED_REAL_CHECK+$LISTING_ALL_DIFF_CHECK% > ${LISTING_ALLOCATED:?}%"
-
-                  # has value
-                  if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-                    # if any data
-                    if [[ -n "$LISTING_ALLOCATED_REAL_CHECK" && -n "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                      # is this bullish signal allocated correctly? (without decimal)
-                      if [[ "$LISTING_ALLOCATED_REAL_CHECK" -lt "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                        # if not equal
-                        if [[ ! "$LISTING_ALLOCATED_REAL_CHECK" -eq "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                          # trigger a buy for fear of missing out
-                          echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-                          echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-                          echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                    # has value
+                    if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+                      # if any data
+                      if [[ -n "$LISTING_ALLOCATED_REAL_CHECK" && -n "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                        # is this bullish signal allocated correctly? (without decimal)
+                        if [[ "$LISTING_ALLOCATED_REAL_CHECK" -lt "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                          # if not equal
+                          if [[ ! "$LISTING_ALLOCATED_REAL_CHECK" -eq "$LISTING_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                            # trigger a buy for fear of missing out
+                            echo "$BULLISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+                            echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                            echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                          fi
                         fi
                       fi
                     fi
@@ -926,6 +932,9 @@ BEARISH_EMA_STATUS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURREN
 
 if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
 
+  # earmark signal signal (bullish)
+  echo "Bearish" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo
+
   # if zero, skip log
   if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
     if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
@@ -938,6 +947,9 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
   # F O M O - S E L L
   ##############################################################################
 
+  # fomo signal
+  FOMO_SIGNAL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>/dev/null)"
+
   # check if balances, prices exist
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
     if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
@@ -946,48 +958,48 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
 
       # if fear of missing out is true
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
+        # if fomo signal is bearish while bullish
+        if [[ "$FOMO_SIGNAL" == "Bearish" ]] &>/dev/null; then
 
-        # earmark signal signal (bullish)
-        echo "Bearish" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo
+          # ready to sell (signal age)
+          if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-        # ready to sell (signal age)
-        if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
+            # rsi bearish check
+            RSI_BEARISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
 
-          # rsi bearish check
-          RSI_BEARISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            # if zero
+            if [[ -z "$RSI_BEARISH_CHECK" ]] &>/dev/null; then
+              RSI_BEARISH_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi 2>/dev/null | grep "L_NOW" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            fi
 
-          # if zero
-          if [[ -z "$RSI_BEARISH_CHECK" ]] &>/dev/null; then
-            RSI_BEARISH_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rsi 2>/dev/null | grep "L_NOW" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
-          fi
+            # if not zero, has data
+            if [[ ! -z "$RSI_BEARISH_CHECK" && -n "$RSI_BEARISH_CHECK" ]] &>/dev/null; then
+              # if any data
+              if [[ "$(echo "$RSI_BEARISH_CHECK" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+                # rsi above bearish, below bullish
+                if [[ "$RSI_BEARISH_CHECK" -gt "30" && "$RSI_BEARISH_CHECK" -lt "70" ]] &>/dev/null; then
+                  # if valued (check)
+                  if [[ "$REFERENCE_ALL_DIFF_CHECK" -gt "0" ]] &>/dev/null; then
 
-          # if not zero, has data
-          if [[ ! -z "$RSI_BEARISH_CHECK" && -n "$RSI_BEARISH_CHECK" ]] &>/dev/null; then
-            # if any data
-            if [[ "$(echo "$RSI_BEARISH_CHECK" | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
-              # rsi above bearish, below bullish
-              if [[ "$RSI_BEARISH_CHECK" -gt "30" && "$RSI_BEARISH_CHECK" -lt "70" ]] &>/dev/null; then
-                # if valued (check)
-                if [[ "$REFERENCE_ALL_DIFF_CHECK" -gt "0" ]] &>/dev/null; then
+                    # new listing amount (missing difference)
+                    LISTING_AMOUNT="$LISTING_AMOUNT_FOMO"
 
-                  # new listing amount (missing difference)
-                  LISTING_AMOUNT="$LISTING_AMOUNT_FOMO"
+                    # new bearish output
+                    BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: FOMO : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $REFERENCE_ALLOCATED_REAL_CHECK+$REFERENCE_ALL_DIFF_CHECK% > ${REFERENCE_ALLOCATED:?}%"
 
-                  # new bearish output
-                  BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: FOMO : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $REFERENCE_ALLOCATED_REAL_CHECK+$REFERENCE_ALL_DIFF_CHECK% > ${REFERENCE_ALLOCATED:?}%"
-
-                  # has value
-                  if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
-                    # if any data
-                    if [[ -n "$REFERENCE_ALLOCATED_REAL_CHECK" && -n "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                      # is this bearish signal allocated correctly? (without decimal)
-                      if [[ "$REFERENCE_ALLOCATED_REAL_CHECK" -lt "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                        # if not equal
-                        if [[ ! "$REFERENCE_ALLOCATED_REAL_CHECK" -eq "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
-                          # trigger a sell for fear of missing out
-                          echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
-                          echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
-                          echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                    # has value
+                    if [[ "$(echo "$LISTING_AMOUNT" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+                      # if any data
+                      if [[ -n "$REFERENCE_ALLOCATED_REAL_CHECK" && -n "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                        # is this bearish signal allocated correctly? (without decimal)
+                        if [[ "$REFERENCE_ALLOCATED_REAL_CHECK" -lt "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                          # if not equal
+                          if [[ ! "$REFERENCE_ALLOCATED_REAL_CHECK" -eq "$REFERENCE_ALLOCATED_CONFIG_CHECK" ]] &>/dev/null; then
+                            # trigger a sell for fear of missing out
+                            echo "$BEARISH_EMA_SIGNAL" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log
+                            echo "Bullish :: $EMA_REAL_SHORT 1$EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                            echo "Bearish :: 1$EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal
+                          fi
                         fi
                       fi
                     fi
