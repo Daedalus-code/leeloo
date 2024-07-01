@@ -708,8 +708,13 @@ if [[ -n "$EMA_REAL_SHORT" && -n "$EMA_REAL_LONG" ]] 2>>"${LOG_ERROR:?}"; then
   if [[ ! "$EMA_REAL_SHORT" == "0.000000000" && ! "$EMA_REAL_LONG" == "0.000000000" ]] &>/dev/null; then
     # create signal line based on ema values
     echo "$EMA_REAL_SIGNAL :: $EMA_REAL_SHORT $EMA_REAL_LONG" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal 2>>"${LOG_ERROR:?}"
-    # create fomo signal based on ema values
-    echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>>"${LOG_ERROR:?}"
+    # fomo signal
+    FOMO_SIGNAL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>/dev/null)"
+    # if any difference
+    if [[ ! "$FOMO_SIGNAL" == "$EMA_REAL_SIGNAL" ]] &>/dev/null; then
+      # create fomo signal based on ema values
+      echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>>"${LOG_ERROR:?}"
+    fi
   fi
 fi
 
@@ -766,7 +771,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$FO
   ##############################################################################
 
   # fomo signal
-  FOMO_SIGNAL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>/dev/null)"
+  FOMO_SIGNAL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>/dev/null)"
 
   # check if balances, prices exist
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
@@ -941,7 +946,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$FO
   ##############################################################################
 
   # fomo signal
-  FOMO_SIGNAL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>/dev/null)"
+  FOMO_SIGNAL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>/dev/null)"
 
   # check if balances, prices exist
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '{ print $1 }')" -gt "1" ]] &>/dev/null; then
