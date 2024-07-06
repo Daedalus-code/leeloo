@@ -155,8 +155,8 @@ function time_and_profit() {
     # sell order count
     DIP_SELL_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
 
-    # if order is buying, double it all, if order is selling, double it all
-    if [[ "$DIP_BUY_ORDER_COUNT" -gt "0" || "$DIP_SELL_ORDER_COUNT" -gt "0" ]] &>/dev/null; then
+    # if order is selling, double it all
+    if [[ "$DIP_SELL_ORDER_COUNT" -gt "0" ]] &>/dev/null; then
       # double it
       EXTRA_TIME_WITH_SPREAD="$(echo "$EXTRA_TIME_WITH_SPREAD*3.69" | bc -l 2>/dev/null)"
     fi
