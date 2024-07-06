@@ -3315,6 +3315,14 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
       if [[ "$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
         if [[ "$(tail -101 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep "Buy" | grep -c "for" || true)" -eq "0" ]] &>/dev/null; then
           reset_sell_data
+          # if zero
+          if [[ -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+            LISTING_CURRENCY="null"
+          fi
+          # if zero
+          if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+            REFERENCE_CURRENCY="null"
+          fi
           DIP_OLD_DATA="1"
           DIP_TARGET_SPREAD_OUTPUT="Old data"
         fi
