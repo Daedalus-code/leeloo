@@ -175,6 +175,12 @@ function time_and_profit() {
       # adjust DIP_MAX_BUY_AGE and DIP_MAX_SELL_AGE using calculated percentages
       DIP_MAX_BUY_AGE=$(echo "$DIP_BUY_EXTRA_TIME+$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
       DIP_MAX_SELL_AGE=$(echo "$DIP_SELL_EXTRA_TIME+$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
+
+      # if order only buying, minimize it all
+      if [[ "$DIP_BUY_ORDER_COUNT" -gt "0" && "$DIP_SELL_ORDER_COUNT" -eq "0" ]] &>/dev/null; then
+        # minimize it
+        DIP_MAX_BUY_AGE="1"
+      fi
     fi
   fi
 
