@@ -2606,15 +2606,18 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     fi
   else # no active, no orders
     DIP_BS_STATUS="Waiting"
-    # if order idle, minimize it all, if order only buying, minimize it all
-    if [[ "$DIP_BUY_ORDER_COUNT" -eq "0" && "$DIP_SELL_ORDER_COUNT" -eq "0" || "$DIP_BUY_ORDER_COUNT" -gt "0" && "$DIP_SELL_ORDER_COUNT" -eq "0" ]] &>/dev/null; then
-      # minimize it
-      DIP_MAX_BUY_AGE="1"
-      # days into seconds
-      DIP_MAX_BUY_AGE_SECONDS="86400"
-    fi
     # probably not good enough
     DIP_TARGET_SPREAD_STATUS="[N0]"
+  fi
+
+  ##############################################################################
+
+  # if order idle, minimize it all, if order only buying, minimize it all
+  if [[ "$DIP_BUY_ORDER_COUNT" -eq "0" && "$DIP_SELL_ORDER_COUNT" -eq "0" || "$DIP_BUY_ORDER_COUNT" -gt "0" && "$DIP_SELL_ORDER_COUNT" -eq "0" ]] &>/dev/null; then
+    # minimize it
+    DIP_MAX_BUY_AGE="1"
+    # days into seconds
+    DIP_MAX_BUY_AGE_SECONDS="86400"
   fi
 
   ##############################################################################
