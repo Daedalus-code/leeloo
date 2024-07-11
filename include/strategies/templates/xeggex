@@ -226,7 +226,7 @@ function decimal_market() {
     fi
 
     # if failing because exchange has not updated their api yet
-    if [[ "$(grep "Minimum quantity for this market is" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null)" ]] &>/dev/null; then
+    if [[ "$(grep -c "Minimum quantity for this market is" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null || true)" -gt "0" ]] &>/dev/null; then
       DECIMAL_LIMIT="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null | awk '{ print $NF }')"
     fi
   fi
