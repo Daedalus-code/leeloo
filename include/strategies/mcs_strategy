@@ -70,8 +70,19 @@ if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     if [[ -f "${LOG_DIR:?}"/leeloo/getlist ]] &>/dev/null; then
       # minimum decimal
       MCS_MINIMUM_LISTING_AMOUNT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
-      # minimum decimal calculation
-      MCS_MINIMUM_LISTING_AMOUNT="$(echo "$MCS_MINIMUM_LISTING_AMOUNT-1" | bc -l 2>/dev/null)"
+
+      # if failing because exchange has not updated their api yet
+      if [[ "$(grep -c "Minimum quantity for this market is" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null || true)" -gt "0" ]] &>/dev/null; then
+        DECIMAL_LIMIT_NULL="$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null | awk '{ print $NF }')"
+        # calculate
+        DECIMAL_PART="${DECIMAL_LIMIT_NULL#*.}"
+        LEADING_ZEROS="$(echo -n "$DECIMAL_PART" | grep -o '^0*' | wc -c)"
+        MCS_MINIMUM_LISTING_AMOUNT="$((LEADING_ZEROS - 1))"
+      else
+        # minimum decimal calculation
+        MCS_MINIMUM_LISTING_AMOUNT="$(echo "$MCS_MINIMUM_LISTING_AMOUNT-1" | bc -l 2>/dev/null)"
+      fi
+
       # set minimum listing amount
       LISTING_AMOUNT="$(echo "0" | awk '{ printf "%.'$MCS_MINIMUM_LISTING_AMOUNT'f\n", $1 }')1"
     fi
