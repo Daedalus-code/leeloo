@@ -4523,6 +4523,50 @@ DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SU
 DIP_BI_PL_PERCENTAGE_MONTHLY="$(echo "100/$DIP_BI_STATIC_SUM_MONTHLY*$DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
+# quarter tracking
+################################################################################
+
+# if no quarter data
+if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter || "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter || true)" -eq "0" ]] &>/dev/null; then
+  # track quarter profit and losses
+  echo "$DIP_BI_DYNAMIC_SUM" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter
+fi
+
+# profit losses quarter age (seconds)
+DIP_BI_QUARTER_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+# if greater than n (quarter)
+if [[ "$DIP_BI_QUARTER_AGE_SECONDS" -gt "8035200" ]] &>/dev/null; then
+  # if greater than n
+  if [[ "$(echo "$DIP_BI_DYNAMIC_SUM" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+    # track quarter profit and losses
+    echo "$DIP_BI_DYNAMIC_SUM" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter
+
+    # track original quarter profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter
+    # keep n lines, quarter profit and losses
+    echo "$(tail -3 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter
+    # track original quarter profit and losses
+    echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter
+  fi
+fi
+
+# if no original amount
+if [[ ! "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter)" == "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter)" ]] &>/dev/null; then
+  # track original quarter profit and losses
+  echo "$(head -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter
+fi
+
+# quarter count
+DIP_BI_STATIC_SUM_QUARTER_COUNT="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter | awk '{ print $1 }')"
+# static quarter total sum (average)
+DIP_BI_STATIC_SUM_QUARTER="$(echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pl.quarter 2>/dev/null | grep -v "0.000000000" | awk '{ SUM += $1} END { print SUM }')/$DIP_BI_STATIC_SUM_QUARTER_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+# balance invested profit losses difference
+DIP_BI_PROFIT_LOSSES_DIFF_QUARTER="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM_QUARTER" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+# calculate difference percentage
+DIP_BI_PL_PERCENTAGE_QUARTER="$(echo "100/$DIP_BI_STATIC_SUM_QUARTER*$DIP_BI_PROFIT_LOSSES_DIFF_QUARTER" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+################################################################################
 # half year tracking
 ################################################################################
 
