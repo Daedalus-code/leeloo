@@ -751,9 +751,9 @@ BULLISH_EMA_STATUS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURREN
 ################################################################################
 
 # fomo signal
-FOMO_SIGNAL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>/dev/null)"
+SIGNAL_FOMO="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>/dev/null)"
 
-if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$FOMO_SIGNAL" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SIGNAL_FOMO" == "Bearish" ]] 2>>"${LOG_ERROR:?}"; then
   # if zero, skip log
   if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
     if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
@@ -775,7 +775,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$FO
       # if fear of missing out is true
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
         # if fomo signal is bearish while bullish
-        if [[ "$FOMO_SIGNAL" == "Bearish" ]] &>/dev/null; then
+        if [[ "$SIGNAL_FOMO" == "Bearish" ]] &>/dev/null; then
           # ready to buy (signal age)
           if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
@@ -868,7 +868,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$FO
                 fi
 
                 # create fomo signal based on ema values
-                echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>>"${LOG_ERROR:?}"
+                echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>>"${LOG_ERROR:?}"
 
                 ################################################################
                 ################################################################
@@ -899,7 +899,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$FO
                 fi
 
                 # create fomo signal based on ema values
-                echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>>"${LOG_ERROR:?}"
+                echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>>"${LOG_ERROR:?}"
 
                 ################################################################
                 ################################################################
@@ -932,9 +932,9 @@ BEARISH_EMA_STATUS="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURREN
 ################################################################################
 
 # fomo signal
-FOMO_SIGNAL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>/dev/null)"
+SIGNAL_FOMO="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>/dev/null)"
 
-if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$FOMO_SIGNAL" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SIGNAL_FOMO" == "Bullish" ]] 2>>"${LOG_ERROR:?}"; then
   # if zero, skip log
   if [[ ! "$(echo "$EMA_REAL_SHORT" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
     if [[ ! "$(echo "$EMA_REAL_LONG" | awk -F. '{ print $1 }')" -eq "0" ]] 2>>"${LOG_ERROR:?}"; then
@@ -956,7 +956,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$FO
       # if fear of missing out is true
       if [[ "$EMA_FOMO" == "true" ]] &>/dev/null; then
         # if fomo signal is bullish while bearish
-        if [[ "$FOMO_SIGNAL" == "Bullish" ]] &>/dev/null; then
+        if [[ "$SIGNAL_FOMO" == "Bullish" ]] &>/dev/null; then
           # ready to sell (signal age)
           if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
@@ -1049,7 +1049,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$FO
                 fi
 
                 # create fomo signal based on ema values
-                echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>>"${LOG_ERROR:?}"
+                echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>>"${LOG_ERROR:?}"
 
                 ################################################################
                 ################################################################
@@ -1080,7 +1080,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$FO
                 fi
 
                 # create fomo signal based on ema values
-                echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".fomo_signal 2>>"${LOG_ERROR:?}"
+                echo "$EMA_REAL_SIGNAL" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_fomo 2>>"${LOG_ERROR:?}"
 
                 ################################################################
                 ################################################################
