@@ -2908,7 +2908,13 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           DIP_MAKER_TAKER_CHECK="$(echo "$DIP_MAKER_TAKER" | tr -d '.' | sed 's/^0*//')"
         fi
 
-        # get the fuck out with tiny profits above maker taker fees, (just get the fuck out real fast)
+        # if no
+        if [[ "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
+          # reset active
+          reset_active_market_list
+        fi
+
+        # if ok, still profit
         if [[ ! "$DIP_TARGET_SPREAD_STATUS" == "[N0]" || "$(echo "$DIP_SELL_AMOUNT_PROFIT" | tr -d '.' | sed 's/^0*//')" -gt "$DIP_MAKER_TAKER_CHECK" ]] &>/dev/null; then
 
           ######################################################################
