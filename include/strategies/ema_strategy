@@ -21,6 +21,7 @@ source /usr/local/bin/include/leeloo/strategies/templates/exchanges
 # indicators
 source /usr/local/bin/include/leeloo/indicators/ema
 source /usr/local/bin/include/leeloo/indicators/rsi_xgx
+source /usr/local/bin/include/leeloo/indicators/rsi_nky
 
 ################################################################################
 
@@ -222,9 +223,21 @@ fi
 
 # get_rsi n
 function rogue_data() {
-  echo "L $LISTING_CURRENCY $(get_rsi_xgx "$LISTING_CURRENCY" "USDT")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
-  sleep 1
-  echo "R $REFERENCE_CURRENCY $(get_rsi_xgx "$REFERENCE_CURRENCY" "USDT")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+
+  # if xeggex rsi
+  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+    echo "L $LISTING_CURRENCY $(get_rsi_xgx "$LISTING_CURRENCY" "USDT")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+    sleep 1
+    echo "R $REFERENCE_CURRENCY $(get_rsi_xgx "$REFERENCE_CURRENCY" "USDT")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+  fi
+
+  # if nonkyc rsi
+  if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+    echo "L $LISTING_CURRENCY $(get_rsi_nky "$LISTING_CURRENCY" "USDT")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+    sleep 1
+    echo "R $REFERENCE_CURRENCY $(get_rsi_nky "$REFERENCE_CURRENCY" "USDT")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
+  fi
+
 }
 
 ################################################################################
@@ -779,8 +792,17 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
           # ready to buy (signal age)
           if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-            # rsi bullish check
-            RSI_BULLISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            # if xeggex rsi
+            if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+              # rsi bullish check
+              RSI_BULLISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            fi
+
+            # if nonkyc rsi
+            if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+              # rsi bullish check
+              RSI_BULLISH_CHECK="$(get_rsi_nky "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            fi
 
             # if zero
             if [[ -z "$RSI_BULLISH_CHECK" ]] &>/dev/null; then
@@ -960,8 +982,17 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
           # ready to sell (signal age)
           if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-            # rsi bearish check
-            RSI_BEARISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            # if xeggex rsi
+            if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+              # rsi bullish check
+              RSI_BULLISH_CHECK="$(get_rsi_xgx "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            fi
+
+            # if nonkyc rsi
+            if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+              # rsi bullish check
+              RSI_BULLISH_CHECK="$(get_rsi_nky "$LISTING_CURRENCY" "USDT" | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+            fi
 
             # if zero
             if [[ -z "$RSI_BEARISH_CHECK" ]] &>/dev/null; then
