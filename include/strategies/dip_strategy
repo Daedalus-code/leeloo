@@ -647,6 +647,12 @@ cat_active_target
 
 # ghost data
 GHOST_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)"
+
+# if zero
+if [[ -z "$GHOST_DATA" ]] &>/dev/null; then
+  GHOST_DATA="null"
+fi
+
 GHOST_ACTIVE="$(grep -c "$GHOST_TARGET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
 GHOST_MARKET="$(echo "$GHOST_DATA" | grep -c "Market Not Found" || true)"
 GHOST_TARGET="$(echo "$GHOST_DATA" | awk '{ print $7 }')"
