@@ -37,6 +37,7 @@ function account_private_api() {
   source /usr/local/bin/include/leeloo/api/poloniex/private_API
   source /usr/local/bin/include/leeloo/api/stakecube/private_API
   source /usr/local/bin/include/leeloo/api/xeggex/private_API
+  source /usr/local/bin/include/leeloo/api/nonkyc/private_API
 }
 # public api
 function account_public_api() {
@@ -44,6 +45,7 @@ function account_public_api() {
   source /usr/local/bin/include/leeloo/api/poloniex/public_API
   source /usr/local/bin/include/leeloo/api/stakecube/public_API
   source /usr/local/bin/include/leeloo/api/xeggex/public_API
+  source /usr/local/bin/include/leeloo/api/nonkyc/public_API
 }
 
 ################################################################################
@@ -120,6 +122,25 @@ function exchange_template() {
     # xeggex api
     source /usr/local/bin/include/leeloo/api/xeggex/private_API
     source /usr/local/bin/include/leeloo/api/xeggex/public_API
+  fi
+
+  ##############################################################################
+
+  # nonkyc template
+  if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+    EXCHANGE_OUTPUT_NAME="nonkyc"
+    EXCHANGE_DIR_NAME="nonkyc"
+    if [[ ! -f /usr/local/bin/include/leeloo/strategies/templates/nonkyc ]] &>/dev/null; then
+      EXCHANGE_API="Nothing"
+      EXCHANGE_DIR_NAME="null"
+      echo "$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: No template found!" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+      exit
+    else
+      source /usr/local/bin/include/leeloo/strategies/templates/nonkyc
+    fi
+    # nonkyc api
+    source /usr/local/bin/include/leeloo/api/nonkyc/private_API
+    source /usr/local/bin/include/leeloo/api/nonkyc/public_API
   fi
 
   ##############################################################################
