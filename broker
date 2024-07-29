@@ -93,7 +93,7 @@ case $CHOICE in
 
   if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-    HEIGHT="11"
+    HEIGHT="12"
     WIDTH="21"
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Account Balances"
@@ -102,6 +102,7 @@ case $CHOICE in
     OPTIONS=(1 "Poloniex"
       2 "StakeCube"
       3 "XeggeX"
+      4 "nonkyc"
       0 "Search")
 
     CHOICE=$(dialog --clear \
@@ -187,6 +188,15 @@ case $CHOICE in
 
       ;;
 
+      # nonkyc balances ########################################################
+
+    "4")
+
+      EXCHANGE_BALANCE="nonkyc"
+      exchange_balance
+
+      ;;
+
     esac
 
   else
@@ -201,7 +211,7 @@ case $CHOICE in
 
 "2")
 
-  HEIGHT="11"
+  HEIGHT="12"
   WIDTH="21"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Prices"
@@ -210,6 +220,7 @@ case $CHOICE in
   OPTIONS=(1 "Poloniex"
     2 "StakeCube"
     3 "XeggeX"
+    4 "nonkyc"
     0 "All")
 
   CHOICE=$(dialog --clear \
@@ -250,6 +261,15 @@ case $CHOICE in
 
     ;;
 
+    # nonkyc prices ############################################################
+
+  "4")
+
+    OBSERVE_MARKET="nonkyc"
+    observe_market
+
+    ;;
+
   "0")
 
     observe_all_market
@@ -266,7 +286,7 @@ case $CHOICE in
 
 "3")
 
-  HEIGHT="10"
+  HEIGHT="11"
   WIDTH="21"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Search"
@@ -274,7 +294,8 @@ case $CHOICE in
 
   OPTIONS=(1 "Poloniex"
     2 "StakeCube"
-    3 "XeggeX")
+    3 "XeggeX"
+    4 "nonkyc")
 
   CHOICE=$(dialog --clear \
     --backtitle "$BACKTITLE" \
@@ -314,6 +335,15 @@ case $CHOICE in
 
     ;;
 
+    # nonkyc search ############################################################
+
+  "4")
+
+    SEARCH_MARKET="nonkyc"
+    search_market
+
+    ;;
+
   esac
 
   ;;
@@ -328,7 +358,7 @@ case $CHOICE in
 
   if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-    HEIGHT="11"
+    HEIGHT="12"
     WIDTH="21"
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Orders"
@@ -337,6 +367,7 @@ case $CHOICE in
     OPTIONS=(1 "Poloniex"
       2 "StakeCube"
       3 "XeggeX"
+      4 "nonkyc"
       0 "Search")
 
     CHOICE=$(dialog --clear \
@@ -380,6 +411,19 @@ case $CHOICE in
 
       # set exchange template
       EXCHANGE_API="XGX"
+      exchange_template
+      order_history
+
+      # set broker template
+      EXCHANGE_API=""
+      exchange_template
+
+      ;;
+
+    "4") # nonkyc menu
+
+      # set exchange template
+      EXCHANGE_API="NKY"
       exchange_template
       order_history
 
@@ -1055,7 +1099,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "G")
 
-    HEIGHT="15"
+    HEIGHT="16"
     WIDTH="43"
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Reference Graphs"
@@ -1064,6 +1108,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     OPTIONS=(1 "Poloniex         Generate graph"
       2 "StakeCube        Generate graph"
       3 "XeggeX           Generate graph"
+      4 "nonkyc           Generate graph"
       0 "Install          Install graph"
       x "Remove           Remove install"
       r "Reset            Reset databases"
@@ -1107,6 +1152,16 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       install_graphs
       GRAPH_EXCHANGE="xeggex"
+      source /usr/local/bin/include/leeloo/graph
+
+      ;;
+
+      # xeggex graphs ##########################################################
+
+    "4")
+
+      install_graphs
+      GRAPH_EXCHANGE="nonkyc"
       source /usr/local/bin/include/leeloo/graph
 
       ;;
@@ -1213,9 +1268,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "0")
 
-    HEIGHT=10
-    WIDTH=40
-    CHOICE_HEIGHT=3
+    HEIGHT="11"
+    WIDTH="40"
+    CHOICE_HEIGHT="4"
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Delisting Menu"
     MENU="Multipass $DATE_XARGS"
@@ -1223,7 +1278,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     OPTIONS=(
       1 "POL              Poloniex"
       2 "SCE              StakeCube"
-      3 "XGX              XeggeX")
+      3 "XGX              XeggeX"
+      4 "NKY              nonkyc")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
@@ -1259,6 +1315,15 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     "3")
 
       nano "${SYS_DIR:?}"/delisted_xeggex
+      clear
+
+      ;;
+
+      # nonkyc delist
+
+    "4")
+
+      nano "${SYS_DIR:?}"/delisted_nonkyc
       clear
 
       ;;

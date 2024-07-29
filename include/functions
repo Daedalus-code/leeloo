@@ -50,6 +50,10 @@ function install_exchange_dir() {
   if [[ ! -d "${LOG_DIR:?}"/leeloo/xeggex ]] &>/dev/null; then
     mkdir "${LOG_DIR:?}"/leeloo/xeggex &>/dev/null
   fi
+  # nonkyc directory
+  if [[ ! -d "${LOG_DIR:?}"/leeloo/nonkyc ]] &>/dev/null; then
+    mkdir "${LOG_DIR:?}"/leeloo/nonkyc &>/dev/null
+  fi
 }
 
 # date, log date ###############################################################
@@ -161,6 +165,7 @@ function key_secret_set() {
   KEY_SECRET_SET_PLX="0" # poloniex
   KEY_SECRET_SET_SCE="0" # stakecube
   KEY_SECRET_SET_XGX="0" # xeggex
+  KEY_SECRET_SET_NKY="0" # nonkyc
 
   ##############################################################################
 
@@ -175,6 +180,10 @@ function key_secret_set() {
   # xeggex option
   if [[ -n "$API_XEGGEX_KEY" ]] && [[ -n "$API_XEGGEX_SECRET" ]]; then
     KEY_SECRET_SET_XGX="1"
+  fi
+  # nonkyc option
+  if [[ -n "$API_NONKYC_KEY" ]] && [[ -n "$API_NONKYC_SECRET" ]]; then
+    KEY_SECRET_SET_NKY="1"
   fi
 
   ##############################################################################
@@ -416,7 +425,7 @@ function exchange_balance() {
 
   ##############################################################################
 
-  # poloniex
+  # poloniex balance
   if [[ "$EXCHANGE_BALANCE" == "poloniex" ]] &>/dev/null; then
     EXCHANGE_API="POL"
     exchange_template
@@ -428,7 +437,7 @@ function exchange_balance() {
 
   ##############################################################################
 
-  # stakecube
+  # stakecube balance
   if [[ "$EXCHANGE_BALANCE" == "stakecube" ]] &>/dev/null; then
     EXCHANGE_API="SCE"
     exchange_template
@@ -445,9 +454,21 @@ function exchange_balance() {
 
   ##############################################################################
 
-  # xeggex
+  # xeggex balance
   if [[ "$EXCHANGE_BALANCE" == "xeggex" ]] &>/dev/null; then
     EXCHANGE_API="XGX"
+    exchange_template
+    # get balance
+    function result_balances() {
+      echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null
+    }
+  fi
+
+  ##############################################################################
+
+  # nonkyc balance
+  if [[ "$EXCHANGE_BALANCE" == "nonkyc" ]] &>/dev/null; then
+    EXCHANGE_API="NKY"
     exchange_template
     # get balance
     function result_balances() {
@@ -518,7 +539,7 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
 
   ##############################################################################
 
-  if [[ "$EXCHANGE_BALANCE" == "poloniex" || "$EXCHANGE_BALANCE" == "xeggex" ]] &>/dev/null; then
+  if [[ "$EXCHANGE_BALANCE" == "poloniex" || "$EXCHANGE_BALANCE" == "xeggex" || "$EXCHANGE_BALANCE" == "nonkyc" ]] &>/dev/null; then
 
     # default
     WIDTH="0"
@@ -531,6 +552,8 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
       RESULT="No Balance available"
     fi
 
+    ############################################################################
+
     if [[ "$EXCHANGE_BALANCE" == "xeggex" ]] &>/dev/null; then
       # keep lines with n
       RESULT="Coins: Deposited Available Unconfirmed
@@ -538,6 +561,18 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
       WIDTH="$(echo "$(echo "$RESULT" | column -t | wc -L)+4" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$RESULT" | column -t | wc -l)+4" | bc 2>/dev/null)"
     fi
+
+    ############################################################################
+
+    if [[ "$EXCHANGE_BALANCE" == "nonkyc" ]] &>/dev/null; then
+      # keep lines with n
+      RESULT="Coins: Deposited Available Unconfirmed
+    $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
+      WIDTH="$(echo "$(echo "$RESULT" | column -t | wc -L)+4" | bc 2>/dev/null)"
+      LENGTH="$(echo "$(echo "$RESULT" | column -t | wc -l)+4" | bc 2>/dev/null)"
+    fi
+
+    ############################################################################
 
     display_result() {
       dialog --title "$FILE_TIME :: +$EXCHANGE_ASSETS :: $EXCHANGE_API Account Balance" \
@@ -665,6 +700,20 @@ function observe_market() {
 
   ##############################################################################
 
+  # nonkyc prices
+  if [[ "$OBSERVE_MARKET" == "nonkyc" ]] &>/dev/null; then
+    EXCHANGE_API="NKY"
+    exchange_template
+    SUPPORT_WIDTH="+5"
+    SUPPORT_LENGTH="5"
+    SUPPORT_RESULT="Support: https://nonkyc.com/account/support"
+    function result_prices() {
+      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null
+    }
+  fi
+
+  ##############################################################################
+
   # observe markets
   USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
@@ -739,19 +788,23 @@ function observe_all_market() {
   # update data every n seconds
   if [[ ! -f "${LOG_DIR:?}"/leeloo/prices.all || "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
     # exchange balances
-    echo "Updating prices (1/3)"
+    echo "Updating prices (1/4)"
     if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
       echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
     fi
     clear
-    echo "Updating prices (2/3)"
+    echo "Updating prices (2/4)"
     if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
       echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
     fi
     clear
-    echo "Updating prices (3/3)"
+    echo "Updating prices (3/4)"
     if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
       echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+    fi
+    echo "Updating prices (4/4)"
+    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
+      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
     fi
     # all markets
     echo "$(cat "${LOG_DIR:?}"/leeloo/*/prices 2>/dev/null | tr '_' '/' | column -t)" >"${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null
@@ -821,7 +874,7 @@ function search_market() {
   ##############################################################################
 
   # poloniex, stakecube, xeggex search
-  if [[ "$SEARCH_MARKET" == "poloniex" || "$SEARCH_MARKET" == "stakecube" || "$SEARCH_MARKET" == "xeggex" ]] &>/dev/null; then
+  if [[ "$SEARCH_MARKET" == "poloniex" || "$SEARCH_MARKET" == "stakecube" || "$SEARCH_MARKET" == "xeggex" || "$SEARCH_MARKET" == "nonkyc" ]] &>/dev/null; then
     MARKET_INPUT=$(
       dialog --title "Market (BTC_USDT) (BTC)" \
         --inputbox "Enter name:" 8 40 \
@@ -846,6 +899,8 @@ function search_market() {
       }
     fi
 
+    ############################################################################
+
     # get stakecube prices
     if [[ "$SEARCH_MARKET" == "stakecube" ]] &>/dev/null; then
       EXCHANGE_API="SCE"
@@ -857,6 +912,8 @@ function search_market() {
       }
     fi
 
+    ############################################################################
+
     # get xeggex prices
     if [[ "$SEARCH_MARKET" == "xeggex" ]] &>/dev/null; then
       EXCHANGE_API="XGX"
@@ -867,6 +924,21 @@ function search_market() {
         echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
       }
     fi
+
+    ############################################################################
+
+    # get nonkyc prices
+    if [[ "$SEARCH_MARKET" == "nonkyc" ]] &>/dev/null; then
+      EXCHANGE_API="NKY"
+      exchange_template
+      SUPPORT_WIDTH="+5"
+      SUPPORT_LENGTH="+5"
+      function result_prices() {
+        echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
+      }
+    fi
+
+    ############################################################################
 
     USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
@@ -1068,7 +1140,34 @@ function order_history {
     }
   fi
 
+  ##############################################################################
+
+  # nonkyc data
+  if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+    # cat or tac
+    CAT_TAC="tac"
+    # set orders format
+    ORDERS_FORMAT="OrderID Type Amount Original LimitPrice List Ref DateAdded"
+    # set exchange template
+    EXCHANGE_API="NKY"
+    exchange_template
+    ORDER_EXCHANGE="nonkyc"
+    # open orders function
+    function result_orders {
+      echo "$(getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac)" >"${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null
+    }
+  fi
+
   # xeggex order format
+  function place_order_format {
+    # get id, price, output format
+    PLACE_ORDER="$(cat "${LOG_DIR:?}"/leeloo/broker.tx 2>/dev/null)"
+    PLACE_ORDER_ID="$(echo "$PLACE_ORDER" | tr -d '"' | egrep -wo "id:[A-Za-z0-9]+" | awk -F: '{ print $2 }' | tail -1)"
+    PLACE_ORDER_PRICE="$(echo "$PLACE_ORDER" | egrep -wo "price:[0-9]+.[0-9]+" | awk -F: '{ print $2 }' | tail -1)"
+    PLACE_ORDER="$PLACE_ORDER_ID$PLACE_ORDER_PRICE"
+  }
+
+  # nonkyc order format
   function place_order_format {
     # get id, price, output format
     PLACE_ORDER="$(cat "${LOG_DIR:?}"/leeloo/broker.tx 2>/dev/null)"

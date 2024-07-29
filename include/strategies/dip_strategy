@@ -17,6 +17,8 @@ source /usr/local/bin/include/leeloo/sMcD
 source /usr/local/bin/include/leeloo/strategies/templates/exchanges
 # indicator
 source /usr/local/bin/include/leeloo/indicators/rsi_xgx
+# indicator
+source /usr/local/bin/include/leeloo/indicators/rsi_nky
 
 ################################################################################
 
@@ -1268,8 +1270,8 @@ echo "$(echo "$CAT_PRICES_FILE" | awk '{if ($2 < $3) print}')" >"${LOG_DIR:?}"/l
 # prices file output (RAW)
 CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
 
-# if xeggex api, change _ into /
-if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+# if xeggex, nonkyc api, change _ into /
+if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
   echo "$(echo "$CAT_PRICES_DIP_FILE" | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null
   echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | sed 's/\([A-Za-z0-9]\+\)_\([A-Za-z0-9]\+\):/\1\/\2:/g' 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null
@@ -1581,14 +1583,27 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 # potential rsi target (reference)
                 POTENTIAL_RSI_REFERENCE="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $2 }')"
 
-                # if xeggex rsi
-                if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-                  # potential rsi data (using rsi xeggex) ######################
-                  echo "$(get_rsi_xgx "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/get_rsi_xgx
-                  ##############################################################
+                # if xeggex api
+                if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
 
-                  # potential rsi data
-                  POTENTIAL_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/indicators/get_rsi_xgx 2>/dev/null)"
+                  # if xeggex rsi
+                  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+                    # potential rsi data (using rsi xeggex) ######################
+                    echo "$(get_rsi_xgx "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/get_rsi_xgx
+                    ##############################################################
+                    # potential rsi data
+                    POTENTIAL_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/indicators/get_rsi_xgx 2>/dev/null)"
+                  fi
+
+                  # if nonkyc rsi
+                  if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                    # potential rsi data (using rsi xeggex) ######################
+                    echo "$(get_rsi_nky "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/get_rsi_nky
+                    ##############################################################
+                    # potential rsi data
+                    POTENTIAL_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/indicators/get_rsi_nky 2>/dev/null)"
+                  fi
+
                   # potential rsi status
                   POTENTIAL_RSI_STATUS="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
                   # potential rsi value
@@ -2066,8 +2081,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           ######################################################################
           ######################################################################
 
-          # if xeggex order
-          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+          # if xeggex, nonkyc order
+          if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
             # CreateOrder market ###############################################
             PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$DIP_BUY_AMOUNT_LISTING" "$DIP_TARGET_BID" "false")"
             # debug line #######################################################
@@ -2823,8 +2838,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           ######################################################################
           ######################################################################
 
-          # if xeggex order
-          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+          # if xeggex, nonkyc order
+          if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
             # CreateOrder limit ################################################
             PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
             # debug line #######################################################
@@ -3662,8 +3677,8 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
                         ########################################################
                         ########################################################
 
-                        # if xeggex order
-                        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+                        # if xeggex, nonkyc order
+                        if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
                           # CreateOrder market #################################
                           PLACE_ORDER="$(CreateOrder "" "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
                           # debug line #########################################
@@ -3922,8 +3937,8 @@ if [[ "$(echo "$DIP_DUMP_LISTING_ORDER_ID" | egrep -c "[0-9]+" || true)" -gt "0"
 
   reset_dumped_market_list
 
-  # if xeggex order
-  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+  # if xeggex, nonkyc order
+  if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
     echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null
   fi
 
@@ -4003,8 +4018,8 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   ##############################################################################
   ##############################################################################
 
-  # if xeggex order
-  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+  # if xeggex, nonkyc order
+  if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
     # CreateOrder limit ########################################################
     PLACE_ORDER="$(CreateOrder "" "$DIP_DUMP_LISTING/$REFERENCE_CURRENCY" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
     echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump

@@ -1,0 +1,126 @@
+#!/bin/bash
+
+# shellcheck disable=SC2034
+# shellcheck disable=SC2128
+# shellcheck disable=SC2178
+# shellcheck disable=SC2206
+
+# get_rsi_nky ##################################################################
+# https://api.nonkyc.com/api/v2/market/candles
+# Example: get_rsi_nky BTC USDT
+
+# function to calculate RSI with SMA
+calculate_rsi_with_sma() {
+
+  DATA=($1)
+  LENGTH=${#DATA[@]}
+  GAIN=0
+  LOSS=0
+  SMA=0
+
+  # calculate SMA
+  for ((i = 0; i < $SMA_PERIOD; i++)); do
+    VALUE=$(fix_scientific_notation "${DATA[i]}")
+    SMA=$(echo "$SMA + $VALUE" | bc -l 2>/dev/null)
+  done
+
+  SMA=$(echo "$SMA / $SMA_PERIOD" | bc -l 2>/dev/null)
+
+  # calculate gains and losses for RSI
+  for ((i = $SMA_PERIOD; i < LENGTH; i++)); do
+    VALUE=$(fix_scientific_notation "${DATA[i]}")
+    DIFF=$(echo "$VALUE - ${DATA[i - 1]}" | bc -l 2>/dev/null)
+
+    if (($(echo "$DIFF >= 0" | bc -l 2>/dev/null))); then
+      GAIN=$(echo "$GAIN + $DIFF" | bc -l 2>/dev/null)
+    else
+      LOSS=$(echo "$LOSS - $DIFF" | bc -l 2>/dev/null)
+    fi
+  done
+
+  # calculate average gain and average loss
+  AVG_GAIN=$(echo "$GAIN / $SMA_PERIOD" | bc -l 2>/dev/null)
+  AVG_LOSS=$(echo "$LOSS / $SMA_PERIOD" | bc -l 2>/dev/null)
+
+  # calculate RS (Relative Strength)
+  RS=$(echo "$AVG_GAIN / $AVG_LOSS" | bc -l 2>/dev/null)
+
+  # calculate RSI with SMA
+  RSI_WITH_SMA=$(echo "100 - (100 / (1 + $RS))" | bc -l 2>/dev/null)
+  echo "$RSI_WITH_SMA"
+}
+
+# function to fix scientific notation values
+fix_scientific_notation() {
+
+  VALUE="$1"
+  if [[ "$VALUE" == *e* ]]; then
+    echo "0"
+  else
+    echo "$VALUE"
+  fi
+}
+
+# main function to get RSI for a given currency pair
+get_rsi_nky() {
+
+  RSI_TIMER="300"
+  if [[ ! -f "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" &>/dev/null
+    RSI_TIMER="0"
+    sleep 1
+  elif [[ ! -s "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" ]] &>/dev/null; then
+    RSI_TIMER="0"
+    sleep 1
+  fi
+  if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null)))" 2>/dev/null)" -gt "$RSI_TIMER" ]] &>/dev/null; then
+
+    # candlestick parameters
+    LISTING_CURRENCY="$1"
+    REFERENCE_CURRENCY="$2"
+    SYMBOL="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
+    INTERVAL="1440"
+    RESOLUTION="1440"
+    COUNTBACK="34"
+    FIRST_DATA_REQUEST="1"
+    SMA_PERIOD="14"
+
+    API_URL="https://api.nonkyc.com/api/v2/market/candles?symbol=$SYMBOL&interval=$INTERVAL&resolution=$RESOLUTION&countBack=$COUNTBACK&firstDataRequest=$FIRST_DATA_REQUEST"
+
+    # retrieve data and store it in a variable
+    DATA=$(curl -s "$API_URL" | jq -r '.bars[]?.close')
+    # fix tiny n (e)
+    DATA="$(echo "${DATA[@]}" 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+    # if any candles data
+    if [[ -n "$DATA" ]] &>/dev/null; then
+      CANDLES_DATA="OK"
+    fi
+
+    # calculate RSI with SMA
+    RSI_WITH_SMA=$(calculate_rsi_with_sma "$DATA")
+
+    # rsi above 70
+    if (($(echo "$RSI_WITH_SMA > 70" | bc -l 2>/dev/null))); then
+      BEAR_BULL="Overbought"
+      # rsi below 30
+    elif (($(echo "$RSI_WITH_SMA < 30" | bc -l 2>/dev/null))); then
+      BEAR_BULL="Oversold"
+      # rsi zero with candles data (new listing)
+    elif [[ "$(echo "$RSI_WITH_SMA" | awk -F. '{ print $1 }')" -eq "0" && "$CANDLES_DATA" == "OK" ]] &>/dev/null; then
+      BEAR_BULL="Oversold_zwcd"
+      # rsi neutral
+    else
+      BEAR_BULL="Neutral"
+    fi
+
+    RSI_OUTPUT="$BEAR_BULL RSI_14 $(echo "$RSI_WITH_SMA" | awk '{ if ($1 < 1) printf "%.9f\n", $1; else printf "%.2f\n", $1 }')"
+    echo "$RSI_OUTPUT" >"${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null
+    echo "$RSI_OUTPUT"
+
+  else
+    cat "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null
+  fi
+}
+
+# END

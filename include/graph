@@ -28,8 +28,8 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
 
   ##############################################################################
 
-  # if xeggex
-  if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
+  # if xeggex, nonkyc
+  if [[ "$EXCHANGE_DIR_NAME" == "xeggex" || "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
 
     # if found
     if [[ -f "$SYS_DIR"/robot/graph.filter ]] &>/dev/null; then
@@ -47,8 +47,17 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
 
     # create reference list based on exchange
     GRAPH_REFERENCE_LIST="$(egrep -w "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | grep -v "${GRAPH_FILTER[@]}" | egrep -o "_[A-Z,0-9]+" | tr -d '_' | awk '!a[$0]++')" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances | awk '$2 != 0 || $3 != 0 || $4 != 0' | awk '{ print $1 }' | tr -d ':')"
-    # orders by exchange
-    GRAPH_ORDERS_EXCHANGE="XGX"
+
+    # if xeggex
+    if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
+      # orders by exchange
+      GRAPH_ORDERS_EXCHANGE="XGX"
+    fi
+    # if nonkyc
+    if [[ "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
+      # orders by exchange
+      GRAPH_ORDERS_EXCHANGE="NKY"
+    fi
   fi
 
   ##############################################################################
@@ -82,6 +91,12 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
   # if xeggex
   if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
     EXCHANGE_NAME="XeggeX"
+    HEIGHT="164"
+  fi
+
+  # if nonkyc
+  if [[ "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
+    EXCHANGE_NAME="nonkyc"
     HEIGHT="164"
   fi
 
@@ -160,8 +175,8 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
 
     ############################################################################
 
-    # if xeggex
-    if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
+    # if xeggex, nonkyc
+    if [[ "$EXCHANGE_DIR_NAME" == "xeggex" || "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
       # reference balance
       rrdtool graph "${GRAPH_PNG_PATH}" \
         -w 400 -h 150 -a PNG \
