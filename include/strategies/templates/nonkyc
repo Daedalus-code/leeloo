@@ -270,8 +270,8 @@ function decimal_market() {
     DECIMAL_LIMIT_FLICKER="$(echo "$DECIMAL_LIMIT-1" | bc | awk -F. '{ print $1 }')"
   fi
 
-  # if zero
-  if [[ "$DECIMAL_LIMIT_FLICKER" -lt "0" || -z "$DECIMAL_LIMIT_FLICKER" ]] &>/dev/null; then
+  # if no data
+  if [[ "$DECIMAL_LIMIT_FLICKER" == "-1" || -z "$DECIMAL_LIMIT_FLICKER" || "$(echo "$DECIMAL_LIMIT_FLICKER" | wc -w)" -gt "1" || "$DECIMAL_LIMIT_FLICKER" -lt "0" || "$(echo "$DECIMAL_LIMIT_FLICKER" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then
     # default
     DECIMAL_LIMIT_FLICKER="$DECIMAL_LIMIT"
   fi
