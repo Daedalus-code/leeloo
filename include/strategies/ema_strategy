@@ -272,10 +272,17 @@ function rogue_buying() {
         ########################################################################
         ########################################################################
 
-        # if xeggex, nonkyc order
-        if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+        # if xeggex order
+        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # createorder buy market #############################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
+          ######################################################################
+        fi
+
+        # if nonkyc order
+        if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+          # createorder buy market #############################################
+          PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
           ######################################################################
         fi
 
@@ -294,12 +301,20 @@ function rogue_buying() {
       # if insufficient funds from last order
       if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
-        # if xeggex, nonkyc order
-        if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+        # if xeggex order
+        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # createorder buy limit ##############################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
           ######################################################################
         fi
+
+        # if nonkyc order
+        if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+          # createorder buy limit ##############################################
+          PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+          ######################################################################
+        fi
+
         ########################################################################
         ########################################################################
       fi
@@ -324,12 +339,20 @@ function rogue_selling() {
         ########################################################################
         ########################################################################
 
-        # if xeggex, nonkyc order
-        if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+        # if xeggex order
+        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder market #################################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
           ######################################################################
         fi
+
+        # if nonkyc order
+        if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+          # CreateOrder market #################################################
+          PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
+          ######################################################################
+        fi
+
         ########################################################################
         ########################################################################
       fi
@@ -345,12 +368,20 @@ function rogue_selling() {
       # if insufficient funds from last order
       if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
-        # if xeggex, nonkyc order
-        if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+        # if xeggex order
+        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # createorder sell limit #############################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
           ######################################################################
         fi
+
+        # if nonkyc order
+        if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+          # createorder sell limit #############################################
+          PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+          ######################################################################
+        fi
+
         ########################################################################
         ########################################################################
       fi
@@ -882,10 +913,17 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
                 ################################################################
                 ################################################################
 
-                # if xeggex, nonkyc order
-                if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                # if xeggex order
+                if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # createorder buy market #####################################
                   PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "" "false")"
+                  ##############################################################
+                fi
+
+                # if nonkyc order
+                if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                  # createorder buy market #####################################
+                  PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "" "false")"
                   ##############################################################
                 fi
 
@@ -913,10 +951,17 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
                 ################################################################
                 ################################################################
 
-                # if xeggex, nonkyc order
-                if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                # if xeggex order
+                if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # createorder buy limit ######################################
                   PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+                  ##############################################################
+                fi
+
+                # if nonkyc order
+                if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                  # createorder buy limit ######################################
+                  PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
                   ##############################################################
                 fi
 
@@ -1072,10 +1117,17 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
                 ################################################################
                 ################################################################
 
-                # if xeggex, nonkyc order
-                if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                # if xeggex order
+                if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # createorder sell market ####################################
                   PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "" "false")"
+                  ##############################################################
+                fi
+
+                # if nonkyc order
+                if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                  # createorder sell market ####################################
+                  PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "" "false")"
                   ##############################################################
                 fi
 
@@ -1103,10 +1155,17 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
               # if insufficient funds from last order
               if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
-                # if xeggex, nonkyc order
-                if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                # if xeggex order
+                if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # createorder sell limit #####################################
                   PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+                  ##############################################################
+                fi
+
+                # if nonkyc order
+                if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                  # createorder sell limit #####################################
+                  PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
                   ##############################################################
                 fi
 

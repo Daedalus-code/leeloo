@@ -226,10 +226,17 @@ if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
       # if insufficient funds from last order
       if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
-        # if xeggex, nonkyc order
-        if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+        # if xeggex order
+        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder market #################################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$LISTING_AMOUNT" "" "false")"
+          ######################################################################
+        fi
+
+        # if nonkyc order
+        if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+          # CreateOrder market #################################################
+          PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$LISTING_AMOUNT" "" "false")"
           ######################################################################
         fi
 

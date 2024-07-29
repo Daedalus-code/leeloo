@@ -112,7 +112,7 @@ function listing_info() {
   # if age are greater than n, if not found
   if [[ "$LISTING_INFO_AGE" -gt "600" || ! -f "${LOG_DIR:?}"/leeloo/nonkyc/listing/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
     # call listing data
-    LISTING_INFORMATION="$(getbyticker "$LISTING_CURRENCY")"
+    LISTING_INFORMATION="$(getbyticker_nky "$LISTING_CURRENCY")"
     # keep data
     echo "$LISTING_INFORMATION" >"${LOG_DIR:?}"/leeloo/nonkyc/listing/"$LISTING_CURRENCY"_info
   fi
@@ -173,7 +173,7 @@ function decimal_market() {
   # if greater than n, if not found, if empty
   if [[ "$GET_LIST_AGE" -gt "3600" || ! -f "${LOG_DIR:?}"/leeloo/getlist || -s "${LOG_DIR:?}"/leeloo/getlist ]] &>/dev/null; then
     # quantity decimals
-    echo "$(getlist 2>/dev/null | column -t | sort -n -k 2)" >"${LOG_DIR:?}"/leeloo/getlist.tmp 2>/dev/null
+    echo "$(getlist_nky 2>/dev/null | column -t | sort -n -k 2)" >"${LOG_DIR:?}"/leeloo/getlist.tmp 2>/dev/null
     # if getlist.tmp has data
     if [[ -s "${LOG_DIR:?}"/leeloo/getlist.tmp ]] &>/dev/null; then
       # update data
@@ -540,8 +540,19 @@ function target_order_status() {
 
     # check if target orders data is old enough or doesn't exist
     if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades ]]; then
-      # get trades data and format it
-      getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades
+
+      # if xeggex getTrades
+      if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+        # get trades data and format it
+        getTrades "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades
+      fi
+
+      # if xeggex getTrades
+      if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+        # get trades data and format it
+        getTrades_nky "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' | column -t >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades
+      fi
+
       # get orders data, remove duplicate ID
       cat "${LOG_DIR:?}"/leeloo/nonkyc/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".orders
     fi
@@ -814,8 +825,8 @@ function tx_id_data {
 
 function cost_price() {
   # update balances, prices after last order
-  echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null
-  echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
+  echo "$(Balances_nky jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null
+  echo "$(tickers_nky | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
 
   # backup balances, prices
   backup_balances
@@ -900,8 +911,8 @@ function incoming_listing() {
     if [[ "$LIST_INCOMING_ABOVE" -gt "$LIST_INCOMING_BELOW" ]] &>/dev/null; then
 
       # update balances, prices after last order
-      echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null
-      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
+      echo "$(Balances_nky jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null
+      echo "$(tickers_nky | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
 
       # backup balances, prices
       backup_balances
@@ -959,8 +970,8 @@ function incoming_reference() {
     if [[ "$REF_INCOMING_ABOVE" -gt "$REF_INCOMING_BELOW" ]] &>/dev/null; then
 
       # update balances, prices after last order
-      echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null
-      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
+      echo "$(Balances_nky | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null
+      echo "$(tickers_nky | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
 
       # backup balances, prices
       backup_balances

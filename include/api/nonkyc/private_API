@@ -4,7 +4,7 @@
 # https://api.nonkyc.io/api/v2/balances
 # Lists balances for all currencies. Permission required: List Balances
 
-function Balances() {
+function Balances_nky() {
   API_NONKYC_NONCE=$(($(date +%s) * 10))
   timeout "${API_TIMEOUT:?}" curl -s -X GET -H "accept: application/json" -u "$API_NONKYC_KEY:$API_NONKYC_SECRET" "https://api.nonkyc.io/api/v2/balances?nonce=$API_NONKYC_NONCE"
 }
@@ -15,7 +15,7 @@ function Balances() {
 # Market Example: CreateOrder "" "NKYC/BTC" "buy" "market" "0.000000500" "" "false"
 # Limit Example: CreateOrder "" "NKYC/BTC" "sell" "limit" "1" "0.000000500" false
 
-function CreateOrder {
+function CreateOrder_nky {
   USER_PROVIDED_ID="$1"
   SYMBOL="$2"
   SIDE="$3"
@@ -34,7 +34,7 @@ function CreateOrder {
 # Cancels a given order. Permission required: Cancel Order
 # Example: cancelOrder "$ORDER_ID"
 
-function cancelOrder {
+function cancelOrder_nky {
   ORDER_ID="$1"
   API_NONKYC_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_NONKYC_NONCE\",\"id\":\"$ORDER_ID\"}"
@@ -47,7 +47,7 @@ function cancelOrder {
 # Lists your open orders. Permission required: Get Orders
 # Example: getOrders
 
-function getOrders {
+function getOrders_nky {
   timeout "${API_TIMEOUT:?}" curl -s -X 'GET' \
     'https://nonkyc.io/api/v2/getorders?status=active&limit=500&skip=0' \
     -H 'accept: application/json' \
@@ -59,7 +59,7 @@ function getOrders {
 # Lists your open orders by id. Permission required: Get Orders id
 # Example: getOrdersid order_id
 
-function getOrdersid {
+function getOrdersid_nky {
   timeout "${API_TIMEOUT:?}" curl -s -X 'GET' \
     "https://api.nonkyc.io/api/v2/getorder/$1" \
     -H "accept: application/json" \
@@ -71,7 +71,7 @@ function getOrdersid {
 # Lists your order history. Permission required: Get Trades
 # Example: getTrades NKYC BTC
 
-function getTrades {
+function getTrades_nky {
   timeout "${API_TIMEOUT:?}" curl -s -X 'GET' \
     "https://api.nonkyc.io/api/v2/gettrades?symbol=$1%2F$2&limit=500&skip=0" \
     -H "accept: application/json" \

@@ -132,7 +132,7 @@ for (( ; ; )); do
   if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "NKY")" -gt "0" ]] &>/dev/null; then
     # get nonkyc balance
     function result_balances() {
-      echo "$(Balances | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null
+      echo "$(Balances_nky | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null
     }
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
@@ -153,7 +153,7 @@ for (( ; ; )); do
   if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "NKY")" -gt "0" ]] &>/dev/null; then
     # get nonkyc orders
     function result_orders() {
-      echo "$(getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac)" >"${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null
+      echo "$(getOrders_nky | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac)" >"${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null
     }
     # update data every n seconds
     if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER_API" ]] &>/dev/null; then
@@ -174,7 +174,7 @@ for (( ; ; )); do
   if [[ "$(echo "$LEELOO_RUNNING_BOTS" | grep -c "NKY")" -gt "0" ]] &>/dev/null; then
     # get nonkyc prices
     function result_prices() {
-      echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
+      echo "$(tickers_nky | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
       # raw prices
       cp "${LOG_DIR:?}"/leeloo/nonkyc/prices "${LOG_DIR:?}"/leeloo/nonkyc/raw.prices &>/dev/null
     }
