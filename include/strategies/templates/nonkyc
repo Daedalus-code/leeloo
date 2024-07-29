@@ -60,8 +60,9 @@ function backup_balances() {
     cp "${LOG_DIR:?}"/leeloo/nonkyc/balances "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp &>/dev/null
   fi
   # restore file with backup
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -eq "0" ]] &>/dev/null; then
-    cp "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp "${LOG_DIR:?}"/leeloo/nonkyc/balances || true &>/dev/null
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -eq "0" || ! -f "${LOG_DIR:?}"/leeloo/nonkyc/balances ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/nonkyc/balances &>/dev/null
+    cp "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp "${LOG_DIR:?}"/leeloo/nonkyc/balances &>/dev/null
   fi
 }
 
@@ -77,8 +78,9 @@ function backup_prices() {
     cp "${LOG_DIR:?}"/leeloo/nonkyc/prices "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp &>/dev/null
   fi
   # restore file with backup
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
-    cp "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp "${LOG_DIR:?}"/leeloo/nonkyc/prices || true &>/dev/null
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | wc -l)" -eq "0" || ! -f "${LOG_DIR:?}"/leeloo/nonkyc/prices ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/nonkyc/prices &>/dev/null
+    cp "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp "${LOG_DIR:?}"/leeloo/nonkyc/prices &>/dev/null
   fi
 }
 
@@ -94,8 +96,9 @@ function backup_orders() {
     cp "${LOG_DIR:?}"/leeloo/nonkyc/orders "${LOG_DIR:?}"/leeloo/nonkyc/orders.bkp &>/dev/null
   fi
   # restore file with backup
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
-    cp "${LOG_DIR:?}"/leeloo/nonkyc/orders.bkp "${LOG_DIR:?}"/leeloo/nonkyc/orders || true &>/dev/null
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null | wc -l)" -eq "0" || ! -f "${LOG_DIR:?}"/leeloo/nonkyc/orders ]] &>/dev/null; then
+    touch "${LOG_DIR:?}"/leeloo/nonkyc/orders &>/dev/null
+    cp "${LOG_DIR:?}"/leeloo/nonkyc/orders.bkp "${LOG_DIR:?}"/leeloo/nonkyc/orders &>/dev/null
   fi
 }
 
