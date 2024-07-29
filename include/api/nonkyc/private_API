@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Balances #####################################################################
-# https://api.nonkyc.com/api/v2/balances
+# https://api.nonkyc.io/api/v2/balances
 # Lists balances for all currencies. Permission required: List Balances
 
 function Balances() {
   API_NONKYC_NONCE=$(($(date +%s) * 10))
-  timeout "${API_TIMEOUT:?}" curl -s -X GET -H "accept: application/json" -u "$API_NONKYC_KEY:$API_NONKYC_SECRET" "https://api.nonkyc.com/api/v2/balances?nonce=$API_NONKYC_NONCE"
+  timeout "${API_TIMEOUT:?}" curl -s -X GET -H "accept: application/json" -u "$API_NONKYC_KEY:$API_NONKYC_SECRET" "https://api.nonkyc.io/api/v2/balances?nonce=$API_NONKYC_NONCE"
 }
 
 # CreateOrder ##################################################################
-# https://api.nonkyc.com/api/v2/createorder
+# https://api.nonkyc.io/api/v2/createorder
 # Make a new spot market/limit trade order. Permission required: Create Order
 # Market Example: CreateOrder "" "NKYC/BTC" "buy" "market" "0.000000500" "" "false"
 # Limit Example: CreateOrder "" "NKYC/BTC" "sell" "limit" "1" "0.000000500" false
@@ -26,11 +26,11 @@ function CreateOrder {
   API_NONKYC_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_NONKYC_NONCE\",\"userProvidedId\":\"$USER_PROVIDED_ID\",\"symbol\":\"$SYMBOL\",\"side\":\"$SIDE\",\"type\":\"$TYPE\",\"quantity\":\"$QUANTITY\",\"price\":\"$PRICE\",\"strictValidate\":$STRICT_VALIDATE}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_NONKYC_SECRET" | awk '{print $NF}')
-  timeout "${API_TIMEOUT:?}" curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_NONKYC_KEY:$API_NONKYC_SECRET" -d "$JSON_DATA" "https://api.nonkyc.com/api/v2/createorder"
+  timeout "${API_TIMEOUT:?}" curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_NONKYC_KEY:$API_NONKYC_SECRET" -d "$JSON_DATA" "https://api.nonkyc.io/api/v2/createorder"
 }
 
 # cancelOrder ##################################################################
-# https://api.nonkyc.com/api/v2/cancelOrder
+# https://api.nonkyc.io/api/v2/cancelOrder
 # Cancels a given order. Permission required: Cancel Order
 # Example: cancelOrder "$ORDER_ID"
 
@@ -39,41 +39,41 @@ function cancelOrder {
   API_NONKYC_NONCE=$(($(date +%s) * 10))
   JSON_DATA="{\"nonce\":\"$API_NONKYC_NONCE\",\"id\":\"$ORDER_ID\"}"
   HASH=$(echo -n "$JSON_DATA" | openssl sha512 -hmac "$API_NONKYC_SECRET" | awk '{print $NF}')
-  timeout "${API_TIMEOUT:?}" curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_NONKYC_KEY:$API_NONKYC_SECRET" -d "$JSON_DATA" "https://api.nonkyc.com/api/v2/cancelOrder"
+  timeout "${API_TIMEOUT:?}" curl -s -H "Hash: $HASH" -H "Content-Type: application/json" -u "$API_NONKYC_KEY:$API_NONKYC_SECRET" -d "$JSON_DATA" "https://api.nonkyc.io/api/v2/cancelOrder"
 }
 
 # getOrders ####################################################################
-# https://api.nonkyc.com/api/v2/getOrders
+# https://api.nonkyc.io/api/v2/getOrders
 # Lists your open orders. Permission required: Get Orders
 # Example: getOrders
 
 function getOrders {
   timeout "${API_TIMEOUT:?}" curl -s -X 'GET' \
-    'https://nonkyc.com/api/v2/getorders?status=active&limit=500&skip=0' \
+    'https://nonkyc.io/api/v2/getorders?status=active&limit=500&skip=0' \
     -H 'accept: application/json' \
     -u "$API_NONKYC_KEY:$API_NONKYC_SECRET"
 }
 
 # getOrdersid ##################################################################
-# https://api.nonkyc.com/api/v2/getOrdersid
+# https://api.nonkyc.io/api/v2/getOrdersid
 # Lists your open orders by id. Permission required: Get Orders id
 # Example: getOrdersid order_id
 
 function getOrdersid {
   timeout "${API_TIMEOUT:?}" curl -s -X 'GET' \
-    "https://api.nonkyc.com/api/v2/getorder/$1" \
+    "https://api.nonkyc.io/api/v2/getorder/$1" \
     -H "accept: application/json" \
     -u "$API_NONKYC_KEY:$API_NONKYC_SECRET"
 }
 
 # getTrades ####################################################################
-# https://api.nonkyc.com/api/v2/getTrades
+# https://api.nonkyc.io/api/v2/getTrades
 # Lists your order history. Permission required: Get Trades
 # Example: getTrades NKYC BTC
 
 function getTrades {
   timeout "${API_TIMEOUT:?}" curl -s -X 'GET' \
-    "https://api.nonkyc.com/api/v2/gettrades?symbol=$1%2F$2&limit=500&skip=0" \
+    "https://api.nonkyc.io/api/v2/gettrades?symbol=$1%2F$2&limit=500&skip=0" \
     -H "accept: application/json" \
     -u "$API_NONKYC_KEY:$API_NONKYC_SECRET"
 }
