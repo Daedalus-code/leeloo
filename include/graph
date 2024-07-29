@@ -38,6 +38,11 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
         # filter reference graphs
         GRAPH_FILTER="$(cat "$SYS_DIR"/robot/"$EXCHANGE_DIR_NAME"_graph.filter 2>/dev/null)"
       fi
+    else
+      # if missing
+      if [[ ! -f "$SYS_DIR"/robot/"$EXCHANGE_DIR_NAME"_graph.filter ]] &>/dev/null; then
+        touch "$SYS_DIR"/robot/"$EXCHANGE_DIR_NAME"_graph.filter &>/dev/null
+      fi
     fi
 
     # if zero
