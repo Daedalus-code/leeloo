@@ -8,7 +8,7 @@ Embrace the chaos, adapt to the shadows, may the odds ever be in your favor.
 
 Multipass
 
-This script was built on a Ubuntu Linux System (Raspberry Pi4)  
+This script was built on a Ubuntu Linux System. 
 
 First time use:  
 ```
