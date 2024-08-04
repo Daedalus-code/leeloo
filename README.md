@@ -1,4 +1,11 @@
+```
+All trading activities and any resulting losses are solely the user's responsibility.
+This software is provided without warranties or guarantees, use it at your own risk.
+Embrace the chaos, adapt to the shadows, may the odds ever be in your favor.
+```
+
 # leeloo
+
 Multipass
 
 This script was built on a Ubuntu Linux System (Raspberry Pi4)  
