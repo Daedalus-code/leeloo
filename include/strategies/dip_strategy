@@ -440,14 +440,28 @@ function amount_to_buy_sell() {
 
                 ################################################################
 
-                # quest ask price
+                # last ask price (trades)
                 DIP_TARGET_ASK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
+                # last ask price (bought)
+                DIP_TARGET_QUEST_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }')"
+                # target ask now check (prices)
+                DIP_TARGET_ASK_NOW_CHECK="$(echo "$DIP_TARGET_ASK_NOW" |  awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+
+                ################################################################
+
+                # last ask price check (trades)
+                DIP_TARGET_ASK_CHECK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+                # last ask price check (bought)
+                DIP_TARGET_QUEST_ASK_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+
+                ################################################################
 
                 # target status (default)
                 DIP_TARGET_SPREAD_STATUS="[OK]"
 
-                # if quest is still greater than new ask
-                if [[ "$DIP_TARGET_ASK" > "$DIP_TARGET_ASK_NOW" ]] &>/dev/null; then
+                # if trades ask is greater than prices now ask, if prices now ask is greater than quest ask
+                if [[ "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_ASK_NOW_CHECK" ||
+                  "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
                   # use original, no chasing
                   DIP_TARGET_ASK="$DIP_TARGET_ASK"
                 else
@@ -1909,16 +1923,16 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
       # old order id (buy)
       DIP_ORDER_ID_BUY="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
-      # last order profit
-      DIP_LAST_ORDER_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $NF }' | tr -d '%.' | sed 's/^0*//')"
+      # quest order profit
+      DIP_LAST_ORDER_PROFIT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $NF }' | tr -d '%.' | sed 's/^0*//')"
 
       # if zero
-      if [[ -z "$DIP_LAST_ORDER_PROFIT" ]] &>/dev/null; then
-        DIP_LAST_ORDER_PROFIT="0"
+      if [[ -z "$DIP_LAST_ORDER_PROFIT_CHECK" ]] &>/dev/null; then
+        DIP_LAST_ORDER_PROFIT_CHECK="0"
       fi
 
       # if new ratio is the same, skip
-      if [[ ! "$DIP_GET_RATIO_PROFIT_CHECK" -eq "$DIP_LAST_ORDER_PROFIT" ]] &>/dev/null; then
+      if [[ ! "$DIP_GET_RATIO_PROFIT_CHECK" -eq "$DIP_LAST_ORDER_PROFIT_CHECK" ]] &>/dev/null; then
         # order id found
         if [[ -n "$DIP_ORDER_ID_BUY" ]] &>/dev/null; then
 
@@ -3662,22 +3676,20 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   ##############################################################################
 
   # old ask price (trades)
-  DIP_CHANGE_OLD_PRICE_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | head -10 | awk '{ print $5 }' | sed '/^$/d' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
-  # old ask price count (max 10)
-  DIP_CHANGE_BUYING_COUNT="$(echo "$DIP_CHANGE_OLD_PRICE_TRADES" | wc -l)"
-  # old ask price (trades) average
-  DIP_CHANGE_OLD_PRICE="$(echo "$DIP_CHANGE_OLD_PRICE_TRADES/$DIP_CHANGE_BUYING_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  DIP_CHANGE_OLD_PRICE_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
+  # bought ask price (bought)
+  DIP_CHANGE_BOUGHT_PRICE_TRADES="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }')"
 
   ##############################################################################
 
   # new ask price (prices.dip)
   DIP_CHANGE_NEW_PRICE="$(grep -w "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip | awk '{ print $3 }')"
   # old amount priced
-  DIP_CHANGE_OLD_AMOUNT="$(echo "$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  DIP_CHANGE_OLD_AMOUNT="$(echo "$DIP_CHANGE_OLD_PRICE_TRADES*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # new amount priced
   DIP_CHANGE_NEW_AMOUNT="$(echo "$DIP_CHANGE_NEW_PRICE*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # calculate profit or loss (percentage)
-  DIP_CHANGE_PROFIT_LOSS="$(echo "100/$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_NEW_PRICE-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  DIP_CHANGE_PROFIT_LOSS="$(echo "100/$DIP_CHANGE_OLD_PRICE_TRADES*$DIP_CHANGE_NEW_PRICE-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   # if zero
   if [[ -z "$DIP_CHANGE_PROFIT_LOSS" ]] &>/dev/null; then
@@ -3724,7 +3736,7 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   DIP_SOLD_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "sell" | awk '{ print $NF }' | head -1)"
 
   # if any data
-  if [[ -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_BOUGHT_TRADE_TIME" && -n "$DIP_SOLD_TRADE_TIME" ]] &>/dev/null; then
+  if [[ -n "$DIP_CHANGE_OLD_PRICE_TRADES" && -n "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_BOUGHT_TRADE_TIME" && -n "$DIP_SOLD_TRADE_TIME" ]] &>/dev/null; then
 
     # bought age (seconds)
     DIP_BOUGHT_FILE_AGE_SECONDS="$(echo "${DIP_EPOCH_TIME_NOW:0:10}-${DIP_BOUGHT_TRADE_TIME:0:10}" | bc 2>/dev/null)"
@@ -3775,7 +3787,7 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
           # if balance is enough
           if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
             # if prices exist, not zero
-            if [[ ! -z "$DIP_CHANGE_OLD_PRICE" && ! -z "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
+            if [[ ! -z "$DIP_CHANGE_OLD_PRICE_TRADES" && ! -z "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_CHANGE_OLD_PRICE_TRADES" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
               # if market exist
               if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$DIP_CHANGE_NAME" | grep -wc "$DIP_REFERENCE_NAME" || true)" -eq "1" ]] &>/dev/null; then
                 # if (active) order does not exist, overall
