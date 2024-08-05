@@ -304,17 +304,6 @@ function amount_to_buy_sell() {
   DIP_TARGET_SPREAD_STATUS="[OK]"
   DIP_TARGET_SELL_STATUS="[OK]"
 
-  # last ask price check (trades)
-  DIP_TARGET_ASK_CHECK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-  # last ask price check (bought)
-  DIP_TARGET_QUEST_ASK_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-
-  # if last buy price is greater than quest price
-  if [[ "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
-    # target sell status (based on trade and quest price) wait on quest buy with new price
-    DIP_TARGET_SELL_STATUS="[o0]"
-  fi
-
   ##############################################################################
 
   # account allocated (n%)
@@ -1015,6 +1004,17 @@ function target_data() {
         echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
       fi
     fi
+  fi
+
+  # last ask price check (trades)
+  DIP_TARGET_ASK_CHECK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+  # last ask price check (bought)
+  DIP_TARGET_QUEST_ASK_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+
+  # if last buy price is greater than quest price
+  if [[ "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
+    # target sell status (based on trade and quest price) wait on quest buy with new price
+    DIP_TARGET_SELL_STATUS="[o0]"
   fi
 }
 
