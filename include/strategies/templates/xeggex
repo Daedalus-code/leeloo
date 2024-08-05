@@ -810,6 +810,8 @@ function tx_id_data {
 
   # txid age format
   TX_ID_AGE=$(printf '%dh:%dm:%ds\n' $(("$TX_ID_AGE_SECONDS/3600")) $(("$TX_ID_AGE_SECONDS%3600/60")) $(("$TX_ID_AGE_SECONDS%60")))
+  # calculate txid hours
+  TX_ID_AGE_HOURS=$(echo "$TX_ID_AGE_SECONDS/3600" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
   # calculate txid days
   TX_ID_AGE_DAYS=$(echo "$TX_ID_AGE_SECONDS/86400" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')
 }
