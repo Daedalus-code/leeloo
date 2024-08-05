@@ -265,15 +265,15 @@ function rogue_stealth() {
 
 function rogue_buying() {
 
-  # balance check
-  if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
-    # if insufficient funds from last order
-    if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
+  # if market order
+  if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+    # balance check
+    if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
+      # if insufficient funds from last order
+      if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
-      # buy output
-      echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      # if market order
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+        # buy output
+        echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
         ########################################################################
         ########################################################################
@@ -332,15 +332,15 @@ function rogue_buying() {
 
 function rogue_selling() {
 
-  # balance check
-  if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
-    # if insufficient funds from last order
-    if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
+  # if market order
+  if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+    # balance check
+    if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
+      # if insufficient funds from last order
+      if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
-      # sell output
-      echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-      # if market order
-      if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+        # sell output
+        echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
         ########################################################################
         ########################################################################
@@ -907,19 +907,19 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
         # ready to buy (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-          # balance check
-          if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
-            # if insufficient funds from last order
-            if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
+          # if market order
+          if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
+            # balance check
+            if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
+              # if insufficient funds from last order
+              if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
-              rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
+                rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
 
-              # buy order ######################################################
+                # buy order ####################################################
 
-              TYPE="buy"
-              AMOUNT_IN_REFERENCE_CURRENCY="false"
-
-              if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
+                TYPE="buy"
+                AMOUNT_IN_REFERENCE_CURRENCY="false"
 
                 ################################################################
                 ################################################################
@@ -952,6 +952,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
                 echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
               fi
             fi
+            # if limit order
           elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
 
             # balance check
@@ -1116,19 +1117,19 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
         # ready to sell (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
-          # balance check
-          if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
-            # if insufficient funds from last order
-            if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
+          # if market order
+          if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
+            # balance check
+            if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
+              # if insufficient funds from last order
+              if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
-              rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
+                rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
 
-              # sell order #####################################################
+                # sell order ###################################################
 
-              TYPE="sell"
-              AMOUNT_IN_REFERENCE_CURRENCY="false"
-
-              if [[ "$MARKET_LIMIT" == "market" ]] 2>>"${LOG_ERROR:?}"; then
+                TYPE="sell"
+                AMOUNT_IN_REFERENCE_CURRENCY="false"
 
                 ################################################################
                 ################################################################
@@ -1161,6 +1162,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
                 echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
               fi
             fi
+            # if limit order
           elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
 
             ####################################################################
