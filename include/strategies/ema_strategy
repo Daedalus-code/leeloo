@@ -58,12 +58,8 @@ EMA_FOMO="$(egrep "EMA_FOMO=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config |
 ROGUE_PROFIT="$(egrep "ROGUE_PROFIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # n % to be used (default: 0.036918189 = 3.6918189)
 ROGUE_AMOUNT="$(egrep "ROGUE_AMOUNT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# n seconds (default: 3600 seconds/1 hour cooldown)
-ROGUE_TIMER="$(egrep "ROGUE_TIMER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# n hours of data (default: 6 hours)
-ROGUE_HOURS="$(egrep "ROGUE_HOURS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# n trades a day (default: 3)
-ROGUE_MAX_DAY="$(egrep "ROGUE_MAX_DAY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# n trades after signal age (default: 3)
+ROGUE_BUYS="$(egrep "ROGUE_BUYS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # signal age
 SIGNAL_AGE="$(egrep "SIGNAL_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # listing currency
@@ -98,6 +94,14 @@ insufficient_funds      # check for available funds
 listing_fomo            # listing fomo
 reference_fomo          # reference fomo
 decimal_market          # decimal market
+
+################################################################################
+
+# if order age greater than signal limit in hours (based on configuration)
+if [[ "$SIGNAL_ORDER_AGE_HOURS" -gt "$SIGNAL_AGE" ]] 2>>"${LOG_ERROR:?}"; then
+  # reset status file
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status &>/dev/null
+fi
 
 ################################################################################
 
@@ -218,6 +222,15 @@ incoming_reference
 
 ROGUE_TIMER_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 ROGUE_STATUS_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+################################################################################
+################################################################################
+
+ROGUE_TIMER="3600" # n seconds (default: 3600 seconds/1 hour cooldown)
+ROGUE_HOURS="6"    # n hours of data (default: 6 hours)
+
+################################################################################
+################################################################################
 
 # n% listing amount
 ROGUE_LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | head -1)"
@@ -691,7 +704,7 @@ RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/
     # rogue_selling config n% of allocated n%
     if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
       # overbought, pick pocket at top!
-      if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
+      if [[ "$(tail -"$ROGUE_BUYS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$ROGUE_BUYS" ]] &>/dev/null; then
         rogue_selling
 
         tx_id
@@ -715,7 +728,7 @@ RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/
     # rogue_buying config n% of allocated n%
     if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -lt "30" ]] &>/dev/null; then
       # oversold, cheap shot at bottom!
-      if [[ "$(tail -"$ROGUE_MAX_DAY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$ROGUE_MAX_DAY" ]] &>/dev/null; then
+      if [[ "$(tail -"$ROGUE_BUYS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$ROGUE_BUYS" ]] &>/dev/null; then
         rogue_buying
 
         tx_id
