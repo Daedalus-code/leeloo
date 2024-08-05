@@ -537,7 +537,7 @@ function amount_to_buy_sell() {
                 ################################################################
 
                 # log market new spread output
-                DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_TARGET_SPREAD_STATUS S: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% B: ${DIP_TARGET_BID_DIFF_PERC:?}% A: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_DAYS}d V: $DIP_TARGET_VOLUME_NOW"
+                DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_TARGET_SPREAD_STATUS:$DIP_TARGET_SELL_STATUS S: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% B: ${DIP_TARGET_BID_DIFF_PERC:?}% A: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_DAYS}d V: $DIP_TARGET_VOLUME_NOW"
                 echo "$DIP_MARKET_UPDATE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
                 ################################################################
@@ -546,7 +546,7 @@ function amount_to_buy_sell() {
                 DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
 
                 # if selling status equals zero, old buy price is greater than new sell price, active order profit is above minimum spread limit (ruled by configuration)
-                if [[ "$DIP_SELLING_STATUS" -eq "0" || "$DIP_TARGET_SPREAD_STATUS" == "[OK]" && "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
+                if [[ "$DIP_SELLING_STATUS" -eq "0" || "$DIP_TARGET_SPREAD_STATUS" == "[OK]" && "$(echo "$DIP_GET_RATIO_PROFIT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MIN_SPREAD" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
 
                   # update bought data
                   echo "$LOG_DATE : Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for ($DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY) @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }') Price -> Quest: Selling @ $(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }') Price for ($DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY) Earning: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
@@ -2950,57 +2950,61 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
         # if waiting on quest buy (will not use last old trades price buy before quest started)
         # if spread is ok & if profit is greater than maker taker fee
-        if [[ ! "$DIP_TARGET_SELL_STATUS" == "[o0]" || ! "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SELL_AMOUNT_PROFIT_CHECK" -gt "$DIP_MAKER_TAKER_CHECK" ]] &>/dev/null; then
+        if [[ "$DIP_SELL_AMOUNT_PROFIT_CHECK" -gt "$DIP_MAKER_TAKER_CHECK" ]] &>/dev/null; then
+          if [[ ! "$DIP_TARGET_SELL_STATUS" == "[o0]" ]] &>/dev/null; then
+            if [[ ! "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
 
-          ######################################################################
+              ##################################################################
 
-          log_date
+              log_date
 
-          ######################################################################
-          ######################################################################
+              ##################################################################
+              ##################################################################
 
-          # if xeggex order
-          if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-            # CreateOrder limit ################################################
-            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
-            # debug line #######################################################
-            echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell limit $LISTING_BALANCE $DIP_TARGET_ASK false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
-            ####################################################################
-            sleep 1
+              # if xeggex order
+              if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+                # CreateOrder limit ############################################
+                PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
+                # debug line ###################################################
+                echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell limit $LISTING_BALANCE $DIP_TARGET_ASK false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                ################################################################
+                sleep 1
+              fi
+
+              # if nonkyc order
+              if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                # CreateOrder limit ############################################
+                PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
+                # debug line ###################################################
+                echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell limit $LISTING_BALANCE $DIP_TARGET_ASK false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                ################################################################
+                sleep 1
+              fi
+
+              ##################################################################
+              ##################################################################
+
+              tx_id
+
+              # selling output (log)
+              DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+              echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+              # filled output (log)
+              DIP_FILLED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell ${DIP_LEFTOVER_SIZE_OUTPUT:?}% Selling: ${DIP_LEFTOVER_TOTAL:?}% Filled: ${DIP_LEFTOVER_FILLED:?}%"
+              echo "$DIP_FILLED_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+              # profit output (log)
+              DIP_SELL_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Gains: $DIP_SELL_AMOUNT_PROFIT $REFERENCE_CURRENCY -> ${DIP_GET_RATIO_PROFIT:?}%"
+              echo "$DIP_SELL_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+              # balance output (log)
+              DIP_SELL_BALANCE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Balance: $LISTING_BALANCE $LISTING_CURRENCY / $REFERENCE_BALANCE $REFERENCE_CURRENCY"
+              echo "$DIP_SELL_BALANCE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+
+              # it was selling
+              DIP_SELLING="1"
+              # status
+              DIP_BS_STATUS="Selling"
+            fi
           fi
-
-          # if nonkyc order
-          if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
-            # CreateOrder limit ################################################
-            PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
-            # debug line #######################################################
-            echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell limit $LISTING_BALANCE $DIP_TARGET_ASK false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
-            ####################################################################
-            sleep 1
-          fi
-
-          ######################################################################
-          ######################################################################
-
-          tx_id
-
-          # selling output (log)
-          DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
-          echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-          # filled output (log)
-          DIP_FILLED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell ${DIP_LEFTOVER_SIZE_OUTPUT:?}% Selling: ${DIP_LEFTOVER_TOTAL:?}% Filled: ${DIP_LEFTOVER_FILLED:?}%"
-          echo "$DIP_FILLED_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-          # profit output (log)
-          DIP_SELL_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Gains: $DIP_SELL_AMOUNT_PROFIT $REFERENCE_CURRENCY -> ${DIP_GET_RATIO_PROFIT:?}%"
-          echo "$DIP_SELL_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-          # balance output (log)
-          DIP_SELL_BALANCE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Balance: $LISTING_BALANCE $LISTING_CURRENCY / $REFERENCE_BALANCE $REFERENCE_CURRENCY"
-          echo "$DIP_SELL_BALANCE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-
-          # it was selling
-          DIP_SELLING="1"
-          # status
-          DIP_BS_STATUS="Selling"
         fi
       fi
     fi
