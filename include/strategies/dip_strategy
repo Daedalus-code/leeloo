@@ -455,6 +455,7 @@ function amount_to_buy_sell() {
                 DIP_TARGET_QUEST_ASK_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
                 ################################################################
+                ################################################################
 
                 # target status (default)
                 DIP_TARGET_SPREAD_STATUS="[OK]"
@@ -475,6 +476,13 @@ function amount_to_buy_sell() {
                   DIP_TARGET_SPREAD_STATUS="[N0]"
                 fi
 
+                # if last buy price is greater than quest price
+                if [[ "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
+                  # target sell status (based on trade and quest price)
+                  DIP_TARGET_SELL_STATUS="[o0]"
+                fi
+
+                ################################################################
                 ################################################################
 
                 # amount for buy (reference)
@@ -2934,8 +2942,12 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
           reset_active_market_list
         fi
 
-        # if ok, still profit
-        if [[ ! "$DIP_TARGET_SPREAD_STATUS" == "[N0]" || "$(echo "$DIP_SELL_AMOUNT_PROFIT" | tr -d '.' | sed 's/^0*//')" -gt "$DIP_MAKER_TAKER_CHECK" ]] &>/dev/null; then
+        # amount profit check
+        DIP_SELL_AMOUNT_PROFIT_CHECK="$(echo "$DIP_SELL_AMOUNT_PROFIT" | tr -d '.' | sed 's/^0*//')"
+
+        # if waiting on quest buy (will not use last old trades price buy before quest started)
+        # if spread is ok & if profit is greater than maker taker fee
+        if [[ ! "$DIP_TARGET_SELL_STATUS" == "[o0]" || ! "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_SELL_AMOUNT_PROFIT_CHECK" -gt "$DIP_MAKER_TAKER_CHECK" ]] &>/dev/null; then
 
           ######################################################################
 
