@@ -56,6 +56,14 @@ EMA_LONG="$(egrep "EMA_LONG=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config |
 EMA_FOMO="$(egrep "EMA_FOMO=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # rogue profit enable, disable
 ROGUE_PROFIT="$(egrep "ROGUE_PROFIT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# n % to be used (default: 0.036918189 = 3.6918189)
+ROGUE_AMOUNT="$(egrep "ROGUE_AMOUNT=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# n seconds (default: 3600 seconds/1 hour cooldown)
+ROGUE_TIMER="$(egrep "ROGUE_TIMER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# n hours of data (default: 6 hours)
+ROGUE_HOURS="$(egrep "ROGUE_HOURS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
+# n trades a day (default: 3)
+ROGUE_MAX_DAY="$(egrep "ROGUE_MAX_DAY=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # signal age
 SIGNAL_AGE="$(egrep "SIGNAL_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # listing currency
@@ -205,15 +213,11 @@ incoming_listing
 incoming_reference
 
 ################################################################################
-
 # rogue profit using rsi
+################################################################################
 
 ROGUE_TIMER_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 ROGUE_STATUS_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-ROGUE_AMOUNT="0.036918189" # n % to be used (default: 0.036918189 = 3.6918189)
-ROGUE_TIMER="3600"         # n seconds (default: 3600 seconds/1 hour cooldown)
-ROGUE_HOURS="6"            # n hours of data (default: 6 hours)
-ROGUE_MAX_DAY="3"          # n trades a day (default: 3)
 
 # n% listing amount
 ROGUE_LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | head -1)"
