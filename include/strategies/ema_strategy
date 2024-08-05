@@ -98,7 +98,7 @@ decimal_market          # decimal market
 ################################################################################
 
 # if txid age greater than signal limit in hours (based on configuration)
-if [[ "$TX_ID_AGE_HOURS" -gt "$SIGNAL_AGE" ]] 2>>"${LOG_ERROR:?}"; then
+if [[ "$(echo "$TX_ID_AGE_HOURS" | awk -F. '{ print $1 }')" -gt "$SIGNAL_AGE" ]] 2>>"${LOG_ERROR:?}"; then
   # reset status file
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status &>/dev/null
 fi
