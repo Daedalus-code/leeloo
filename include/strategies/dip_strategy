@@ -440,8 +440,11 @@ function amount_to_buy_sell() {
                   DIP_TARGET_OLD_BID="0"
                 fi
 
-                # selling output (log)
-                DIP_SELL_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
+                # if any data
+                if [[ -n "$DIP_TARGET_ASK_DIFF_PERC" ]] &>/dev/null; then
+                  # selling output (log)
+                  DIP_SELL_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
+                fi
 
                 # if extra logs are set
                 if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
@@ -3660,7 +3663,7 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
   ##############################################################################
 
-  # variable for decimal market
+  # variables for decimal market
   LISTING_CURRENCY="$DIP_CHANGE_NAME"
   REFERENCE_CURRENCY="$DIP_REFERENCE_NAME"
   decimal_market
