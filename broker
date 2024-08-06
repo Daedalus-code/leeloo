@@ -133,11 +133,13 @@ case $CHOICE in
         RESULT="$(echo "$RESULT" | column -t)"
         # width
         WIDTH="$(echo "$RESULT" | wc -L)"
+        # length
+        LENGTH=$(echo "$(echo "$RESULT" | wc -l)+6" | bc 2>/dev/null)
 
         display_result() {
           dialog --title "$COIN_TOKEN Balances" \
             --no-collapse \
-            --msgbox "$RESULT" 6 $(echo "$WIDTH+5" | bc 2>/dev/null)
+            --msgbox "$RESULT" "$LENGTH" $(echo "$WIDTH+5" | bc 2>/dev/null)
         }
 
       else
