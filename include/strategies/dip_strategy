@@ -488,6 +488,11 @@ function amount_to_buy_sell() {
                 # amount to profit (reference percentage)
                 DIP_GET_RATIO_PROFIT="$(echo "100/$DIP_BUY_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+                # if zero
+                if [[ -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
+                  DIP_GET_RATIO_PROFIT="0.00"
+                fi
+
                 # new last price
                 DIP_TARGET_LAST="$DIP_TARGET_LAST_NOW"
 
@@ -603,7 +608,7 @@ function amount_to_buy_sell() {
 
   # if zero
   if [[ -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
-    DIP_GET_RATIO_PROFIT="0"
+    DIP_GET_RATIO_PROFIT="0.00"
   fi
 
   # amount to profit (reference percentage, no decimal)
