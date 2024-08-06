@@ -120,13 +120,13 @@ case $CHOICE in
       coin_token_search
 
       # search data
-      COIN_TOKEN_SEARCH="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/balances | awk '{ print $2,$3,$4 }')"
+      COIN_TOKEN_SEARCH="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/balances | egrep -o "$COIN_TOKEN:.*")"
 
       # if any data
       if [[ -n "$COIN_TOKEN" && -n "$COIN_TOKEN_SEARCH" ]] &>/dev/null; then
 
         # result
-        RESULT="Coins: Deposited Available Unconfirmed
+        RESULT="Coins: Deposited Available Unconfirmed InInterest
   $COIN_TOKEN: $COIN_TOKEN_SEARCH"
 
         # result
@@ -134,7 +134,7 @@ case $CHOICE in
         # width
         WIDTH="$(echo "$RESULT" | wc -L)"
         # length
-        LENGTH=$(echo "$(echo "$RESULT" | wc -l)+6" | bc 2>/dev/null)
+        LENGTH=$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)
 
         display_result() {
           dialog --title "$COIN_TOKEN Balances" \
