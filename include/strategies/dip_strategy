@@ -397,6 +397,9 @@ function amount_to_buy_sell() {
         DIP_ORDERS_COUNT="0"
       fi
 
+      # calculate bid difference
+      DIP_TARGET_BID_DIFF_PERC="$(echo "100/$DIP_TARGET_BID*$DIP_TARGET_BID_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
       # if any data
       if [[ -n "$DIP_TARGET_BID_NOW" && -n "$DIP_TARGET_ASK_NOW" ]] &>/dev/null; then
         # if no active orders
@@ -408,9 +411,6 @@ function amount_to_buy_sell() {
             if [[ "$DIP_BOUGHT_SLOW_AGE_SECONDS" -gt "183" ]] &>/dev/null; then
               # if sold older than n seconds
               if [[ "$DIP_SOLD_SLOW_AGE_SECONDS" -gt "368" ]] &>/dev/null; then
-
-                # calculate bid difference
-                DIP_TARGET_BID_DIFF_PERC="$(echo "100/$DIP_TARGET_BID*$DIP_TARGET_BID_NOW-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
                 # buying output (log)
                 DIP_BUY_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
