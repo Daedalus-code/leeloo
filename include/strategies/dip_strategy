@@ -406,6 +406,8 @@ function amount_to_buy_sell() {
       # target ask now check (prices)
       DIP_TARGET_ASK_NOW_CHECK="$(echo "$DIP_TARGET_ASK_NOW" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
+      ##########################################################################
+
       # calculate ask difference
       DIP_TARGET_ASK_DIFF="$(echo "$DIP_TARGET_ASK_NOW-$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
       # calculate ask difference percentage
@@ -425,6 +427,8 @@ function amount_to_buy_sell() {
       if [[ -z "$DIP_TARGET_BID_DIFF_PERC" ]] &>/dev/null; then
         DIP_TARGET_BID_DIFF_PERC="0.00"
       fi
+
+      ##########################################################################
 
       # if any data
       if [[ -n "$DIP_TARGET_BID_NOW" && -n "$DIP_TARGET_ASK_NOW" ]] &>/dev/null; then
@@ -459,9 +463,16 @@ function amount_to_buy_sell() {
                 # selling output (log)
                 DIP_SELL_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
 
-                # log market spread output
-                DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_TARGET_SPREAD_STATUS:$DIP_TARGET_SELL_STATUS S: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% B: ${DIP_TARGET_BID_DIFF_PERC:?}% A: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_DAYS}d V: $DIP_TARGET_VOLUME_NOW"
-                echo "$DIP_MARKET_UPDATE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                ################################################################
+
+                # if target is selling
+                if [[ "$DIP_TARGET_SELLING" -eq "1" ]] &>/dev/null; then
+                  # log market spread output
+                  DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_TARGET_SPREAD_STATUS:$DIP_TARGET_SELL_STATUS S: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% B: ${DIP_TARGET_BID_DIFF_PERC:?}% A: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_DAYS}d V: $DIP_TARGET_VOLUME_NOW"
+                  echo "$DIP_MARKET_UPDATE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                fi
+
+                ################################################################
 
                 # if extra logs are set
                 if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
@@ -990,6 +1001,8 @@ function target_data() {
 
   ##############################################################################
 
+  # if target selling
+  DIP_TARGET_SELLING="0"
   amount_to_buy_sell
 
   # target amount to buy and sell (listing)
@@ -2933,6 +2946,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
     ############################################################################
 
+    # if target selling
+    DIP_TARGET_SELLING="1"
     amount_to_buy_sell
 
     # re calculate receive amount based on order size
