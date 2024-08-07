@@ -3699,12 +3699,6 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   LISTING_CURRENCY="$DIP_CHANGE_NAME"
   decimal_market
 
-  # again, if decimal is found
-  if [[ "$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -c "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME:")" -ge "0" ]] &>/dev/null; then
-    # use that decimal limit
-    DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME:" | awk '{ print $2 }')"
-  fi
-
   ##############################################################################
 
   # asset balance (available)
@@ -3844,7 +3838,7 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
       # if dust is old enough (86400 seconds = 1 day), or just dust regardless if no sold file
       if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
         # if decimal limit is working
-        if [[ "$DECIMAL_LIMIT" -lt "9" || "$DECIMAL_LIMIT" -eq "9" ]] &>/dev/null; then
+        if [[ "$DECIMAL_LIMIT" -lt "9" || ! "$DECIMAL_LIMIT" -eq "9" ]] &>/dev/null; then
           # if balance is enough
           if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
             # if prices exist, not zero
