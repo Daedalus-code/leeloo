@@ -3649,7 +3649,7 @@ if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>
 fi
 
 ################################################################################
-# sell dip change (dust)
+# dusting block (change/dust)
 ################################################################################
 
 # if zero, if not 1
@@ -3679,17 +3679,17 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
   # asset (random)
   DIP_CHANGE_ASSET="$(echo "$DIP_CHANGE_BALANCES" | sort -R | tail -1)"
-  # change name (listing)
+  # change name (listing_currency)
   DIP_CHANGE_NAME="$(echo "$DIP_CHANGE_ASSET" | awk '{ print $1 }' | tr -d ':')"
-
-  # reference name (reference)
+  # reference name (reference_currency)
   DIP_REFERENCE_NAME="$(cat "${SYS_DIR:?}"/robot/DIP"$EXCHANGE_API"*.active 2>/dev/null | egrep -o "/[A-Z]+|/[0-9]+" | tr -d '/' | awk '!a[$1]++' | sort -R | tail -1)"
   # reference balance (available)
   DIP_REFERENCE_BALANCE="$(grep -w "\<$DIP_REFERENCE_NAME:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
 
   # if zero
   if [[ -z "$DIP_REFERENCE_NAME" ]] &>/dev/null; then
-    DIP_REFERENCE_NAME="$LISTING_CURRENCY"
+    # use original reference currency
+    DIP_REFERENCE_NAME="$REFERENCE_CURRENCY"
   fi
 
   ##############################################################################
@@ -3697,6 +3697,12 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   # variables for decimal market
   LISTING_CURRENCY="$DIP_CHANGE_NAME"
   decimal_market
+
+  # again, if decimal is found
+  if [[ "$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -c "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME:")" -ge "0" ]] &>/dev/null; then
+    # use that decimal limit
+    DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME:" | awk '{ print $2 }')"
+  fi
 
   ##############################################################################
 
