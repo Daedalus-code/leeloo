@@ -652,6 +652,12 @@ function target_order_status() {
       SELL_ORDERS_ID="001234567890098765432100"
     fi
 
+    # if zero
+    if [[ -z "$BUY_TRADES_ID" ]] &>/dev/null; then
+      # unique order id
+      BUY_TRADES_ID="B01234NEW89U0987NEW3210Y"
+    fi
+
     ############################################################################
 
     # sold quantity check
@@ -660,18 +666,17 @@ function target_order_status() {
     DIP_SELLING_VALUE_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
     # target bought amount check
     TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
-    # last buy order id that got sold
-    BUY_TRADES_ID_OLD="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".buy_id 2>/dev/null || true)"
 
     ############################################################################
 
-    # if zero
-    if [[ -z "$BUY_TRADES_ID_OLD" || -z "$BUY_TRADES_ID" ]] &>/dev/null; then
-      # unique order id
-      BUY_TRADES_ID_OLD="B0123OLD789U0987OLD3210Y"
-      # unique order id
-      BUY_TRADES_ID="B01234NEW89U0987NEW3210Y"
+    # if empty
+    if [[ ! -s "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".buy_id ]]; then
+      # buy order placeholder
+      echo "B0123OLD789U0987OLD3210Y" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".buy_id
     fi
+
+    # last buy order id that got sold
+    BUY_TRADES_ID_OLD="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".buy_id 2>/dev/null || true)"
 
     # selling & sold sum #######################################################
 
