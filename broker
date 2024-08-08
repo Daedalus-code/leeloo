@@ -645,15 +645,16 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
 
   ##############################################################################
 
-  HEIGHT=12
-  WIDTH=39
-  CHOICE_HEIGHT=5
+  HEIGHT="13"
+  WIDTH="39"
+  CHOICE_HEIGHT="6"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Debug Menu"
   MENU="Multipass $DATE_XARGS"
 
   OPTIONS=(1 "Debug           Status"
-    2 "Strategy        Error log"
+    2 "Strategy        error.log"
+    l "Leeloo          leeloo.log"
     o "Order           Order debug"
     t "TXid(s)         Null log"
     n "Reset           Null log ($(echo "$TXID_NULL_DATA_COUNT" | awk '{ print $1 }'))")
@@ -828,6 +829,28 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
         awk '!a[$0]++' "${LOG_DIR:?}"/leeloo/error.log >"${LOG_DIR:?}"/leeloo/error.log.tmp
         mv "${LOG_DIR:?}"/leeloo/error.log.tmp "${LOG_DIR:?}"/leeloo/error.log
       fi
+    fi
+
+    ;;
+
+  "l")
+
+    display_result() {
+      dialog --title "Leeloo/Script Debug" \
+        --no-collapse \
+        --msgbox "$RESULT" 0 0
+    }
+
+    # leeloo log result
+    RESULT="$(cat "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null)"
+
+    display_result 2>/dev/null
+
+    # prompt user to keep data
+    if ! dialog --stdout --title "Keep leeloo.log?" \
+      --backtitle "Keep data (leeloo.log)?" \
+      --yesno "Yes: Keep! No: Delete!" 5 28; then
+      truncate -s 0 "$LOG_DIR"/leeloo/leeloo.log &>/dev/null
     fi
 
     ;;

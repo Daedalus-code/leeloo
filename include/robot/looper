@@ -31,15 +31,16 @@ update_screen
 install_exchange_dir
 
 ################################################################################
+
 # start screen session if not found
 if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "0" ]] &>/dev/null; then
 
   # create a new screen session with logging enabled
   screen -dmSL leeloo -Logfile "$LOG_DIR/leeloo/screen.log"
-
   # start the leeloo command in the screen session
   screen -S leeloo -p 0 -X stuff "bash ${SYS_DIR}/robot/leeloo >> "$LOG_DIR/leeloo/leeloo.log" 2>&1"$'\n'
 
+  # keep lines
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null | awk '{ print $1 }')" ]] &>/dev/null; then
     echo "$(tail -1024 "${LOG_DIR:?}"/leeloo/leeloo.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/leeloo.log
   fi
