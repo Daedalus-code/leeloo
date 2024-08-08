@@ -654,16 +654,6 @@ function target_order_status() {
 
     ############################################################################
 
-    # if zero
-    if [[ -z "$BUY_TRADES_ID_OLD" || -z "$BUY_TRADES_ID" ]] &>/dev/null; then
-      # unique order id
-      BUY_TRADES_ID_OLD="B0123OLD789U0987OLD3210Y"
-      # unique order id
-      BUY_TRADES_ID="B01234NEW89U0987NEW3210Y"
-    fi
-
-    ############################################################################
-
     # sold quantity check
     ORDER_SOLD_QUANTITY_CHECK="$(echo "$ORDER_SOLD_QUANTITY" | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
     # dip selling value
@@ -672,6 +662,16 @@ function target_order_status() {
     TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
     # last buy order id that got sold
     BUY_TRADES_ID_OLD="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".buy_id 2>/dev/null)"
+
+    ############################################################################
+
+    # if zero
+    if [[ -z "$BUY_TRADES_ID_OLD" || -z "$BUY_TRADES_ID" ]] &>/dev/null; then
+      # unique order id
+      BUY_TRADES_ID_OLD="B0123OLD789U0987OLD3210Y"
+      # unique order id
+      BUY_TRADES_ID="B01234NEW89U0987NEW3210Y"
+    fi
 
     # selling & sold sum #######################################################
 
