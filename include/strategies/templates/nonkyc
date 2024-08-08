@@ -176,23 +176,24 @@ function decimal_market() {
   # default decimal
   DECIMAL_LIMIT="9"
   # market list age (seconds)
-  GET_LIST_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  GET_LIST_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/getlist 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # if greater than n, if not found, if empty
-  if [[ "$GET_LIST_AGE" -gt "3600" || ! -f "${LOG_DIR:?}"/leeloo/getlist || -s "${LOG_DIR:?}"/leeloo/getlist ]] &>/dev/null; then
+  if [[ "$GET_LIST_AGE" -gt "3600" || ! -f "${LOG_DIR:?}"/leeloo/nonkyc/getlist || ! -s "${LOG_DIR:?}"/leeloo/nonkyc/getlist ]] &>/dev/null; then
     # quantity decimals
-    echo "$(getlist_nky 2>/dev/null | column -t | sort -n -k 2)" >"${LOG_DIR:?}"/leeloo/getlist.tmp 2>/dev/null
+    echo "$(getlist_nky 2>/dev/null | column -t | sort -n -k 2)" >"${LOG_DIR:?}"/leeloo/nonkyc/getlist.tmp 2>/dev/null
     # if getlist.tmp has data
-    if [[ -s "${LOG_DIR:?}"/leeloo/getlist.tmp ]] &>/dev/null; then
+    if [[ -s "${LOG_DIR:?}"/leeloo/nonkyc/getlist.tmp ]] &>/dev/null; then
       # update data
-      mv "${LOG_DIR:?}"/leeloo/getlist.tmp "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null
+      mv "${LOG_DIR:?}"/leeloo/nonkyc/getlist.tmp "${LOG_DIR:?}"/leeloo/nonkyc/getlist 2>/dev/null
     fi
   fi
+
   # if any data points
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # if any data
-    if [[ -s "${LOG_DIR:?}"/leeloo/getlist ]] &>/dev/null; then
+    if [[ -s "${LOG_DIR:?}"/leeloo/nonkyc/getlist ]] &>/dev/null; then
       # decimal limit
-      DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY:" | awk '{ print $2 }')"
+      DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/nonkyc/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY:" | awk '{ print $2 }')"
 
       # if zero, more than one word, less than zero, has a negative
       if [[ -z "$DECIMAL_LIMIT" || "$(echo "$DECIMAL_LIMIT" | wc -w)" -gt "1" || "$DECIMAL_LIMIT" -lt "0" || "$(echo "$DECIMAL_LIMIT" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then
