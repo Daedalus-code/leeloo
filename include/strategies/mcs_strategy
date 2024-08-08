@@ -73,9 +73,9 @@ if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
   # listing equals min (minimum), listing amount below n
   if [[ "$LISTING_ALLOCATED" == "MIN" || "$LISTING_ALLOCATED" < "1" ]] &>/dev/null; then
     # if any files
-    if [[ -f "${LOG_DIR:?}"/leeloo/getlist ]] &>/dev/null; then
+    if [[ -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/getlist ]] &>/dev/null; then
       # minimum decimal
-      MCS_MINIMUM_LISTING_AMOUNT="$(cat "${LOG_DIR:?}"/leeloo/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
+      MCS_MINIMUM_LISTING_AMOUNT="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | awk '{ print $2 }')"
 
       # if failing because exchange has not updated their api yet
       if [[ "$(grep -c "Minimum quantity for this market is" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null || true)" -gt "0" ]] &>/dev/null; then
