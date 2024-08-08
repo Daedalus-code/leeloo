@@ -414,7 +414,7 @@ function amount_to_buy_sell() {
       DIP_TARGET_ASK_DIFF_PERC=$(echo "scale=2; ($DIP_TARGET_ASK_DIFF / $DIP_TARGET_ASK_NOW) * 100" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
 
       # if zero
-      if [[ -z "$DIP_TARGET_ASK_DIFF_PERC" ]] &>/dev/null; then
+      if [[ -z "$DIP_TARGET_ASK_DIFF_PERC" || "$DIP_TARGET_ASK_DIFF_PERC" == "-100.0000" ]] &>/dev/null; then
         DIP_TARGET_ASK_DIFF_PERC="0.00"
       fi
 
@@ -426,7 +426,7 @@ function amount_to_buy_sell() {
       DIP_TARGET_BID_DIFF_PERC=$(echo "scale=2; ($DIP_TARGET_BID_DIFF / $DIP_TARGET_BID_NOW) * 100" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')
 
       # if zero
-      if [[ -z "$DIP_TARGET_BID_DIFF_PERC" ]] &>/dev/null; then
+      if [[ -z "$DIP_TARGET_BID_DIFF_PERC" || "$DIP_TARGET_BID_DIFF_PERC" == "-100.0000" ]] &>/dev/null; then
         DIP_TARGET_BID_DIFF_PERC="0.00"
       fi
 
