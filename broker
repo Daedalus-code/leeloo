@@ -653,7 +653,7 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
   MENU="Multipass $DATE_XARGS"
 
   OPTIONS=(1 "Debug           Status"
-    2 "Strategy        error.log"
+    e "Strategy        error.log"
     l "Leeloo          leeloo.log"
     o "Order           Order debug"
     t "TXid(s)         Null log"
@@ -799,7 +799,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-  "2")
+  "e")
 
     # strategy data exist, keep, delete
     if [[ "$STRATEGY_ERROR_DATA_COUNT" -gt "0" ]] &>/dev/null; then
@@ -846,11 +846,14 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     display_result 2>/dev/null
 
-    # prompt user to keep data
-    if ! dialog --stdout --title "Keep leeloo.log?" \
-      --backtitle "Keep data (leeloo.log)?" \
-      --yesno "Yes: Keep! No: Delete!" 5 28; then
-      truncate -s 0 "$LOG_DIR"/leeloo/leeloo.log &>/dev/null
+    # if any data
+    if [[ "$(wc -l "$LOG_DIR"/leeloo/leeloo.log | awk '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+      # prompt user to keep data
+      if ! dialog --stdout --title "Keep leeloo.log?" \
+        --backtitle "Keep data (leeloo.log)?" \
+        --yesno "Yes: Keep! No: Delete!" 5 28; then
+        truncate -s 0 "$LOG_DIR"/leeloo/leeloo.log &>/dev/null
+      fi
     fi
 
     ;;
