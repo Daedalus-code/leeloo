@@ -654,51 +654,66 @@ function target_order_status() {
 
     ############################################################################
 
+    # if zero
+    if [[ -z "$BUY_TRADES_ID_OLD" || -z "$BUY_TRADES_ID" ]] &>/dev/null; then
+      # unique order id
+      BUY_TRADES_ID_OLD="B0123OLD789U0987OLD3210Y"
+      # unique order id
+      BUY_TRADES_ID="B01234NEW89U0987NEW3210Y"
+    fi
+
+    ############################################################################
+
     # sold quantity check
     ORDER_SOLD_QUANTITY_CHECK="$(echo "$ORDER_SOLD_QUANTITY" | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
     # dip selling value
     DIP_SELLING_VALUE_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
     # target bought amount check
     TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
+    # last buy order id that got sold
+    BUY_TRADES_ID_OLD="$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".buy_id 2>/dev/null)"
 
     # selling & sold sum #######################################################
 
-    # if any data
-    if [[ -n "$SELL_TRADES_ID" && -n "$SELL_ORDERS_ID" ]] &>/dev/null; then
-      # if trades and orders id matches
-      if [[ "$SELL_TRADES_ID" == "$SELL_ORDERS_ID" ]] &>/dev/null; then
-        # if any data
-        if [[ -n "$ORDER_SOLD_QUANTITY" && -n "$TARGET_BOUGHT" ]] &>/dev/null; then
-          # if total sum is greater or equal to the target
-          if [[ "$ORDER_SOLD_QUANTITY_CHECK" -ge "$TARGET_BOUGHT_CHECK" ]] &>/dev/null; then
-            # if bot are actually trading
-            if [[ "$BUYING_STATUS" -gt "0" ]] &>/dev/null; then
-              # if not a new buy
-              if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
-                # if any data
-                if [[ -n "$DIP_SELLING_VALUE_CHECK" ]] &>/dev/null; then
-                  # total selling value is greater
-                  if [[ "$DIP_SELLING_VALUE_CHECK" -gt "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
-                    # if any data
-                    if [[ "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
-                      # update sold file
-                      echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+    # not equal (old buy vs new buy)
+    if [[ ! "$BUY_TRADES_ID_OLD" == "$BUY_TRADES_ID" ]] &>/dev/null; then
+      # if any data
+      if [[ -n "$SELL_TRADES_ID" && -n "$SELL_ORDERS_ID" ]] &>/dev/null; then
+        # if trades and orders id matches
+        if [[ "$SELL_TRADES_ID" == "$SELL_ORDERS_ID" ]] &>/dev/null; then
+          # if any data
+          if [[ -n "$ORDER_SOLD_QUANTITY" && -n "$TARGET_BOUGHT" ]] &>/dev/null; then
+            # if total sum is greater or equal to the target
+            if [[ "$ORDER_SOLD_QUANTITY_CHECK" -ge "$TARGET_BOUGHT_CHECK" ]] &>/dev/null; then
+              # if bot are actually trading
+              if [[ "$BUYING_STATUS" -gt "0" ]] &>/dev/null; then
+                # if not a new buy
+                if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
+                  # if any data
+                  if [[ -n "$DIP_SELLING_VALUE_CHECK" ]] &>/dev/null; then
+                    # total selling value is greater
+                    if [[ "$DIP_SELLING_VALUE_CHECK" -gt "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
+                      # if any data
+                      if [[ "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+                        # update sold file
+                        echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".sold
+                      fi
                     fi
                   fi
                 fi
               fi
             fi
           fi
-        fi
 
-        # if any data
-        if [[ -n "$DIP_SELLING_VALUE_CHECK" && -n "$ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
-          # total selling value is greater
-          if [[ "$DIP_SELLING_VALUE_CHECK" -gt "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
-            # if any data
-            if [[ "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
-              # track order amount being sold
-              echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
+          # if any data
+          if [[ -n "$DIP_SELLING_VALUE_CHECK" && -n "$ORDER_SOLD_QUANTITY" ]] &>/dev/null; then
+            # total selling value is greater
+            if [[ "$DIP_SELLING_VALUE_CHECK" -gt "$ORDER_SOLD_QUANTITY_CHECK" ]] &>/dev/null; then
+              # if any data
+              if [[ "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling 2>/dev/null | egrep -c "[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
+                # track order amount being sold
+                echo "$ORDER_SOLD_QUANTITY" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".selling
+              fi
             fi
           fi
         fi
