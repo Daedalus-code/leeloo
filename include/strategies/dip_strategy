@@ -3489,14 +3489,27 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
 
                 # if any trade data
                 if [[ -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades ]] &>/dev/null; then
-                  LISTING_TRADES=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades 2>/dev/null)
-                  # extract last buy order ID from trades file
-                  BUY_TRADES_ID=$(echo "$LISTING_TRADES" | grep "buy" | head -1 | awk '{ print $1 }' | tr -d ':')
-                  # if any data
-                  if [[ -n "$BUY_TRADES_ID" ]] &>/dev/null; then
-                    # keep old buy id after it was sold
-                    echo "$BUY_TRADES_ID" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".buy_id
+
+                  function get_trades_data {
+                    # get trades data
+                    LISTING_TRADES=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades 2>/dev/null)
+                    # extract last buy order ID from trades file
+                    BUY_TRADES_ID=$(echo "$LISTING_TRADES" | grep "buy" | head -1 | awk '{ print $1 }' | tr -d ':')
+                  }
+
+                  # trades data
+                  get_trades_data
+
+                  # if no data
+                  if [[ -z "$BUY_TRADES_ID" ]] &>/dev/null; then
+                    # update trades data
+                    target_order_status
+                    # trades data
+                    get_trades_data
                   fi
+
+                  # keep old buy id after it was sold
+                  echo "$BUY_TRADES_ID" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".buy_id
                 fi
 
                 # it was sold
