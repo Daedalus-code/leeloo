@@ -444,8 +444,19 @@ function amount_to_buy_sell() {
               # if sold older than n seconds
               if [[ "$DIP_SOLD_SLOW_AGE_SECONDS" -gt "368" ]] &>/dev/null; then
 
+                # target bid
+                DIP_TARGET_BID_OUTPUT="$DIP_TARGET_BID"
+
+                # if bid zero
+                if [[ -z "$DIP_TARGET_BID_OUTPUT" ]] &>/dev/null; then
+                  # use bid now
+                  DIP_TARGET_BID_OUTPUT="$DIP_TARGET_BID_NOW"
+                fi
+
+                # bid now
+                DIP_TARGET_BID_NOW_OUTPUT="$DIP_TARGET_BID_NOW"
                 # buying output (log)
-                DIP_BUY_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
+                DIP_BUY_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID_OUTPUT $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW_OUTPUT $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
 
                 # if extra logs are set
                 if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
@@ -454,6 +465,22 @@ function amount_to_buy_sell() {
                   echo "$DIP_BUY_TARGET_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
                 fi
 
+                # target ask
+                DIP_TARGET_ASK_OUTPUT="$DIP_TARGET_ASK"
+
+                # if ask zero
+                if [[ -z "$DIP_TARGET_ASK_OUTPUT" ]] &>/dev/null; then
+                  # use ask now
+                  DIP_TARGET_ASK_OUTPUT="$DIP_TARGET_ASK_NOW"
+                fi
+
+                # ask now
+                DIP_TARGET_ASK_NOW_OUTPUT="$DIP_TARGET_ASK_NOW"
+                # selling output (log)
+                DIP_SELL_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK_OUTPUT $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW_OUTPUT $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
+
+                ################################################################
+
                 # old bid price (bought)
                 DIP_TARGET_OLD_BID="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | awk '{ print $5 }' | head -1 | awk '{ printf "%.9f\n", $1 }')"
 
@@ -461,9 +488,6 @@ function amount_to_buy_sell() {
                 if [[ -z "$DIP_TARGET_OLD_BID" ]] &>/dev/null; then
                   DIP_TARGET_OLD_BID="0"
                 fi
-
-                # selling output (log)
-                DIP_SELL_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
 
                 ################################################################
 
