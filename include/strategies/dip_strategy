@@ -1047,6 +1047,16 @@ function target_data() {
       # target sell status (based on trade and quest price) wait on quest buy with new price
       DIP_TARGET_SELL_STATUS="[o0]"
     fi
+
+    # bought price check
+    DIP_TARGET_BUY_IDE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($10 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+    # sell price check
+    DIP_TARGET_ASK_IDE_CHECK="$(echo "$DIP_TARGET_ASK" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+
+    # if identical buy and sell prices
+    if [[ "$DIP_TARGET_ASK_IDE_CHECK" == "$DIP_TARGET_BUY_IDE_CHECK" ]] &>/dev/null; then
+      DIP_TARGET_SELL_STATUS="[o0]"
+    fi
   fi
 }
 
@@ -2983,6 +2993,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
         # amount profit check
         DIP_SELL_AMOUNT_PROFIT_CHECK="$(echo "$DIP_SELL_AMOUNT_PROFIT" | tr -d '.' | sed 's/^0*//')"
+
+        ########################################################################
 
         # if waiting on quest buy (will not use last old trades price buy before quest started)
         # if spread is ok & if profit is greater than maker taker fee
