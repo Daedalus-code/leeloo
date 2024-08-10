@@ -3441,12 +3441,15 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
 
                 ################################################################
 
-                # if data exist
-                if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
-                  # use original percentage value from bought
-                  DIP_GET_RATIO_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $NF }' | tr -d '%')"
-                  # use original get amount value from bought
-                  DIP_GET_AMOUNT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $22 }')"
+                # if zero
+                if [[ -z "$DIP_GET_AMOUNT_PROFIT" || -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
+                  # if bought data exist
+                  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
+                    # use original percentage value from bought data
+                    DIP_GET_RATIO_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $NF }' | tr -d '%')"
+                    # use original get amount value from bought data
+                    DIP_GET_AMOUNT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $22 }')"
+                  fi
                 fi
 
                 # if zero
