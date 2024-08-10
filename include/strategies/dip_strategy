@@ -182,9 +182,12 @@ function time_and_profit() {
       # max sell order age (days) (default)
       DIP_MAX_SELL_AGE=$(egrep "DIP_MAX_SELL_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')
 
-      # adjust DIP_MAX_BUY_AGE and DIP_MAX_SELL_AGE using calculated percentages
-      DIP_MAX_BUY_AGE=$(echo "$DIP_BUY_EXTRA_TIME+$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
-      DIP_MAX_SELL_AGE=$(echo "$DIP_SELL_EXTRA_TIME+$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
+      # if dynamic age (based on configuration)
+      if [[ "$DIP_DYNAMIC_AGE" == "1" ]] &>/dev/null; then
+        # adjust DIP_MAX_BUY_AGE and DIP_MAX_SELL_AGE using calculated percentages
+        DIP_MAX_BUY_AGE=$(echo "$DIP_BUY_EXTRA_TIME+$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
+        DIP_MAX_SELL_AGE=$(echo "$DIP_SELL_EXTRA_TIME+$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
+      fi
     fi
   fi
 
@@ -1072,9 +1075,9 @@ function target_data() {
       DIP_TARGET_SELL_STATUS="[o0]"
     fi
 
-    # bought price check
+    # bought price check (bought)
     DIP_TARGET_BUY_IDE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | awk '{ printf "%.9f\n", $10 }' | tr -d '.' | sed 's/^0*//')"
-    # sell price check
+    # sell price check (prices)
     DIP_TARGET_ASK_IDE_CHECK="$(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
     # if identical buy and sell prices
