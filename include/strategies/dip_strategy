@@ -1533,14 +1533,9 @@ CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip
 
 ################################################################################
 
-# if zero, do random markets (all reference markets) xeggex
+# if zero, use good old bitcoin as main market (reference)
 if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-  # dip markets (random)
-  DIP_MARKETS="$(echo "$CAT_PRICES_DIP_FILE" | awk -F_ '{ print $2 }' | awk '{ print $1 }' | awk '!a[$1]++' | tr -d ':' | shuf | head -1)"
-fi
-
-# if still zero, use good old bitcoin as main market (reference)
-if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+  # use default bitcoin
   DIP_MARKETS="BTC"
 fi
 
