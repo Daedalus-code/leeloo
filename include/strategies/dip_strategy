@@ -901,13 +901,6 @@ function remove_ghost_orders() {
 }
 
 ################################################################################
-
-# if no data, profit data exist
-if [[ -z "$REFERENCE_CURRENCY" && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
-  REFERENCE_CURRENCY="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $6 }' | head -1)"
-fi
-
-################################################################################
 ################################################################################
 # specific target & specific active variables
 ################################################################################
@@ -3637,18 +3630,20 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
       if [[ "$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
         if [[ "$(tail -101 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep "Buy" | grep -c "for" || true)" -eq "0" ]] &>/dev/null; then
           reset_sell_data
+
           # if zero
           if [[ -z "$LISTING_CURRENCY" ]] &>/dev/null; then
             LISTING_CURRENCY="null"
           fi
-          # if zero
+          # if no data, profit data exist
           if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-            REFERENCE_CURRENCY="null"
+            REFERENCE_CURRENCY="$DIP_MARKETS"
           fi
           # if zero
           if [[ -z "$DIP_BOUGHT_AGE_OUTPUT" ]] &>/dev/null; then
             DIP_BOUGHT_AGE_OUTPUT="null"
           fi
+
           DIP_OLD_DATA="1"
           DIP_TARGET_SPREAD_OUTPUT="Old data"
         fi
