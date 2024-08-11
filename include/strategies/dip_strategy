@@ -3627,11 +3627,14 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
         fi
       fi
 
-      # if data is missing (bought)
-      if [[ "$(grep "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought | grep -c "$DIP_MARKETS" || true)" -eq "0" ]] &>/dev/null; then
-        reset_sell_data
-        DIP_DATA_MISSING="1"
-        DIP_TARGET_SPREAD_OUTPUT="Missing data"
+      # if any data
+      if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
+        # if data is missing (bought)
+        if [[ "$(grep "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought | grep -c "$DIP_MARKETS" || true)" -eq "0" ]] &>/dev/null; then
+          reset_sell_data
+          DIP_DATA_MISSING="1"
+          DIP_TARGET_SPREAD_OUTPUT="Missing data"
+        fi
       fi
 
       ##########################################################################
