@@ -104,6 +104,14 @@ paused_market   # paused markets
 
 ################################################################################
 
+# if zero, use good old bitcoin as main market (reference)
+if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+  # use default bitcoin
+  DIP_MARKETS="BTC"
+fi
+
+################################################################################
+
 function reset_active_market_list() {
   if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
     # if (active) order exist
@@ -1530,14 +1538,6 @@ fi
 
 # prices file output (RAW)
 CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
-
-################################################################################
-
-# if zero, use good old bitcoin as main market (reference)
-if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-  # use default bitcoin
-  DIP_MARKETS="BTC"
-fi
 
 ################################################################################
 
@@ -3758,8 +3758,6 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
   ##############################################################################
 
-  # extract all active reference
-  DIP_MARKETS="$(cat "${SYS_DIR:?}"/robot/*.active 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '{ print $2 }' | awk '!a[$1]++')"
   # extract active markets (active)
   DIP_ACTIVE_ORDERS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '{ print $1 }' | awk '!a[$1]++')"
   # extract active markets (orders)
@@ -4292,12 +4290,12 @@ fi
 if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
   # get reference based on listing
-  DIP_MARKETS="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | tr '_/:' ' ' | awk '{ print $2 }' | grep -v "$DIP_DUMP_LISTING" | head -1)"
+  DIP_DUMP_MARKETS="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | tr '_/:' ' ' | awk '{ print $2 }' | grep -v "$DIP_DUMP_LISTING" | head -1)"
   # prices file output (RAW)
   CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
 
   # no reference, use bitcoin, usdt,usdc as dumping grounds
-  if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+  if [[ -z "$DIP_DUMP_MARKETS" ]] &>/dev/null; then
     RANDOM_REF_CURRENCY=$((((RANDOM % 4) + 1)))
 
     # if zero
@@ -4307,24 +4305,24 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
     # dump on btc
     if [[ "$RANDOM_REF_CURRENCY" == "1" ]] &>/dev/null; then
-      DIP_MARKETS="BTC"
+      DIP_DUMP_MARKETS="BTC"
     fi
     # dump on usdt
     if [[ "$RANDOM_REF_CURRENCY" == "2" ]] &>/dev/null; then
-      DIP_MARKETS="USDT"
+      DIP_DUMP_MARKETS="USDT"
     fi
     # dump on usdc
     if [[ "$RANDOM_REF_CURRENCY" == "3" ]] &>/dev/null; then
-      DIP_MARKETS="USDC"
+      DIP_DUMP_MARKETS="USDC"
     fi
     # dump on every reference available
     if [[ "$RANDOM_REF_CURRENCY" == "4" ]] &>/dev/null; then
-      DIP_MARKETS="$(echo "$CAT_PRICES_DIP_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | awk '!a[$0]++' | sort -R | tail -1)"
+      DIP_DUMP_MARKETS="$(echo "$CAT_PRICES_DIP_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | awk '!a[$0]++' | sort -R | tail -1)"
     fi
   fi
 
   # dump output (log)
-  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$DIP_MARKETS :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $DIP_MARKETS (Delisted)"
+  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$DIP_DUMP_MARKETS :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $DIP_DUMP_MARKETS (Delisted)"
 
   # if extra logs are set
   if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
@@ -4339,10 +4337,10 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   # if xeggex order
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
     # CreateOrder limit ########################################################
-    PLACE_ORDER="$(CreateOrder "" "$DIP_DUMP_LISTING/$DIP_MARKETS" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
+    PLACE_ORDER="$(CreateOrder "" "$DIP_DUMP_LISTING/$DIP_DUMP_MARKETS" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
     echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
     # debug line ###############################################################
-    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$DIP_MARKETS sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
+    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$DIP_DUMP_MARKETS sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
     ############################################################################
     sleep 1
   fi
@@ -4350,10 +4348,10 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   # if nonkyc order
   if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
     # CreateOrder limit ########################################################
-    PLACE_ORDER="$(CreateOrder_nky "" "$DIP_DUMP_LISTING/$DIP_MARKETS" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
+    PLACE_ORDER="$(CreateOrder_nky "" "$DIP_DUMP_LISTING/$DIP_DUMP_MARKETS" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
     echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
     # debug line ###############################################################
-    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$DIP_MARKETS sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
+    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$DIP_DUMP_MARKETS sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
     ############################################################################
     sleep 1
   fi
@@ -4362,7 +4360,7 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   ##############################################################################
 
   # keep n lines
-  echo "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump 2>/dev/null | tr -d '"'): $DIP_DUMP_LISTING/$DIP_MARKETS -> Sold $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+  echo "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump 2>/dev/null | tr -d '"'): $DIP_DUMP_LISTING/$DIP_DUMP_MARKETS -> Sold $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
 fi
 
 ################################################################################
