@@ -998,8 +998,21 @@ function target_data() {
 
   ##############################################################################
 
-  # listing (target from above)
-  LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $1 }')"
+  # if zero
+  if [[ -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+    # target symbol
+    DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
+    # listing (target from above)
+    LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $1 }')"
+  fi
+
+  # if zero
+  if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+    # target symbol
+    DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
+    # reference (market from above)
+    DIP_MARKETS="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $2 }')"
+  fi
 
   ##############################################################################
   ##############################################################################
@@ -2232,24 +2245,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
     ############################################################################
     # buying block
-    ############################################################################
-
-    # if zero
-    if [[ -z "$LISTING_CURRENCY" ]] &>/dev/null; then
-      # target symbol
-      DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
-      # listing (target from above)
-      LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $1 }')"
-    fi
-
-    # if zero
-    if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
-      # target symbol
-      DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
-      # reference (market from above)
-      DIP_MARKETS="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $2 }')"
-    fi
-
     ############################################################################
 
     # minimum spread check (ruled by configuration)
