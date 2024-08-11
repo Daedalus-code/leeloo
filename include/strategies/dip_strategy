@@ -2396,13 +2396,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   time_and_profit
 
-  # active market pairs
-  ACTIVE_MARKET_PAIRS="$DIP_MARKETS"
-
-  ##############################################################################
-
   # buy count
-  DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDERS_FILE" | grep -w "$ACTIVE_MARKET_PAIRS" | grep -c "buy" || true)"
+  DIP_ORDER_BUY_COUNT="$(echo "$CAT_ORDERS_FILE" | grep -w "$DIP_MARKETS" | grep -c "buy" || true)"
 
   # if zero
   if [[ -z "$DIP_ORDER_BUY_COUNT" ]] &>/dev/null; then
@@ -2412,7 +2407,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # sell count
-  DIP_ORDER_SELL_COUNT="$(echo "$CAT_ORDERS_FILE" | grep -w "$ACTIVE_MARKET_PAIRS" | grep -c "sell" || true)"
+  DIP_ORDER_SELL_COUNT="$(echo "$CAT_ORDERS_FILE" | grep -w "$DIP_MARKETS" | grep -c "sell" || true)"
 
   # if zero
   if [[ -z "$DIP_ORDER_SELL_COUNT" ]] &>/dev/null; then
@@ -3120,7 +3115,6 @@ fi
 
 # if active file has zero orders
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed '/^$/d' | wc -l)" -eq "0" ]] &>/dev/null; then
-  ACTIVE_MARKET_PAIRS="$DIP_MARKETS"
   DIP_ACTIVE_FILE_A_PRICE_MOVEMENT="0"
   DIP_ACTIVE_FILE_AVERAGE_AGE="N/A"
   DIP_ACTIVE_FILE_AVERAGE_DAYS="N/A"
@@ -4634,9 +4628,9 @@ DIP_SELECT_SKIP_REMOVED="${DIP_SELECT_COUNT_PERC:?}% ($DIP_SELECT_COUNT) ${DIP_S
 DIP_GHOST_FAILED_DUST="${DIP_GHOST_COUNT_PERC:?}% ($DIP_GHOST_COUNT) ${DIP_FAILED_COUNT_PERC:?}% ($DIP_FAILED_COUNT) ${DIP_DUSTING_COUNT_PERC:?}% ($DIP_DUSTING_COUNT)"
 
 # completed profit
-DIP_COMPLETED_PROFIT="$(grep -w "$ACTIVE_MARKET_PAIRS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '{ print $2 }' | tr -d ':')"
+DIP_COMPLETED_PROFIT="$(grep -w "$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '{ print $2 }' | tr -d ':')"
 # completed profit percentage
-DIP_COMPLETED_PROFIT_PERCENTAGE="$(grep -w "$ACTIVE_MARKET_PAIRS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '{ print $NF }' | tr -d '%')"
+DIP_COMPLETED_PROFIT_PERCENTAGE="$(grep -w "$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".gains 2>/dev/null | awk '{ print $NF }' | tr -d '%')"
 
 # if zero
 if [[ -z "$DIP_COMPLETED_PROFIT" ]] &>/dev/null; then
@@ -4736,7 +4730,7 @@ if [[ "$ACTIVE_MARKET_RSI_AVERAGE_CHECK" -gt "70" ]] &>/dev/null; then
 fi
 
 # total invested balance
-DIP_INVESTED_BALANCE="$(cat "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | grep "/$ACTIVE_MARKET_PAIRS" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+DIP_INVESTED_BALANCE="$(cat "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | grep "/$DIP_MARKETS" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
 
 # if zero
 if [[ -z "$DIP_INVESTED_BALANCE" ]] &>/dev/null; then
@@ -5048,15 +5042,15 @@ fi
 {
   echo "Targets.............: $DIP_DAILY_POTENTIAL | Dip: ${DIP_DAILY_DIP:?}% Spread: ${DIP_DAILY_SPREAD:?}% PM: ${DIP_DAILY_MOVEMENT:?}%
 Active..............: $DIP_ACTIVE_FILE_COUNT | Dip: ${DIP_ACTIVE_FILE_AVERAGE_DIP:?}% Spread: ${DIP_ACTIVE_FILE_AVERAGE_SPREAD:?}% PM: ${DIP_ACTIVE_FILE_A_PRICE_MOVEMENT:?}%
-Market..............: $ACTIVE_MARKET_PAIRS RSI: $ACTIVE_MARKET_RSI_AVERAGE ($ACTIVE_MARKET_RSI_STATUS)
-Market___Balance....: $REFERENCE_BALANCE $ACTIVE_MARKET_PAIRS ($DIP_BI_DYNAMIC_SUM $ACTIVE_MARKET_PAIRS)
-Market___Invested...: $DIP_INVESTED_BALANCE $ACTIVE_MARKET_PAIRS (${DIP_INVESTED_PERCENTAGE:?}%)
-1_Day____Movements..: $DIP_BI_PROFIT_LOSSES_DIFF $ACTIVE_MARKET_PAIRS (${DIP_BI_PROFIT_LOSSES_PERCENTAGE:?}%)
-1_Week___Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_WEEKLY:?}%)
-1_Month__Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_MONTHLY:?}%)
-3_Month__Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_QUARTER $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_QUARTER:?}%)
-6_Months_Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_H_YEAR $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_H_YEAR:?}%)
-1_Year___Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_YEARLY $ACTIVE_MARKET_PAIRS (${DIP_BI_PL_PERCENTAGE_YEARLY:?}%)
+Market..............: $DIP_MARKETS RSI: $ACTIVE_MARKET_RSI_AVERAGE ($ACTIVE_MARKET_RSI_STATUS)
+Market___Balance....: $REFERENCE_BALANCE $DIP_MARKETS ($DIP_BI_DYNAMIC_SUM $DIP_MARKETS)
+Market___Invested...: $DIP_INVESTED_BALANCE $DIP_MARKETS (${DIP_INVESTED_PERCENTAGE:?}%)
+1_Day____Movements..: $DIP_BI_PROFIT_LOSSES_DIFF $DIP_MARKETS (${DIP_BI_PROFIT_LOSSES_PERCENTAGE:?}%)
+1_Week___Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_WEEKLY:?}%)
+1_Month__Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_MONTHLY:?}%)
+3_Month__Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_QUARTER $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_QUARTER:?}%)
+6_Months_Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_H_YEAR $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_H_YEAR:?}%)
+1_Year___Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_YEARLY $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_YEARLY:?}%)
 Exchange............: $EXCHANGE_OUTPUT_NAME $EXCHANGE_API
 Orders..............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Max: $DIP_MAX_ORDERS
 DCA.................: $DIP_DCA_DATA Orders: $DIP_DCA_COUNT
@@ -5075,8 +5069,8 @@ Top_Dip.............: $DIP_TOP_DIP ${DIP_TOP_DIP_AMOUNT:?}%
 Low_Dip.............: $DIP_LOW_DIP ${DIP_LOW_DIP_AMOUNT:?}%
 Fastest_Market......: $DIP_FASTEST_MARKET ($DIP_FASTEST_COUNT) ${DIP_FASTEST_AVERAGE_PROFIT:?}%
 Slowest_Market......: $DIP_SLOWEST_MARKET ($DIP_SLOWEST_COUNT) ${DIP_SLOWEST_AVERAGE_PROFIT:?}%
-Completed_Today.....: ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT) $DIP_SOLD_TODAY $ACTIVE_MARKET_PAIRS
-Completed_Profit....: $DIP_COMPLETED_PROFIT $ACTIVE_MARKET_PAIRS ($DIP_PROFIT_COUNT) ${DIP_COMPLETED_PROFIT_PERCENTAGE:?}%
+Completed_Today.....: ${DIP_SOLD_COUNT_PERC:?}% ($DIP_SOLD_COUNT) $DIP_SOLD_TODAY $DIP_MARKETS
+Completed_Profit....: $DIP_COMPLETED_PROFIT $DIP_MARKETS ($DIP_PROFIT_COUNT) ${DIP_COMPLETED_PROFIT_PERCENTAGE:?}%
 Select/Skip/Removed.: $DIP_SELECT_SKIP_REMOVED
 Ghosts/Failed/Dust..: $DIP_GHOST_FAILED_DUST
 Last_Profit.........: $DIP_LAST_PROFIT | $DIP_PROFIT_FILE_AGE
