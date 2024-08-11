@@ -105,26 +105,26 @@ paused_market   # paused markets
 ################################################################################
 
 function reset_active_market_list() {
-  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
     # if (active) order exist
-    if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(grep -wc "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "1" ]] &>/dev/null; then
       # remove old (active) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
     fi
     # if (market) order exist
-    if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(grep -wc "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market || true)" -eq "1" ]] &>/dev/null; then
       # remove old (market) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
     fi
     # if (market.list) order exist
-    if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(grep -wc "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list || true)" -eq "1" ]] &>/dev/null; then
       # remove old (market.list) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
     fi
     # if (pool) order exist
-    if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(grep -wc "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool || true)" -eq "1" ]] &>/dev/null; then
       # remove old (pool) order
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".pool
     fi
   fi
 }
@@ -155,15 +155,15 @@ function reset_dumped_market_list() {
 
 function time_and_profit() {
   # if listing and reference data exist
-  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
 
     # market spread
-    EXTRA_TIME_WITH_SPREAD=$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')
+    EXTRA_TIME_WITH_SPREAD=$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')
 
     # buy order count
-    DIP_BUY_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "buy" || true)"
+    DIP_BUY_ORDER_COUNT="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "buy" || true)"
     # sell order count
-    DIP_SELL_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
+    DIP_SELL_ORDER_COUNT="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
 
     # if order is selling, double it all
     if [[ "$DIP_SELL_ORDER_COUNT" -gt "0" ]] &>/dev/null; then
@@ -325,7 +325,7 @@ function amount_to_buy_sell() {
   # listing balance (available)
   LISTING_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($3 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | head -1)"
   # reference balance (available)
-  REFERENCE_BALANCE="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
+  REFERENCE_BALANCE="$(grep -w "\<$DIP_MARKETS:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
 
   # if zero
   if [[ -z "$REFERENCE_BALANCE" ]] &>/dev/null; then
@@ -344,23 +344,23 @@ function amount_to_buy_sell() {
   # listing balance (deposited)
   LISTING_DEPOSITED_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($2 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | head -1)"
   # reference balance (deposited)
-  REFERENCE_DEPOSITED_BALANCE="$(grep -w "\<$REFERENCE_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
+  REFERENCE_DEPOSITED_BALANCE="$(grep -w "\<$DIP_MARKETS:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ print $2 }' | awk '{ printf "%.9f\n", $1 }' | head -1)"
 
   ##############################################################################
   # update slow order (no real orders)
   ##############################################################################
 
   # if any data
-  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
     # if market exist
-    if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -wc "$DIP_MARKETS" || true)" -eq "1" ]] &>/dev/null; then
 
       # target prices data
       if [[ "$(cat "${SYS_DIR:?}"/delisted_"$EXCHANGE_DIR_NAME" 2>/dev/null | egrep -c "[A-Z]+|[0-9]+" || true)" -gt "0" ]] &>/dev/null; then
         # disregard delisted markets
-        DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | grep -vf "${SYS_DIR:?}"/delisted_"$EXCHANGE_DIR_NAME" | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+        DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | grep -vf "${SYS_DIR:?}"/delisted_"$EXCHANGE_DIR_NAME" | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$DIP_MARKETS")"
       else
-        DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY")"
+        DIP_TARGET_PRICES_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$LISTING_CURRENCY" | grep -w "$DIP_MARKETS")"
       fi
 
       # target bid now
@@ -377,22 +377,22 @@ function amount_to_buy_sell() {
       DIP_PRICE_MOVEMENT_NOW=$(awk -v last="$DIP_TARGET_LAST_NOW" -v bid="$DIP_TARGET_BID_NOW" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
 
       # bought file age (seconds)
-      DIP_BOUGHT_SLOW_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+      DIP_BOUGHT_SLOW_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
       # bought file age (days)
       DIP_BOUGHT_SLOW_AGE_DAYS="$(echo "$DIP_BOUGHT_SLOW_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
       # sold file age (seconds)
-      DIP_SOLD_SLOW_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+      DIP_SOLD_SLOW_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
       # sold file age (days)
       DIP_SOLD_SLOW_AGE_DAYS="$(echo "$DIP_SOLD_SLOW_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
       # active orders (.orders)
-      DIP_ORDERS_COUNT=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".orders 2>/dev/null | wc -l)
+      DIP_ORDERS_COUNT=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".orders 2>/dev/null | wc -l)
 
       # if zero
       if [[ -z "$DIP_ORDERS_COUNT" || "$DIP_ORDERS_COUNT" == "0" ]] &>/dev/null; then
         # active orders (orders)
-        DIP_ORDERS_COUNT=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY" || true)
+        DIP_ORDERS_COUNT=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -wc "$DIP_MARKETS" || true)
       fi
 
       # if still zero
@@ -403,9 +403,9 @@ function amount_to_buy_sell() {
       # new bid price
       DIP_TARGET_BID="$DIP_TARGET_BID_NOW"
       # last ask price (trades)
-      DIP_TARGET_ASK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
+      DIP_TARGET_ASK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$DIP_MARKETS".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
       # last ask price (bought)
-      DIP_TARGET_QUEST_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }')"
+      DIP_TARGET_QUEST_ASK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }')"
       # target ask now check (prices)
       DIP_TARGET_ASK_NOW_CHECK="$(echo "$DIP_TARGET_ASK_NOW" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
@@ -459,7 +459,7 @@ function amount_to_buy_sell() {
                 # bid now
                 DIP_TARGET_BID_NOW_OUTPUT="$DIP_TARGET_BID_NOW"
                 # buying output (log)
-                DIP_BUY_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy Target: $DIP_TARGET_BID_OUTPUT $REFERENCE_CURRENCY -> $DIP_TARGET_BID_NOW_OUTPUT $REFERENCE_CURRENCY ${DIP_TARGET_BID_DIFF_PERC:?}%"
+                DIP_BUY_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Buy Target: $DIP_TARGET_BID_OUTPUT $DIP_MARKETS -> $DIP_TARGET_BID_NOW_OUTPUT $DIP_MARKETS ${DIP_TARGET_BID_DIFF_PERC:?}%"
 
                 # if extra logs are set
                 if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
@@ -480,12 +480,12 @@ function amount_to_buy_sell() {
                 # ask now
                 DIP_TARGET_ASK_NOW_OUTPUT="$DIP_TARGET_ASK_NOW"
                 # selling output (log)
-                DIP_SELL_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell Target: $DIP_TARGET_ASK_OUTPUT $REFERENCE_CURRENCY -> $DIP_TARGET_ASK_NOW_OUTPUT $REFERENCE_CURRENCY ${DIP_TARGET_ASK_DIFF_PERC:?}%"
+                DIP_SELL_TARGET_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Sell Target: $DIP_TARGET_ASK_OUTPUT $DIP_MARKETS -> $DIP_TARGET_ASK_NOW_OUTPUT $DIP_MARKETS ${DIP_TARGET_ASK_DIFF_PERC:?}%"
 
                 ################################################################
 
                 # old bid price (bought)
-                DIP_TARGET_OLD_BID="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | awk '{ print $5 }' | head -1 | awk '{ printf "%.9f\n", $1 }')"
+                DIP_TARGET_OLD_BID="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$DIP_MARKETS".trades 2>/dev/null | grep "buy" | awk '{ print $5 }' | head -1 | awk '{ printf "%.9f\n", $1 }')"
 
                 # if zero
                 if [[ -z "$DIP_TARGET_OLD_BID" ]] &>/dev/null; then
@@ -497,7 +497,7 @@ function amount_to_buy_sell() {
                 # if target is selling
                 if [[ "$DIP_TARGET_SELLING" -eq "1" ]] &>/dev/null; then
                   # log market spread output
-                  DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_TARGET_SPREAD_STATUS:$DIP_TARGET_SELL_STATUS S: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% B: ${DIP_TARGET_BID_DIFF_PERC:?}% A: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_DAYS}d V: $DIP_TARGET_VOLUME_NOW"
+                  DIP_MARKET_UPDATE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: $DIP_TARGET_SPREAD_STATUS:$DIP_TARGET_SELL_STATUS S: ${DIP_GET_RATIO_PROFIT}%/${DIP_MIN_SPREAD}% B: ${DIP_TARGET_BID_DIFF_PERC:?}% A: ${DIP_TARGET_ASK_DIFF_PERC:?}% Age: ${DIP_BOUGHT_SLOW_AGE_DAYS}d V: $DIP_TARGET_VOLUME_NOW"
                   echo "$DIP_MARKET_UPDATE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
                 fi
 
@@ -588,17 +588,17 @@ function amount_to_buy_sell() {
                 ################################################################
 
                 # selling status
-                DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
+                DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$DIP_MARKETS".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
 
                 # if selling status equals zero, old buy price is greater than new sell price, active order profit is above minimum spread limit (ruled by configuration)
                 if [[ "$DIP_SELLING_STATUS" -eq "0" || "$DIP_TARGET_SPREAD_STATUS" == "[OK]" && "$(echo "$DIP_GET_RATIO_PROFIT" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')" -gt "$(echo "$DIP_MIN_SPREAD" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
 
                   # update bought data
-                  echo "$LOG_DATE : Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for ($DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY) @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }') Price -> Quest: Selling @ $(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }') Price for ($DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY) Earning: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
+                  echo "$LOG_DATE : Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for ($DIP_BUY_AMOUNT_REFERENCE $DIP_MARKETS) @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }') Price -> Quest: Selling @ $(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }') Price for ($DIP_GET_AMOUNT_REFERENCE $DIP_MARKETS) Earning: $DIP_GET_AMOUNT_PROFIT $DIP_MARKETS ${DIP_GET_RATIO_PROFIT:?}%" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought
 
                   # update active file with updated spread data
-                  DIP_ACTIVE_MARKET_DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" |
-                    awk -v bid="$DIP_TARGET_BID_NOW" -v ask="$DIP_TARGET_ASK_NOW" -v last="$DIP_TARGET_LAST_NOW" -v dip="$DIP_TARGET_DIP_NOW" -v spread="$DIP_GET_RATIO_PROFIT" -v price_movement="$DIP_PRICE_MOVEMENT_NOW" -v volume="$DIP_TARGET_VOLUME_NOW" -v amount="$DIP_BUY_AMOUNT_LISTING $REFERENCE_CURRENCY" '{
+                  DIP_ACTIVE_MARKET_DATA=$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep "$LISTING_CURRENCY/$DIP_MARKETS" |
+                    awk -v bid="$DIP_TARGET_BID_NOW" -v ask="$DIP_TARGET_ASK_NOW" -v last="$DIP_TARGET_LAST_NOW" -v dip="$DIP_TARGET_DIP_NOW" -v spread="$DIP_GET_RATIO_PROFIT" -v price_movement="$DIP_PRICE_MOVEMENT_NOW" -v volume="$DIP_TARGET_VOLUME_NOW" -v amount="$DIP_BUY_AMOUNT_LISTING $DIP_MARKETS" '{
                   printf "%s | Bid: %.9f | Ask: %.9f | Last: %.9f | Dip: %.2f%% | Spread: %.2f%% | Price Movement: %.2f%% | Volume: %.2f | Amount: %.2f %s\n", $1, bid, ask, last, dip, spread, price_movement, volume, amount, $NF
               }')
 
@@ -606,25 +606,25 @@ function amount_to_buy_sell() {
                   DIP_AMD_NO_AMOUNT="$(echo "$DIP_ACTIVE_MARKET_DATA" | awk '{ print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23 }')"
 
                   # if data exist
-                  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -cw "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
+                  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -cw "$LISTING_CURRENCY/$DIP_MARKETS" || true)" -eq "1" ]] &>/dev/null; then
                     # reset old (active) order
-                    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+                    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
                     # update active order
                     echo "$DIP_ACTIVE_MARKET_DATA" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
                   fi
 
                   # if data exist
-                  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -cw "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
+                  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -cw "$LISTING_CURRENCY/$DIP_MARKETS" || true)" -eq "1" ]] &>/dev/null; then
                     # reset old (market) order
-                    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+                    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
                     # update market, disregard amount at end
                     echo "$DIP_AMD_NO_AMOUNT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
                   fi
 
                   # if data exist
-                  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -cw "$LISTING_CURRENCY/$REFERENCE_CURRENCY" || true)" -eq "1" ]] &>/dev/null; then
+                  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -cw "$LISTING_CURRENCY/$DIP_MARKETS" || true)" -eq "1" ]] &>/dev/null; then
                     # reset old (market.list) order
-                    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
+                    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
                     # update market.list, disregard amount at end
                     echo "$DIP_AMD_NO_AMOUNT" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market.list
                   fi
@@ -790,7 +790,7 @@ function remove_ghost_orders() {
   # oldest order by listing
   DIP_GHOST_LISTING="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | head -1 | awk '{ print $6 }')"
   # oldest order by reference
-  DIP_GHOST_REFERENCE="$REFERENCE_CURRENCY"
+  DIP_GHOST_REFERENCE="$DIP_MARKETS"
 
   # if any data
   if [[ -n "$DIP_GHOST_LISTING" && -n "$DIP_GHOST_REFERENCE" ]] &>/dev/null; then
@@ -903,8 +903,8 @@ function remove_ghost_orders() {
 ################################################################################
 
 # if no data, profit data exist
-if [[ -z "$REFERENCE_CURRENCY" && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
-  REFERENCE_CURRENCY="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $6 }' | head -1)"
+if [[ -z "$DIP_MARKETS" && -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
+  DIP_MARKETS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | awk '{ print $6 }' | head -1)"
 fi
 
 ################################################################################
@@ -993,7 +993,7 @@ function target_data() {
   # listing (target from above)
   LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $1 }')"
   # reference (market from above)
-  REFERENCE_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $2 }')"
+  DIP_MARKETS="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $2 }')"
 
   ##############################################################################
   ##############################################################################
@@ -1066,9 +1066,9 @@ function target_data() {
   # if dca enabled
   if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
     # if market dca is found
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
       # extra amount
-      DIP_TARGET_DCA="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $8 }' | tr -d '+')"
+      DIP_TARGET_DCA="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $8 }' | tr -d '+')"
       # increase target amount
       DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_AMOUNT+$DIP_TARGET_DCA" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
     fi
@@ -1076,19 +1076,19 @@ function target_data() {
     # if market has more than one active
     if [[ "$(cat "${SYS_DIR:?}"/robot/*"$EXCHANGE_API"*.active 2>/dev/null | grep -cw "$LISTING_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
       # if any data
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+      if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
         # remove obsolete dca
-        echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+        echo "$(grep -v "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
       fi
     fi
   fi
 
   # if any data
-  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]]; then
+  if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]]; then
     # last ask price check (trades)
-    DIP_TARGET_ASK_CHECK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+    DIP_TARGET_ASK_CHECK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$DIP_MARKETS".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
     # last ask price check (bought)
-    DIP_TARGET_QUEST_ASK_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+    DIP_TARGET_QUEST_ASK_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
     # if last buy price is greater than quest price
     if [[ "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
@@ -1097,7 +1097,7 @@ function target_data() {
     fi
 
     # bought price check (bought)
-    DIP_TARGET_BUY_IDE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".bought 2>/dev/null | awk '{ printf "%.9f\n", $10 }' | tr -d '.' | sed 's/^0*//')"
+    DIP_TARGET_BUY_IDE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${DIP_MARKETS:?}".bought 2>/dev/null | awk '{ printf "%.9f\n", $10 }' | tr -d '.' | sed 's/^0*//')"
     # sell price check (prices)
     DIP_TARGET_ASK_IDE_CHECK="$(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
 
@@ -1124,9 +1124,9 @@ function target_profit() {
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2 | tac)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
 
     # if any data
-    if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
       # efficient market (fast)
-      EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | awk '{ print $2 }')"
+      EFFICIENT_MARKET="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | awk '{ print $2 }')"
     fi
 
     # if zero
@@ -1140,9 +1140,9 @@ function target_profit() {
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 
     # if any data
-    if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
       # ineffective market (slow)
-      INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $2 }')"
+      INEFFECTIVE_MARKET="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below | awk '{ print $2 }')"
     fi
 
     # if zero
@@ -1165,13 +1165,13 @@ function target_profit() {
     ############################################################################
 
     # if data
-    if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    if [[ -n "$LISTING_CURRENCY" || -n "$DIP_MARKETS" ]] &>/dev/null; then
 
       # cleanup below file (wrong reference side)
-      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | egrep -v "$REFERENCE_CURRENCY/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+      echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above 2>/dev/null | egrep -v "$DIP_MARKETS/")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
 
       # if above (fast profits)
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
+      if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "1" ]] &>/dev/null; then
 
         # if efficient market are greater than n
         if [[ "$EFFICIENT_MARKET_CALCULATED" -gt "0" ]] &>/dev/null; then
@@ -1203,7 +1203,7 @@ function target_profit() {
           DIP_TOTAL_MARKET_DATA="$(echo "$EFFICIENT_MARKET_CALCULATED+$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
 
           # market above output (log)
-          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market above: x$DIP_TOTAL_MARKET_DATA - x${INEFFECTIVE_MARKET:?} = x${EFFICIENT_MARKET_CALCULATED:?} : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
+          DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Market above: x$DIP_TOTAL_MARKET_DATA - x${INEFFECTIVE_MARKET:?} = x${EFFICIENT_MARKET_CALCULATED:?} : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
 
           # if extra logs are set
           if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
@@ -1218,11 +1218,11 @@ function target_profit() {
     ############################################################################
 
     # if data
-    if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    if [[ -n "$LISTING_CURRENCY" || -n "$DIP_MARKETS" ]] &>/dev/null; then
 
       # if non existing (no profits yet)
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
-        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above || true)" -eq "0" ]] &>/dev/null; then
+        if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below || true)" -eq "0" ]] &>/dev/null; then
 
           # reference allocated decreased (first buy)
           DIP_ALLOCATED="0.10"
@@ -1236,7 +1236,7 @@ function target_profit() {
           fi
 
           # market first output (log)
-          DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Market first: x0 : $DIP_ALLOCATED_OUTPUT"
+          DIP_NEW_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Market first: x0 : $DIP_ALLOCATED_OUTPUT"
 
           # if extra logs are set
           if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
@@ -1255,19 +1255,19 @@ function target_profit() {
 function bought_sold_age() {
 
   # if not zero
-  if [[ ! -z "$LISTING_CURRENCY" || ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  if [[ ! -z "$LISTING_CURRENCY" || ! -z "$DIP_MARKETS" ]] &>/dev/null; then
 
     # if not found
-    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought ]] &>/dev/null; then
-      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought ]] &>/dev/null; then
+      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought &>/dev/null
     fi
     # if not found
-    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold ]] &>/dev/null; then
-      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+    if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold ]] &>/dev/null; then
+      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold &>/dev/null
     fi
 
     # bought file age (seconds)
-    DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
     # if zero
     if [[ -z "$DIP_BOUGHT_FILE_AGE_SECONDS" ]] &>/dev/null; then
@@ -1278,7 +1278,7 @@ function bought_sold_age() {
     DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
 
     # sold file age (seconds)
-    DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+    DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
     # if zero
     if [[ -z "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
@@ -1321,9 +1321,9 @@ function remove_old_dca() {
     # if file exist
     if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca ]] &>/dev/null; then
       # if listing, reference has value
-      if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      if [[ -n "$LISTING_CURRENCY" || -n "$DIP_MARKETS" ]] &>/dev/null; then
         # if listing, reference already exist as dca order
-        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+        if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
           # dip active file age (seconds)
           DIP_ACTIVE_FILE_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
           # if active file is old enough
@@ -1332,7 +1332,7 @@ function remove_old_dca() {
             ####################################################################
             ####################################################################
 
-            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
 
             ####################################################################
             ####################################################################
@@ -1347,27 +1347,27 @@ function remove_old_dca() {
 
 function cancel_DCA() {
   # if listing, reference has data
-  if [[ -n "$LISTING_CURRENCY" || -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  if [[ -n "$LISTING_CURRENCY" || -n "$DIP_MARKETS" ]] &>/dev/null; then
     # if dca exist
-    if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
       # if no order exist
-      if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)" -eq "0" ]] &>/dev/null; then
         # if no active exist
-        if [[ "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "0" ]] &>/dev/null; then
+        if [[ "$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -eq "0" ]] &>/dev/null; then
 
           ######################################################################
           ######################################################################
 
           # remove obsolete dca
-          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+          echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
 
           ######################################################################
           ######################################################################
 
           # if no_dca exist
-          if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -gt "1" ]] &>/dev/null; then
+          if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -gt "1" ]] &>/dev/null; then
             # remove old no_dca
-            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
+            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
           fi
         fi
       fi
@@ -1863,7 +1863,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   ##############################################################################
 
   # if listing, reference dont exist in orders
-  if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)" -eq "0" ]] &>/dev/null; then
     # remove old dca order
     remove_old_dca
   fi
@@ -1887,11 +1887,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # update target
     if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target || true)" -gt "0" ]] &>/dev/null; then
       # order status
-      if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -gt "0" ]] &>/dev/null; then
+      if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)" -gt "0" ]] &>/dev/null; then
         # if old order
-        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
+        if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
           # track old amount (listing)
-          DIP_BUY_AMOUNT_LISTING="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($26 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+          DIP_BUY_AMOUNT_LISTING="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($26 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
         fi
       fi
 
@@ -1906,7 +1906,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # if dca enabled
       if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
         # if order already been checked
-        if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -eq "0" ]] &>/dev/null; then
+        if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -eq "0" ]] &>/dev/null; then
           # if order already has balance (ruled by balance + decimal market)
           if [[ "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
 
@@ -1928,9 +1928,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 log_date
 
                 # order count (buy)
-                DIP_ORDER_BUY="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep -c "buy" || true)"
+                DIP_ORDER_BUY="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep -c "buy" || true)"
                 # order count (sell)
-                DIP_ORDER_SELL="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep -c "sell" || true)"
+                DIP_ORDER_SELL="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep -c "sell" || true)"
 
                 # if zero
                 if [[ -z "$DIP_ORDER_BUY" ]] &>/dev/null; then
@@ -1943,15 +1943,15 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 fi
 
                 # log dca balance output
-                DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: $LISTING_CURRENCY Has balance! $LISTING_BALANCE $LISTING_CURRENCY (${DIP_ORDER_BUY:?}b/${DIP_ORDER_SELL:?}s)"
+                DIP_TARGET_DCA_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: DCA: $LISTING_CURRENCY Has balance! $LISTING_BALANCE $LISTING_CURRENCY (${DIP_ORDER_BUY:?}b/${DIP_ORDER_SELL:?}s)"
                 echo "$DIP_TARGET_DCA_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
                 # log dca data output
-                DIP_TARGET_DCA_I_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA: +Target amount ${DIP_DCA_RAW:?}% -> +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY"
+                DIP_TARGET_DCA_I_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: DCA: +Target amount ${DIP_DCA_RAW:?}% -> +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY"
                 echo "$DIP_TARGET_DCA_I_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
                 # reset order (sell orders)
-                DIP_DCA_ORDER_ID="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':' | head -1)"
+                DIP_DCA_ORDER_ID="$(grep "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep "$DIP_MARKETS" | grep "sell" | awk '{ print $1 }' | tr -d ':' | head -1)"
 
                 # if xeggex cancelorder
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
@@ -1966,11 +1966,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 fi
 
                 # reset sold file (reset data, age)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold &>/dev/null
                 # reset sell_id file (reset data)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sell_id &>/dev/null
                 # reset selling file (reset data)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling &>/dev/null
 
                 # remove old dca order
                 remove_old_dca
@@ -1979,7 +1979,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                 ################################################################
 
                 # create/update dca list
-                echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_DEPOSITED_BALANCE $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+                echo "$LISTING_CURRENCY/$DIP_MARKETS Deposited: $LISTING_DEPOSITED_BALANCE $LISTING_CURRENCY DCA: ${DIP_DCA_RAW:?}% Extra: +$DIP_BUY_AMOUNT_LISTING_DCA $LISTING_CURRENCY $(date | xargs)" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
 
                 ################################################################
                 ################################################################
@@ -1987,12 +1987,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
               else
 
                 # log potential dca data output
-                DIP_TARGET_DCA_NO_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: DCA Potential: $LISTING_BALANCE $LISTING_CURRENCY on $DIP_ACTIVE_LISTING_DCA active markets."
+                DIP_TARGET_DCA_NO_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: DCA Potential: $LISTING_BALANCE $LISTING_CURRENCY on $DIP_ACTIVE_LISTING_DCA active markets."
                 echo "$DIP_TARGET_DCA_NO_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
                 # if no_dca market data
-                if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -gt "0" ]] &>/dev/null; then
+                if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca || true)" -gt "0" ]] &>/dev/null; then
                   # reset no_dca market
-                  echo "$(grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
+                  echo "$(grep -v "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
                 fi
               fi
             fi
@@ -2003,7 +2003,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             LISTING_DEPOSITED_BALANCE="0.000000000"
           fi
           # order has no balance (no_dca)
-          echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY Deposited: $LISTING_DEPOSITED_BALANCE $LISTING_CURRENCY Available: $LISTING_BALANCE $LISTING_CURRENCY NO DCA Available" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
+          echo "$LISTING_CURRENCY/$DIP_MARKETS Deposited: $LISTING_DEPOSITED_BALANCE $LISTING_CURRENCY Available: $LISTING_BALANCE $LISTING_CURRENCY NO DCA Available" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
           # format output, remove duplicates
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca 2>/dev/null | column -t | awk '!a[$1]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".no_dca
         fi
@@ -2012,9 +2012,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       ##########################################################################
 
       # if active order already exist
-      if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
+      if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
         # remove old (active) order
-        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+        echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
       fi
 
       ##########################################################################
@@ -2025,9 +2025,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       ##########################################################################
 
       # old order id (buy)
-      DIP_ORDER_ID_BUY="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
+      DIP_ORDER_ID_BUY="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$LISTING_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
       # quest order profit
-      DIP_LAST_ORDER_PROFIT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $NF }' | tr -d '%.' | sed 's/^0*//')"
+      DIP_LAST_ORDER_PROFIT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | tail -1 | awk '{ print $NF }' | tr -d '%.' | sed 's/^0*//')"
 
       # if zero
       if [[ -z "$DIP_LAST_ORDER_PROFIT_CHECK" ]] &>/dev/null; then
@@ -2057,7 +2057,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           ######################################################################
 
           # old order id (sell)
-          DIP_ORDER_ID_SELL="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
+          DIP_ORDER_ID_SELL="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$DIP_MARKETS" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
 
           # order id found
           if [[ -n "$DIP_ORDER_ID_SELL" ]] &>/dev/null; then
@@ -2089,7 +2089,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           log_date
 
           # log target update output (buy)
-          DIP_UPDATE_ORDER_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Updating (Buy) order: $DIP_ORDER_ID_BUY Age: $DIP_BOUGHT_AGE_OUTPUT"
+          DIP_UPDATE_ORDER_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Updating (Buy) order: $DIP_ORDER_ID_BUY Age: $DIP_BOUGHT_AGE_OUTPUT"
           echo "$DIP_UPDATE_ORDER_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
           # order id found
@@ -2097,7 +2097,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             # use a while loop to read each line of the string into the variable order_id
             echo "$DIP_ORDER_ID_SELL" | while IFS= read -r ORDER_ID; do
               # log target update output (sell)
-              DIP_UPDATE_ORDER_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Updating (Sell) order: $DIP_ORDER_ID_SELL Age: $DIP_BOUGHT_AGE_OUTPUT"
+              DIP_UPDATE_ORDER_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Updating (Sell) order: $DIP_ORDER_ID_SELL Age: $DIP_BOUGHT_AGE_OUTPUT"
               echo "$DIP_UPDATE_ORDER_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
             done
           fi
@@ -2152,7 +2152,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     ############################################################################
 
     # log target output
-    DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Found: $POTENTIAL_MARKET_COUNT Dip: $POTENTIAL_MARKET_AVERAGE_DIP Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}% Price Movement: ${POTENTIAL_MARKET_AVERAGE_MOVEMENT:?}%"
+    DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Found: $POTENTIAL_MARKET_COUNT Dip: $POTENTIAL_MARKET_AVERAGE_DIP Spread: ${POTENTIAL_MARKET_AVERAGE_SPREAD:?}% Price Movement: ${POTENTIAL_MARKET_AVERAGE_MOVEMENT:?}%"
     echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
     ############################################################################
@@ -2162,7 +2162,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     # amount of order filled (sold)
     DIP_LEFTOVER_FILLED_AMOUNT="$ORDER_SOLD_QUANTITY"
     # target amount (bought)
-    DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+    DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
 
     # if zero
     if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" ]] &>/dev/null; then
@@ -2185,17 +2185,17 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     ############################################################################
 
     # active target status
-    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -gt "0" ]] &>/dev/null; then
+    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)" -gt "0" ]] &>/dev/null; then
 
       log_date
 
       # buy order count
-      DIP_BUY_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "buy" || true)"
+      DIP_BUY_ORDER_COUNT="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "buy" || true)"
       # sell order count
-      DIP_SELL_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
+      DIP_SELL_ORDER_COUNT="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
 
       # log target output
-      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Active Target: $DIP_BOUGHT_AGE_OUTPUT F: ${DIP_LEFTOVER_FILLED:?}% D: $DIP_TARGET_DIP S: $DIP_TARGET_SPREAD PM: $DIP_TARGET_PRICE_MOVEMENT B/S: $DIP_BUY_ORDER_COUNT/$DIP_SELL_ORDER_COUNT"
+      DIP_MARKET_FOUND_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Active Target: $DIP_BOUGHT_AGE_OUTPUT F: ${DIP_LEFTOVER_FILLED:?}% D: $DIP_TARGET_DIP S: $DIP_TARGET_SPREAD PM: $DIP_TARGET_PRICE_MOVEMENT B/S: $DIP_BUY_ORDER_COUNT/$DIP_SELL_ORDER_COUNT"
       echo "$DIP_MARKET_FOUND_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
     fi
 
@@ -2210,10 +2210,10 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       log_date
 
       # log max orders output
-      DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Reached max open orders! $DIP_ORDERS_FILE_COUNT/$DIP_MAX_ORDERS"
+      DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Reached max open orders! $DIP_ORDERS_FILE_COUNT/$DIP_MAX_ORDERS"
       echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
       # log removing output
-      DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$REFERENCE_CURRENCY :: Removing old order! ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_ID $DIP_OLDEST_ORDER_SPREAD"
+      DIP_MAX_ORDERS_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : All/$DIP_MARKETS :: Removing old order! ${DIP_OLDEST_ORDER_LISTING:?}/${DIP_OLDEST_ORDER_REFERENCE:?} $DIP_OLDEST_ORDER_ID $DIP_OLDEST_ORDER_SPREAD"
       echo "$DIP_MAX_ORDERS_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
       # order id found
@@ -2250,11 +2250,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     fi
 
     # if zero
-    if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
       # target symbol
       DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
       # reference (market from above)
-      REFERENCE_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $2 }')"
+      DIP_MARKETS="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $2 }')"
     fi
 
     ############################################################################
@@ -2263,7 +2263,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     DIP_MIN_SPREAD_CHECK="$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')"
 
     # if any orders with reference, listing currency does not exist, not removed
-    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" && "$DIP_REMOVED" == "0" ]] &>/dev/null; then
+    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)" -eq "0" && "$DIP_REMOVED" == "0" ]] &>/dev/null; then
       # if profit is greater or equal than minimum spread
       if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -ge "$DIP_MIN_SPREAD_CHECK" ]] &>/dev/null; then
         # has buying power (balance)
@@ -2277,9 +2277,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # if xeggex order
           if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
             # CreateOrder market ###############################################
-            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$DIP_BUY_AMOUNT_LISTING" "$DIP_TARGET_BID" "false")"
+            PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$DIP_MARKETS" "buy" "limit" "$DIP_BUY_AMOUNT_LISTING" "$DIP_TARGET_BID" "false")"
             # debug line #######################################################
-            echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY buy limit $DIP_BUY_AMOUNT_LISTING $DIP_TARGET_BID false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+            echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$DIP_MARKETS buy limit $DIP_BUY_AMOUNT_LISTING $DIP_TARGET_BID false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
             ####################################################################
             sleep 1
           fi
@@ -2287,9 +2287,9 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # if nonkyc order
           if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
             # CreateOrder market ###############################################
-            PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$DIP_BUY_AMOUNT_LISTING" "$DIP_TARGET_BID" "false")"
+            PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$DIP_MARKETS" "buy" "limit" "$DIP_BUY_AMOUNT_LISTING" "$DIP_TARGET_BID" "false")"
             # debug line #######################################################
-            echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY buy limit $DIP_BUY_AMOUNT_LISTING $DIP_TARGET_BID false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+            echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$DIP_MARKETS buy limit $DIP_BUY_AMOUNT_LISTING $DIP_TARGET_BID false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
             ####################################################################
             sleep 1
           fi
@@ -2300,7 +2300,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           tx_id
 
           # track amount being bought
-          echo "$LOG_DATE : Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for ($DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY) @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }') Price -> Quest: Selling @ $(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }') Price for ($DIP_GET_AMOUNT_REFERENCE $REFERENCE_CURRENCY) Earning: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}%" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
+          echo "$LOG_DATE : Buying $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for ($DIP_BUY_AMOUNT_REFERENCE $DIP_MARKETS) @ $(echo "$DIP_TARGET_BID" | awk '{ printf "%.9f\n", $1 }') Price -> Quest: Selling @ $(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }') Price for ($DIP_GET_AMOUNT_REFERENCE $DIP_MARKETS) Earning: $DIP_GET_AMOUNT_PROFIT $DIP_MARKETS ${DIP_GET_RATIO_PROFIT:?}%" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought
 
           # target file age (seconds)
           DIP_TARGET_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
@@ -2316,22 +2316,22 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           log_date
 
           # profit output (log)
-          DIP_BUY_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Gains: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY -> ${DIP_GET_RATIO_PROFIT:?}%"
+          DIP_BUY_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Gains: $DIP_GET_AMOUNT_PROFIT $DIP_MARKETS -> ${DIP_GET_RATIO_PROFIT:?}%"
           echo "$DIP_BUY_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           # buying output (log)
-          DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buy $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+          DIP_BUY_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Buy $DIP_BUY_AMOUNT_LISTING $LISTING_CURRENCY for $DIP_BUY_AMOUNT_REFERENCE $DIP_MARKETS"
           echo "$DIP_BUY_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           # buy output (trade history)
-          DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : buy :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?}% $DIP_TARGET_FILE_AGE"
+          DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : buy :: $LISTING_CURRENCY/$DIP_MARKETS :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?}% $DIP_TARGET_FILE_AGE"
           echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
           # balance output (log)
-          DIP_SELL_BALANCE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Balance: $LISTING_BALANCE $LISTING_CURRENCY / $REFERENCE_BALANCE $REFERENCE_CURRENCY"
+          DIP_SELL_BALANCE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Balance: $LISTING_BALANCE $LISTING_CURRENCY / $REFERENCE_BALANCE $DIP_MARKETS"
           echo "$DIP_SELL_BALANCE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
           # reset sold file (reset data, age)
-          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold &>/dev/null
           # reset selling file (reset data)
-          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling &>/dev/null
 
           # remove duplicates
           echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
@@ -2369,15 +2369,15 @@ target_order_status
 ################################################################################
 
 # if bought data has negative profit
-if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | awk '{ print $NF }' | grep -c "-" || true)" -gt "0" ]] &>/dev/null; then
+if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }' | grep -c "-" || true)" -gt "0" ]] &>/dev/null; then
   # reset bought file
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought &>/dev/null
 fi
 
 ################################################################################
 
 # if listing, reference dont exist in orders
-if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)" -eq "0" ]] &>/dev/null; then
   # remove old dca order
   remove_old_dca
 fi
@@ -2466,7 +2466,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # total active dip
-  DIP_ACTIVE_FILE_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
+  DIP_ACTIVE_FILE_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$DIP_MARKETS" | awk '{ print $13 }' | awk '{ SUM += $1} END { print SUM }')"
 
   ##############################################################################
 
@@ -2481,7 +2481,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # top active dip
-  DIP_ACTIVE_TOP_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | awk '{ print $13 }' | sort -n | head -1)"
+  DIP_ACTIVE_TOP_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$DIP_MARKETS" | awk '{ print $13 }' | sort -n | head -1)"
   # top dip data
   DIP_TOP_ACTIVE_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w -- "$DIP_ACTIVE_TOP_DIP" | head -1 || true)"
   # top dip market
@@ -2492,7 +2492,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # low active dip
-  DIP_ACTIVE_LOW_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | awk '{ print $13 }' | sort -n | tail -1)"
+  DIP_ACTIVE_LOW_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$DIP_MARKETS" | awk '{ print $13 }' | sort -n | tail -1)"
   # low dip data
   DIP_LOW_ACTIVE_DIP="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w -- "$DIP_ACTIVE_LOW_DIP" | head -1 || true)"
   # low dip market
@@ -2503,7 +2503,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # total active spread
-  DIP_ACTIVE_FILE_SPREAD="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
+  DIP_ACTIVE_FILE_SPREAD="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$DIP_MARKETS" | awk '{ print $16 }' | awk '{ SUM += $1} END { print SUM }')"
 
   ##############################################################################
 
@@ -2528,9 +2528,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # top active profit (spread)
-  DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | awk '{ print $16 }' | sort -n | tail -1)"
+  DIP_ACTIVE_TOP_PROFIT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$DIP_MARKETS" | awk '{ print $16 }' | sort -n | tail -1)"
   # top profit (spread) data
-  DIP_SPECIFIC_PROFIT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -w -- "$DIP_ACTIVE_TOP_PROFIT" || true)"
+  DIP_SPECIFIC_PROFIT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | grep -w "$DIP_MARKETS" | grep -w -- "$DIP_ACTIVE_TOP_PROFIT" || true)"
   # top profit (spread) market
   DIP_TOP_PROFIT="$(echo "$DIP_SPECIFIC_PROFIT" 2>/dev/null | awk '{ print $1}' | tr -d ':' | head -1)"
   # top profit (spread) amount
@@ -2539,9 +2539,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # lowest active profit (spread)
-  DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | awk '{ print $6 }' | tr -d '%' | sort -n | head -1)"
+  DIP_ACTIVE_LOW_PROFIT="$(echo "$CAT_POOL_FILE" 2>/dev/null | grep -w "$DIP_MARKETS" | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | awk '{ print $6 }' | tr -d '%' | sort -n | head -1)"
   # lowest profit (spread) data
-  DIP_LOW_ACTIVE_PROFIT="$(echo "$CAT_POOL_FILE" 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -w -- "$DIP_ACTIVE_LOW_PROFIT" || true)"
+  DIP_LOW_ACTIVE_PROFIT="$(echo "$CAT_POOL_FILE" 2>/dev/null | grep -w "$DIP_MARKETS" | grep -w -- "$DIP_ACTIVE_LOW_PROFIT" || true)"
   # lowest profit (spread) market
   DIP_LOW_PROFIT="$(echo "$DIP_LOW_ACTIVE_PROFIT" 2>/dev/null | awk '{ print $3}' | tr -d ':' | head -1)"
   # lowest profit (spread) amount
@@ -2623,7 +2623,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # total order time (hours)
-  DIP_ACTIVE_FILE_TOTAL_TIME="$(echo "$CAT_POOL_FILE" | grep "/$REFERENCE_CURRENCY" | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | awk '{ print $NF }' | awk -Fh '{ print $1 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.0f\n", $1 }')"
+  DIP_ACTIVE_FILE_TOTAL_TIME="$(echo "$CAT_POOL_FILE" | grep "/$DIP_MARKETS" | grep "$STRATEGY_TYPE" | grep "$EXCHANGE_API" | awk '{ print $NF }' | awk -Fh '{ print $1 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.0f\n", $1 }')"
   # calculate average order age
   DIP_ACTIVE_FILE_AVERAGE_TIME="$(echo "$DIP_ACTIVE_FILE_TOTAL_TIME/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null)"
   # calculate average order age into seconds
@@ -2708,7 +2708,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # total sum (confirmed sell)
-  DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | sed '/^$/d')"
+  DIP_TOTAL_SOLD_SUM="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | sed '/^$/d')"
 
   # if zero, equals zero
   if [[ -z "$DIP_TOTAL_SOLD_SUM" || "$DIP_TOTAL_SOLD_SUM" -eq "0" ]] &>/dev/null; then
@@ -2718,7 +2718,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # dca status
-  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+  if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
     # use target amount
     DIP_LEFTOVER_SOLD="$(echo "$DIP_TARGET_AMOUNT" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
   else
@@ -2774,11 +2774,11 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # buy order count
-  DIP_BUY_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "buy" || true)"
+  DIP_BUY_ORDER_COUNT="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "buy" || true)"
   # sell order count
-  DIP_SELL_ORDER_COUNT="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
+  DIP_SELL_ORDER_COUNT="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" 2>/dev/null | grep -c "sell" || true)"
   # total order check
-  DIP_TOTAL_ORDER_CHECK="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -c "$REFERENCE_CURRENCY" 2>/dev/null || true)"
+  DIP_TOTAL_ORDER_CHECK="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -c "$DIP_MARKETS" 2>/dev/null || true)"
 
   # if zero
   if [[ -z "$DIP_BUY_ORDER_COUNT" ]] &>/dev/null; then
@@ -2816,9 +2816,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # active check
-  DIP_CHECK_ACTIVE="$(grep -w "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$REFERENCE_CURRENCY" || true)"
+  DIP_CHECK_ACTIVE="$(grep -w "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active | grep -c "$DIP_MARKETS" || true)"
   # orders check
-  DIP_CHECK_ORDERS="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$REFERENCE_CURRENCY" || true)"
+  DIP_CHECK_ORDERS="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)"
 
   # default
   DIP_BS_STATUS="Working"
@@ -2854,7 +2854,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # dca status
-  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+  if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
     DIP_DCA_STATUS="(DCA)"
   fi
 
@@ -2908,7 +2908,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   ##############################################################################
 
   # status output (log)
-  DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $DIP_BS_STATUS - $DIP_DCA_STATUS Dip: ${DIP_TARGET_DIP:?}% Spread: ${DIP_TARGET_SPREAD:?}% Age: $DIP_BOUGHT_AGE_OUTPUT ${DIP_MAX_BUY_AGE_OUTPUT:?}/${DIP_MAX_SELL_AGE_OUTPUT:?}"
+  DIP_ACTIVE_CHECK_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: $DIP_BS_STATUS - $DIP_DCA_STATUS Dip: ${DIP_TARGET_DIP:?}% Spread: ${DIP_TARGET_SPREAD:?}% Age: $DIP_BOUGHT_AGE_OUTPUT ${DIP_MAX_BUY_AGE_OUTPUT:?}/${DIP_MAX_SELL_AGE_OUTPUT:?}"
   echo "$DIP_ACTIVE_CHECK_OUTPUT" | xargs >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
   ##############################################################################
@@ -2946,7 +2946,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     ############################################################################
 
     # total selling amount
-    DIP_TOTAL_SELLING="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $3 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+    DIP_TOTAL_SELLING="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$DIP_MARKETS" | grep "sell" | awk '{ print $3 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
 
     # calculate percentage of order size
     DIP_LEFTOVER_SIZE=$(awk "BEGIN { result = 100 / $DIP_TARGET_AMOUNT * $LISTING_BALANCE; printf \"%.9f\", (result > 100 ? 100 : result) }" | awk '{ printf "%.9f\n", $1 }')
@@ -2982,9 +2982,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     fi
 
     # amount of order filled (sold)
-    DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
+    DIP_LEFTOVER_FILLED_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }')"
     # target amount (bought)
-    DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+    DIP_TARGET_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
 
     # if zero, equals zero
     if [[ -z "$DIP_LEFTOVER_FILLED_AMOUNT" || "$DIP_LEFTOVER_FILLED_AMOUNT" -eq "0" ]] &>/dev/null; then
@@ -3021,7 +3021,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     DIP_LEFTOVER_TOTAL_CHECK="$(echo "${DIP_LEFTOVER_SIZE_OUTPUT:?}+${DIP_LEFTOVER_TOTAL:?}+${DIP_LEFTOVER_FILLED:?}" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
 
     # if percentage of total orders has not reached 100%, if not greater than 100, if DCA
-    if [[ "$DIP_LEFTOVER_TOTAL_CHECK" -lt "101" || "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
+    if [[ "$DIP_LEFTOVER_TOTAL_CHECK" -lt "101" || "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -gt "0" ]] &>/dev/null; then
       # if order has no losses (negative symbol) & greater than 0 & is not 100
       if [[ "$(echo "$DIP_SELL_AMOUNT_PROFIT" | grep -c "-" || true)" -eq "0" && ! "$DIP_LEFTOVER_FILLED" == "100" && "$(echo "$LISTING_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
@@ -3060,9 +3060,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
               # if xeggex order
               if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                 # CreateOrder limit ############################################
-                PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
+                PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$DIP_MARKETS" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
                 # debug line ###################################################
-                echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell limit $LISTING_BALANCE $DIP_TARGET_ASK false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$DIP_MARKETS sell limit $LISTING_BALANCE $DIP_TARGET_ASK false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                 ################################################################
                 sleep 1
               fi
@@ -3070,9 +3070,9 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
               # if nonkyc order
               if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
                 # CreateOrder limit ############################################
-                PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
+                PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$DIP_MARKETS" "sell" "limit" "$LISTING_BALANCE" "$DIP_TARGET_ASK" "false")"
                 # debug line ###################################################
-                echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell limit $LISTING_BALANCE $DIP_TARGET_ASK false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$DIP_MARKETS sell limit $LISTING_BALANCE $DIP_TARGET_ASK false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                 ################################################################
                 sleep 1
               fi
@@ -3083,16 +3083,16 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
               tx_id
 
               # selling output (log)
-              DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $REFERENCE_CURRENCY"
+              DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Sell $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $DIP_MARKETS"
               echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               # filled output (log)
-              DIP_FILLED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Sell ${DIP_LEFTOVER_SIZE_OUTPUT:?}% Selling: ${DIP_LEFTOVER_TOTAL:?}% Filled: ${DIP_LEFTOVER_FILLED:?}%"
+              DIP_FILLED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Sell ${DIP_LEFTOVER_SIZE_OUTPUT:?}% Selling: ${DIP_LEFTOVER_TOTAL:?}% Filled: ${DIP_LEFTOVER_FILLED:?}%"
               echo "$DIP_FILLED_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               # profit output (log)
-              DIP_SELL_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Gains: $DIP_SELL_AMOUNT_PROFIT $REFERENCE_CURRENCY -> ${DIP_GET_RATIO_PROFIT:?}%"
+              DIP_SELL_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Gains: $DIP_SELL_AMOUNT_PROFIT $DIP_MARKETS -> ${DIP_GET_RATIO_PROFIT:?}%"
               echo "$DIP_SELL_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               # balance output (log)
-              DIP_SELL_BALANCE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Balance: $LISTING_BALANCE $LISTING_CURRENCY / $REFERENCE_BALANCE $REFERENCE_CURRENCY"
+              DIP_SELL_BALANCE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Balance: $LISTING_BALANCE $LISTING_CURRENCY / $REFERENCE_BALANCE $DIP_MARKETS"
               echo "$DIP_SELL_BALANCE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
               # it was selling
@@ -3110,9 +3110,9 @@ fi
 # if above n when selling
 if [[ "$(echo "$DIP_LEFTOVER_SIZE_OUTPUT" | awk -F. '{ print $1 }')" -gt "99" || "$(echo "$DIP_LEFTOVER_TOTAL" | awk -F. '{ print $1 }')" -gt "99" || "$(echo "$DIP_LEFTOVER_FILLED" | awk -F. '{ print $1 }')" -gt "99" || "$DIP_LEFTOVER_FILLED" > "99" ]] &>/dev/null; then
   # if missing
-  if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing || true)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing || true)" -eq "0" ]] &>/dev/null; then
     # update missing
-    echo "$LISTING_CURRENCY/$REFERENCE_CURRENCY" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
+    echo "$LISTING_CURRENCY/$DIP_MARKETS" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
     # format correctly
     echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing | xargs 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
   fi
@@ -3181,12 +3181,12 @@ if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
       if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
         if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
           # data exist
-          if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+          if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
 
             # if specific market exist in orders file (buy)
-            if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
+            if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$DIP_MARKETS" | grep -c "buy" || true)" -eq "1" ]] &>/dev/null; then
               # old order id (buy)
-              DIP_ORDER_ID_BUY="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
+              DIP_ORDER_ID_BUY="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$DIP_MARKETS" | grep "buy" | awk '{ print $1 }' | tr -d ':' | head -1)"
               # order id found
               if [[ -n "$DIP_ORDER_ID_BUY" ]] &>/dev/null; then
 
@@ -3205,9 +3205,9 @@ if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
                 # remove old order
                 echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -v "$DIP_ORDER_ID_BUY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders
                 # if specific market dont exist in orders file (sell)
-                if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -c "sell" || true)" -eq "0" ]] &>/dev/null; then
+                if [[ "$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -c "sell" || true)" -eq "0" ]] &>/dev/null; then
                   # remove old (active) order (buy & sell does not exist)
-                  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+                  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
                 fi
                 log_date
                 # order n greater than n
@@ -3221,14 +3221,14 @@ if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
                 reset_active_market_list
 
                 # reset sold file (reset data, age)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold &>/dev/null
                 # reset selling file (reset data)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling &>/dev/null
                 # reset sell_id file (reset data)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sell_id &>/dev/null
 
                 # removing buy order output (log)
-                DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing buy order: ${DIP_ORDER_ID_BUY:0:9}$DIP_ORDER_ID_BUY_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
+                DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing buy order: ${DIP_ORDER_ID_BUY:0:9}$DIP_ORDER_ID_BUY_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
                 echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
                 # it was removed
@@ -3259,13 +3259,13 @@ if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
       if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
         if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS" ]] &>/dev/null; then
           # data exist
-          if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+          if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
 
             # if specific market exist in orders file (sell)
-            if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | grep -c "sell" || true)" -gt "0" ]] &>/dev/null; then
+            if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$DIP_MARKETS" | grep -c "sell" || true)" -gt "0" ]] &>/dev/null; then
 
               # old order id (sell)
-              DIP_ORDER_ID_SELL="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$REFERENCE_CURRENCY" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
+              DIP_ORDER_ID_SELL="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$DIP_MARKETS" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
 
               # order id found
               if [[ -n "$DIP_ORDER_ID_SELL" ]] &>/dev/null; then
@@ -3294,9 +3294,9 @@ if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
                 done
 
                 # if specific market dont exist in orders file (buy)
-                if [[ "$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -c "buy" || true)" -eq "0" ]] &>/dev/null; then
+                if [[ "$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -c "buy" || true)" -eq "0" ]] &>/dev/null; then
                   # remove old (active) order (buy & sell does not exist)
-                  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
+                  echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active
                 fi
 
                 log_date
@@ -3312,16 +3312,16 @@ if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
                 reset_active_market_list
 
                 # reset sold file (reset data, age)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold &>/dev/null
                 # reset selling file (reset data)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling &>/dev/null
                 # reset sell_id file (reset data)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sell_id &>/dev/null
 
                 # use a while loop to read each line of the string into the variable order_id
                 echo "$DIP_ORDER_ID_SELL" | while IFS= read -r ORDER_ID; do
                   # removing sell order output (log)
-                  DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing sell order: ${ORDER_ID:0:9}$DIP_ORDER_ID_SELL_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
+                  DIP_ANCIENT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing sell order: ${ORDER_ID:0:9}$DIP_ORDER_ID_SELL_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
                   echo "$DIP_ANCIENT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
                 done
 
@@ -3343,32 +3343,32 @@ fi
 bought_sold_age
 
 # if still selling, wait
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
+if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
   # if sold, wait
-  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
     # if any data, not selling
     if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" && "$DIP_SELLING" == "0" ]] &>/dev/null; then
       # if older than n seconds
       if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
         if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$(echo "$DIP_MAX_BUY_AGE_SECONDS+3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]] &>/dev/null; then
           # data exist
-          if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+          if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
             # if specific market does not exist in orders file
-            if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$REFERENCE_CURRENCY" | egrep -c "sell|buy" || true)" -eq "0" ]] &>/dev/null; then
+            if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$DIP_MARKETS" | egrep -c "sell|buy" || true)" -eq "0" ]] &>/dev/null; then
               # if specific market does exist in active file
-              if [[ "$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)" -eq "1" ]] &>/dev/null; then
+              if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null || true)" -eq "1" ]] &>/dev/null; then
 
                 # removing active order output (log)
-                DIP_OLD_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (No orders) Age: $DIP_BOUGHT_AGE_OUTPUT"
+                DIP_OLD_ACTIVE_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing order from pool. (No orders) Age: $DIP_BOUGHT_AGE_OUTPUT"
                 echo "$DIP_OLD_ACTIVE_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
                 # reset active
                 reset_active_market_list
 
                 # if any data
-                if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
+                if [[ "$(grep -wc "$LISTING_CURRENCY/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
                   # remove failed order (orders)
-                  echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
+                  echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
                 fi
 
                 # pause no order market (listing)
@@ -3398,40 +3398,40 @@ target_order_status
 DIP_SOLD="0"
 
 # active target
-DIP_ACTIVE_TARGET="$(grep -c "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
+DIP_ACTIVE_TARGET="$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
 
 # if zero minutes
 if [[ "$DIP_BOUGHT_AGE_OUTPUT" == "0m" ]] &>/dev/null; then
   # skip
   DIP_ACTIVE_TARGET="0"
   # reset sold file (reset data, age)
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold &>/dev/null
   # reset selling file (reset data)
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling &>/dev/null
   # reset sell_id file (reset data)
-  truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+  truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sell_id &>/dev/null
 fi
 
 # if any listing and reference data available
-if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
   # target bought data
-  DIP_TARGET_BOUGHT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | sed '/^$/d')"
+  DIP_TARGET_BOUGHT_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | sed '/^$/d')"
 fi
 
 # selling status
-LOG_SELLING_STATUS="$(tail -11 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "Selling" || true)"
+LOG_SELLING_STATUS="$(tail -11 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep -c "Selling" || true)"
 
 # if target has bought data
 if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
   # if target is active
   if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
     # if target has not already sold
-    if [[ "$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | egrep "Buy |Sell |Sold" | tail -1 | grep -c "Sold" || true)" -eq "0" ]] &>/dev/null; then
+    if [[ "$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | egrep "Buy |Sell |Sold" | tail -1 | grep -c "Sold" || true)" -eq "0" ]] &>/dev/null; then
 
       # if data
-      if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
         # if no orders exist
-        if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -wc "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+        if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -wc "$DIP_MARKETS" || true)" -eq "0" ]] &>/dev/null; then
           # if not a new buy
           if [[ "$BUY_TRADES_STATUS" -eq "0" ]] &>/dev/null; then
             # if not recently selling
@@ -3442,16 +3442,16 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
               ##################################################################
 
               # total sum check (confirmed sold)
-              DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
+              DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
 
               # if zero
               if [[ -z "$DIP_TOTAL_SOLD_FILE_CHECK" ]] &>/dev/null; then
                 # total sum check (confirmed sold)
-                DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
+                DIP_TOTAL_SOLD_FILE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
               fi
 
               # target bought amount check
-              TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
+              TARGET_BOUGHT_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought | tail -1 | awk '{ print $4 }' | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
 
               ##################################################################
 
@@ -3465,11 +3465,11 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
                 # if zero
                 if [[ -z "$DIP_GET_AMOUNT_PROFIT" || -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
                   # if bought data exist
-                  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
+                  if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | sed '/^$/d' | wc -l)" -gt "0" ]] &>/dev/null; then
                     # use original percentage value from bought data
-                    DIP_GET_RATIO_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $NF }' | tr -d '%')"
+                    DIP_GET_RATIO_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $NF }' | tr -d '%')"
                     # use original get amount value from bought data
-                    DIP_GET_AMOUNT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $22 }')"
+                    DIP_GET_AMOUNT_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | tail -1 | sed '/^$/d' | awk '{ print $22 }')"
                   fi
                 fi
 
@@ -3491,38 +3491,38 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
                 ################################################################
 
                 # sell output (trade history)
-                DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$REFERENCE_CURRENCY :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_FILE_AGE"
+                DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : sell :: $LISTING_CURRENCY/$DIP_MARKETS :: $LISTING_BALANCE $REFERENCE_BALANCE ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_FILE_AGE"
                 echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
                 # cleanup output (log)
-                DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (Sold) Age: $DIP_BOUGHT_AGE_OUTPUT"
+                DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing order from pool. (Sold) Age: $DIP_BOUGHT_AGE_OUTPUT"
                 echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
                 # profit output (log)
-                DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Profit: $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% after $DIP_BOUGHT_AGE_OUTPUT_AFTER"
+                DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Profit: $DIP_GET_AMOUNT_PROFIT $DIP_MARKETS ${DIP_GET_RATIO_PROFIT:?}% after $DIP_BOUGHT_AGE_OUTPUT_AFTER"
                 echo "$DIP_SOLD_PROFIT_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
                 # track profit
-                echo "$LOG_DATE : $LISTING_CURRENCY/$REFERENCE_CURRENCY > $DIP_GET_AMOUNT_PROFIT $REFERENCE_CURRENCY ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_AGE_OUTPUT_AFTER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
+                echo "$LOG_DATE : $LISTING_CURRENCY/$DIP_MARKETS > $DIP_GET_AMOUNT_PROFIT $DIP_MARKETS ${DIP_GET_RATIO_PROFIT:?}% $DIP_BOUGHT_AGE_OUTPUT_AFTER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>>"${LOG_ERROR:?}"
                 # column file
                 echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | column -t)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit
 
                 # remove duplicates
                 echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}" | awk '!a[$0]++')" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
                 # reset sold file (reset data, age)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold &>/dev/null
                 # reset selling file (reset data)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling &>/dev/null
                 # reset sell_id file (reset data)
-                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+                truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sell_id &>/dev/null
 
                 # reset active
                 reset_active_market_list
 
                 # if any trade data
-                if [[ -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades ]] &>/dev/null; then
+                if [[ -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"${DIP_MARKETS:?}".trades ]] &>/dev/null; then
 
                   function get_trades_data {
                     # get trades data
-                    LISTING_TRADES=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades 2>/dev/null)
+                    LISTING_TRADES=$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"${DIP_MARKETS:?}".trades 2>/dev/null)
                     # extract last buy order ID from trades file
                     BUY_TRADES_ID=$(echo "$LISTING_TRADES" | grep "buy" | head -1 | awk '{ print $1 }' | tr -d ':')
                   }
@@ -3539,7 +3539,7 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
                   fi
 
                   # keep old buy id after it was sold
-                  echo "$BUY_TRADES_ID" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".buy_id
+                  echo "$BUY_TRADES_ID" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY:?}"_"${DIP_MARKETS:?}".buy_id
                 fi
 
                 # it was sold
@@ -3566,19 +3566,19 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
 
   function reset_sell_data {
     # reset sold file (reset data, age)
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold &>/dev/null
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold &>/dev/null
     # reset sell_id file (reset data)
-    truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sell_id &>/dev/null
+    truncate -s 0 "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sell_id &>/dev/null
     # reset selling file (reset data)
-    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling &>/dev/null
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling &>/dev/null
   }
 
   time_and_profit
 
   # bought file age (seconds)
-  DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # sold file age (seconds)
-  DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # listing balance, available check (without decimal)
   DIP_LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
 
@@ -3588,18 +3588,18 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
   fi
 
   # sell id status
-  DIP_SELL_ID_STATUS="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sell_id 2>/dev/null | awk '{ print $1 }')"
+  DIP_SELL_ID_STATUS="$(wc -l "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$DIP_MARKETS".sell_id 2>/dev/null | awk '{ print $1 }')"
 
   # if old data (already sold), if not a new buy
-  if [[ "$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
-    if [[ "$(tail -101 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep "Buy" | grep -c "for" || true)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
+    if [[ "$(tail -101 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep "Buy" | grep -c "for" || true)" -eq "0" ]] &>/dev/null; then
       reset_sell_data
       DIP_SELL_ID_STATUS="0"
     fi
   fi
 
   # if data is missing (bought)
-  if [[ "$(grep "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(grep "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought | grep -c "$DIP_MARKETS" || true)" -eq "0" ]] &>/dev/null; then
     DIP_SELL_ID_STATUS="0"
   fi
 
@@ -3616,7 +3616,7 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
       ##########################################################################
 
       # dip target data
-      DIP_TARGET_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '_' ' ' | tr '/' ' ' | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1,$2]++')"
+      DIP_TARGET_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* 2>/dev/null | tr '_' ' ' | tr '/' ' ' | grep -w "$LISTING_CURRENCY" | grep -w "$DIP_MARKETS" | awk '!a[$1,$2]++')"
       DIP_TARGET_DATA_BID="$(echo "$DIP_TARGET_DATA" | awk '{ print $3 }')"
       DIP_TARGET_DATA_ASK="$(echo "$DIP_TARGET_DATA" | awk '{ print $4 }')"
       DIP_TARGET_DATA_LAST="$(echo "$DIP_TARGET_DATA" | awk '{ print $5 }')"
@@ -3634,16 +3634,16 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
       fi
 
       # if old data (already sold), if not a new buy
-      if [[ "$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
-        if [[ "$(tail -101 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" | grep "Buy" | grep -c "for" || true)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(tail -100 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep -c "(Sold)" || true)" -eq "1" ]] &>/dev/null; then
+        if [[ "$(tail -101 "${LOG_DIR:?}"/leeloo/robot.log | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep "Buy" | grep -c "for" || true)" -eq "0" ]] &>/dev/null; then
           reset_sell_data
           # if zero
           if [[ -z "$LISTING_CURRENCY" ]] &>/dev/null; then
             LISTING_CURRENCY="null"
           fi
           # if zero
-          if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-            REFERENCE_CURRENCY="null"
+          if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
+            DIP_MARKETS="null"
           fi
           # if zero
           if [[ -z "$DIP_BOUGHT_AGE_OUTPUT" ]] &>/dev/null; then
@@ -3655,7 +3655,7 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
       fi
 
       # if data is missing (bought)
-      if [[ "$(grep "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought | grep -c "$REFERENCE_CURRENCY" || true)" -eq "0" ]] &>/dev/null; then
+      if [[ "$(grep "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought | grep -c "$DIP_MARKETS" || true)" -eq "0" ]] &>/dev/null; then
         reset_sell_data
         DIP_DATA_MISSING="1"
         DIP_TARGET_SPREAD_OUTPUT="Missing data"
@@ -3664,9 +3664,9 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
       ##########################################################################
 
       # selling status
-      DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
+      DIP_SELLING_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$DIP_MARKETS".selling 2>/dev/null | egrep -c "[0-9]+" || true)"
       # sold status
-      DIP_SOLD_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".sold 2>/dev/null | egrep -c "[0-9]+" || true)"
+      DIP_SOLD_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$DIP_MARKETS".sold 2>/dev/null | egrep -c "[0-9]+" || true)"
 
       # if selling has no data, no input
       if [[ "$DIP_SELLING_STATUS" == "0" && ! -z "$DIP_TARGET_SPREAD_OUTPUT" ]] &>/dev/null; then
@@ -3676,19 +3676,19 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
           if [[ "$DIP_SOLD_STATUS" == "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" == "0" || "$DIP_OLD_DATA" == "1" || "$DIP_DATA_MISSING" == "1" ]] &>/dev/null; then
 
             # reset broken quest age (bought file)
-            echo "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought 2>/dev/null)" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".bought
+            echo "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null)" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought
 
             # log market new spread output
-            DIP_MARKET_RESET="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. ($DIP_TARGET_SPREAD_OUTPUT) Age: $DIP_BOUGHT_AGE_OUTPUT"
+            DIP_MARKET_RESET="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing order from pool. ($DIP_TARGET_SPREAD_OUTPUT) Age: $DIP_BOUGHT_AGE_OUTPUT"
             echo "$DIP_MARKET_RESET" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 
             # reset active
             reset_active_market_list
 
             # if any data
-            if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
+            if [[ "$(grep -wc "$LISTING_CURRENCY/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
               # remove failed order (orders)
-              echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
+              echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
             fi
 
             # pause failed market (listing)
@@ -3713,33 +3713,33 @@ DIP_MAX_BUY_AGE_SECONDS_BROKEN="$(echo "$DIP_MAX_BUY_AGE_SECONDS*1.369" | bc 2>/
 DIP_MAX_SELL_AGE_SECONDS_BROKEN="$(echo "$DIP_MAX_SELL_AGE_SECONDS*1.369" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
 # if still selling, wait
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".selling 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
+if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
   # if sold, wait
-  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".sold 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
     # if older than n seconds (using max sell and buy age limit)
     if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
       if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
 
         # orders check
-        DIP_ACTIVE_BROKEN_ORDERS="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
+        DIP_ACTIVE_BROKEN_ORDERS="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
 
         # if no orders
         if [[ "$DIP_ACTIVE_BROKEN_ORDERS" -eq "0" ]] &>/dev/null; then
 
           # reset all files (reset data, age)
-          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${REFERENCE_CURRENCY}".* &>/dev/null
+          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".* &>/dev/null
 
           # reset active
           reset_active_market_list
 
           # if any data
-          if [[ "$(grep -wc "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
+          if [[ "$(grep -wc "$LISTING_CURRENCY/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
             # remove failed order (orders)
-            echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$REFERENCE_CURRENCY")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
+            echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$BASENAME_STRATEGY".orders
           fi
 
           # cleanup output (log)
-          DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Removing order from pool. (failed) Age: $DIP_BOUGHT_AGE_OUTPUT"
+          DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing order from pool. (failed) Age: $DIP_BOUGHT_AGE_OUTPUT"
           echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
           # pause failed market (listing)
           echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
@@ -3770,14 +3770,14 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   ##############################################################################
 
   # extract all active reference
-  DIP_REFERENCE_CURRENCY="$(cat "${SYS_DIR:?}"/robot/*.active 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '{ print $2 }' | awk '!a[$1]++')"
+  DIP_MARKETS="$(cat "${SYS_DIR:?}"/robot/*.active 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '{ print $2 }' | awk '!a[$1]++')"
   # extract active markets (active)
   DIP_ACTIVE_ORDERS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '{ print $1 }' | awk '!a[$1]++')"
   # extract active markets (orders)
   DIP_ACTIVE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk '{ print $6 }' | awk '!a[$1]++')"
 
-  # balances, disregard with dip_active_orders, dip_active_balances markets and reference_currency
-  DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "$DIP_REFERENCE_CURRENCY:" | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
+  # balances, disregard with dip_active_orders, dip_active_balances markets and DIP_MARKETS
+  DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "$DIP_MARKETS:" | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
 
   ##############################################################################
 
@@ -3785,13 +3785,13 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   DIP_CHANGE_ASSET="$(echo "$DIP_CHANGE_BALANCES" | sort -R | tail -1)"
   # change name (listing_currency)
   DIP_CHANGE_NAME="$(echo "$DIP_CHANGE_ASSET" | awk '{ print $1 }' | tr -d ':')"
-  # reference name (reference_currency)
+  # reference name (DIP_MARKETS)
   DIP_REFERENCE_NAME="$(cat "${SYS_DIR:?}"/robot/DIP"$EXCHANGE_API"*.active 2>/dev/null | egrep -o "/[A-Z]+|/[0-9]+" | tr -d '/' | awk '!a[$1]++' | sort -R | tail -1)"
 
   # if zero
   if [[ -z "$DIP_REFERENCE_NAME" ]] &>/dev/null; then
     # use original reference currency
-    DIP_REFERENCE_NAME="$REFERENCE_CURRENCY"
+    DIP_REFERENCE_NAME="$DIP_MARKETS"
   fi
 
   # reference balance (available)
@@ -4303,12 +4303,12 @@ fi
 if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
   # get reference based on listing
-  REFERENCE_CURRENCY="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | tr '_/:' ' ' | awk '{ print $2 }' | grep -v "$DIP_DUMP_LISTING" | head -1)"
+  DIP_MARKETS="$(grep "$DIP_DUMP_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | tr '_/:' ' ' | awk '{ print $2 }' | grep -v "$DIP_DUMP_LISTING" | head -1)"
   # prices file output (RAW)
   CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
 
   # no reference, use bitcoin, usdt,usdc as dumping grounds
-  if [[ -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+  if [[ -z "$DIP_MARKETS" ]] &>/dev/null; then
     RANDOM_REF_CURRENCY=$((((RANDOM % 4) + 1)))
 
     # if zero
@@ -4318,24 +4318,24 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
 
     # dump on btc
     if [[ "$RANDOM_REF_CURRENCY" == "1" ]] &>/dev/null; then
-      REFERENCE_CURRENCY="BTC"
+      DIP_MARKETS="BTC"
     fi
     # dump on usdt
     if [[ "$RANDOM_REF_CURRENCY" == "2" ]] &>/dev/null; then
-      REFERENCE_CURRENCY="USDT"
+      DIP_MARKETS="USDT"
     fi
     # dump on usdc
     if [[ "$RANDOM_REF_CURRENCY" == "3" ]] &>/dev/null; then
-      REFERENCE_CURRENCY="USDC"
+      DIP_MARKETS="USDC"
     fi
     # dump on every reference available
     if [[ "$RANDOM_REF_CURRENCY" == "4" ]] &>/dev/null; then
-      REFERENCE_CURRENCY="$(echo "$CAT_PRICES_DIP_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | awk '!a[$0]++' | sort -R | tail -1)"
+      DIP_MARKETS="$(echo "$CAT_PRICES_DIP_FILE" 2>/dev/null | awk '{ print $1 }' | awk -F/ '{ print $2 }' | tr -d ':' | awk '!a[$0]++' | sort -R | tail -1)"
     fi
   fi
 
   # dump output (log)
-  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$REFERENCE_CURRENCY :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $REFERENCE_CURRENCY (Delisted)"
+  DIP_DUMP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_DUMP_LISTING/$DIP_MARKETS :: Dumping! $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING into $DIP_MARKETS (Delisted)"
 
   # if extra logs are set
   if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
@@ -4350,10 +4350,10 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   # if xeggex order
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
     # CreateOrder limit ########################################################
-    PLACE_ORDER="$(CreateOrder "" "$DIP_DUMP_LISTING/$REFERENCE_CURRENCY" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
+    PLACE_ORDER="$(CreateOrder "" "$DIP_DUMP_LISTING/$DIP_MARKETS" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
     echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
     # debug line ###############################################################
-    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$REFERENCE_CURRENCY sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
+    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$DIP_MARKETS sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
     ############################################################################
     sleep 1
   fi
@@ -4361,10 +4361,10 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   # if nonkyc order
   if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
     # CreateOrder limit ########################################################
-    PLACE_ORDER="$(CreateOrder_nky "" "$DIP_DUMP_LISTING/$REFERENCE_CURRENCY" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
+    PLACE_ORDER="$(CreateOrder_nky "" "$DIP_DUMP_LISTING/$DIP_MARKETS" "sell" "market" "$DUMP_LISTING_BALANCE" "" "false")"
     echo "$PLACE_ORDER" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
     # debug line ###############################################################
-    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$REFERENCE_CURRENCY sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
+    echo "$LOG_DATE : DebugOrder '' $DIP_DUMP_LISTING/$DIP_MARKETS sell market $DUMP_LISTING_BALANCE '' false <--- Delisted asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".delisted
     ############################################################################
     sleep 1
   fi
@@ -4373,7 +4373,7 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
   ##############################################################################
 
   # keep n lines
-  echo "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump 2>/dev/null | tr -d '"'): $DIP_DUMP_LISTING/$REFERENCE_CURRENCY -> Sold $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
+  echo "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump 2>/dev/null | tr -d '"'): $DIP_DUMP_LISTING/$DIP_MARKETS -> Sold $DUMP_LISTING_BALANCE $DIP_DUMP_LISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dump
 fi
 
 ################################################################################
@@ -4572,14 +4572,14 @@ fi
 DIP_TODAY_DATE="$(date +'%d/%m')"
 
 # count skipped and selected throughout the day (rsi)
-DIP_SOLD_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$EXCHANGE_API" | egrep "(Sold)|Dusting" 2>/dev/null | grep "/$REFERENCE_CURRENCY" | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
-DIP_SOLD_TODAY="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$EXCHANGE_API" | egrep -A2 -B2 "(Sold)|Dusting" | grep "/$REFERENCE_CURRENCY" | grep "Profit" | grep -v "Dusting" | awk '{ print $10 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+DIP_SOLD_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$EXCHANGE_API" | egrep "(Sold)|Dusting" 2>/dev/null | grep "/$DIP_MARKETS" | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
+DIP_SOLD_TODAY="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$EXCHANGE_API" | egrep -A2 -B2 "(Sold)|Dusting" | grep "/$DIP_MARKETS" | grep "Profit" | grep -v "Dusting" | awk '{ print $10 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
 DIP_SELECT_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Select" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_SKIP_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null | grep "Skip" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_REMOVED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "Removing sell" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_GHOST_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "Removing ghost order" 2>/dev/null | awk '!a[$12]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 DIP_FAILED_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null | grep "(failed)" 2>/dev/null | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
-DIP_DUSTING_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$EXCHANGE_API" | grep "Dusting" 2>/dev/null | grep "/$REFERENCE_CURRENCY" | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
+DIP_DUSTING_COUNT="$(grep "$DIP_TODAY_DATE" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "$EXCHANGE_API" | grep "Dusting" 2>/dev/null | grep "/$DIP_MARKETS" | awk '!a[$7]++' | wc -l | awk '{ printf "%.0f\n", $1 }')"
 
 # total
 DIP_TOTAL_COUNT="$(echo "$DIP_SOLD_COUNT+$DIP_SELECT_COUNT+$DIP_SKIP_COUNT+$DIP_REMOVED_COUNT+$DIP_GHOST_COUNT+$DIP_FAILED_COUNT+$DIP_DUSTING_COUNT" | bc 2>/dev/null | awk '{ printf "%.0f\n", $1 }')"
