@@ -2337,10 +2337,16 @@ target_order_status
 
 ################################################################################
 
+# bought profit data
+DIP_QUEST_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }')"
+
 # if bought data has negative profit
 if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }' | grep -c "-" || true)" -gt "0" ]] &>/dev/null; then
   # reset bought file
   truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought &>/dev/null
+  # negative profit quest output (log)
+  DIP_NEGATIVE_PROFIT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing quest with negative profit: $DIP_QUEST_PROFIT"
+  echo "$DIP_NEGATIVE_PROFIT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
 fi
 
 ################################################################################
