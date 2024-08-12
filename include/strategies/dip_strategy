@@ -520,18 +520,19 @@ function amount_to_buy_sell() {
 
                 ################################################################
                 ################################################################
-
                 # if trades ask is greater than prices now ask, if prices now ask is greater than quest ask
-                if [[ "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_ASK_NOW_CHECK" || "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
-                  # use original, no chasing
-                  DIP_TARGET_ASK="$DIP_TARGET_ASK"
-                fi
-
-                # if trades ask is less than prices now ask, if prices now ask is less than quest ask
                 if [[ "$DIP_TARGET_ASK_CHECK" -lt "$DIP_TARGET_ASK_NOW_CHECK" || "$DIP_TARGET_ASK_CHECK" -lt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
-                  # new ask price, chasing ask
+                  # use original quest ask, no chasing
+                  DIP_TARGET_ASK="$DIP_TARGET_QUEST_ASK"
+                fi
+                ################################################################
+                # if trades ask is less than prices now ask, if prices now ask is less than quest ask
+                if [[ "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_ASK_NOW_CHECK" || "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
+                  # use new ask price, chasing ask
                   DIP_TARGET_ASK="$DIP_TARGET_ASK_NOW"
                 fi
+                ################################################################
+                ################################################################
 
                 # if quest is less than new ask
                 if [[ "$DIP_TARGET_ASK_CHECK" -lt "$DIP_TARGET_ASK_NOW_CHECK" ]] &>/dev/null; then
@@ -539,7 +540,6 @@ function amount_to_buy_sell() {
                   DIP_TARGET_SPREAD_STATUS="[N0]"
                 fi
 
-                ################################################################
                 ################################################################
 
                 # amount for buy (reference)
