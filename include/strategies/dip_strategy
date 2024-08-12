@@ -1018,6 +1018,15 @@ function target_data() {
   # target volume
   DIP_TARGET_VOLUME="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $23 }')"
 
+  # if target spread has a negative
+  if [[ "$(echo "$DIP_TARGET_SPREAD" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then
+    # if target spread is missing data
+    if [[ "$(echo "$DIP_TARGET_SPREAD" | egrep -c ".100.00")" ]] &>/dev/null; then
+      # target spread from active
+      DIP_TARGET_SPREAD="$(echo "$CAT_ACTIVE_FILE" | grep -w "$LISTING_CURRENCY/$DIP_MARKETS" | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')"
+    fi
+  fi
+
   ##############################################################################
 
   # if any data
