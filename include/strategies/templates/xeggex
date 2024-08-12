@@ -189,8 +189,13 @@ function decimal_market() {
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
     # if any data
     if [[ -s "${LOG_DIR:?}"/leeloo/xeggex/getlist ]] &>/dev/null; then
-      # decimal limit
-      DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/xeggex/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY/$REFERENCE_CURRENCY:" | awk '{ print $2 }')"
+
+      ##########################################################################
+      ##########################################################################
+      # decimal limit, based on minimum decimal found on coin/token
+      DECIMAL_LIMIT="$(cat "${LOG_DIR:?}"/leeloo/xeggex/getlist 2>/dev/null | grep -w "$LISTING_CURRENCY" | awk '{ print $2 }' | head -1)"
+      ##########################################################################
+      ##########################################################################
 
       # if zero, more than one word, less than zero, has a negative
       if [[ -z "$DECIMAL_LIMIT" || "$(echo "$DECIMAL_LIMIT" | wc -w)" -gt "1" || "$DECIMAL_LIMIT" -lt "0" || "$(echo "$DECIMAL_LIMIT" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then

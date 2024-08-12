@@ -3544,7 +3544,7 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
   DIP_BOUGHT_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # sold file age (seconds)
   DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-  # listing balance, available check (without decimal)
+  # listing balance, available check (decimal flicker check)
   DIP_LISTING_BALANCE_CHECK="$(echo "$LISTING_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT_FLICKER' "f\n", int($0 * 10^'$DECIMAL_LIMIT_FLICKER') / 10^'$DECIMAL_LIMIT_FLICKER' }' | tr -d '.' | sed 's/^0*//')"
 
   # if zero
