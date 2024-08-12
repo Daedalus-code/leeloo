@@ -1023,7 +1023,7 @@ function target_data() {
     # if target spread is missing data
     if [[ "$(echo "$DIP_TARGET_SPREAD" | egrep -c ".100.00")" ]] &>/dev/null; then
       # target spread from active
-      DIP_TARGET_SPREAD="$(echo "$CAT_ACTIVE_FILE" | grep -w "$LISTING_CURRENCY/$DIP_MARKETS" | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')"
+      DIP_TARGET_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
     fi
   fi
 
