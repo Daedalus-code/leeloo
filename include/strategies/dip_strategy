@@ -3764,7 +3764,7 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
   # if zero
   if [[ -z "$DIP_REFERENCE_NAME" ]] &>/dev/null; then
-    # use original reference currency
+    # use original reference currency (based on configuration)
     DIP_REFERENCE_NAME="$DIP_MARKETS"
   fi
 
@@ -3797,12 +3797,11 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
     if [[ "$DIP_DUST_AMOUNT" == "$DIP_CHANGE_ASSET_BALANCE" ]] &>/dev/null; then
       # sell failed (dusting)
       DIP_SELL_FAILED="1"
-    fi
-
-    # if any data
-    if [[ "$(grep -wc "$DIP_CHANGE_NAME" "${SYS_DIR:?}"/robot/orders || true)" -gt "0" ]] &>/dev/null; then
-      # remove failed order (orders)
-      echo "$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null | grep -v "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME")" >"${SYS_DIR:?}"/robot/orders
+      # if any data
+      if [[ "$(grep -wc "$DIP_CHANGE_NAME" "${SYS_DIR:?}"/robot/orders || true)" -gt "0" ]] &>/dev/null; then
+        # remove failed order (orders)
+        echo "$(cat "${SYS_DIR:?}"/robot/orders 2>/dev/null | grep -v "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME")" >"${SYS_DIR:?}"/robot/orders
+      fi
     fi
   fi
 
@@ -3916,7 +3915,7 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
       # if dust is old enough (86400 seconds = 1 day), or just dust regardless if no sold file
       if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
         # if decimal limit is working
-        if [[ "$DECIMAL_LIMIT" -lt "9" ]] &>/dev/null; then
+        if [[ -n "$DECIMAL_LIMIT" ]] &>/dev/null; then
           # if balance is enough
           if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
             # if prices exist, not zero
