@@ -2496,6 +2496,15 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # calculate average spread
   DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(echo "$DIP_ACTIVE_FILE_SPREAD/$DIP_ACTIVE_FILE_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
+  # if target spread has a negative
+  if [[ "$(echo "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then
+    # if target spread is missing data
+    if [[ "$(echo "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" | egrep -c ".100.00")" ]] &>/dev/null; then
+      # target spread from bought
+      DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
+    fi
+  fi
+
   # if zero
   if [[ -z "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" ]] &>/dev/null; then
     DIP_ACTIVE_FILE_AVERAGE_SPREAD="0"
