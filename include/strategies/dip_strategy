@@ -1134,8 +1134,8 @@ function target_profit() {
 
     ############################################################################
 
-    # generate above list, fetch profits that took less than a day to complete
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2 | tac)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
+    # generate above list, fetch profits that took less than a day to complete, no losses
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep -v "[0-9]+d| -" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2 | tac)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".above
 
     # if any data
     if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
@@ -1150,8 +1150,8 @@ function target_profit() {
 
     ############################################################################
 
-    # generate below list, fetch profits that took more than a day to complete
-    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
+    # generate below list, fetch profits that took more than a day to complete, losses
+    echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit 2>/dev/null | egrep "[0-9]+d| -" | awk '{ print $3 }' | sort | uniq -c | awk '{print $2, $1}' | sort -n -k 2)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".below
 
     # if any data
     if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
