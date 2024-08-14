@@ -566,6 +566,14 @@ function amount_to_buy_sell() {
 
                 ################################################################
 
+                # if zero profit
+                if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//' | awk '{ printf "%.0f\n", $1 }')" == "0" ]] &>/dev/null; then
+                  # target status
+                  DIP_TARGET_SPREAD_STATUS="[N0]"
+                fi
+
+                ################################################################
+
                 # if active order profit is below minimum spread limit (ruled by configuration)
                 if [[ "$(echo "$DIP_GET_RATIO_PROFIT" | tr -d '.' | sed 's/^0*//')" -lt "$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')" ]] &>/dev/null; then
                   # target status
