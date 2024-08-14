@@ -652,43 +652,13 @@ function amount_to_buy_sell() {
   fi
 
   ##############################################################################
-  # margin call
+  # margin call (based on configuration)
   ##############################################################################
 
-  # function to modify margin call bid
-  margin_call_bid() {
-    # get the number of decimal places in the price
-    DECIMALS="$(echo "$DIP_TARGET_BID" | awk -F '.' '{if (NF>1) print length($2); else print 0}')"
-    # calculate the adjusted price for bid
-    ADJUSTED_PRICE_BID=$(echo "$DIP_TARGET_BID - $DIP_MARGIN * 10^-($DECIMALS)" | bc -l 2>/dev/null)
-    # format the output to maintain the original decimal precision
-    printf "%.${DECIMALS}f\n" "$ADJUSTED_PRICE_BID"
-  }
-
-  # function to modify margin call ask
-  margin_call_ask() {
-    # get the number of decimal places in the price
-    DECIMALS="$(echo "$DIP_TARGET_ASK" | awk -F '.' '{if (NF>1) print length($2); else print 0}')"
-    # calculate the adjusted price for ask
-    ADJUSTED_PRICE_ASK=$(echo "$DIP_TARGET_ASK + $DIP_MARGIN * 10^-($DECIMALS)" | bc -l 2>/dev/null)
-    # format the output to maintain the original decimal precision
-    printf "%.${DECIMALS}f\n" "$ADJUSTED_PRICE_ASK"
-  }
-
-  # calculate bid margin into percentage of the price
-  DIP_TARGET_BID_MARGIN="$(echo "$(echo "$DIP_MARGIN/100" | bc -l 2>/dev/null)*$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-  # calculate ask margin into percentage of the price
-  DIP_TARGET_ASK_MARGIN="$(echo "$(echo "$DIP_MARGIN/100" | bc -l 2>/dev/null)*$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
-  # bid margin less than price bid, subtract margin
-  DIP_TARGET_BID=$(margin_call_bid "$DIP_TARGET_BID" "-1")
-  # ask margin more than price ask, add margin
-  DIP_TARGET_ASK=$(margin_call_ask "$DIP_TARGET_ASK" "1")
-
-  # bid margin call
-  #  DIP_TARGET_BID="$(echo "$DIP_TARGET_BID-$DIP_TARGET_BID_MARGIN" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-  # ask margin call
-  #  DIP_TARGET_ASK="$(echo "$DIP_TARGET_ASK-$DIP_TARGET_ASK_MARGIN" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # calculate and apply margin to bid
+  DIP_TARGET_BID=$(echo "$DIP_TARGET_BID - ($DIP_TARGET_BID * $DIP_MARGIN / 100)" | bc -l)
+  # calculate and apply margin to ask
+  DIP_TARGET_ASK=$(echo "$DIP_TARGET_ASK + ($DIP_TARGET_ASK * $DIP_MARGIN / 100)" | bc -l)
 
   ##############################################################################
 
