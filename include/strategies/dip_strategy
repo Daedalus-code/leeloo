@@ -1687,132 +1687,138 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # check if bid is neither "0" nor "0.000000000"
       if [[ $BID != "0" ]] && [[ $BID != "0.000000000" ]] &>/dev/null; then
 
-        # spread
+        # spread (potential profit)
         SPREAD=$(awk -v ask="$ASK" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((ask - bid) / bid * 100) }')
 
-        # if spread minimum limit is met
-        if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l 2>/dev/null))); then
-          # if spread maximum limit is met
-          if (($(echo "$SPREAD < $DIP_MAX_SPREAD" | bc -l 2>/dev/null))); then
+        # if spread is not negative
+        if ! test "$(echo "$SPREAD" | tr -d '.' | sed 's/^0*//')" -lt "0" &>/dev/null; then
+          # if spread is not zero value
+          if [[ "$(echo "$SPREAD" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+            # if spread minimum limit is met
+            if (($(echo "$SPREAD > $DIP_MIN_SPREAD" | bc -l 2>/dev/null))); then
+              # if spread maximum limit is met
+              if (($(echo "$SPREAD < $DIP_MAX_SPREAD" | bc -l 2>/dev/null))); then
 
-            # price movement
-            PRICE_MOVEMENT=$(awk -v last="$LAST" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
-            # volume (configuration)
-            VOLUME="$(echo "$VOLUME" | awk '{ printf "%.2f\n", $1 }')"
-            # price movement check (without decimal)
-            PRICE_MOVEMENT_CHECK="$(echo "$PRICE_MOVEMENT" | tr -d '.' | sed 's/^0*//')"
+                # price movement
+                PRICE_MOVEMENT=$(awk -v last="$LAST" -v bid="$BID" 'BEGIN { printf "%.2f\n", ((last - bid) / bid * 100) }')
+                # volume (configuration)
+                VOLUME="$(echo "$VOLUME" | awk '{ printf "%.2f\n", $1 }')"
+                # price movement check (without decimal)
+                PRICE_MOVEMENT_CHECK="$(echo "$PRICE_MOVEMENT" | tr -d '.' | sed 's/^0*//')"
 
-            # create market file (everyone)
-            echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
+                # create market file (everyone)
+                echo "$SYMBOL | Bid: $BID | Ask: $ASK | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".market
 
-            # if zero
-            if [[ -z "$DIP_MIN_MOVEMENT" ]] &>/dev/null; then
-              # use default
-              DIP_MIN_MOVEMENT="0"
-            fi
+                # if zero
+                if [[ -z "$DIP_MIN_MOVEMENT" ]] &>/dev/null; then
+                  # use default
+                  DIP_MIN_MOVEMENT="0"
+                fi
 
-            # if price movement greater than minimum price movement
-            if (($(echo "$PRICE_MOVEMENT_CHECK > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
-              # if the symbol meets the potential buy criteria, ruled by configuration
-              if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
+                # if price movement greater than minimum price movement
+                if (($(echo "$PRICE_MOVEMENT_CHECK > $DIP_MIN_MOVEMENT" | bc -l 2>/dev/null))); then
+                  # if the symbol meets the potential buy criteria, ruled by configuration
+                  if (($(echo "$BID < $POTENTIAL_BUY_BID" | bc -l 2>/dev/null))) || [[ -z "$POTENTIAL_BUY_SYMBOL" ]] &>/dev/null; then
 
-                # potential symbol, bid, ask, last
-                POTENTIAL_BUY_SYMBOL="$SYMBOL"
-                POTENTIAL_BUY_BID="$BID"
-                POTENTIAL_BUY_ASK="$ASK"
-                POTENTIAL_BUY_LAST="$LAST"
+                    # potential symbol, bid, ask, last
+                    POTENTIAL_BUY_SYMBOL="$SYMBOL"
+                    POTENTIAL_BUY_BID="$BID"
+                    POTENTIAL_BUY_ASK="$ASK"
+                    POTENTIAL_BUY_LAST="$LAST"
 
-                # target output
-                POTENTIAL_TARGET_FOUND="$POTENTIAL_BUY_SYMBOL | Bid: $POTENTIAL_BUY_BID | Ask: $POTENTIAL_BUY_ASK | Last: $POTENTIAL_BUY_LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME"
+                    # target output
+                    POTENTIAL_TARGET_FOUND="$POTENTIAL_BUY_SYMBOL | Bid: $POTENTIAL_BUY_BID | Ask: $POTENTIAL_BUY_ASK | Last: $POTENTIAL_BUY_LAST | Dip: $DIP% | Spread: $SPREAD% | Price Movement: $PRICE_MOVEMENT% | Volume: $VOLUME"
 
-                ################################################################
+                    ############################################################
 
-                # potential rsi target (listing)
-                POTENTIAL_RSI_LISTING="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $1 }')"
-                # potential rsi target (reference)
-                POTENTIAL_RSI_REFERENCE="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $2 }')"
+                    # potential rsi target (listing)
+                    POTENTIAL_RSI_LISTING="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $1 }')"
+                    # potential rsi target (reference)
+                    POTENTIAL_RSI_REFERENCE="$(echo "$POTENTIAL_TARGET_FOUND" | awk '{ print $1 }' | tr -d ':' | awk -F/ '{ print $2 }')"
 
-                # if xeggex api
-                if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                    # if xeggex api
+                    if [[ "$EXCHANGE_API" == "XGX" || "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
 
-                  # if xeggex rsi
-                  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-                    # potential rsi data (using rsi xeggex) ######################
-                    echo "$(get_rsi_xgx "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/get_rsi_xgx
-                    ##############################################################
-                    # potential rsi data
-                    POTENTIAL_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/indicators/get_rsi_xgx 2>/dev/null)"
-                  fi
+                      # if xeggex rsi
+                      if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+                        # potential rsi data (using rsi xeggex) ################
+                        echo "$(get_rsi_xgx "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/get_rsi_xgx
+                        ########################################################
+                        # potential rsi data
+                        POTENTIAL_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/indicators/get_rsi_xgx 2>/dev/null)"
+                      fi
 
-                  # if nonkyc rsi
-                  if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
-                    # potential rsi data (using rsi xeggex) ######################
-                    echo "$(get_rsi_nky "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/get_rsi_nky
-                    ##############################################################
-                    # potential rsi data
-                    POTENTIAL_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/indicators/get_rsi_nky 2>/dev/null)"
-                  fi
+                      # if nonkyc rsi
+                      if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+                        # potential rsi data (using rsi xeggex) ################
+                        echo "$(get_rsi_nky "$POTENTIAL_RSI_LISTING" "$POTENTIAL_RSI_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/get_rsi_nky
+                        ########################################################
+                        # potential rsi data
+                        POTENTIAL_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/indicators/get_rsi_nky 2>/dev/null)"
+                      fi
 
-                  # potential rsi status
-                  POTENTIAL_RSI_STATUS="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
-                  # potential rsi value
-                  POTENTIAL_RSI_VALUE="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $NF }' | awk '{ printf "%.2f\n", $1 }')"
-                  # potential rsi value check
-                  POTENTIAL_RSI_VALUE_CHECK="$(echo "$POTENTIAL_RSI_VALUE" | awk -F. '{ print $1 }')"
+                      # potential rsi status
+                      POTENTIAL_RSI_STATUS="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
+                      # potential rsi value
+                      POTENTIAL_RSI_VALUE="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $NF }' | awk '{ printf "%.2f\n", $1 }')"
+                      # potential rsi value check
+                      POTENTIAL_RSI_VALUE_CHECK="$(echo "$POTENTIAL_RSI_VALUE" | awk -F. '{ print $1 }')"
 
-                  ##############################################################
+                      ##########################################################
 
-                  # if target overbought
-                  if [[ "$POTENTIAL_RSI_STATUS" == "Overbought" ]] &>/dev/null; then
-                    POTENTIAL_RSI_OUTPUT="Skip $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_VALUE ($POTENTIAL_RSI_STATUS) Volume: $VOLUME"
-                  fi
-                  # if target neutral
-                  if [[ "$POTENTIAL_RSI_STATUS" == "Neutral" || ! "$POTENTIAL_RSI_VALUE" -lt "$DIP_RSI_LIMIT" ]] &>/dev/null; then
-                    POTENTIAL_RSI_OUTPUT="Skip $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_VALUE ($POTENTIAL_RSI_STATUS) Volume: $VOLUME"
-                  fi
+                      # if target overbought
+                      if [[ "$POTENTIAL_RSI_STATUS" == "Overbought" ]] &>/dev/null; then
+                        POTENTIAL_RSI_OUTPUT="Skip $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_VALUE ($POTENTIAL_RSI_STATUS) Volume: $VOLUME"
+                      fi
+                      # if target neutral
+                      if [[ "$POTENTIAL_RSI_STATUS" == "Neutral" || ! "$POTENTIAL_RSI_VALUE" -lt "$DIP_RSI_LIMIT" ]] &>/dev/null; then
+                        POTENTIAL_RSI_OUTPUT="Skip $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_VALUE ($POTENTIAL_RSI_STATUS) Volume: $VOLUME"
+                      fi
 
-                  ##############################################################
+                      ##########################################################
 
-                  # default
-                  POTENTIAL_RSI="$POTENTIAL_RSI_STATUS"
+                      # default
+                      POTENTIAL_RSI="$POTENTIAL_RSI_STATUS"
 
-                  # if zero
-                  if [[ -z "$DIP_RSI_LIMIT" ]] &>/dev/null; then
-                    # default
-                    DIP_RSI_LIMIT="34"
-                  fi
+                      # if zero
+                      if [[ -z "$DIP_RSI_LIMIT" ]] &>/dev/null; then
+                        # default
+                        DIP_RSI_LIMIT="34"
+                      fi
 
-                  ##############################################################
-                  ##############################################################
+                      ##########################################################
+                      ##########################################################
 
-                  # if target is new listing, has potential, greater than n & less than n, equals zero
-                  if [[ "$POTENTIAL_RSI_STATUS" == "Oversold_zwcd" || "$POTENTIAL_RSI_VALUE_CHECK" -gt "30" && "$POTENTIAL_RSI_VALUE_CHECK" -lt "$DIP_RSI_LIMIT" ]] &>/dev/null; then
-                    # less than n
-                    POTENTIAL_RSI_STATUS="Oversold"
-                    POTENTIAL_RSI="Potential"
-                  fi
+                      # if target is new listing, has potential, greater than n & less than n, equals zero
+                      if [[ "$POTENTIAL_RSI_STATUS" == "Oversold_zwcd" || "$POTENTIAL_RSI_VALUE_CHECK" -gt "30" && "$POTENTIAL_RSI_VALUE_CHECK" -lt "$DIP_RSI_LIMIT" ]] &>/dev/null; then
+                        # less than n
+                        POTENTIAL_RSI_STATUS="Oversold"
+                        POTENTIAL_RSI="Potential"
+                      fi
 
-                  ##############################################################
-                  ##############################################################
+                      ##########################################################
+                      ##########################################################
 
-                  # if target oversold
-                  if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE" -lt "$DIP_RSI_LIMIT" ]] &>/dev/null; then
-                    POTENTIAL_RSI_OUTPUT="Select $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_VALUE ($POTENTIAL_RSI) Volume: $VOLUME"
-                    # create/update target file
-                    echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
-                  fi
+                      # if target oversold
+                      if [[ "$POTENTIAL_RSI_STATUS" == "Oversold" || "$POTENTIAL_RSI_VALUE" -lt "$DIP_RSI_LIMIT" ]] &>/dev/null; then
+                        POTENTIAL_RSI_OUTPUT="Select $POTENTIAL_RSI_LISTING! RSI: $POTENTIAL_RSI_VALUE ($POTENTIAL_RSI) Volume: $VOLUME"
+                        # create/update target file
+                        echo "$POTENTIAL_TARGET_FOUND" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".target
+                      fi
 
-                  ##############################################################
-                  ##############################################################
+                      ##########################################################
+                      ##########################################################
 
-                  # target status output (log)
-                  POTENTIAL_RSI_STRENGTH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $POTENTIAL_RSI_OUTPUT"
+                      # target status output (log)
+                      POTENTIAL_RSI_STRENGTH_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $POTENTIAL_BUY_SYMBOL :: $POTENTIAL_RSI_OUTPUT"
 
-                  # if extra logs are set
-                  if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
-                    echo "$POTENTIAL_RSI_STRENGTH_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-                  else
-                    echo "$POTENTIAL_RSI_STRENGTH_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+                      # if extra logs are set
+                      if [[ "$DIP_EXTRA_LOGS" == "true" ]] &>/dev/null; then
+                        echo "$POTENTIAL_RSI_STRENGTH_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+                      else
+                        echo "$POTENTIAL_RSI_STRENGTH_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>>"${LOG_ERROR:?}"
+                      fi
+                    fi
                   fi
                 fi
               fi
