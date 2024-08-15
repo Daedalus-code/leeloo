@@ -652,21 +652,6 @@ function amount_to_buy_sell() {
   fi
 
   ##############################################################################
-  # margin call (based on configuration)
-  ##############################################################################
-
-  # if any data
-  if [[ -n "$DIP_TARGET_BID" && -n "$DIP_MARGIN" && -n "$DIP_TARGET_ASK" ]] &>/dev/null; then
-    # if enabled
-    if [[ "$(echo "$DIP_MARGIN" | egrep -c "[1-9]+" || true)" -eq "1" ]] &>/dev/null; then
-      # calculate and apply margin to bid
-      DIP_TARGET_BID=$(echo "$DIP_TARGET_BID - ($DIP_TARGET_BID * $DIP_MARGIN / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-      # calculate and apply margin to ask
-      DIP_TARGET_ASK=$(echo "$DIP_TARGET_ASK + ($DIP_TARGET_ASK * $DIP_MARGIN / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-    fi
-  fi
-
-  ##############################################################################
 
   decimal_market
 
@@ -999,6 +984,21 @@ function target_data() {
   DIP_TARGET_ASK="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $7 }')"
   # target last
   DIP_TARGET_LAST="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $10 }')"
+
+  ##############################################################################
+  # margin call (based on configuration)
+  ##############################################################################
+
+  # if any data
+  if [[ -n "$DIP_TARGET_BID" && -n "$DIP_MARGIN" && -n "$DIP_TARGET_ASK" ]] &>/dev/null; then
+    # if enabled
+    if [[ "$(echo "$DIP_MARGIN" | egrep -c "[1-9]+" || true)" -eq "1" ]] &>/dev/null; then
+      # calculate and apply margin to bid
+      DIP_TARGET_BID=$(echo "$DIP_TARGET_BID - ($DIP_TARGET_BID * $DIP_MARGIN / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+      # calculate and apply margin to ask
+      DIP_TARGET_ASK=$(echo "$DIP_TARGET_ASK + ($DIP_TARGET_ASK * $DIP_MARGIN / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+    fi
+  fi
 
   ##############################################################################
   ##############################################################################
