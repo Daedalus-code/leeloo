@@ -916,7 +916,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
   "o")
 
     # debug data
-    DEBUG_DATA="$(head -250 "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | grep -v "==" | sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n | tac | column -t | awk '!a[$0]++')"
+    DEBUG_DATA="$(head -225 "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | grep -v "==" | sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n | tac | column -t | awk '!a[$0]++')"
     # data count
     DEBUG_DATA_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/*.debug 2>/dev/null | grep "order.debug" | awk '{ print $1 }')"
     # debug data age (seconds)
@@ -929,7 +929,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     fi
 
     # debug data, max headroom of 250
-    DEBUG_DATA_FILE="$(head -250 "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null)"
+    DEBUG_DATA_FILE="$(head -225 "${LOG_DIR:?}"/leeloo/order.debug 2>/dev/null)"
     # dusting count
     DEBUG_DUSTING_COUNT="$(echo "$DEBUG_DATA" | grep -c "Dusting" || true)"
     # buy count
@@ -2349,7 +2349,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     LOG_SEARCH_ORDERS="$(echo "$LOG_SEARCH_ORDERS_DATA" | grep -cw "$COIN_TOKEN" || true)"
     LOG_SEARCH_BUY_ORDERS="$(echo "$LOG_SEARCH_ORDERS_DATA" | grep -w "$COIN_TOKEN" | grep -c "buy" || true)"
     LOG_SEARCH_SELL_ORDERS="$(echo "$LOG_SEARCH_ORDERS_DATA" | grep -w "$COIN_TOKEN" | grep -c "sell" || true)"
-    LOG_SEARCH_HEAD="$(echo "$LOG_SEARCH_ALL" | head -250)"
+    LOG_SEARCH_HEAD="$(echo "$LOG_SEARCH_ALL" | head -225)"
     LOG_SEARCH_COUNT="$(echo "$LOG_SEARCH_ALL" | wc -l)"
     LOG_SEARCH_BUY="$(echo "$LOG_SEARCH_ALL" | grep -c "Buy " || true)"
     LOG_SEARCH_SELL="$(echo "$LOG_SEARCH_ALL" | grep -c "Sell " || true)"

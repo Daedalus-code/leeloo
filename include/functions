@@ -606,7 +606,7 @@ function coin_token_price() {
     # search up token coin price in fiat currency
     COIN_TOKEN_PRICE="$(torify curl -s -X "https://min-api.cryptocompare.com/data/price?fsym=$COIN_TOKEN_CURRENCY&tsyms=$FIAT_CURRENCY" | jq -r '."'$FIAT_CURRENCY'"' | awk '{ printf "%.9f\n", $1 }')"
     # search up token coin data
-    COIN_TOKEN_DATA="$(cat "${LOG_DIR:?}"/leeloo/*/*prices* 2>/dev/null | tr '_' '/' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$COIN_TOKEN_CURRENCY" | awk -F: '{ print $2,$3,$4,$5 }' | sort -n -k 2 -r | head -300)"
+    COIN_TOKEN_DATA="$(cat "${LOG_DIR:?}"/leeloo/*/*prices* 2>/dev/null | tr '_' '/' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$COIN_TOKEN_CURRENCY" | awk -F: '{ print $2,$3,$4,$5 }' | sort -n -k 2 -r | head -225)"
     # search count
     COIN_TOKEN_COUNT="$(echo "$COIN_TOKEN_DATA" | wc -l)"
 
@@ -728,8 +728,8 @@ function observe_market() {
 
   CAT_EXCHANGE_PRICES="$(cat "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null)"
 
-  # 450 max before dialog breaks
-  MARKET_RESULT="$(echo "$CAT_EXCHANGE_PRICES" | sort -k2 -n -r 2>/dev/null | head -100)"
+  # 225 max before dialog breaks
+  MARKET_RESULT="$(echo "$CAT_EXCHANGE_PRICES" | sort -k2 -n -r 2>/dev/null | head -225)"
   MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null | sed '/^$/d' | wc -l)"
   MARKET_MOON="$(echo "$CAT_EXCHANGE_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
   MARKET_MOON_COUNT="$(echo "$CAT_EXCHANGE_PRICES" | awk '{ print $5 }' | wc -l)"
@@ -814,8 +814,8 @@ function observe_all_market() {
 
   CAT_EXCHANGE_PRICES="$(cat "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)"
 
-  # 450 max before dialog breaks
-  MARKET_RESULT="$(echo "$CAT_EXCHANGE_PRICES" | sort -k2 -n -r 2>/dev/null | head -100)"
+  # 225 max before dialog breaks
+  MARKET_RESULT="$(echo "$CAT_EXCHANGE_PRICES" | sort -k2 -n -r 2>/dev/null | head -225)"
   MARKET_COUNT="$(grep -v "Market" "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null | sed '/^$/d' | wc -l)"
   MARKET_MOON="$(echo "$CAT_EXCHANGE_PRICES" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
   MARKET_MOON_COUNT="$(echo "$CAT_EXCHANGE_PRICES" | awk '{ print $5 }' | wc -l)"
@@ -1449,7 +1449,7 @@ function order_history {
       # create a copy of history (orders)
       cat "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/*.trades 2>/dev/null | tr -d '{}"' | tr ',:' ' ' | awk '{ print $1,$3,$5,$6,$7,$8,$9,$NF }' | column -t | sort -n -k 8 | tac >"${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw 2>/dev/null
       # keep lines, create a copy of history (orders)
-      echo "$(head -100 "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view
+      echo "$(head -225 "${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.raw 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/"$ORDER_EXCHANGE_NAME"/history.view
     fi
 
     # history data
@@ -1530,7 +1530,8 @@ function order_history_data {
     rm "${LOG_DIR:?}"/leeloo/orders/raw.trades &>/dev/null
   fi
 
-  RESULT="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history 2>/dev/null | head -101)"
+  # display result
+  RESULT="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history 2>/dev/null | head -225)"
 
   COIN_TOKEN_BALANCE="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/balances | awk '!a[$1]++' | awk '{ print $3 }')"
 
