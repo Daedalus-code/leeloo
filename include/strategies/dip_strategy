@@ -2382,17 +2382,20 @@ target_order_status
 # bought profit data
 DIP_QUEST_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }')"
 
-# if bought data has negative profit, zero profit
-if [[ "$(echo "$DIP_QUEST_PROFIT" | grep -c "-" || true)" -gt "0" || "$(echo "$DIP_QUEST_PROFIT" | grep -c "0.00%" || true)" ]] &>/dev/null; then
-  # reset bought file
-  truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought &>/dev/null
-  # negative profit quest output (log)
-  DIP_NEGATIVE_PROFIT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing quest with negative/zero profit: $DIP_QUEST_PROFIT"
-  echo "$DIP_NEGATIVE_PROFIT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-  # pause coin/token (listing)
-  echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
-  # reset active
-  reset_active_market_list
+# if any data
+if [[ -n "$DIP_QUEST_PROFIT" ]] &>/dev/null; then
+  # if bought data has negative profit, zero profit
+  if [[ "$(echo "$DIP_QUEST_PROFIT" | grep -c "-" || true)" -eq "1" || "$(echo "$DIP_QUEST_PROFIT" | grep -c "0.00%" || true)" -eq "1" ]] &>/dev/null; then
+    # reset bought file
+    truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought &>/dev/null
+    # negative profit quest output (log)
+    DIP_NEGATIVE_PROFIT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing quest with negative/zero profit: $DIP_QUEST_PROFIT"
+    echo "$DIP_NEGATIVE_PROFIT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+    # pause coin/token (listing)
+    echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+    # reset active
+    reset_active_market_list
+  fi
 fi
 
 ################################################################################
