@@ -3759,40 +3759,43 @@ DIP_MAX_BUY_AGE_SECONDS_BROKEN="$(echo "$DIP_MAX_BUY_AGE_SECONDS*1.369" | bc 2>/
 # broken sell age check x n
 DIP_MAX_SELL_AGE_SECONDS_BROKEN="$(echo "$DIP_MAX_SELL_AGE_SECONDS*1.369" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
-# if still selling, wait
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
-  # if sold, wait
-  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
-    # if older than n seconds (using max sell and buy age limit)
-    if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
-      if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
+# if any data
+if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
+  # if still selling, wait
+  if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
+    # if sold, wait
+    if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
+      # if older than n seconds (using max sell and buy age limit)
+      if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
+        if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$DIP_MAX_SELL_AGE_SECONDS_BROKEN" ]] &>/dev/null; then
 
-        # orders check
-        DIP_ACTIVE_BROKEN_ORDERS="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
+          # orders check
+          DIP_ACTIVE_BROKEN_ORDERS="$(grep -w "$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -wc "$LISTING_CURRENCY" || true)"
 
-        # if no orders
-        if [[ "$DIP_ACTIVE_BROKEN_ORDERS" -eq "0" ]] &>/dev/null; then
+          # if no orders
+          if [[ "$DIP_ACTIVE_BROKEN_ORDERS" -eq "0" ]] &>/dev/null; then
 
-          # reset all files (reset data, age)
-          truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".* &>/dev/null
+            # reset all files (reset data, age)
+            truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".* &>/dev/null
 
-          # reset active
-          reset_active_market_list
+            # reset active
+            reset_active_market_list
 
-          # if any data
-          if [[ "$(grep -wc "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
-            # remove failed order (orders)
-            echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders
+            # if any data
+            if [[ "$(grep -wc "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders || true)" -gt "0" ]] &>/dev/null; then
+              # remove failed order (orders)
+              echo "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>/dev/null | grep -v "$LISTING_CURRENCY/$DIP_MARKETS")" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders
+            fi
+
+            # cleanup output (log)
+            DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing order from pool. (failed) Age: $DIP_BOUGHT_AGE_OUTPUT"
+            echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
+            # pause failed market (listing)
+            echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+
+            # it was removed
+            DIP_REMOVED="1"
           fi
-
-          # cleanup output (log)
-          DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Removing order from pool. (failed) Age: $DIP_BOUGHT_AGE_OUTPUT"
-          echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-          # pause failed market (listing)
-          echo "$LISTING_CURRENCY" | sed '/^$/d' >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
-
-          # it was removed
-          DIP_REMOVED="1"
         fi
       fi
     fi
