@@ -64,8 +64,6 @@ DIP_ALLOCATED="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY
 DIP_MAX_ALLOCATED="$(egrep "DIP_MAX_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # max open orders
 DIP_MAX_ORDERS="$(egrep "DIP_MAX_ORDERS=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# dip margin
-DIP_MARGIN="$(egrep "DIP_MARGIN=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # dca (default false) 100=100%
 DIP_DCA="$(egrep "DIP_DCA=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # dust coins/tokens not being traded (not active)
@@ -412,21 +410,28 @@ function amount_to_buy_sell() {
       fi
 
       ##########################################################################
-      ##########################################################################
 
       # new bid price
       DIP_TARGET_BID="$DIP_TARGET_BID_NOW"
       # last ask price (trades)
       DIP_TARGET_ASK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$DIP_MARKETS".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
 
+      ##########################################################################
+      ##########################################################################
+
       # if any data
-      if [[ -n "$DIP_TARGET_BID" && -n "$DIP_MARGIN" && -n "$DIP_TARGET_ASK" ]] &>/dev/null; then
+      if [[ -n "$DIP_TARGET_BID" && -n "$DIP_MIN_SPREAD" && -n "$DIP_TARGET_ASK" ]] &>/dev/null; then
+        # if valued zero, zero data
+        if [[ "$DIP_MIN_SPREAD" == "0" ]] &>/dev/null; then
+          # default minimum spread
+          DIP_MIN_SPREAD="2"
+        fi
         # if enabled
-        if [[ "$(echo "$DIP_MARGIN" | egrep -c "[1-9]+" || true)" -eq "1" ]] &>/dev/null; then
-          # calculate and apply margin to bid
-          DIP_TARGET_BID=$(echo "$DIP_TARGET_BID - ($DIP_TARGET_BID * $DIP_MARGIN / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-          # calculate and apply margin to ask
-          DIP_TARGET_ASK=$(echo "$DIP_TARGET_ASK + ($DIP_TARGET_ASK * $DIP_MARGIN / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+        if [[ "$(echo "$DIP_MIN_SPREAD" | egrep -c "[1-9]+" || true)" -eq "1" ]] &>/dev/null; then
+          # calculate and apply spread limit to bid
+          DIP_TARGET_BID=$(echo "$DIP_TARGET_BID - ($DIP_TARGET_BID * $DIP_MIN_SPREAD / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+          # calculate and apply spread limit to ask
+          DIP_TARGET_ASK=$(echo "$DIP_TARGET_ASK + ($DIP_TARGET_ASK * $DIP_MIN_SPREAD / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
         fi
       fi
 
@@ -994,7 +999,6 @@ function target_data() {
   LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $1 }')"
 
   ##############################################################################
-  ##############################################################################
 
   # target bid
   DIP_TARGET_BID="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $4 }')"
@@ -1003,14 +1007,22 @@ function target_data() {
   # target last
   DIP_TARGET_LAST="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $10 }')"
 
+  ##############################################################################
+  ##############################################################################
+
   # if any data
-  if [[ -n "$DIP_TARGET_BID" && -n "$DIP_MARGIN" && -n "$DIP_TARGET_ASK" ]] &>/dev/null; then
+  if [[ -n "$DIP_TARGET_BID" && -n "$DIP_MIN_SPREAD" && -n "$DIP_TARGET_ASK" ]] &>/dev/null; then
+    # if valued zero, zero data
+    if [[ "$DIP_MIN_SPREAD" == "0" ]] &>/dev/null; then
+      # default minimum spread
+      DIP_MIN_SPREAD="2"
+    fi
     # if enabled
-    if [[ "$(echo "$DIP_MARGIN" | egrep -c "[1-9]+" || true)" -eq "1" ]] &>/dev/null; then
-      # calculate and apply margin to bid
-      DIP_TARGET_BID=$(echo "$DIP_TARGET_BID - ($DIP_TARGET_BID * $DIP_MARGIN / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-      # calculate and apply margin to ask
-      DIP_TARGET_ASK=$(echo "$DIP_TARGET_ASK + ($DIP_TARGET_ASK * $DIP_MARGIN / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+    if [[ "$(echo "$DIP_MIN_SPREAD" | egrep -c "[1-9]+" || true)" -eq "1" ]] &>/dev/null; then
+      # calculate and apply spread limit to bid
+      DIP_TARGET_BID=$(echo "$DIP_TARGET_BID - ($DIP_TARGET_BID * $DIP_MIN_SPREAD / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+      # calculate and apply spread limit to ask
+      DIP_TARGET_ASK=$(echo "$DIP_TARGET_ASK + ($DIP_TARGET_ASK * $DIP_MIN_SPREAD / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
     fi
   fi
 
