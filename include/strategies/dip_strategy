@@ -2385,7 +2385,7 @@ DIP_QUEST_PROFIT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CUR
 # if any data
 if [[ -n "$DIP_QUEST_PROFIT" ]] &>/dev/null; then
   # if bought data has negative profit, zero profit
-  if [[ "$(echo "$DIP_QUEST_PROFIT" | grep -c "-" || true)" -eq "1" || "$(echo "$DIP_QUEST_PROFIT" | grep -c "0.00%" || true)" -eq "1" ]] &>/dev/null; then
+  if [[ "$(echo "$DIP_QUEST_PROFIT" | grep -c "-" || true)" -eq "1" || "$DIP_QUEST_PROFIT" == "0.00%" ]] &>/dev/null; then
     # reset bought file
     truncate -s 0 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought &>/dev/null
     # negative profit quest output (log)
