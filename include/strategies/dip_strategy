@@ -4045,22 +4045,50 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
                         # if xeggex order
                         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-                          # CreateOrder market #################################
-                          PLACE_ORDER="$(CreateOrder "" "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
-                          # debug line #########################################
-                          echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME sell market $DIP_CHANGE_ASSET_BALANCE '' false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
-                          ######################################################
-                          sleep 1
+                          # if market
+                          if [[ "$DIP_DUST_TYPE" == "market" ]] &>/dev/null; then
+                            # CreateOrder market ###############################
+                            PLACE_ORDER="$(CreateOrder "" "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
+                            # debug line #######################################
+                            echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME sell market $DIP_CHANGE_ASSET_BALANCE '' false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                            ####################################################
+                            sleep 1
+                          fi
+                          # if limit
+                          if [[ "$DIP_DUST_TYPE" == "limit" ]] &>/dev/null; then
+                            # CreateOrder market ###############################
+                            PLACE_ORDER="$(CreateOrder "" "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "sell" "limit" "$DIP_CHANGE_ASSET_BALANCE" "$DIP_CHANGE_NEW_PRICE" "false")"
+                            # debug line #######################################
+                            echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME sell limit $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NEW_PRICE false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                            ####################################################
+                            sleep 1
+                          fi
                         fi
+
+                        ########################################################
+                        ########################################################
 
                         # if nonkyc order
                         if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
-                          # CreateOrder market #################################
-                          PLACE_ORDER="$(CreateOrder_nky "" "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
-                          # debug line #########################################
-                          echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME sell market $DIP_CHANGE_ASSET_BALANCE '' false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
-                          ######################################################
-                          sleep 1
+                          # if market
+                          if [[ "$DIP_DUST_TYPE" == "market" ]] &>/dev/null; then
+                            # CreateOrder market ###############################
+                            PLACE_ORDER="$(CreateOrder_nky "" "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "sell" "market" "$DIP_CHANGE_ASSET_BALANCE" "" "false")"
+                            # debug line #######################################
+                            echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME sell market $DIP_CHANGE_ASSET_BALANCE '' false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                            ####################################################
+                            sleep 1
+                          fi
+                          # if limit
+                          if [[ "$DIP_DUST_TYPE" == "limit" ]] &>/dev/null; then
+                            # CreateOrder market ###############################
+                            PLACE_ORDER="$(CreateOrder_nky "" "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "sell" "limit" "$DIP_CHANGE_ASSET_BALANCE" "$DIP_CHANGE_NEW_PRICE" "false")"
+                            # debug line #######################################
+                            echo "$LOG_DATE : DebugOrder '' $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME sell limit $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NEW_PRICE false <--- Dusting asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
+                            ####################################################
+                            sleep 1
+                          fi
+
                         fi
 
                         ########################################################
