@@ -23,8 +23,8 @@ get_rsi() {
     sleep 1
   fi
   if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null)))" 2>/dev/null)" -gt "$RSI_TIMER" ]] &>/dev/null; then
-    PERIOD=$1
-    SYMBOL=$2
+    PERIOD="$1"
+    SYMBOL="$(echo "$2" | awk '{print toupper($0)}')"
     SOURCE="close"
     API_RSI_EXCHANGE="CCCAGG"
     TMP_FILE=$(mktemp)

@@ -82,8 +82,8 @@ get_rsi_xgx() {
   if [[ "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/indicators/check_"$2"_rsi_"$1" 2>/dev/null)))" 2>/dev/null)" -gt "$RSI_TIMER" ]] &>/dev/null; then
 
     # candlestick parameters
-    LISTING_CURRENCY="$1"
-    REFERENCE_CURRENCY="$2"
+    LISTING_CURRENCY="$(echo "$1" | awk '{print toupper($0)}')"
+    REFERENCE_CURRENCY="$(echo "$2" | awk '{print toupper($0)}')"
     SYMBOL="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
     INTERVAL="1440"
     RESOLUTION="1440"
