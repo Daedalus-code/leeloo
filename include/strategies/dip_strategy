@@ -915,6 +915,14 @@ function target_profit() {
   # if any data
   if [[ -n "$DIP_CAT_PROFIT" ]] &>/dev/null; then
 
+    # original reference allocated
+    DIP_ALLOCATED_ORIGINAL="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }' | awk '{ printf "%.2f\n", $1 }')"
+    # if high risk
+    if [[ "$IS_HIGH_RISK" == "true" ]] &>/dev/null; then
+      # half-life, regardless (risky market)
+      DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED_ORIGINAL/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+    fi
+
     ############################################################################
 
     # generate above list, fetch profits that took less than a day to complete, no losses
@@ -1052,13 +1060,6 @@ function target_profit() {
       isDelisting
       # isHighRisk status
       isHighRisk
-    fi
-    # original reference allocated
-    DIP_ALLOCATED_ORIGINAL="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }' | awk '{ printf "%.2f\n", $1 }')"
-    # if high risk
-    if [[ "$IS_HIGH_RISK" == "true" ]] &>/dev/null; then
-      # half-life, regardless (risky market)
-      DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED_ORIGINAL/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
     fi
     # account allocated (n%)
     REFERENCE_ALLOCATED="$DIP_ALLOCATED"
