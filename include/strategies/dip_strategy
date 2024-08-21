@@ -1227,7 +1227,7 @@ function target_profit() {
           # recalculate efficient market limit
           EFFICIENT_MARKET_LIMIT="$(echo "77.7*$EFFICIENT_MARKET_DATA-$(echo "$EFFICIENT_MARKET_CALCULATED/100" | bc -l 2>/dev/null)+$(echo "$INEFFECTIVE_MARKET/50" | bc -l 2>/dev/null)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
           # reference allocated increased
-          DIP_ALLOCATED_LIST="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+          DIP_ALLOCATED="$(echo "$EFFICIENT_MARKET_LIMIT+$DIP_ALLOCATED" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
 
           ######################################################################
 
@@ -1246,7 +1246,7 @@ function target_profit() {
           # market above output (log)
           DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Market above: x$DIP_TOTAL_MARKET_DATA - x${INEFFECTIVE_MARKET:?} = x${EFFICIENT_MARKET_CALCULATED:?} : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
           # create allocated list data
-          echo "$LISTING_CURRENCY/$DIP_MARKETS $DIP_ALLOCATED_LIST" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/allocated.data
+          echo "$LISTING_CURRENCY/$DIP_MARKETS $DIP_ALLOCATED" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/allocated.data
           # remove duplicates
           echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/allocated.data 2>/dev/null | awk '!a[$1]++')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/allocated.data
 
