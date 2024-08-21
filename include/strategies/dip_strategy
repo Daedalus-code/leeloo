@@ -3888,10 +3888,23 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
   ##############################################################################
 
+  # dust rsi age (seconds)
+  DIP_CHANGE_RSI_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME}"_"${DIP_REFERENCE_NAME}".dust_rsi 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if old rsi
+  if [[ "$DIP_CHANGE_RSI_AGE" -gt "180" || ! -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME}"_"${DIP_REFERENCE_NAME}".dust_rsi ]] &>/dev/null; then
+    # rsi dust limit
+    get_rsi_xgx "$DIP_CHANGE_NAME" "$DIP_REFERENCE_NAME" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME}"_"${DIP_REFERENCE_NAME}".dust_rsi
+  fi
+
+  ##############################################################################
+
   # old ask price (trades)
   DIP_CHANGE_OLD_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
   # new ask price (prices.dip)
   DIP_CHANGE_NEW_PRICE="$(grep -w "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  # new rsi value (dust_rsi)
+  DIP_CHANGE_NEW_RSI="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME}"_"${DIP_REFERENCE_NAME}".dust_rsi 2>/dev/null | awk '{ print $3 }' | awk -F. '{ print $1 }')"
 
   # if buy price are more than price
   if [[ "$DIP_CHANGE_OLD_PRICE" > "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
@@ -3901,6 +3914,10 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   elif [[ "$DIP_CHANGE_OLD_PRICE" < "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
     # dustable
     DIP_CHANGE_DUSTABLE="1"
+    # if rsi is less than rsi limit (based on configuration)
+  elif [[ "$DIP_CHANGE_NEW_RSI" -lt "$DIP_RSI_LIMIT" ]] &>/dev/null; then
+    # not dustable
+    DIP_CHANGE_DUSTABLE="0"
   fi
 
   # calculate price difference
