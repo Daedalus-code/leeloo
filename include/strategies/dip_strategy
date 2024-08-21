@@ -3912,6 +3912,14 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   elif [[ "$DIP_CHANGE_NEW_RSI" -lt "$DIP_RSI_LIMIT" ]] &>/dev/null; then
     # not dustable
     DIP_CHANGE_DUSTABLE="0"
+    # if rsi is greater than rsi limit (based on configuration)
+  elif [[ "$DIP_CHANGE_NEW_RSI" -gt "$DIP_RSI_LIMIT" ]] &>/dev/null; then
+    # dustable
+    DIP_CHANGE_DUSTABLE="1"
+    # if rsi equals new listing indication (based on configuration)
+  elif [[ "$DIP_CHANGE_NEW_RSI" == "0.000000000" ]] &>/dev/null; then
+    # dustable
+    DIP_CHANGE_DUSTABLE="1"
   fi
 
   # calculate price difference
