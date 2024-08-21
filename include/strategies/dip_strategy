@@ -320,19 +320,6 @@ function amount_to_buy_sell() {
 
   ##############################################################################
 
-  # account allocated (n%)
-  REFERENCE_ALLOCATED="$DIP_ALLOCATED"
-
-  # if zero, use n%
-  if [[ -z "$REFERENCE_ALLOCATED" ]] &>/dev/null; then
-    REFERENCE_ALLOCATED="1" # n%
-  fi
-
-  # calculate dip allocated (configuration)
-  REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
-
-  ##############################################################################
-
   # listing balance (available)
   LISTING_BALANCE="$(grep -w "\<$LISTING_CURRENCY:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($3 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | head -1)"
   # reference balance (available)
@@ -916,234 +903,8 @@ fi
 
 ################################################################################
 ################################################################################
-# specific target & specific active variables
+# allocated funds & specific target & specific active variables
 ################################################################################
-################################################################################
-
-# target data for both target and active
-function target_data() {
-
-  decimal_market
-
-  # cat active, target data
-  cat_active_target
-
-  # use latest target
-  if [[ "$TARGET_ACTIVE" == "TARGET" ]] &>/dev/null; then ######################
-
-    # target found
-    DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_TARGET_FILE" | head -1)"
-
-    # use active list
-  elif [[ "$TARGET_ACTIVE" == "ACTIVE" ]] &>/dev/null; then ####################
-
-    # extract markets from order list (assuming columns 6 and 7)
-    ORDER_MARKETS=$(awk '{ print $6"/"$7 }' <<<"$CAT_ORDERS_FILE" | sort -u)
-    # extract markets from active list
-    ACTIVE_MARKETS=$(awk -F: '{ print $1 }' <<<"$CAT_ACTIVE_FILE")
-    # initialize the variable to store missing markets
-    MISSING_MARKETS=""
-
-    # iterate through each line in ACTIVE_MARKETS
-    while IFS= read -r ACTIVE_MARKET; do
-      # check if the active market is not in the order markets
-      if ! grep -qwF "$ACTIVE_MARKET" <<<"$ORDER_MARKETS"; then
-        MISSING_MARKETS+=" $ACTIVE_MARKET"
-      fi
-    done <<<"$ACTIVE_MARKETS"
-
-    # missing markets
-    echo "$MISSING_MARKETS" | xargs >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
-
-    # missing markets file
-    MISSING_MARKETS_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null)"
-
-    # random missing market
-    MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS_FILE" | tr ' ' '\n' | shuf -n 1 | awk '{ print $1 }')"
-
-    # default
-    RANDOM_MISSING_MARKET="1"
-
-    # if data
-    if [[ -n "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
-      # random n
-      RANDOM_MISSING_MARKET=$((((RANDOM % 2) + 1)))
-    fi
-
-    # if random
-    if [[ "$RANDOM_MISSING_MARKET" -gt "1" ]] &>/dev/null; then
-      # target missing orders from active list
-      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" | grep -w "$MISSING_MARKETS_RANDOM:")"
-    fi
-
-    # if zero
-    if [[ -z "$DIP_TARGET_FILE_OUTPUT" ]] &>/dev/null; then
-      # use default random check
-      RANDOM_MISSING_MARKET="1"
-    fi
-
-    # if random
-    if [[ "$RANDOM_MISSING_MARKET" -eq "1" ]] &>/dev/null; then
-      # random active target
-      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
-    fi
-  fi
-
-  ##############################################################################
-  ##############################################################################
-
-  # target symbol
-  DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
-
-  ##############################################################################
-
-  # listing (target from above)
-  LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $1 }')"
-
-  ##############################################################################
-
-  # target bid
-  DIP_TARGET_BID="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $4 }')"
-  # target ask
-  DIP_TARGET_ASK="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $7 }')"
-  # target last
-  DIP_TARGET_LAST="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $10 }')"
-
-  ##############################################################################
-  ##############################################################################
-
-  # if any data
-  if [[ -n "$DIP_TARGET_BID" && -n "$DIP_MIN_SPREAD" && -n "$DIP_TARGET_ASK" ]] &>/dev/null; then
-    # if valued zero, zero data
-    if [[ "$DIP_MIN_SPREAD" == "0" ]] &>/dev/null; then
-      # default minimum spread
-      DIP_MIN_SPREAD="2"
-    fi
-    # if enabled
-    if [[ "$(echo "$DIP_MIN_SPREAD" | egrep -c "[1-9]+" || true)" -eq "1" ]] &>/dev/null; then
-      # calculate and apply spread limit to bid
-      DIP_TARGET_BID=$(echo "$DIP_TARGET_BID - ($DIP_TARGET_BID * $DIP_MIN_SPREAD / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-      # calculate and apply spread limit to ask
-      DIP_TARGET_ASK=$(echo "$DIP_TARGET_ASK + ($DIP_TARGET_ASK * $DIP_MIN_SPREAD / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-    fi
-  fi
-
-  ##############################################################################
-  ##############################################################################
-
-  # target dip
-  DIP_TARGET_DIP="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $13 }' | tr -d '%')"
-  # target spread
-  DIP_TARGET_SPREAD="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')"
-  # target price movement
-  DIP_TARGET_PRICE_MOVEMENT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $20 }' | tr -d '%')"
-  # target volume
-  DIP_TARGET_VOLUME="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $23 }')"
-
-  # if target spread has a negative
-  if [[ "$(echo "$DIP_TARGET_SPREAD" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then
-    # if target spread is missing data
-    if [[ "$(echo "$DIP_TARGET_SPREAD" | egrep -c ".100.00")" ]] &>/dev/null; then
-      # target spread from bought
-      DIP_TARGET_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
-      # if zero
-      if [[ -z "$DIP_TARGET_SPREAD" ]] &>/dev/null; then
-        DIP_TARGET_SPREAD="0"
-      fi
-    fi
-  fi
-
-  ##############################################################################
-
-  # if any data
-  if [[ -n "$LISTING_CURRENCY" ]] &>/dev/null; then
-    # listing info
-    listing_info
-    # delisting status
-    isDelisting
-    # isHighRisk status
-    isHighRisk
-  fi
-
-  ##############################################################################
-
-  # original reference allocated
-  DIP_ALLOCATED_ORIGINAL="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }' | awk '{ printf "%.2f\n", $1 }')"
-
-  ##############################################################################
-
-  # if high risk
-  if [[ "$IS_HIGH_RISK" == "true" ]] &>/dev/null; then
-    # half-life, regardless (risky market)
-    DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED_ORIGINAL/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
-  fi
-
-  ##############################################################################
-
-  # if zero
-  if [[ -z "$DIP_EXTRA_LOGS" ]] &>/dev/null; then
-    DIP_EXTRA_LOGS="false"
-  fi
-
-  ##############################################################################
-
-  # if target selling
-  DIP_TARGET_SELLING="0"
-  amount_to_buy_sell
-
-  # target amount to buy and sell (listing)
-  DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($26 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
-
-  # if zero
-  if [[ -z "$DIP_TARGET_AMOUNT" ]] &>/dev/null; then
-    DIP_TARGET_AMOUNT="0"
-  fi
-
-  # if dca enabled
-  if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
-    # if market dca is found
-    if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
-      # extra amount
-      DIP_TARGET_DCA="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $8 }' | tr -d '+')"
-      # increase target amount
-      DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_AMOUNT+$DIP_TARGET_DCA" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
-    fi
-
-    # if market has more than one active
-    if [[ "$(cat "${SYS_DIR:?}"/robot/*"$EXCHANGE_API"*.active 2>/dev/null | grep -cw "$LISTING_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
-      # if any data
-      if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
-        # remove obsolete dca
-        echo "$(grep -v "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
-      fi
-    fi
-  fi
-
-  # if any data
-  if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]]; then
-    # last ask price check (trades)
-    DIP_TARGET_ASK_CHECK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$DIP_MARKETS".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-    # last ask price check (bought)
-    DIP_TARGET_QUEST_ASK_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-
-    # if last buy price is greater than quest price
-    if [[ "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
-      # target sell status (based on trade and quest price) wait on quest buy with new price
-      DIP_TARGET_SELL_STATUS="[o0]"
-    fi
-
-    # bought price check (bought)
-    DIP_TARGET_BUY_IDE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${DIP_MARKETS:?}".bought 2>/dev/null | awk '{ printf "%.9f\n", $10 }' | tr -d '.' | sed 's/^0*//')"
-    # sell price check (prices)
-    DIP_TARGET_ASK_IDE_CHECK="$(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
-
-    # if identical buy and sell prices
-    if [[ "$DIP_TARGET_ASK_IDE_CHECK" == "$DIP_TARGET_BUY_IDE_CHECK" ]] &>/dev/null; then
-      DIP_TARGET_SELL_STATUS="[o0]"
-    fi
-  fi
-}
-
 ################################################################################
 
 function target_profit() {
@@ -1282,6 +1043,232 @@ function target_profit() {
           fi
         fi
       fi
+    fi
+    # if any data
+    if [[ -n "$LISTING_CURRENCY" ]] &>/dev/null; then
+      # listing info
+      listing_info
+      # delisting status
+      isDelisting
+      # isHighRisk status
+      isHighRisk
+    fi
+    # original reference allocated
+    DIP_ALLOCATED_ORIGINAL="$(egrep "DIP_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }' | awk '{ printf "%.2f\n", $1 }')"
+    # if high risk
+    if [[ "$IS_HIGH_RISK" == "true" ]] &>/dev/null; then
+      # half-life, regardless (risky market)
+      DIP_ALLOCATED_ORIGINAL="$(echo "$DIP_ALLOCATED_ORIGINAL/2" | bc 2>/dev/null | awk -F. '{ print $1 }')"
+    fi
+    # account allocated (n%)
+    REFERENCE_ALLOCATED="$DIP_ALLOCATED"
+    # if zero, use n%
+    if [[ -z "$REFERENCE_ALLOCATED" ]] &>/dev/null; then
+      REFERENCE_ALLOCATED="1" # n%
+    fi
+    # calculate dip allocated (configuration)
+    REFERENCE_ALLOCATED="$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null)"
+  fi
+}
+
+################################################################################
+
+# target data for both target and active
+function target_data() {
+
+  decimal_market
+
+  # cat active, target data
+  cat_active_target
+
+  # use latest target
+  if [[ "$TARGET_ACTIVE" == "TARGET" ]] &>/dev/null; then ######################
+
+    # target found
+    DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_TARGET_FILE" | head -1)"
+
+    # use active list
+  elif [[ "$TARGET_ACTIVE" == "ACTIVE" ]] &>/dev/null; then ####################
+
+    # extract markets from order list (assuming columns 6 and 7)
+    ORDER_MARKETS=$(awk '{ print $6"/"$7 }' <<<"$CAT_ORDERS_FILE" | sort -u)
+    # extract markets from active list
+    ACTIVE_MARKETS=$(awk -F: '{ print $1 }' <<<"$CAT_ACTIVE_FILE")
+    # initialize the variable to store missing markets
+    MISSING_MARKETS=""
+
+    # iterate through each line in ACTIVE_MARKETS
+    while IFS= read -r ACTIVE_MARKET; do
+      # check if the active market is not in the order markets
+      if ! grep -qwF "$ACTIVE_MARKET" <<<"$ORDER_MARKETS"; then
+        MISSING_MARKETS+=" $ACTIVE_MARKET"
+      fi
+    done <<<"$ACTIVE_MARKETS"
+
+    # missing markets
+    echo "$MISSING_MARKETS" | xargs >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing
+
+    # missing markets file
+    MISSING_MARKETS_FILE="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".missing 2>/dev/null)"
+
+    # random missing market
+    MISSING_MARKETS_RANDOM="$(echo "$MISSING_MARKETS_FILE" | tr ' ' '\n' | shuf -n 1 | awk '{ print $1 }')"
+
+    # default
+    RANDOM_MISSING_MARKET="1"
+
+    # if data
+    if [[ -n "$MISSING_MARKETS_RANDOM" ]] &>/dev/null; then
+      # random n
+      RANDOM_MISSING_MARKET=$((((RANDOM % 2) + 1)))
+    fi
+
+    # if random
+    if [[ "$RANDOM_MISSING_MARKET" -gt "1" ]] &>/dev/null; then
+      # target missing orders from active list
+      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" | grep -w "$MISSING_MARKETS_RANDOM:")"
+    fi
+
+    # if zero
+    if [[ -z "$DIP_TARGET_FILE_OUTPUT" ]] &>/dev/null; then
+      # use default random check
+      RANDOM_MISSING_MARKET="1"
+    fi
+
+    # if random
+    if [[ "$RANDOM_MISSING_MARKET" -eq "1" ]] &>/dev/null; then
+      # random active target
+      DIP_TARGET_FILE_OUTPUT="$(echo "$CAT_ACTIVE_FILE" 2>/dev/null | shuf | head -1)"
+    fi
+  fi
+
+  ##############################################################################
+  ##############################################################################
+
+  # target symbol
+  DIP_TARGET_SYMBOL="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $1 }' | tr -d ':')"
+
+  ##############################################################################
+
+  # listing (target from above)
+  LISTING_CURRENCY="$(echo "$DIP_TARGET_SYMBOL" 2>/dev/null | awk -F/ '{ print $1 }')"
+
+  ##############################################################################
+
+  # target bid
+  DIP_TARGET_BID="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $4 }')"
+  # target ask
+  DIP_TARGET_ASK="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $7 }')"
+  # target last
+  DIP_TARGET_LAST="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $10 }')"
+
+  ##############################################################################
+  ##############################################################################
+
+  # if any data
+  if [[ -n "$DIP_TARGET_BID" && -n "$DIP_MIN_SPREAD" && -n "$DIP_TARGET_ASK" ]] &>/dev/null; then
+    # if valued zero, zero data
+    if [[ "$DIP_MIN_SPREAD" == "0" ]] &>/dev/null; then
+      # default minimum spread
+      DIP_MIN_SPREAD="2"
+    fi
+    # if enabled
+    if [[ "$(echo "$DIP_MIN_SPREAD" | egrep -c "[1-9]+" || true)" -eq "1" ]] &>/dev/null; then
+      # calculate and apply spread limit to bid
+      DIP_TARGET_BID=$(echo "$DIP_TARGET_BID - ($DIP_TARGET_BID * $DIP_MIN_SPREAD / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+      # calculate and apply spread limit to ask
+      DIP_TARGET_ASK=$(echo "$DIP_TARGET_ASK + ($DIP_TARGET_ASK * $DIP_MIN_SPREAD / 100)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
+    fi
+  fi
+
+  ##############################################################################
+  ##############################################################################
+
+  # target dip
+  DIP_TARGET_DIP="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $13 }' | tr -d '%')"
+  # target spread
+  DIP_TARGET_SPREAD="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $16 }' | awk '{ printf "%.2f\n", $1 }')"
+  # target price movement
+  DIP_TARGET_PRICE_MOVEMENT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $20 }' | tr -d '%')"
+  # target volume
+  DIP_TARGET_VOLUME="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ print $23 }')"
+
+  # if target spread has a negative
+  if [[ "$(echo "$DIP_TARGET_SPREAD" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then
+    # if target spread is missing data
+    if [[ "$(echo "$DIP_TARGET_SPREAD" | egrep -c ".100.00")" ]] &>/dev/null; then
+      # target spread from bought
+      DIP_TARGET_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
+      # if zero
+      if [[ -z "$DIP_TARGET_SPREAD" ]] &>/dev/null; then
+        DIP_TARGET_SPREAD="0"
+      fi
+    fi
+  fi
+
+  ##############################################################################
+
+  # if zero
+  if [[ -z "$DIP_EXTRA_LOGS" ]] &>/dev/null; then
+    DIP_EXTRA_LOGS="false"
+  fi
+
+  ##############################################################################
+
+  # if target selling
+  DIP_TARGET_SELLING="0"
+  amount_to_buy_sell
+  target_profit
+
+  # target amount to buy and sell (listing)
+  DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_FILE_OUTPUT" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($26 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+
+  # if zero
+  if [[ -z "$DIP_TARGET_AMOUNT" ]] &>/dev/null; then
+    DIP_TARGET_AMOUNT="0"
+  fi
+
+  # if dca enabled
+  if [[ "$DIP_DCA" -gt "0" ]] &>/dev/null; then
+    # if market dca is found
+    if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+      # extra amount
+      DIP_TARGET_DCA="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca | awk '{ print $8 }' | tr -d '+')"
+      # increase target amount
+      DIP_TARGET_AMOUNT="$(echo "$DIP_TARGET_AMOUNT+$DIP_TARGET_DCA" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+    fi
+
+    # if market has more than one active
+    if [[ "$(cat "${SYS_DIR:?}"/robot/*"$EXCHANGE_API"*.active 2>/dev/null | grep -cw "$LISTING_CURRENCY" || true)" -gt "1" ]] &>/dev/null; then
+      # if any data
+      if [[ "$(grep -c "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca || true)" -eq "1" ]] &>/dev/null; then
+        # remove obsolete dca
+        echo "$(grep -v "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dca
+      fi
+    fi
+  fi
+
+  # if any data
+  if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]]; then
+    # last ask price check (trades)
+    DIP_TARGET_ASK_CHECK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${LISTING_CURRENCY:?}"_"$DIP_MARKETS".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+    # last ask price check (bought)
+    DIP_TARGET_QUEST_ASK_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | tail -1 | awk '{ print $10 }' | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+
+    # if last buy price is greater than quest price
+    if [[ "$DIP_TARGET_ASK_CHECK" -gt "$DIP_TARGET_QUEST_ASK_CHECK" ]] &>/dev/null; then
+      # target sell status (based on trade and quest price) wait on quest buy with new price
+      DIP_TARGET_SELL_STATUS="[o0]"
+    fi
+
+    # bought price check (bought)
+    DIP_TARGET_BUY_IDE_CHECK="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY:?}"_"${DIP_MARKETS:?}".bought 2>/dev/null | awk '{ printf "%.9f\n", $10 }' | tr -d '.' | sed 's/^0*//')"
+    # sell price check (prices)
+    DIP_TARGET_ASK_IDE_CHECK="$(echo "$DIP_TARGET_ASK" | awk '{ printf "%.9f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+
+    # if identical buy and sell prices
+    if [[ "$DIP_TARGET_ASK_IDE_CHECK" == "$DIP_TARGET_BUY_IDE_CHECK" ]] &>/dev/null; then
+      DIP_TARGET_SELL_STATUS="[o0]"
     fi
   fi
 }
@@ -1884,7 +1871,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   # target data
   TARGET_ACTIVE="TARGET"
   target_data
-  target_profit
   decimal_market
   bought_sold_age
   remove_ghost_orders
