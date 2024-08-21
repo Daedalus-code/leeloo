@@ -3888,14 +3888,8 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
   ##############################################################################
 
-  # dust rsi age (seconds)
-  DIP_CHANGE_RSI_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME}"_"${DIP_REFERENCE_NAME}".dust_rsi 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-
-  # if old rsi
-  if [[ "$DIP_CHANGE_RSI_AGE" -gt "180" || ! -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME}"_"${DIP_REFERENCE_NAME}".dust_rsi ]] &>/dev/null; then
-    # rsi dust limit
-    get_rsi_xgx "$DIP_CHANGE_NAME" "$DIP_REFERENCE_NAME" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME}"_"${DIP_REFERENCE_NAME}".dust_rsi
-  fi
+  # rsi dust limit
+  get_rsi_xgx "$DIP_CHANGE_NAME" "$DIP_REFERENCE_NAME" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME}"_"${DIP_REFERENCE_NAME}".dust_rsi
 
   ##############################################################################
 
