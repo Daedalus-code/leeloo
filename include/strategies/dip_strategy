@@ -334,7 +334,7 @@ function amount_to_buy_sell() {
   fi
 
   # account allocated (n%)
-  REFERENCE_ALLOCATED="$DIP_ALLOCATED"
+  REFERENCE_ALLOCATED="$(echo "$DIP_ALLOCATED/100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   ##############################################################################
 
@@ -568,7 +568,7 @@ function amount_to_buy_sell() {
                 ################################################################
 
                 # amount for buy (reference)
-                DIP_BUY_AMOUNT_REFERENCE="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+                DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
                 # amount to buy (listing)
                 DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
                 # amount to recieve (reference)
@@ -686,7 +686,7 @@ function amount_to_buy_sell() {
   decimal_market
 
   # amount for buy (reference)
-  DIP_BUY_AMOUNT_REFERENCE="$(echo "$(echo "$REFERENCE_ALLOCATED/100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # amount to buy (listing)
   DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
   # amount to recieve (reference)
