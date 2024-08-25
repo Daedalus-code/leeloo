@@ -1109,7 +1109,15 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "P")
 
-    PAUSED_MARKET_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/*/pause | grep "total" | awk '{ print $1 }')"
+    PAUSED_MARKET_COUNT="$(cat "${LOG_DIR:?}"/leeloo/*/pause 2>/dev/null | sed '/^$/d' | wc -l)"
+
+    display_result() {
+      dialog --title "$PAUSED_MARKET_COUNT Paused Markets reset?" \
+        --no-collapse \
+        --msgbox "$RESULT" 0 0
+    }
+    RESULT="$(wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null)"
+    display_result 2>/dev/null
 
     if dialog --stdout --title "Reset $PAUSED_MARKET_COUNT paused markets?" \
       --backtitle "Reset pause files?" \
