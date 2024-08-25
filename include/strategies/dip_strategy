@@ -573,8 +573,8 @@ function amount_to_buy_sell() {
                 # amount to profit (reference percentage)
                 DIP_GET_RATIO_PROFIT="$(echo "100/$DIP_BUY_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-                # if zero
-                if [[ -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
+                # if zero, if negative
+                if [[ -z "$DIP_GET_RATIO_PROFIT" || "$DIP_GET_RATIO_PROFIT" -lt "0" ]] &>/dev/null; then
                   DIP_GET_RATIO_PROFIT="0.00"
                 fi
 
@@ -691,8 +691,8 @@ function amount_to_buy_sell() {
   # amount to profit (reference percentage)
   DIP_GET_RATIO_PROFIT="$(echo "100/$DIP_BUY_AMOUNT_REFERENCE*$DIP_GET_AMOUNT_PROFIT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-  # if zero
-  if [[ -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
+  # if zero, if negative
+  if [[ -z "$DIP_GET_RATIO_PROFIT" || "$DIP_GET_RATIO_PROFIT" -lt "0" ]] &>/dev/null; then
     DIP_GET_RATIO_PROFIT="0.00"
   fi
 
@@ -3541,8 +3541,8 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
                     fi
                   fi
 
-                  # if zero
-                  if [[ -z "$DIP_GET_RATIO_PROFIT" ]] &>/dev/null; then
+                  # if zero, if negative
+                  if [[ -z "$DIP_GET_RATIO_PROFIT" || "$DIP_GET_RATIO_PROFIT" -lt "0" ]] &>/dev/null; then
                     DIP_GET_RATIO_PROFIT="0.00"
                   fi
 
