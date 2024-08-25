@@ -1530,44 +1530,48 @@ function order_history_data {
     rm "${LOG_DIR:?}"/leeloo/orders/raw.trades &>/dev/null
   fi
 
-  # display result
-  RESULT="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history 2>/dev/null | head -225)"
-  RESULT_COUNT="$(echo "$RESULT" | wc -l)"
+  # if any data
+  if [[ -n "$COIN_TOKEN" ]] &>/dev/null; then
 
-  # if less than n
-  if [[ "$RESULT_COUNT" -lt "25" ]] &>/dev/null; then
-    WIDTH="130"
-    LENGTH="$(echo "$RESULT_COUNT+4" | bc 2>/dev/null)"
-  else
-    WIDTH="0"
-    LENGTH="$(echo "$RESULT_COUNT+4" | bc 2>/dev/null)"
+    # display result
+    RESULT="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history 2>/dev/null | head -225)"
+    RESULT_COUNT="$(echo "$RESULT" | wc -l)"
+
+    # if less than n
+    if [[ "$RESULT_COUNT" -lt "25" ]] &>/dev/null; then
+      WIDTH="130"
+      LENGTH="$(echo "$RESULT_COUNT+4" | bc 2>/dev/null)"
+    else
+      WIDTH="0"
+      LENGTH="$(echo "$RESULT_COUNT+4" | bc 2>/dev/null)"
+    fi
+
+    COIN_TOKEN_BALANCE="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/balances | awk '!a[$1]++' | awk '{ print $3 }')"
+
+    ORDER_HISTORY_TOTAL="$(grep -c "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history || true)"
+    ORDER_HISTORY_TOTAL_BUY="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history | grep -c "buy" || true)"
+    ORDER_HISTORY_PERCENTAGE_BUY="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+    ORDER_HISTORY_TOTAL_SELL="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history | grep -c "sell" || true)"
+    ORDER_HISTORY_PERCENTAGE_SELL="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_SELL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+    # no data
+    if [[ -z "$RESULT" ]] &>/dev/null; then
+      RESULT="Nothing was found."
+      ORDER_HISTORY_TOTAL="0"
+      ORDER_HISTORY_TOTAL_BUY="0"
+      ORDER_HISTORY_PERCENTAGE_BUY="0"
+      ORDER_HISTORY_TOTAL_SELL="0"
+      ORDER_HISTORY_PERCENTAGE_SELL="0"
+    fi
+
+    display_result() {
+      dialog --title "Order history: +$ORDER_HISTORY_TOTAL :: Buy: $ORDER_HISTORY_TOTAL_BUY (${ORDER_HISTORY_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_HISTORY_TOTAL_SELL (${ORDER_HISTORY_PERCENTAGE_SELL:?}%) Balance: $COIN_TOKEN_BALANCE $COIN_TOKEN" \
+        --no-collapse \
+        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+    }
+
+    display_result 2>/dev/null
   fi
-
-  COIN_TOKEN_BALANCE="$(grep -w "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/*/balances | awk '!a[$1]++' | awk '{ print $3 }')"
-
-  ORDER_HISTORY_TOTAL="$(grep -c "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history || true)"
-  ORDER_HISTORY_TOTAL_BUY="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history | grep -c "buy" || true)"
-  ORDER_HISTORY_PERCENTAGE_BUY="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-  ORDER_HISTORY_TOTAL_SELL="$(grep "$COIN_TOKEN" "${LOG_DIR:?}"/leeloo/orders/history | grep -c "sell" || true)"
-  ORDER_HISTORY_PERCENTAGE_SELL="$(echo "100/$ORDER_HISTORY_TOTAL*$ORDER_HISTORY_TOTAL_SELL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-  # no data
-  if [[ -z "$RESULT" ]] &>/dev/null; then
-    RESULT="Nothing was found."
-    ORDER_HISTORY_TOTAL="0"
-    ORDER_HISTORY_TOTAL_BUY="0"
-    ORDER_HISTORY_PERCENTAGE_BUY="0"
-    ORDER_HISTORY_TOTAL_SELL="0"
-    ORDER_HISTORY_PERCENTAGE_SELL="0"
-  fi
-
-  display_result() {
-    dialog --title "Order history: +$ORDER_HISTORY_TOTAL :: Buy: $ORDER_HISTORY_TOTAL_BUY (${ORDER_HISTORY_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_HISTORY_TOTAL_SELL (${ORDER_HISTORY_PERCENTAGE_SELL:?}%) Balance: $COIN_TOKEN_BALANCE $COIN_TOKEN" \
-      --no-collapse \
-      --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
-  }
-
-  display_result 2>/dev/null
 }
 
 # order history search #########################################################
