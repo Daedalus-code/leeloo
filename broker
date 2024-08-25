@@ -1048,7 +1048,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
   clear
   case $CHOICE in
 
-  # leeloo configuration
+  # leeloo configuration #######################################################
 
   "1")
 
@@ -1058,7 +1058,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-    # k & s configuration
+    # k & s configuration ######################################################
 
   "2")
 
@@ -1067,7 +1067,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-    # reset all configurations
+    # reset all configurations #################################################
 
   "3")
 
@@ -1082,7 +1082,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-    # reset broker configuration
+    # reset broker configuration ###############################################
 
   "4")
 
@@ -1096,7 +1096,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-    # reset k & s configuration
+    # reset k & s configuration ################################################
 
   "5")
 
@@ -1105,18 +1105,26 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-    # reset paused markets
+    # reset paused markets #####################################################
 
   "P")
 
-    if dialog --stdout --title "Reset paused markets?" \
-      --backtitle "Reset pause file?" \
-      --yesno "Yes: Reset! No: Go back!" 5 33; then
-      wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null
+    PAUSED_MARKET_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/*/pause | grep "total" | awk '{ print $1 }')"
+
+    if dialog --stdout --title "Reset $PAUSED_MARKET_COUNT paused markets?" \
+      --backtitle "Reset pause files?" \
+      --yesno "Yes: Reset! No: Edit!" 5 0; then
       sleep 1
       truncate -s 0 "$LOG_DIR"/leeloo/*/pause &>/dev/null
-      echo "Paused Markets are reset!"
-      sleep 1
+      display_result() {
+        dialog --title "$PAUSED_MARKET_COUNT Paused Markets reset!" \
+          --no-collapse \
+          --msgbox "$RESULT" 0 0
+      }
+      RESULT="$(wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null)"
+      display_result 2>/dev/null
+    else
+      nano "${LOG_DIR:?}"/leeloo/*/pause
     fi
 
     ;;
