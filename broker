@@ -1119,9 +1119,10 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     RESULT="$(wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null)"
     display_result 2>/dev/null
 
+    # reset pause files
     if dialog --stdout --title "$PAUSED_MARKET_COUNT Paused Markets reset?" \
       --backtitle "Reset pause files?" \
-      --yesno "Yes: Reset! No: Edit!" 5 0; then
+      --yesno "Yes: Reset! No: Exit!" 5 0; then
       sleep 1
       truncate -s 0 "$LOG_DIR"/leeloo/*/pause &>/dev/null
       display_result() {
@@ -1133,6 +1134,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
       display_result 2>/dev/null
     fi
 
+    # edit pause files
     if dialog --stdout --title "$PAUSED_MARKET_COUNT Paused Markets reset?" \
       --backtitle "Edit pause files?" \
       --yesno "Yes: Edit! No: Exit!" 5 0; then
