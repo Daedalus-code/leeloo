@@ -2677,6 +2677,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
       if dialog --stdout --title "BAILOUT WARNING!" \
         --backtitle "BAILOUT" \
         --yesno "Yes: BAILOUT! No: Go back!" 5 32; then
+        BAILOUT_LIST="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk -F: '{ print $1 }')"
         # read the list of IDs from orders
         while IFS= read -r BAIL_ORDER_ID; do
           # if xeggex
@@ -2688,7 +2689,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
             cancelOrder_nky "$BAIL_ORDER_ID"
           fi
           # Your command here, e.g. process_data "$id"
-        done <"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | awk -F: '{ print $1 }'
+        done <"$BAILOUT_LIST"
       fi
     }
 
