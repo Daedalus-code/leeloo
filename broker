@@ -2677,10 +2677,11 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
       BAIL_COUNT_BUYS="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
       BAIL_COUNT_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
+      BAIL_COUNT_TOTAL="$(echo "$BAIL_COUNT_BUYS+$BAIL_COUNT_SELL" | bc 2>/dev/null)"
 
-      if dialog --stdout --title "Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL" \
+      if dialog --stdout --title "Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL Total: $BAIL_COUNT_TOTAL" \
         --backtitle "BAILOUT" \
-        --yesno "Yes: BAILOUT! No: Go back!" 5 40; then
+        --yesno "Yes: BAILOUT ORDERS!! No: Go back!" 5 40; then
 
         # if xeggex
         if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
@@ -2719,7 +2720,7 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
         echo
         echo "Total: $BAIL_COUNT_TOTAL - Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL"
-        echo "Error: $BAIL_COUNT_ERROR Success: $BAIL_COUNT_SUCCESS"
+        echo "Error: $BAIL_COUNT_ERROR - Success: $BAIL_COUNT_SUCCESS"
         echo
         read -r -p "Press Enter to continue" </dev/tty
       fi
