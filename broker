@@ -2673,17 +2673,14 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
   "X")
 
-    ############################################################################
-
-    BAIL_COUNT_BUYS="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
-    BAIL_COUNT_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
-
-    ############################################################################
-
     function bailout_orders {
+
+      BAIL_COUNT_BUYS="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
+      BAIL_COUNT_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
+
       if dialog --stdout --title "Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL" \
         --backtitle "BAILOUT" \
-        --yesno "Yes: BAILOUT! No: Go back!" 6 0; then
+        --yesno "Yes: BAILOUT! No: Go back!" 5 40; then
 
         # if xeggex
         if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
