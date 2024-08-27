@@ -2677,18 +2677,18 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
       if dialog --stdout --title "BAILOUT WARNING!" \
         --backtitle "BAILOUT" \
         --yesno "Yes: BAILOUT! No: Go back!" 5 32; then
-        # create temp order list
-        echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk -F: '{ print $1 }')" >/tmp/bto.tmp
         # read the list of IDs from orders
         while IFS= read -r BAIL_ORDER_ID; do
           # if xeggex
           if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
-            getOrders
+            getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac >/tmp/getXGXorders.tmp
+            echo "$(cat /tmp/get*orders.tmp 2>/dev/null)" >/tmp/bto.tmp
             cancelOrder "$BAIL_ORDER_ID"
           fi
           # if nonkyc
           if [[ "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
-            getOrders_nky
+            getOrders_nky | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac >/tmp/getNKYorders.tmp
+            echo "$(cat /tmp/get*orders.tmp 2>/dev/null)" >/tmp/bto.tmp
             cancelOrder_nky "$BAIL_ORDER_ID"
           fi
         done </tmp/bto.tmp
