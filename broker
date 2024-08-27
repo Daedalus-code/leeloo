@@ -2673,10 +2673,17 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
   "X")
 
+    ############################################################################
+
+    BAIL_COUNT_BUYS="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
+    BAIL_COUNT_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
+
+    ############################################################################
+
     function bailout_orders {
-      if dialog --stdout --title "BAILOUT WARNING!" \
+      if dialog --stdout --title "Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL" \
         --backtitle "BAILOUT" \
-        --yesno "Yes: BAILOUT! No: Go back!" 5 32; then
+        --yesno "Yes: BAILOUT! No: Go back!" 5 0; then
 
         # if xeggex
         if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
@@ -2693,17 +2700,29 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         while IFS= read -r BAIL_ORDER_ID; do
           # if xeggex
           if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
-            cancelOrder "$BAIL_ORDER_ID"
+            cancelOrder "$BAIL_ORDER_ID" >>/tmp/btolist.tmp
             sleep 0.5
             echo
           fi
           # if nonkyc
           if [[ "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
-            cancelOrder_nky "$BAIL_ORDER_ID"
+            cancelOrder_nky "$BAIL_ORDER_ID" >>/tmp/btolist.tmp
             sleep 0.5
             echo
           fi
         done </tmp/bto.tmp
+
+        ########################################################################
+
+        BAIL_COUNT_ERROR="$(grep -c "error" /tmp/btolist.tmp 2>/dev/null)"
+        BAIL_COUNT_SUCCESS="$(grep -c "success" /tmp/btolist.tmp 2>/dev/null)"
+        BAIL_COUNT_TOTAL="$(egrep -c "[0a-z9]+" /tmp/btolist.tmp 2>/dev/null)"
+
+        ########################################################################
+
+        echo
+        echo "Total: $BAIL_COUNT_TOTAL - Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL"
+        echo "Error: $BAIL_COUNT_ERROR Success: $BAIL_COUNT_SUCCESS"
         echo
         read -r -p "Press Enter to continue" </dev/tty
       fi
