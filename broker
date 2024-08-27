@@ -1016,9 +1016,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   ##############################################################################
 
-  HEIGHT=18
-  WIDTH=53
-  CHOICE_HEIGHT=11
+  HEIGHT="19"
+  WIDTH="53"
+  CHOICE_HEIGHT="12"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
@@ -1034,6 +1034,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     8 "Locale           English (United States)"
     9 "Dialog           Edit dialogrc"
     F "Filter           robot/orders log filters"
+    D "Donate           Donate some coins"
     0 "Delist           Delisting markets")
 
   CHOICE=$(dialog --clear \
@@ -1213,6 +1214,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       ;;
 
+      ##########################################################################
+
     "0")
 
       # prompt user to install rrdtool, apache2
@@ -1224,6 +1227,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
       fi
 
       ;;
+
+      ##########################################################################
 
     "x")
 
@@ -1237,6 +1242,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       ;;
 
+      ##########################################################################
+
     "r")
 
       # prompt user to reset rrdtool databases
@@ -1249,12 +1256,16 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       ;;
 
+      ##########################################################################
+
     "F")
 
       # edit graph filter
       nano "$SYS_DIR"/robot/*_graph.filter
 
       ;;
+
+      ##########################################################################
 
     "c")
 
@@ -1273,6 +1284,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     esac
 
     ;;
+
+    ############################################################################
 
   "8")
 
@@ -1293,28 +1306,147 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-    # edit dialog configuration
+    ############################################################################
 
   "9")
 
+    # edit dialog configuration
     sudo nano /etc/dialogrc
     clear
 
     ;;
 
-    # filter out specific from log and orders
+    ############################################################################
 
   "F")
 
-    # edit log and orders filter
+    # filter out specific from log and orders
     nano "${SYS_DIR:?}"/lo_filter
 
     ;;
 
-    # delist markets
+    ############################################################################
+
+  "D")
+
+    BTC_CHECK="$(echo "$BTC_DNT_ADDR" | egrep "bc1.*.c2" | wc -l)"
+    POL_CHECK="$(echo "$REF_POLONIEX" | egrep "R2L.*.SXB" | wc -l)"
+    XEG_CHECK="$(echo "$REF_XEGGEX" | egrep "650e.*.b1172" | wc -l)"
+    NKY_CHECK="$(echo "$REF_NONKYC" | egrep "66a7.*.4b011" | wc -l)"
+
+    if [[ "$BTC_CHECK" -eq "0" || "$POL_CHECK" -eq "0" || "$XEG_CHECK" -eq "0" || "$NKY_CHECK" -eq "0" ]] &>/dev/null; then
+      parasite_check
+    fi
+
+    HEIGHT=10
+    WIDTH=42
+    CHOICE_HEIGHT=4
+    BACKTITLE="Leeloo (Multipass)"
+    TITLE="Donation"
+    MENU="Choose one option:"
+
+    OPTIONS=(1 "Address          Plain Text"
+      2 "QRCODE           QRCODE address"
+      3 "Referral         Trade Referral")
+
+    CHOICE=$(dialog --clear \
+      --backtitle "$BACKTITLE" \
+      --title "$TITLE" \
+      --menu "$MENU" \
+      $HEIGHT $WIDTH $CHOICE_HEIGHT \
+      "${OPTIONS[@]}" \
+      2>&1 >/dev/tty)
+
+    clear
+    case $CHOICE in
+
+    "1")
+
+      display_result() {
+        dialog --title "Donation" \
+          --no-collapse \
+          --msgbox "$RESULT" 7 77
+      }
+
+      RESULT="$(
+        echo "Bitcoin (BTC): $BTC_DNT_ADDR
+
+    $BTC_MEMPOOL"
+      )"
+      display_result 2>/dev/null
+      clear
+      echo "$RESULT"
+      echo
+      read -r -p "Press Enter to continue" </dev/tty
+      echo
+      clear
+
+      ;;
+
+    "2")
+
+      if ! [ -x "$(command -v "qrcode-terminal")" ] &>/dev/null; then
+        if dialog --stdout --title "QRCODE" \
+          --backtitle "Install" \
+          --yesno "Install QRCode-Terminal?" 5 29; then
+          clear
+          # install npm
+          if ! [ -x "$(command -v "npm")" ] &>/dev/null; then
+            sudo apt-get install npm
+          fi
+          # https://github.com/vercel/install-node
+          if ! [ -x "$(command -v "node")" ] &>/dev/null; then
+            sudo curl -s -X https://install-node.now.sh 2>/dev/null | bash -s -- 2>/dev/null
+          fi
+          # https://github.com/gtanner/qrcode-terminal
+          if [ -x "$(command -v "npm")" ] &>/dev/null; then
+            sudo npm install -g qrcode-terminal
+          fi
+          read -r -p "Press Enter to continue" </dev/tty
+          clear
+        fi
+      fi
+
+      # if non existing
+      if [[ ! -f "${LOG_DIR:?}"/leeloo/donate_qr ]] &>/dev/null; then
+        qrcode-terminal "$BTC_DNT_ADDR" "{small: true}" >"${LOG_DIR:?}"/leeloo/donate_qr 2>/dev/null
+      # if empty
+      elif [[ ! -s "${LOG_DIR:?}"/leeloo/donate_qr ]] &>/dev/null; then
+        qrcode-terminal "$BTC_DNT_ADDR" "{small: true}" >"${LOG_DIR:?}"/leeloo/donate_qr 2>/dev/null
+      fi
+
+      clear
+      echo "Bitcoin (BTC): $BTC_DNT_ADDR"
+      BTC_DNT_ADDR_QR="$(cat "${LOG_DIR:?}"/leeloo/donate_qr 2>/dev/null)"
+      echo "$BTC_DNT_ADDR_QR"
+      read -r -p "Press Enter to continue" </dev/tty
+      clear
+
+      ;;
+
+    "3")
+
+      echo "Poloniex:
+    $REF_POLONIEX
+    Xeggex:
+    $REF_XEGGEX
+    nonkyc:
+    $REF_NONKYC
+    "
+      read -r -p "Press Enter to continue" </dev/tty
+      clear
+
+      ;;
+
+    esac
+
+    ;;
+
+    ############################################################################
 
   "0")
 
+    # delist markets
     HEIGHT="11"
     WIDTH="40"
     CHOICE_HEIGHT="4"
@@ -2793,121 +2925,6 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
   "4")
 
     coin_token_price
-
-    ;;
-
-  esac
-
-  ;;
-
-"D")
-
-  BTC_CHECK="$(echo "$BTC_DNT_ADDR" | egrep "bc1.*.c2" | wc -l)"
-  POL_CHECK="$(echo "$REF_POLONIEX" | egrep "R2L.*.SXB" | wc -l)"
-  XEG_CHECK="$(echo "$REF_XEGGEX" | egrep "650e.*.b1172" | wc -l)"
-  NKY_CHECK="$(echo "$REF_NONKYC" | egrep "66a7.*.4b011" | wc -l)"
-
-  if [[ "$BTC_CHECK" -eq "0" || "$POL_CHECK" -eq "0" || "$XEG_CHECK" -eq "0" || "$NKY_CHECK" -eq "0" ]] &>/dev/null; then
-    parasite_check
-  fi
-
-  HEIGHT=10
-  WIDTH=42
-  CHOICE_HEIGHT=4
-  BACKTITLE="Leeloo (Multipass)"
-  TITLE="Donation"
-  MENU="Choose one option:"
-
-  OPTIONS=(1 "Address          Plain Text"
-    2 "QRCODE           QRCODE address"
-    3 "Referral         Trade Referral")
-
-  CHOICE=$(dialog --clear \
-    --backtitle "$BACKTITLE" \
-    --title "$TITLE" \
-    --menu "$MENU" \
-    $HEIGHT $WIDTH $CHOICE_HEIGHT \
-    "${OPTIONS[@]}" \
-    2>&1 >/dev/tty)
-
-  clear
-  case $CHOICE in
-
-  "1")
-
-    display_result() {
-      dialog --title "Donation" \
-        --no-collapse \
-        --msgbox "$RESULT" 7 77
-    }
-
-    RESULT="$(
-      echo "Bitcoin (BTC): $BTC_DNT_ADDR
-
-$BTC_MEMPOOL"
-    )"
-    display_result 2>/dev/null
-    clear
-    echo "$RESULT"
-    echo
-    read -r -p "Press Enter to continue" </dev/tty
-    echo
-    clear
-
-    ;;
-
-  "2")
-
-    if ! [ -x "$(command -v "qrcode-terminal")" ] &>/dev/null; then
-      if dialog --stdout --title "QRCODE" \
-        --backtitle "Install" \
-        --yesno "Install QRCode-Terminal?" 5 29; then
-        clear
-        # install npm
-        if ! [ -x "$(command -v "npm")" ] &>/dev/null; then
-          sudo apt-get install npm
-        fi
-        # https://github.com/vercel/install-node
-        if ! [ -x "$(command -v "node")" ] &>/dev/null; then
-          sudo curl -s -X https://install-node.now.sh 2>/dev/null | bash -s -- 2>/dev/null
-        fi
-        # https://github.com/gtanner/qrcode-terminal
-        if [ -x "$(command -v "npm")" ] &>/dev/null; then
-          sudo npm install -g qrcode-terminal
-        fi
-        read -r -p "Press Enter to continue" </dev/tty
-        clear
-      fi
-    fi
-
-    # if non existing
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/donate_qr ]] &>/dev/null; then
-      qrcode-terminal "$BTC_DNT_ADDR" "{small: true}" >"${LOG_DIR:?}"/leeloo/donate_qr 2>/dev/null
-    # if empty
-    elif [[ ! -s "${LOG_DIR:?}"/leeloo/donate_qr ]] &>/dev/null; then
-      qrcode-terminal "$BTC_DNT_ADDR" "{small: true}" >"${LOG_DIR:?}"/leeloo/donate_qr 2>/dev/null
-    fi
-
-    clear
-    echo "Bitcoin (BTC): $BTC_DNT_ADDR"
-    BTC_DNT_ADDR_QR="$(cat "${LOG_DIR:?}"/leeloo/donate_qr 2>/dev/null)"
-    echo "$BTC_DNT_ADDR_QR"
-    read -r -p "Press Enter to continue" </dev/tty
-    clear
-
-    ;;
-
-  "3")
-
-    echo "Poloniex:
-$REF_POLONIEX
-Xeggex:
-$REF_XEGGEX
-nonkyc:
-$REF_NONKYC
-"
-    read -r -p "Press Enter to continue" </dev/tty
-    clear
 
     ;;
 
