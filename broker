@@ -1566,9 +1566,9 @@ ${G1}$REF_NONKYC${N0}
 
   ##############################################################################
 
-  HEIGHT="20"
+  HEIGHT="21"
   WIDTH="45"
-  CHOICE_HEIGHT="13"
+  CHOICE_HEIGHT="14"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Robot Strategy Menu"
   MENU="Multipass $DATE_XARGS
@@ -1585,6 +1585,7 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
     L "Bots             robot.log"
     P "Logs             Specific log"
     R "Reset            Buy limits ($INSUFFICIENT_FUNDS_COUNT)"
+    X "Bailout          Cancel all open orders"
     0 "Delete           Remove strategy")
 
   CHOICE=$(dialog --clear \
@@ -2667,6 +2668,87 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
     fi
 
     ;;
+
+  # cancel all orders (bailout)
+
+  "X")
+
+    function bailout_orders {
+      if dialog --stdout --title "BAILOUT WARNING!" \
+        --backtitle "BAILOUT" \
+        --yesno "Yes: BAILOUT! No: Go back!" 5 32; then
+        # read the list of IDs from orders
+        while IFS= read -r BAIL_ORDER_ID; do
+          # if xeggex
+          if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
+            cancelOrder "$BAIL_ORDER_ID"
+          fi
+          # if nonkyc
+          if [[ "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
+            cancelOrder_nky "$BAIL_ORDER_ID"
+          fi
+          # Your command here, e.g. process_data "$id"
+        done <"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders
+      fi
+    }
+
+    ############################################################################
+
+    HEIGHT="15"
+    WIDTH="40"
+    CHOICE_HEIGHT="4"
+    BACKTITLE="BAILOUT ALL OPEN ORDERS"
+    TITLE="BAILOUT"
+    MENU="Choose one option:"
+
+    OPTIONS=(1 "Poloniex"
+      2 "StakeCube"
+      3 "XeggeX"
+      4 "nonkyc")
+
+    CHOICE=$(dialog --clear \
+      --backtitle "$BACKTITLE" \
+      --title "$TITLE" \
+      --menu "$MENU" \
+      $HEIGHT $WIDTH $CHOICE_HEIGHT \
+      "${OPTIONS[@]}" \
+      2>&1 >/dev/tty)
+
+    clear
+    case $CHOICE in
+
+    "1")
+
+      EXCHANGE_DIR_NAME="poloniex"
+      bailout_orders
+      ;;
+
+    "2")
+
+      EXCHANGE_DIR_NAME="stakecube"
+      bailout_orders
+
+      ;;
+
+    "3")
+
+      EXCHANGE_DIR_NAME="xeggex"
+      bailout_orders
+
+      ;;
+
+    "4")
+
+      EXCHANGE_DIR_NAME="nonkyc"
+      bailout_orders
+
+      ;;
+
+    esac
+
+    ;;
+
+    ############################################################################
 
   "0")
 
