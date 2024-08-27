@@ -2692,19 +2692,30 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
           getOrders_nky | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac >/tmp/getNKYorders.tmp
         fi
 
+        # create file based on orders found
         echo "$(cat /tmp/get*orders.tmp 2>/dev/null | awk -F: '{ print $1 }' | egrep "[0a-z9]+")" >/tmp/bto.tmp
 
         # read the list of IDs from orders
         while IFS= read -r BAIL_ORDER_ID; do
+
           # if xeggex
           if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
             cancelOrder "$BAIL_ORDER_ID" >>/tmp/btolist.tmp
+            if [[ "$(echo "$BAIL_ORDER_ID" | egrep -c "[0a-z9]+")" -eq "1" ]] &>/dev/null; then
+              echo "Cancel order id: $BAIL_ORDER_ID - ($(date | xargs))"
+            fi
             sleep 0.5
             echo
           fi
+
+          ######################################################################
+
           # if nonkyc
           if [[ "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
             cancelOrder_nky "$BAIL_ORDER_ID" >>/tmp/btolist.tmp
+            if [[ "$(echo "$BAIL_ORDER_ID" | egrep -c "[0a-z9]+")" -eq "1" ]] &>/dev/null; then
+              echo "Cancel order id: $BAIL_ORDER_ID - ($(date | xargs))"
+            fi
             sleep 0.5
             echo
           fi
@@ -2722,6 +2733,16 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         echo "Total: $BAIL_COUNT_TOTAL - Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL"
         echo "Error: $BAIL_COUNT_ERROR - Success: $BAIL_COUNT_SUCCESS"
         echo
+
+        ########################################################################
+
+        # remove old files
+        rm /tmp/get*orders.tmp &>/dev/null
+        rm /tmp/btolist.tmp &>/dev/null
+        rm /tmp/bto.tmp &>/dev/null
+
+        ########################################################################
+
         read -r -p "Press Enter to continue" </dev/tty
       fi
     }
