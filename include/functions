@@ -604,7 +604,7 @@ function coin_token_price() {
   # if data exist
   if [[ -n "$FIAT_CURRENCY" && -n "$COIN_TOKEN_CURRENCY" ]] &>/dev/null; then
     # search up token coin price in fiat currency
-    COIN_TOKEN_PRICE="$(torify curl -s -X "https://min-api.cryptocompare.com/data/price?fsym=$COIN_TOKEN_CURRENCY&tsyms=$FIAT_CURRENCY" | jq -r '."'$FIAT_CURRENCY'"' | awk '{ printf "%.9f\n", $1 }')"
+    COIN_TOKEN_PRICE="$(torify curl -s -X "https://min-api.cryptocompare.com/data/price?fsym=$COIN_TOKEN_CURRENCY&tsyms=$FIAT_CURRENCY" | jq -r '."'$FIAT_CURRENCY'"' 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
     # search up token coin data
     COIN_TOKEN_DATA="$(cat "${LOG_DIR:?}"/leeloo/*/*prices* 2>/dev/null | tr '_' '/' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$COIN_TOKEN_CURRENCY" | awk -F: '{ print $2,$3,$4,$5 }' | sort -n -k 2 -r | head -225)"
     # search count
@@ -1134,7 +1134,7 @@ function order_history {
     ORDER_EXCHANGE="XeggeX"
     # open orders function
     function result_orders {
-      echo "$(getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac)" >"${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null
+      echo "$(getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' 2>/dev/null | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac)" >"${LOG_DIR:?}"/leeloo/xeggex/orders 2>/dev/null
     }
   fi
 
@@ -1152,7 +1152,7 @@ function order_history {
     ORDER_EXCHANGE="nonkyc"
     # open orders function
     function result_orders {
-      echo "$(getOrders_nky | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac)" >"${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null
+      echo "$(getOrders_nky | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' 2>/dev/null | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac)" >"${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null
     }
   fi
 

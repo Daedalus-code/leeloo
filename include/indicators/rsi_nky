@@ -94,7 +94,7 @@ get_rsi_nky() {
     API_URL="https://api.nonkyc.io/api/v2/market/candles?symbol=$SYMBOL&interval=$INTERVAL&resolution=$RESOLUTION&countBack=$COUNTBACK&firstDataRequest=$FIRST_DATA_REQUEST"
 
     # retrieve data and store it in a variable
-    DATA=$(curl -s "$API_URL" | jq -r '.bars[]?.close')
+    DATA=$(curl -s "$API_URL" | jq -r '.bars[]?.close' 2>/dev/null)
     # fix tiny n (e)
     DATA="$(echo "${DATA[@]}" 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
