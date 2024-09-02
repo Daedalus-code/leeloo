@@ -3599,15 +3599,32 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
 
   ##############################################################################
 
-  # rsi dust limit
-  get_rsi_xgx "$DIP_CHANGE_NAME" "$DIP_REFERENCE_NAME" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME}"_"${DIP_REFERENCE_NAME}".dust_rsi
+  # old ask price (trades) last n buy lines
+  DIP_CHANGE_OLD_PRICE_LINES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | head -54 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
 
   ##############################################################################
 
-  # old ask price (trades)
-  DIP_CHANGE_OLD_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
+  # old ask price count
+  DIP_CHAGE_AVG_COUNT="$(echo "$DIP_CHANGE_OLD_PRICE_LINES" | wc -l)"
+  # get total amount found
+  DIP_CHANGE_OLD_PRICE_TOTAL="$(echo "$DIP_CHANGE_OLD_PRICE_LINES" | awk '{ SUM += $1} END { print SUM }')"
+
+  ##############################################################################
+
+  # calculate average buy price based on last n lines
+  DIP_CHANGE_AVG_BUY="$(echo "$DIP_CHANGE_OLD_PRICE_TOTAL/$DIP_CHAGE_AVG_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+  ##############################################################################
+
+  # new ask price based on average buys
+  DIP_CHANGE_OLD_PRICE="$DIP_CHANGE_AVG_BUY"
+
+  ##############################################################################
+
   # new ask price (prices.dip)
   DIP_CHANGE_NEW_PRICE="$(grep -w "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+
+  ##############################################################################
 
   # if buy price are more than price
   if [[ "$DIP_CHANGE_OLD_PRICE" > "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
