@@ -3605,7 +3605,8 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   # get the buy trades
   DIP_CHANGE_BUY_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | awk '{ print $5, $6 }')"
 
-  if [[ "$(echo "$DIP_CHANGE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+  # if trades data and available balance works
+  if [[ -n "$DIP_CHANGE_BUY_TRADES" && "$(echo "$DIP_CHANGE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
     # initialize variables
     ACCUMULATED_AMOUNT=0
