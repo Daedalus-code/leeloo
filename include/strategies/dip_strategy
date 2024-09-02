@@ -3598,27 +3598,39 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   fi
 
   ##############################################################################
-
-  # old ask price (trades) last n buy lines
-  DIP_CHANGE_OLD_PRICE_LINES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | head -26 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
-
   ##############################################################################
 
-  # old ask price count
-  DIP_CHAGE_AVG_COUNT="$(echo "$DIP_CHANGE_OLD_PRICE_LINES" | wc -l)"
-  # get total amount found
-  DIP_CHANGE_OLD_PRICE_TOTAL="$(echo "$DIP_CHANGE_OLD_PRICE_LINES" | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+  # set the available balance (replace with your actual available balance)
+  DIP_CHANGE_AVAILABLE_BALANCE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -w "$DIP_CHANGE_NAME" | awk '{ print $3 }')"
+  # get the buy trades (you can adjust head -26 to retrieve more if needed)
+  DIP_CHANGE_BUY_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | awk '{ print $5, $6 }')"
 
-  ##############################################################################
+  # initialize variables
+  ACCUMULATED_AMOUNT=0
+  WEIGHTED_SUM=0
 
-  # calculate average buy price based on last n lines
-  DIP_CHANGE_AVG_BUY="$(echo "$DIP_CHANGE_OLD_PRICE_TOTAL/$DIP_CHAGE_AVG_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # iterate over each buy trade
+  while read -r PRICE AMOUNT; do
+    # if adding this amount exceeds the available balance, calculate the weighted sum for the partial amount
+    if (($(echo "$ACCUMULATED_AMOUNT + $AMOUNT > $DIP_CHANGE_AVAILABLE_BALANCE" | bc -l))); then
+      PARTIAL_AMOUNT=$(echo "$DIP_CHANGE_AVAILABLE_BALANCE - $ACCUMULATED_AMOUNT" | bc -l)
+      WEIGHTED_SUM=$(echo "$WEIGHTED_SUM + ($PRICE * $PARTIAL_AMOUNT)" | bc -l)
+      ACCUMULATED_AMOUNT=$DIP_CHANGE_AVAILABLE_BALANCE
+      break
+    fi
 
-  ##############################################################################
+    # accumulate the amount and weighted sum
+    ACCUMULATED_AMOUNT=$(echo "$ACCUMULATED_AMOUNT + $AMOUNT" | bc -l)
+    WEIGHTED_SUM=$(echo "$WEIGHTED_SUM + ($PRICE * $AMOUNT)" | bc -l)
 
-  # new ask price based on average buys
+  done <<<"$DIP_CHANGE_BUY_TRADES"
+
+  # calculate the average buy price based on the accumulated amount
+  DIP_CHANGE_AVG_BUY=$(echo "$WEIGHTED_SUM / $ACCUMULATED_AMOUNT" | bc -l | awk '{ printf "%.9f\n", $1 }')
+  # set the old price to the calculated average buy price
   DIP_CHANGE_OLD_PRICE="$DIP_CHANGE_AVG_BUY"
 
+  ##############################################################################
   ##############################################################################
 
   # new ask price (prices.dip)
