@@ -3628,7 +3628,7 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   ##############################################################################
   ##############################################################################
 
-  # set the available balance (replace with your actual available balance)
+  # set the available balance
   DIP_CHANGE_AVAILABLE_BALANCE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -w "$DIP_CHANGE_NAME" | awk '{ print $3 }')"
   # get the buy trades
   DIP_CHANGE_BUY_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | awk '{ print $5, $6 }')"
@@ -3637,8 +3637,8 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   if [[ -n "$DIP_CHANGE_BUY_TRADES" && "$(echo "$DIP_CHANGE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
     # initialize variables
-    ACCUMULATED_AMOUNT=0
-    WEIGHTED_SUM=0
+    ACCUMULATED_AMOUNT="0"
+    WEIGHTED_SUM="0"
 
     # iterate over each buy trade
     while read -r PRICE AMOUNT; do
