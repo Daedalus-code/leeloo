@@ -3598,6 +3598,34 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   fi
 
   ##############################################################################
+
+  # if any data
+  if [[ -n "$DIP_CHANGE_NAME" && -n "$DIP_REFERENCE_NAME" ]] &>/dev/null; then
+
+    # calculate the age of target orders file in seconds
+    TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${DIP_REFERENCE_NAME:?}".trades 2>/dev/null || echo 0)
+
+    # check if target orders data is old enough or doesn't exist
+    if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${DIP_REFERENCE_NAME:?}".trades ]] &>/dev/null; then
+      # if market exist
+      if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$DIP_CHANGE_NAME" | grep -wc "$DIP_REFERENCE_NAME" || true)" -eq "1" ]] &>/dev/null; then
+
+        # if xeggex order
+        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+          # get trades data and format it
+          getTrades "$DIP_CHANGE_NAME" "$DIP_REFERENCE_NAME" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${DIP_REFERENCE_NAME:?}".trades
+        fi
+
+        # if nonkyc order
+        if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+          # get trades data and format it
+          getTrades_nky "$DIP_CHANGE_NAME" "$DIP_REFERENCE_NAME" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${DIP_REFERENCE_NAME:?}".trades
+        fi
+      fi
+    fi
+  fi
+
+  ##############################################################################
   ##############################################################################
 
   # set the available balance (replace with your actual available balance)
@@ -3632,9 +3660,11 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
     DIP_CHANGE_AVG_BUY=$(echo "$WEIGHTED_SUM / $ACCUMULATED_AMOUNT" | bc -l | awk '{ printf "%.9f\n", $1 }')
     # set the old price to the calculated average buy price
     DIP_CHANGE_OLD_PRICE="$DIP_CHANGE_AVG_BUY"
-  else
-    # set the old price to the last buy price
-    DIP_CHANGE_OLD_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }')"
+  fi
+
+  # if zero
+  if [[ -z "$DIP_CHANGE_OLD_PRICE" ]] &>/dev/null; then
+    DIP_CHANGE_OLD_PRICE="0"
   fi
 
   ##############################################################################
@@ -3669,41 +3699,12 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   DIP_CHANGE_OLD_AMOUNT="$(echo "$DIP_CHANGE_OLD_PRICE*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # new amount priced
   DIP_CHANGE_NEW_AMOUNT="$(echo "$DIP_CHANGE_NEW_PRICE*$DIP_CHANGE_ASSET_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-
   # calculate profit or loss in coins/tokens amount
   DIP_CHANGE_PROFIT_LOSS_AMOUNT="$(echo "$DIP_CHANGE_NEW_AMOUNT-$DIP_CHANGE_OLD_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   # if listing market already being spent
   DIP_CHANGE_ALREADY_SPENT="$(cat "${LOG_DIR:?}"/leeloo/robot.*.log 2>/dev/null | sort -t ':' -k 1.8,1.21n -k 1.4,1.5n -k 1.1,1.2n | egrep -v "Reference|A/O" | tail -"$LOG_LENGTH" | grep "$DIP_CHANGE_NAME" | egrep -c "Buy |Sell " || true)"
-
   # time now (epoch)
   DIP_EPOCH_TIME_NOW="$(date '+%s' | awk '{ printf "%.10f\n", $1 }')"
-
-  # if any data
-  if [[ -n "$DIP_CHANGE_NAME" && -n "$DIP_REFERENCE_NAME" ]] &>/dev/null; then
-
-    # calculate the age of target orders file in seconds
-    TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${DIP_REFERENCE_NAME:?}".trades 2>/dev/null || echo 0)
-
-    # check if target orders data is old enough or doesn't exist
-    if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${DIP_REFERENCE_NAME:?}".trades ]] &>/dev/null; then
-      # if market exist
-      if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/*prices* | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$DIP_CHANGE_NAME" | grep -wc "$DIP_REFERENCE_NAME" || true)" -eq "1" ]] &>/dev/null; then
-
-        # if xeggex order
-        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-          # get trades data and format it
-          getTrades "$DIP_CHANGE_NAME" "$DIP_REFERENCE_NAME" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${DIP_REFERENCE_NAME:?}".trades
-        fi
-
-        # if nonkyc order
-        if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
-          # get trades data and format it
-          getTrades_nky "$DIP_CHANGE_NAME" "$DIP_REFERENCE_NAME" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"${DIP_CHANGE_NAME:?}"_"${DIP_REFERENCE_NAME:?}".trades
-        fi
-      fi
-    fi
-  fi
-
   # bought trade time (epoch)
   DIP_BOUGHT_TRADE_TIME="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | awk '{ print $NF }' | head -1)"
   # sold trade time (epoch)
