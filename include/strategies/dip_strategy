@@ -3632,31 +3632,33 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   # get the buy trades
   DIP_CHANGE_BUY_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$DIP_CHANGE_NAME"_"$DIP_REFERENCE_NAME".trades 2>/dev/null | grep "buy" | awk '{ print $5, $6 }')"
 
-  # if trades data and available balance works
+  # if any data, available balance is positive
   if [[ -n "$DIP_CHANGE_BUY_TRADES" && "$(echo "$DIP_CHANGE_AVAILABLE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
-    # initialize variables
+    # default values
     ACCUMULATED_AMOUNT="0"
     WEIGHTED_SUM="0"
 
     # iterate over each buy trade
     while read -r PRICE AMOUNT; do
       # if adding this amount exceeds the available balance, calculate the weighted sum for the partial amount
-      if (($(echo "$ACCUMULATED_AMOUNT + $AMOUNT > $DIP_CHANGE_AVAILABLE_BALANCE" | bc -l))); then
-        PARTIAL_AMOUNT=$(echo "$DIP_CHANGE_AVAILABLE_BALANCE - $ACCUMULATED_AMOUNT" | bc -l)
-        WEIGHTED_SUM=$(echo "$WEIGHTED_SUM + ($PRICE * $PARTIAL_AMOUNT)" | bc -l)
+      if (($(echo "$ACCUMULATED_AMOUNT + $AMOUNT > $DIP_CHANGE_AVAILABLE_BALANCE" | bc -l 2>/dev/null))); then
+        # calculate partial amount
+        PARTIAL_AMOUNT=$(echo "$DIP_CHANGE_AVAILABLE_BALANCE - $ACCUMULATED_AMOUNT" | bc -l 2>/dev/null)
+        # calculate weighted sum
+        WEIGHTED_SUM=$(echo "$WEIGHTED_SUM + ($PRICE * $PARTIAL_AMOUNT)" | bc -l 2>/dev/null)
+        # accumulated amount
         ACCUMULATED_AMOUNT=$DIP_CHANGE_AVAILABLE_BALANCE
         break
       fi
-
       # accumulate the amount and weighted sum
-      ACCUMULATED_AMOUNT=$(echo "$ACCUMULATED_AMOUNT + $AMOUNT" | bc -l)
-      WEIGHTED_SUM=$(echo "$WEIGHTED_SUM + ($PRICE * $AMOUNT)" | bc -l)
-
+      ACCUMULATED_AMOUNT=$(echo "$ACCUMULATED_AMOUNT + $AMOUNT" | bc -l 2>/dev/null)
+      # calculate weighted sum
+      WEIGHTED_SUM=$(echo "$WEIGHTED_SUM + ($PRICE * $AMOUNT)" | bc -l 2>/dev/null)
     done <<<"$DIP_CHANGE_BUY_TRADES"
 
     # calculate the average buy price based on the accumulated amount
-    DIP_CHANGE_AVG_BUY=$(echo "$WEIGHTED_SUM / $ACCUMULATED_AMOUNT" | bc -l | awk '{ printf "%.9f\n", $1 }')
+    DIP_CHANGE_AVG_BUY=$(echo "$WEIGHTED_SUM / $ACCUMULATED_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
     # set the old price to the calculated average buy price
     DIP_CHANGE_OLD_PRICE="$DIP_CHANGE_AVG_BUY"
   fi
