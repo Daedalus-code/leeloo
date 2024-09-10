@@ -1016,9 +1016,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   ##############################################################################
 
-  HEIGHT="20"
+  HEIGHT="16"
   WIDTH="53"
-  CHOICE_HEIGHT="13"
+  CHOICE_HEIGHT="8"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
@@ -1026,10 +1026,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
   OPTIONS=(
     1 "Config           Leeloo config"
     2 "API              Secret & Key config"
-    3 "Reset            All configurations!"
-    4 "Reset            Leeloo config"
-    5 "Reset            Secret & Key config"
-    P "Reset            Paused markets"
+    R "Reset            Reset Menu"
     C "Crontab          Linux jobs (nano)"
     G "Graph            Reference graphs"
     8 "Locale           English (United States)"
@@ -1068,79 +1065,108 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     ;;
 
-    # reset all configurations #################################################
+    # reset menu ###############################################################
 
-  "3")
+  "R")
 
-    if dialog --stdout --title "Reset all configurations?" \
-      --backtitle "Reset all?" \
-      --yesno "Yes: Reset! No: Go back!" 5 31; then
-      sudo rm "${SYS_DIR:?}"/*.conf &>/dev/null
-      cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
-      bash /usr/local/bin/include/leeloo/install
-      clear
-    fi
+    HEIGHT="15"
+    WIDTH="53"
+    CHOICE_HEIGHT="4"
+    BACKTITLE="Leeloo (Multipass)"
+    TITLE="Reset Menu"
+    MENU="Multipass $DATE_XARGS"
 
-    ;;
+    OPTIONS=(1 "Reset            All configurations!"
+      2 "Reset            Leeloo config"
+      3 "Reset            Secret & Key config"
+      4 "Reset            Paused markets")
 
-    # reset broker configuration ###############################################
+    CHOICE=$(dialog --clear \
+      --backtitle "$BACKTITLE" \
+      --title "$TITLE" \
+      --menu "$MENU" \
+      $HEIGHT $WIDTH $CHOICE_HEIGHT \
+      "${OPTIONS[@]}" \
+      2>&1 >/dev/tty)
 
-  "4")
-
-    if dialog --stdout --title "Reset broker configuration?" \
-      --backtitle "Reset broker.conf?" \
-      --yesno "Yes: Reset! No: Go back!" 5 33; then
-      sudo rm "${SYS_DIR:?}"/*.conf &>/dev/null
-      bash /usr/local/bin/include/leeloo/install
-      clear
-    fi
-
-    ;;
-
-    # reset k & s configuration ################################################
-
-  "5")
-
-    cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
     clear
+    case $CHOICE in
 
-    ;;
+    "1")
 
-    # reset paused markets #####################################################
+      if dialog --stdout --title "Reset all configurations?" \
+        --backtitle "Reset all?" \
+        --yesno "Yes: Reset! No: Go back!" 5 31; then
+        sudo rm "${SYS_DIR:?}"/*.conf &>/dev/null
+        cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
+        bash /usr/local/bin/include/leeloo/install
+        clear
+      fi
 
-  "P")
+      ;;
 
-    PAUSED_MARKET_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/*/pause 2>/dev/null | grep "total" | awk '{ print $1 }')"
+      # reset broker configuration #############################################
 
-    display_result() {
-      dialog --title "$PAUSED_MARKET_COUNT Paused Markets reset?" \
-        --no-collapse \
-        --msgbox "$RESULT" 0 0
-    }
-    RESULT="$(wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null)"
-    display_result 2>/dev/null
+    "2")
 
-    # reset pause files
-    if dialog --stdout --title "$PAUSED_MARKET_COUNT Paused Markets reset?" \
-      --backtitle "Reset pause files?" \
-      --yesno "Yes: Reset! No: Exit!" 5 0; then
-      sleep 1
-      truncate -s 0 "$LOG_DIR"/leeloo/*/pause &>/dev/null
+      if dialog --stdout --title "Reset broker configuration?" \
+        --backtitle "Reset broker.conf?" \
+        --yesno "Yes: Reset! No: Go back!" 5 33; then
+        sudo rm "${SYS_DIR:?}"/*.conf &>/dev/null
+        bash /usr/local/bin/include/leeloo/install
+        clear
+      fi
+
+      ;;
+
+      # reset k & s configuration ##############################################
+
+    "3")
+
+      cp /home/"$(whoami)"/leeloo/include/api/DcMs "${SYS_DIR:?}"/sMcD &>/dev/null
+      clear
+
+      ;;
+
+      # reset paused markets ###################################################
+
+    "4")
+
+      PAUSED_MARKET_COUNT="$(wc -l "${LOG_DIR:?}"/leeloo/*/pause 2>/dev/null | grep "total" | awk '{ print $1 }')"
+
       display_result() {
-        dialog --title "$PAUSED_MARKET_COUNT Paused Markets reset!" \
+        dialog --title "$PAUSED_MARKET_COUNT Paused Markets reset?" \
           --no-collapse \
           --msgbox "$RESULT" 0 0
       }
       RESULT="$(wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null)"
       display_result 2>/dev/null
-    fi
 
-    # edit pause files
-    if dialog --stdout --title "$PAUSED_MARKET_COUNT Paused Markets edit?" \
-      --backtitle "Edit pause files?" \
-      --yesno "Yes: Edit! No: Exit!" 5 0; then
-      nano "${LOG_DIR:?}"/leeloo/*/pause
-    fi
+      # reset pause files
+      if dialog --stdout --title "$PAUSED_MARKET_COUNT Paused Markets reset?" \
+        --backtitle "Reset pause files?" \
+        --yesno "Yes: Reset! No: Exit!" 5 0; then
+        sleep 1
+        truncate -s 0 "$LOG_DIR"/leeloo/*/pause &>/dev/null
+        display_result() {
+          dialog --title "$PAUSED_MARKET_COUNT Paused Markets reset!" \
+            --no-collapse \
+            --msgbox "$RESULT" 0 0
+        }
+        RESULT="$(wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null)"
+        display_result 2>/dev/null
+      fi
+
+      # edit pause files
+      if dialog --stdout --title "$PAUSED_MARKET_COUNT Paused Markets edit?" \
+        --backtitle "Edit pause files?" \
+        --yesno "Yes: Edit! No: Exit!" 5 0; then
+        nano "${LOG_DIR:?}"/leeloo/*/pause
+      fi
+
+      ;;
+
+    esac
 
     ;;
 
