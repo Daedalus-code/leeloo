@@ -529,6 +529,7 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
 
     display_result() {
       dialog --title "$FILE_TIME :: +$EXCHANGE_ASSETS :: $EXCHANGE_API Account Balance ($SCE_NONCE_COUNTER)" \
+        --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
   fi
@@ -575,6 +576,7 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
 
     display_result() {
       dialog --title "$FILE_TIME :: +$EXCHANGE_ASSETS :: $EXCHANGE_API Account Balance" \
+        --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
   fi
@@ -621,10 +623,14 @@ $COIN_TOKEN_DATA"
     LENGTH="$(echo "$(echo "$RESULT" | column -t | wc -l)+4" | bc 2>/dev/null)"
     WIDTH="$(echo "$(echo "$RESULT" | column -t | wc -L)+4" | bc 2>/dev/null)"
 
+    # format result using column -t
+    RESULT="$(echo "$RESULT" | column -t)"
+
     display_result() {
       dialog --title "Price Search: $FIAT_CURRENCY > $COIN_TOKEN_CURRENCY +$COIN_TOKEN_COUNT" \
+        --no-collapse \
         --scrollbar \
-        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
     display_result 2>/dev/null
   else
@@ -632,10 +638,14 @@ $COIN_TOKEN_DATA"
     LENGTH="$(echo "$(echo "$RESULT" | column -t | wc -l)+4" | bc 2>/dev/null)"
     WIDTH="$(echo "$(echo "$RESULT" | column -t | wc -L)+14" | bc 2>/dev/null)"
 
+    # format result using column -t
+    RESULT="$(echo "$RESULT" | column -t)"
+
     display_result() {
       dialog --title "Price Search: no data" \
+        --no-collapse \
         --scrollbar \
-        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
     display_result 2>/dev/null
   fi
@@ -759,10 +769,14 @@ $MARKET_RESULT"
     FILE_TIME="00:00"
   fi
 
+  # format result using column -t
+  RESULT="$(echo "$RESULT" | column -t)"
+
   display_result() {
     dialog --title "$FILE_TIME | Top 225 $EXCHANGE_API Market: +$MARKET_COUNT | $DATE | ${MARKET_MOON_VALUE:?}%" \
+      --no-collapse \
       --scrollbar \
-      --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+      --msgbox "$RESULT" "$LENGTH" "$WIDTH"
   }
   display_result 2>/dev/null
 }
@@ -844,10 +858,14 @@ $MARKET_RESULT"
     FILE_TIME="00:00"
   fi
 
+  # format result using column -t
+  RESULT="$(echo "$RESULT" | column -t)"
+
   display_result() {
     dialog --title "$FILE_TIME | Top 225 $EXCHANGE_API Market: +$MARKET_COUNT | $DATE | ${MARKET_MOON_VALUE:?}%" \
+      --no-collapse \
       --scrollbar \
-      --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+      --msgbox "$RESULT" "$LENGTH" "$WIDTH"
   }
   display_result 2>/dev/null
 }
@@ -967,9 +985,13 @@ function search_market() {
       WIDTH="77"
     fi
 
+    # format result using column -t
+    RESULT="$(echo "$RESULT" | column -t)"
+
     display_result() {
       dialog --title "Search $EXCHANGE_API result $MARKET_SEARCH: +$MARKET_COUNT | $DATE | ${MARKET_MOON_VALUE:?}%" \
-        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+        --no-collapse \
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
     if [[ "$MARKET_COUNT" -eq "0" ]] &>/dev/null; then
@@ -1416,9 +1438,13 @@ function order_history {
       ORDER_PERCENTAGE_SELL="0"
     fi
 
+    # format result using column -t
+    RESULT="$(echo "$RESULT" | column -t)"
+
     display_result() {
       dialog --title "Open Orders: +$ORDER_TOTAL :: Buy: $ORDER_TOTAL_BUY (${ORDER_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_TOTAL_SELL (${ORDER_PERCENTAGE_SELL:?}%)" \
-        --msgbox "$(echo "$RESULT" | column -t)" "$ORDER_TOTAL_LENGTH" "$ORDER_TOTAL_WIDTH"
+        --no-collapse \
+        --msgbox "$RESULT" "$ORDER_TOTAL_LENGTH" "$ORDER_TOTAL_WIDTH"
     }
 
     display_result 2>/dev/null
@@ -1475,9 +1501,13 @@ function order_history {
       RESULT="No history found"
     fi
 
+    # format result using column -t
+    RESULT="$(echo "$RESULT" | column -t)"
+
     display_result() {
       dialog --title "Order history: +$ORDER_HISTORY_TOTAL :: Buy: $ORDER_HISTORY_TOTAL_BUY (${ORDER_HISTORY_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_HISTORY_TOTAL_SELL (${ORDER_HISTORY_PERCENTAGE_SELL:?}%)" \
-        --msgbox "$(echo "$RESULT" | column -t)" 0 0
+        --no-collapse \
+        --msgbox "$RESULT" 0 0
     }
 
     display_result 2>/dev/null
@@ -1554,9 +1584,13 @@ function order_history_data {
       ORDER_HISTORY_PERCENTAGE_SELL="0"
     fi
 
+    # format result using column -t
+    RESULT="$(echo "$RESULT" | column -t)"
+
     display_result() {
       dialog --title "Order history: +$ORDER_HISTORY_TOTAL :: Buy: $ORDER_HISTORY_TOTAL_BUY (${ORDER_HISTORY_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_HISTORY_TOTAL_SELL (${ORDER_HISTORY_PERCENTAGE_SELL:?}%) Balance: $COIN_TOKEN_BALANCE $COIN_TOKEN" \
-        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+        --no-collapse \
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
     display_result 2>/dev/null
