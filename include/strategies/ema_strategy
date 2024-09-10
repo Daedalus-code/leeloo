@@ -959,8 +959,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
 
                 # remove old signal_order
                 rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
-                # cancel old ema orders
-                cancel_old_orders
 
                 # buy order ####################################################
 
@@ -1001,13 +999,16 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
             # if limit order
           elif [[ "$MARKET_LIMIT" == "limit" ]] 2>>"${LOG_ERROR:?}"; then
 
+            ####################################################################
+            ####################################################################
+
             # balance check
             if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
               # if insufficient funds from last order
               if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
-                ################################################################
-                ################################################################
+                # cancel old ema orders
+                cancel_old_orders
 
                 # if xeggex order
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
@@ -1172,8 +1173,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
 
                 # remove old signal_order
                 rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
-                # cancel old ema orders
-                cancel_old_orders
 
                 # sell order ###################################################
 
@@ -1221,6 +1220,9 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
             if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
               # if insufficient funds from last order
               if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
+
+                # cancel old ema orders
+                cancel_old_orders
 
                 # if xeggex order
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
