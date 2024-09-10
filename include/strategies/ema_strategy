@@ -97,6 +97,32 @@ decimal_market          # decimal market
 
 ################################################################################
 
+function cancel_old_orders {
+  # if any data
+  if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    # ema old orders
+    EMA_OLD_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null | awk -F: '{ print $1 }')"
+    # if any data
+    if [[ -n "$EMA_OLD_ORDERS" ]] &>/dev/null; then
+      # cancel old orders
+      echo "$EMA_OLD_ORDERS" | while IFS= read -r ORDER_ID; do
+        # if xeggex cancelorder
+        if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+          # cancel ghost order
+          cancelOrder "$ORDER_ID" 2>>"${LOG_ERROR:?}"
+        fi
+        # if nonkyc cancelorder
+        if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+          # cancel ghost order
+          cancelOrder_nky "$ORDER_ID" 2>>"${LOG_ERROR:?}"
+        fi
+      done
+    fi
+  fi
+}
+
+################################################################################
+
 # if txid age greater than signal limit in hours (based on configuration)
 if [[ "$(echo "$TX_ID_AGE_HOURS" | awk -F. '{ print $1 }')" -gt "$SIGNAL_AGE" ]] 2>>"${LOG_ERROR:?}"; then
   # reset status file
@@ -931,7 +957,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
               # if insufficient funds from last order
               if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
+                # remove old signal_order
                 rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
+                # cancel old ema orders
+                cancel_old_orders
 
                 # buy order ####################################################
 
@@ -1141,7 +1170,10 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
               # if insufficient funds from last order
               if [[ "$NO_FUNDS" -eq "0" ]] &>/dev/null; then
 
+                # remove old signal_order
                 rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
+                # cancel old ema orders
+                cancel_old_orders
 
                 # sell order ###################################################
 
