@@ -1016,9 +1016,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   ##############################################################################
 
-  HEIGHT="17"
+  HEIGHT="18"
   WIDTH="53"
-  CHOICE_HEIGHT="9"
+  CHOICE_HEIGHT="10"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
@@ -1031,6 +1031,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     G "Graph            Reference graphs"
     8 "Locale           English (United States)"
     9 "Dialog           Edit dialogrc"
+    N "Data             Data usage"
     F "Filter           robot/orders log filters"
     D "Donate           Donate some coins"
     0 "Delist           Delisting markets")
@@ -1357,6 +1358,32 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     # edit dialog configuration
     sudo nano /etc/dialogrc
     clear
+
+    ;;
+
+  ##############################################################################
+
+  "N")
+
+    # ifconfig data
+    ifconfig >/tmp/ifconfig
+
+    IFCONFIG_RX="$(cat /tmp/ifconfig 2>/dev/null | grep "RX" | head -1 | xargs)"
+    IFCONFIG_TX="$(cat /tmp/ifconfig 2>/dev/null | grep "TX" | head -1 | xargs)"
+
+    WIDTH="$(echo "$IFCONFIG_RX" | wc -L)"
+    WIDTH="$(echo "$WIDTH+4" | bc 2>/dev/null)"
+
+    RESULT="$IFCONFIG_RX
+$IFCONFIG_TX"
+
+    display_result() {
+      dialog --title "Data transmit/received" \
+        --no-collapse \
+        --msgbox "$RESULT" 6 "$WIDTH"
+    }
+
+    display_result 2>/dev/null
 
     ;;
 
