@@ -99,7 +99,16 @@ else
 Example: $HOME" 8 47 \
       3>&1 1>&2 2>&3 3>&-
   )
+
+  # if zero
+  if [[ -z "$HOME_DIR" ]] &>/dev/null; then
+    # use $home (default)
+    HOME_DIR="$HOME"
+  fi
+
+  # move repo
   mv "$HOME_DIR"/leeloo-main "$HOME_DIR"/leeloo &>/dev/null
+  # install broker.config
   cp "$HOME_DIR"/leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf &>/dev/null
 
   # if not found
