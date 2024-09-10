@@ -1016,9 +1016,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   ##############################################################################
 
-  HEIGHT="19"
+  HEIGHT="20"
   WIDTH="53"
-  CHOICE_HEIGHT="12"
+  CHOICE_HEIGHT="13"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Configuration Menu"
   MENU="Multipass $DATE_XARGS"
@@ -1030,6 +1030,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     4 "Reset            Leeloo config"
     5 "Reset            Secret & Key config"
     P "Reset            Paused markets"
+    C "Crontab          Linux jobs (nano)"
     G "Graph            Reference graphs"
     8 "Locale           English (United States)"
     9 "Dialog           Edit dialogrc"
@@ -1140,6 +1141,23 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
       --yesno "Yes: Edit! No: Exit!" 5 0; then
       nano "${LOG_DIR:?}"/leeloo/*/pause
     fi
+
+    ;;
+
+  # crontab -e #################################################################
+
+  "4")
+
+    echo "leeloo line & graph line EXAMPLES:
+
+*/1 * * * * bash /usr/local/bin/include/leeloo/robot/looper
+*/1 * * * * GRAPH_EXCHANGE='Example:( GRAPH_EXCHANGE='xeggex' )!' bash /usr/local/bin/include/leeloo/graph
+"
+    echo "Add/Remove leeloo line for run/stop"
+    read -r -p "Press Enter to continue" </dev/tty
+    echo
+    clear
+    crontab -e
 
     ;;
 
@@ -2332,17 +2350,16 @@ $(ls -lSah "${SYS_DIR:?}"/robot/"$STRATEGY_NAME"*.strategy 2>/dev/null | column 
 
     if [[ "$KEY_SECRET_OK" -eq "1" ]] &>/dev/null; then
 
-      HEIGHT=11
-      WIDTH=41
-      CHOICE_HEIGHT=4
+      HEIGHT="10"
+      WIDTH="41"
+      CHOICE_HEIGHT="3"
       BACKTITLE="Leeloo (Multipass)"
       TITLE="Robot controller"
       MENU="Choose one option:"
 
       OPTIONS=(1 "Status           Robot status"
         r "Re/Start         Start robot"
-        s "Stop             Stop robot"
-        4 "Crontab          Linux jobs")
+        s "Stop             Stop robot")
 
       CHOICE=$(dialog --clear \
         --backtitle "$BACKTITLE" \
@@ -2445,21 +2462,6 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
         RESULT="$(echo "leeloo line: */1 * * * * bash /usr/local/bin/include/leeloo/robot/looper")"
         display_result 2>/dev/null
-        crontab -e
-
-        ;;
-
-      "4")
-
-        echo "leeloo line & graph line EXAMPLES:
-
-*/1 * * * * bash /usr/local/bin/include/leeloo/robot/looper
-*/1 * * * * GRAPH_EXCHANGE='Example:( GRAPH_EXCHANGE='xeggex' )!' bash /usr/local/bin/include/leeloo/graph
-"
-        echo "Add/Remove leeloo line for run/stop"
-        read -r -p "Press Enter to continue" </dev/tty
-        echo
-        clear
         crontab -e
 
         ;;
