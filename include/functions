@@ -525,12 +525,11 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
     fi
 
     # format result using column -t
-    FORMATTED_RESULT=$(echo "$RESULT" | column -t)
+    RESULT="$(echo "$RESULT" | column -t)"
 
     display_result() {
       dialog --title "$FILE_TIME :: +$EXCHANGE_ASSETS :: $EXCHANGE_API Account Balance ($SCE_NONCE_COUNTER)" \
-        --no-collapse \
-        --msgbox "$FORMATTED_RESULT" "$LENGTH" "$WIDTH"
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
   fi
 
@@ -571,9 +570,12 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
 
     ############################################################################
 
+    # format result using column -t
+    RESULT="$(echo "$RESULT" | column -t)"
+
     display_result() {
       dialog --title "$FILE_TIME :: +$EXCHANGE_ASSETS :: $EXCHANGE_API Account Balance" \
-        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
   fi
   display_result 2>/dev/null
