@@ -156,6 +156,8 @@ function isDelisting() {
     IS_DELISTING="$(cat "${LOG_DIR:?}"/leeloo/nonkyc/listing/"$LISTING_CURRENCY"_info 2>/dev/null | grep "isDelisting" | awk -F: '{ print $2 }' | tr -d ',' | awk '{ print $1 }')"
     # any data
     if [[ -n "$IS_DELISTING" ]] &>/dev/null; then
+      # create file
+      touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_delisting &>/dev/null
       # keep data
       echo "$IS_DELISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_delisting 2>/dev/null
     fi
