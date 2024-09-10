@@ -151,8 +151,11 @@ function isDelisting() {
   if [[ "$IS_DELISTING_AGE" -gt "300" || -f "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info ]] &>/dev/null; then
     # call delisting data
     IS_DELISTING="$(cat "${LOG_DIR:?}"/leeloo/xeggex/listing/"$LISTING_CURRENCY"_info 2>/dev/null | grep "isDelisting" | awk -F: '{ print $2 }' | tr -d ',' | awk '{ print $1 }')"
-    # keep data
-    echo "$IS_DELISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_delisting 2>/dev/null
+    # any data
+    if [[ -n "$IS_DELISTING" ]] &>/dev/null; then
+      # keep data
+      echo "$IS_DELISTING" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_delisting 2>/dev/null
+    fi
     # if zero
     if [[ -z "$IS_DELISTING" ]] &>/dev/null; then
       IS_DELISTING="false"
