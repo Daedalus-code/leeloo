@@ -139,7 +139,6 @@ $COIN_TOKEN_SEARCH"
 
         display_result() {
           dialog --title "Balances: $COIN_TOTAL_AMOUNT $COIN_TOKEN" \
-            --no-collapse \
             --msgbox "$RESULT" "$LENGTH" $(echo "$WIDTH+5" | bc 2>/dev/null)
         }
 
@@ -150,7 +149,6 @@ $COIN_TOKEN_SEARCH"
 
         display_result() {
           dialog --title "No Data" \
-            --no-collapse \
             --msgbox "$RESULT" 5 20
         }
 
@@ -475,7 +473,6 @@ $COIN_TOKEN_SEARCH"
   function leeloo_update() {
     display_result() {
       dialog --title "Updating Leeloo (Multipass)" \
-        --no-collapse \
         --msgbox "$RESULT" 0 0
     }
     cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
@@ -673,7 +670,6 @@ Load: $LOAD :: $REPO_HEAD $REPO_DATE"
 
     display_result() {
       dialog --title "Leeloo/Strategy Debug" \
-        --no-collapse \
         --msgbox "$RESULT" 15 "$WIDTH"
     }
 
@@ -836,7 +832,6 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     display_result() {
       dialog --title "Leeloo/Script Debug" \
-        --no-collapse \
         --msgbox "$RESULT" 0 0
     }
 
@@ -896,7 +891,6 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     display_result() {
       dialog --title "Leeloo/Strategy txid Debug :: Error: $TXID_NULL_DATA_COUNT Codes: $ERROR_CODES" \
-        --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
@@ -970,7 +964,6 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     display_result() {
       dialog --title "Leeloo/Strategy Order Debug :: +$DEBUG_DATA_COUNT :: Dust: $DEBUG_DUSTING_COUNT (${DEBUG_DUSTING_PERCENTAGE}%) Buy: $DEBUG_BUY_COUNT (${DEBUG_BUY_PERCENTAGE}%) Sell: $DEBUG_SELL_COUNT (${DEBUG_SELL_PERCENTAGE}%)" \
-        --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
@@ -1137,7 +1130,6 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       display_result() {
         dialog --title "$PAUSED_MARKET_COUNT Paused Markets reset?" \
-          --no-collapse \
           --msgbox "$RESULT" 0 0
       }
       RESULT="$(wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null)"
@@ -1151,7 +1143,6 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
         truncate -s 0 "$LOG_DIR"/leeloo/*/pause &>/dev/null
         display_result() {
           dialog --title "$PAUSED_MARKET_COUNT Paused Markets reset!" \
-            --no-collapse \
             --msgbox "$RESULT" 0 0
         }
         RESULT="$(wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null)"
@@ -1412,7 +1403,6 @@ Yearly TX : $YEARLY_USAGE_TX TB"
     # display results in a dialog box
     display_result() {
       dialog --title "Data Usage Statistics" \
-        --no-collapse \
         --msgbox "$(echo "$RESULT" | column -t)" 18 "$WIDTH"
     }
 
@@ -1469,7 +1459,6 @@ Yearly TX : $YEARLY_USAGE_TX TB"
 
       display_result() {
         dialog --title "Donation" \
-          --no-collapse \
           --msgbox "$(echo "$RESULT" | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2};?)?)?[mGK]//g")" 7 77
       }
 
@@ -1745,7 +1734,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Uptime: $LEELOO_UPTIME"
           SELECTED_FILE="${CONFIG_FILES[$((CHOICE - 1))]}"
           display_result() {
             dialog --title "$(echo "$(ls -l "$SELECTED_FILE" 2>/dev/null | awk '{ print $8" :: "$NF }')")" \
-              --no-collapse \
               --msgbox "$RESULT" 0 0
           }
           RESULT="$(cat "$SELECTED_FILE" 2>/dev/null)"
@@ -1848,7 +1836,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
 
           display_result() {
             dialog --title "$FILE_TIME :: Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
-              --no-collapse \
               --keep-window \
               --msgbox "$RESULT" "$LENGTH" "$WIDTH"
           }
@@ -2035,7 +2022,6 @@ Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROF
 
       display_result() {
         dialog --title "Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
-          --no-collapse \
           --keep-window \
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
@@ -2126,7 +2112,6 @@ Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROF
 
         display_result() {
           dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT (${SELL_COUNT_PERCENTAGE:?}%) Profit: High ${PROFIT_HIGH:?}% Low ${PROFIT_LOW:?}% Average ${PROFIT_AVERAGE:?}%" \
-            --no-collapse \
             --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
@@ -2245,7 +2230,6 @@ Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROF
         # installing strategy
         display_result() {
           dialog --title "Creating $INSTALL_TITLE" \
-            --no-collapse \
             --msgbox "$RESULT" 0 0
         }
 
@@ -2465,7 +2449,6 @@ $(ls -lSah "${SYS_DIR:?}"/robot/"$STRATEGY_NAME"*.strategy 2>/dev/null | column 
 
         display_result() {
           dialog --title "Robot (screen)" \
-            --no-collapse \
             --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
@@ -2548,7 +2531,6 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
         display_result() {
           dialog --title "Robot (crontab)" \
-            --no-collapse \
             --msgbox "$RESULT" 5 77
         }
 
@@ -2638,7 +2620,6 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
     display_result() {
       dialog --title "$RESULT_TITLE" \
-        --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
     display_result 2>/dev/null
@@ -2702,7 +2683,6 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
           LOG_COUNT="$(wc -l "${SELECTED_FILE:?}" | awk '{ print $1 }')"
           display_result() {
             dialog --title "Robot Log: $LOG_COUNT :: $SELECTED_FILE:" \
-              --no-collapse \
               --tailbox "$RESULT" 25 "$WIDTH"
           }
           RESULT="${SELECTED_FILE:?}"
@@ -2744,7 +2724,6 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
       # message box
       display_result() {
         dialog --title "Files: $INSUFFICIENT_FUNDS_COUNT" \
-          --no-collapse \
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
       display_result 2>/dev/null
@@ -3076,7 +3055,6 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 
         display_result() {
           dialog --title "RSI & EMA Indicator ($COIN_TOKEN)" \
-            --no-collapse \
             --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
@@ -3084,7 +3062,6 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
       else
         display_result() {
           dialog --title "Market info (404)" \
-            --no-collapse \
             --msgbox "$RESULT" 5 25
         }
 
@@ -3094,7 +3071,6 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
     else
       display_result() {
         dialog --title "Market info (empty)" \
-          --no-collapse \
           --msgbox "$RESULT" 0 0
       }
 
@@ -3120,7 +3096,6 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
       if [[ ! -z "$GET_RSI" ]] &>/dev/null; then
         display_result() {
           dialog --title "RSI $COIN_TOKEN" \
-            --no-collapse \
             --msgbox "$RESULT" 5 "$WIDTH"
         }
 
@@ -3147,7 +3122,6 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
       if [[ ! -z "$GET_EMA" ]] &>/dev/null; then
         display_result() {
           dialog --title "EMA $COIN_TOKEN" \
-            --no-collapse \
             --msgbox "$RESULT" 5 "$WIDTH"
         }
 
