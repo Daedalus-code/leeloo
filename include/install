@@ -96,23 +96,30 @@ else
   HOME_DIR=$(
     dialog --title "Set install (HOME_DIR/leeloo/broker.conf)" \
       --inputbox "git clone directory:
-Example: /home/$(whoami)" 8 47 \
+Example: $HOME" 8 47 \
       3>&1 1>&2 2>&3 3>&-
   )
   mv "$HOME_DIR"/leeloo-main "$HOME_DIR"/leeloo &>/dev/null
   cp "$HOME_DIR"/leeloo/broker.conf /usr/local/bin/include/leeloo/broker.conf &>/dev/null
+
+  # if not found
   if [[ ! -f /usr/local/bin/include/leeloo/broker.conf ]] &>/dev/null; then
+
     WIDTH="$(echo "$(echo "$HOME_DIR" | wc -L)*2" | bc 2>/dev/null)"
+
     if [[ "$WIDTH" -lt "30" ]] &>/dev/null; then
       WIDTH="30"
     fi
+
     display_result() {
       dialog --title "ERROR" \
         --no-collapse \
         --msgbox "$RESULT" 6 "$WIDTH"
     }
+
     RESULT="$(echo "HOME_DIR=$HOME_DIR
 No install found!")"
+
     display_result 2>/dev/null
     clear
     exit
