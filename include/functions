@@ -524,9 +524,12 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
       RESULT="$RESULT_FORMAT"
     fi
 
+    # format result using column -t
+    FORMATTED_RESULT=$(echo "$RESULT" | column -t)
+
     display_result() {
       dialog --title "$FILE_TIME :: +$EXCHANGE_ASSETS :: $EXCHANGE_API Account Balance ($SCE_NONCE_COUNTER)" \
-        --msgbox "$(echo "$RESULT" | column -t)" "$LENGTH" "$WIDTH"
+        --msgbox "$FORMATTED_RESULT" "$LENGTH" "$WIDTH"
     }
   fi
 
