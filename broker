@@ -1378,29 +1378,31 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     YEARLY_USAGE_TX="$(echo "$(echo "$MEGA_SECOND_TX*29030400" | bc -l 2>/dev/null)/1024/1024/1024/1024" | bc -l 2>/dev/null | awk '{ printf "%.3f\n", $1 }')"
 
     RESULT="Download data:
-$(grep "RX" /tmp/ifconfig | head -1 | awk -FRX '{ print $2 }')
+-------------------------------------------
+$(grep "RX" /tmp/ifconfig | head -1 | awk -FRX '{ print $2 }' | xargs)
+-------------------------------------------
 Current RX : $MEGA_SECOND_RX b/s
 Daily RX : $DAILY_USAGE_RX GB
 Weekly RX : $WEEKLY_USAGE_RX GB
 Monthly RX : $MONTHLY_USAGE_RX GB
 Yearly RX : $YEARLY_USAGE_RX TB
+
 Upload data:
-$(grep "TX" /tmp/ifconfig | head -1 | awk -FTX '{ print $2 }')
+-------------------------------------------
+$(grep "TX" /tmp/ifconfig | head -1 | awk -FTX '{ print $2 }' | xargs)
+-------------------------------------------
 Current TX : $MEGA_SECOND_TX b/s
 Daily TX : $DAILY_USAGE_TX GB
 Weekly TX : $WEEKLY_USAGE_TX GB
 Monthly TX : $MONTHLY_USAGE_TX GB
 Yearly TX : $YEARLY_USAGE_TX TB"
 
-    WIDTH=$(echo "$(echo "$RESULT" | column -t)" | wc -L)
-    WIDTH=$(echo "$WIDTH+5" | bc 2>/dev/null)
-    RESULT="$(echo "$RESULT" | column -t)"
+    WIDTH=$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)
 
     # display results in a dialog box
     display_result() {
       dialog --title "Data Usage Statistics" \
-        --no-collapse \
-        --msgbox "$RESULT" 18 "$WIDTH"
+        --msgbox "$RESULT" 23 "$WIDTH"
     }
 
     # execute the display_result function
