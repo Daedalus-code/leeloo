@@ -130,16 +130,17 @@ case $CHOICE in
         RESULT="Coins: Deposited Available Unconfirmed InInterest
 $COIN_TOKEN_SEARCH"
 
-        # result
-        RESULT="$(echo "$RESULT" | column -t)"
         # width
-        WIDTH="$(echo "$RESULT" | wc -L)"
+        WIDTH="$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
         # length
         LENGTH=$(echo "$(echo "$RESULT" | wc -l)+4" | bc 2>/dev/null)
+        # result
+        RESULT="$(echo "$RESULT" | column -t)"
 
         display_result() {
           dialog --title "Balances: $COIN_TOTAL_AMOUNT $COIN_TOKEN" \
-            --msgbox "$RESULT" "$LENGTH" $(echo "$WIDTH+5" | bc 2>/dev/null)
+            --no-collapse \
+            --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
       else
@@ -1403,7 +1404,8 @@ Yearly TX : $YEARLY_USAGE_TX TB"
     # display results in a dialog box
     display_result() {
       dialog --title "Data Usage Statistics" \
-        --msgbox "$(echo "$RESULT" | column -t)" 18 "$WIDTH"
+        --no-collapse \
+        --msgbox "$RESULT" 18 "$WIDTH"
     }
 
     # execute the display_result function
@@ -1834,12 +1836,6 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
             WIDTH="65"
           fi
 
-          display_result() {
-            dialog --title "$FILE_TIME :: Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
-              --keep-window \
-              --msgbox "$RESULT" "$LENGTH" "$WIDTH"
-          }
-
           # default
           POSITION_SORT="2"
 
@@ -1876,6 +1872,13 @@ Bots: $LEELOO_STRAT $LEELOO_RUNNING :: Positions: $(echo "$(wc -l "$SYS_DIR"/rob
           if [[ -z "$POSITION_SORT_BY" ]] &>/dev/null; then
             POSITION_SORT="2"
           fi
+
+          display_result() {
+            dialog --title "$FILE_TIME :: Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
+              --keep-window \
+              --no-collapse \
+              --msgbox "$RESULT" "$LENGTH" "$WIDTH"
+          }
 
           RESULT="Exchange Strategy Currency Amount Cost Result Age
           $(grep -v "Exchange" "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | sort -r -n -k "$POSITION_SORT")"
