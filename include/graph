@@ -90,15 +90,15 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
 
   SCREEN_LIST="$(cat "${LOG_DIR:?}"/leeloo/screen 2>/dev/null)"
 
+  # auto sized graphs
   if [[ "$GRAPH_TIME" == "0" ]] &>/dev/null; then
     if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
-      LEELOO_PID="$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | xargs)"
-      LEELOO_TIME=$(ps -p $LEELOO_PID -o etimes=)
-      # calculate hours (rounded up to the nearest hour)
-      GRAPH_TIME_HOURS="$(echo "($LEELOO_TIME + 3599) / 3600" | bc 2>/dev/null)"
-      GRAPH_TIME="${GRAPH_TIME_HOURS}h"
+      # proc uptime (seconds)
+      GRAPH_TIME_SECONDS="$(cat /proc/uptime 2>/dev/null | awk -F. '{ print $1 }')"
+      GRAPH_TIME="${GRAPH_TIME_SECONDS}s"
     fi
   fi
+
   # if still zero or empty
   if [[ -z "$GRAPH_TIME" ]] &>/dev/null; then
     GRAPH_TIME="1h"
