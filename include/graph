@@ -95,7 +95,10 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" | wc -l)" -eq "1" ]] &>/dev/null; then
       # proc uptime (seconds)
       GRAPH_TIME_SECONDS="$(cat /proc/uptime 2>/dev/null | awk -F. '{ print $1 }')"
-      GRAPH_TIME="${GRAPH_TIME_SECONDS}s"
+      # convert into hours
+      GRAPH_TIME_HOURS="$(echo "$GRAPH_TIME_SECONDS/3600" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+      # graph time config
+      GRAPH_TIME="${GRAPH_TIME_HOURS}h"
     fi
   fi
 
