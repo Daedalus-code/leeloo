@@ -1358,7 +1358,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     IFCONFIG_RX_BYTE=$(grep "RX" /tmp/ifconfig | head -1 | awk '{ print $5 }')
     IFCONFIG_TX_BYTE=$(grep "TX" /tmp/ifconfig | head -1 | awk '{ print $5 }')
     # fetch system uptime
-    UPTIME_PROC_SECONDS=$(awk -F. '{print $1}' /proc/uptime)
+    UPTIME_PROC_SECONDS=$(awk -F. '{print $1}' "${LOG_DIR:?}"/leeloo/system.uptime)
+    # time format
+    UPTIME_SYSTEM="$(echo "$(printf '%dh:%dm:%ds\n' $(("$UPTIME_PROC_SECONDS/3600")) $(("$UPTIME_PROC_SECONDS%3600/60")) $(("$UPTIME_PROC_SECONDS%60")))")"
     # calculate current data usage rate in bytes per second
     MEGA_SECOND_RX=$(echo "$IFCONFIG_RX_BYTE/$UPTIME_PROC_SECONDS" | bc -l 2>/dev/null)
     MEGA_SECOND_TX=$(echo "$IFCONFIG_TX_BYTE/$UPTIME_PROC_SECONDS" | bc -l 2>/dev/null)
@@ -1434,7 +1436,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
   TX Daily...: $DAILY_USAGE_TX
   TX Weekly..: $WEEKLY_USAGE_TX
   TX Monthly.: $MONTHLY_USAGE_TX
-  TX Yearly..: $YEARLY_USAGE_TX"
+  TX Yearly..: $YEARLY_USAGE_TX
+
+  Uptime.....: $UPTIME_SYSTEM"
 
     WIDTH=$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)
 
