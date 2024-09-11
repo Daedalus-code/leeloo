@@ -1365,37 +1365,63 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
     MEGA_SECOND_RX=$(echo "$IFCONFIG_RX_BYTE/$UPTIME_PROC_SECONDS" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
     MEGA_SECOND_TX=$(echo "$IFCONFIG_TX_BYTE/$UPTIME_PROC_SECONDS" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
 
-    # calculate RX (megabytes)
-    DAILY_USAGE_RX="$(echo "$(echo "$MEGA_SECOND_RX*86400" | bc -l 2>/dev/null)/1024/1024/1024" | bc -l 2>/dev/null | awk '{ printf "%.3f\n", $1 }')"
-    WEEKLY_USAGE_RX="$(echo "$(echo "$MEGA_SECOND_RX*604800" | bc -l 2>/dev/null)/1024/1024/1024" | bc -l 2>/dev/null | awk '{ printf "%.3f\n", $1 }')"
-    MONTHLY_USAGE_RX="$(echo "$(echo "$MEGA_SECOND_RX*2419200" | bc -l 2>/dev/null)/1024/1024/1024" | bc -l 2>/dev/null | awk '{ printf "%.3f\n", $1 }')"
-    YEARLY_USAGE_RX="$(echo "$(echo "$MEGA_SECOND_RX*29030400" | bc -l 2>/dev/null)/1024/1024/1024/1024" | bc -l 2>/dev/null | awk '{ printf "%.3f\n", $1 }')"
+    # function to convert bytes to MB, GB, or TB with the appropriate unit
+    convert_to_units() {
+      local bytes=$1
+      if (($(echo "$bytes >= 1024*1024*1024*1024" | bc -l))); then
+        echo "$(echo "$bytes / 1024 / 1024 / 1024 / 1024" | bc -l | awk '{ printf "%.3f", $1 }') TB"
+      elif (($(echo "$bytes >= 1024*1024*1024" | bc -l))); then
+        echo "$(echo "$bytes / 1024 / 1024 / 1024" | bc -l | awk '{ printf "%.3f", $1 }') GB"
+      elif (($(echo "$bytes >= 1024*1024" | bc -l))); then
+        echo "$(echo "$bytes / 1024 / 1024" | bc -l | awk '{ printf "%.3f", $1 }') MB"
+      else
+        echo "$(echo "$bytes / 1024" | bc -l | awk '{ printf "%.3f", $1 }') KB"
+      fi
+    }
 
-    # calculate TX (megabytes)
-    DAILY_USAGE_TX="$(echo "$(echo "$MEGA_SECOND_TX*86400" | bc -l 2>/dev/null)/1024/1024/1024" | bc -l 2>/dev/null | awk '{ printf "%.3f\n", $1 }')"
-    WEEKLY_USAGE_TX="$(echo "$(echo "$MEGA_SECOND_TX*604800" | bc -l 2>/dev/null)/1024/1024/1024" | bc -l 2>/dev/null | awk '{ printf "%.3f\n", $1 }')"
-    MONTHLY_USAGE_TX="$(echo "$(echo "$MEGA_SECOND_TX*2419200" | bc -l 2>/dev/null)/1024/1024/1024" | bc -l 2>/dev/null | awk '{ printf "%.3f\n", $1 }')"
-    YEARLY_USAGE_TX="$(echo "$(echo "$MEGA_SECOND_TX*29030400" | bc -l 2>/dev/null)/1024/1024/1024/1024" | bc -l 2>/dev/null | awk '{ printf "%.3f\n", $1 }')"
+    # calculate RX usage in bytes
+    DAILY_USAGE_RX_BYTES=$(echo "$MEGA_SECOND_RX*86400" | bc -l)
+    WEEKLY_USAGE_RX_BYTES=$(echo "$MEGA_SECOND_RX*604800" | bc -l)
+    MONTHLY_USAGE_RX_BYTES=$(echo "$MEGA_SECOND_RX*2419200" | bc -l)
+    YEARLY_USAGE_RX_BYTES=$(echo "$MEGA_SECOND_RX*29030400" | bc -l)
 
+    # calculate TX usage in bytes
+    DAILY_USAGE_TX_BYTES=$(echo "$MEGA_SECOND_TX*86400" | bc -l)
+    WEEKLY_USAGE_TX_BYTES=$(echo "$MEGA_SECOND_TX*604800" | bc -l)
+    MONTHLY_USAGE_TX_BYTES=$(echo "$MEGA_SECOND_TX*2419200" | bc -l)
+    YEARLY_USAGE_TX_BYTES=$(echo "$MEGA_SECOND_TX*29030400" | bc -l)
+
+    # convert RX and TX values to human-readable units
+    DAILY_USAGE_RX=$(convert_to_units "$DAILY_USAGE_RX_BYTES")
+    WEEKLY_USAGE_RX=$(convert_to_units "$WEEKLY_USAGE_RX_BYTES")
+    MONTHLY_USAGE_RX=$(convert_to_units "$MONTHLY_USAGE_RX_BYTES")
+    YEARLY_USAGE_RX=$(convert_to_units "$YEARLY_USAGE_RX_BYTES")
+
+    DAILY_USAGE_TX=$(convert_to_units "$DAILY_USAGE_TX_BYTES")
+    WEEKLY_USAGE_TX=$(convert_to_units "$WEEKLY_USAGE_TX_BYTES")
+    MONTHLY_USAGE_TX=$(convert_to_units "$MONTHLY_USAGE_TX_BYTES")
+    YEARLY_USAGE_TX=$(convert_to_units "$YEARLY_USAGE_TX_BYTES")
+
+    # display the result
     RESULT="Download Data
--------------------------------------------
-$(grep "RX" /tmp/ifconfig | head -1 | awk -FRX '{ print $2 }' | xargs)
--------------------------------------------
-RX Current.: $MEGA_SECOND_RX b/s
-RX Daily...: $DAILY_USAGE_RX GB
-RX Weekly..: $WEEKLY_USAGE_RX GB
-RX Monthly.: $MONTHLY_USAGE_RX GB
-RX Yearly..: $YEARLY_USAGE_RX TB
+  -------------------------------------------
+  $(grep "RX" /tmp/ifconfig | head -1 | awk -FRX '{ print $2 }' | xargs)
+  -------------------------------------------
+  RX Current.: $MEGA_SECOND_RX b/s
+  RX Daily...: $DAILY_USAGE_RX
+  RX Weekly..: $WEEKLY_USAGE_RX
+  RX Monthly.: $MONTHLY_USAGE_RX
+  RX Yearly..: $YEARLY_USAGE_RX
 
-Upload Data
--------------------------------------------
-$(grep "TX" /tmp/ifconfig | head -1 | awk -FTX '{ print $2 }' | xargs)
--------------------------------------------
-TX Current.: $MEGA_SECOND_TX b/s
-TX Daily...: $DAILY_USAGE_TX GB
-TX Weekly..: $WEEKLY_USAGE_TX GB
-TX Monthly.: $MONTHLY_USAGE_TX GB
-TX Yearly..: $YEARLY_USAGE_TX TB"
+  Upload Data
+  -------------------------------------------
+  $(grep "TX" /tmp/ifconfig | head -1 | awk -FTX '{ print $2 }' | xargs)
+  -------------------------------------------
+  TX Current.: $MEGA_SECOND_TX b/s
+  TX Daily...: $DAILY_USAGE_TX
+  TX Weekly..: $WEEKLY_USAGE_TX
+  TX Monthly.: $MONTHLY_USAGE_TX
+  TX Yearly..: $YEARLY_USAGE_TX"
 
     WIDTH=$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)
 
