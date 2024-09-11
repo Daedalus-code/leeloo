@@ -965,6 +965,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     display_result() {
       dialog --title "Leeloo/Strategy Order Debug :: +$DEBUG_DATA_COUNT :: Dust: $DEBUG_DUSTING_COUNT (${DEBUG_DUSTING_PERCENTAGE}%) Buy: $DEBUG_BUY_COUNT (${DEBUG_BUY_PERCENTAGE}%) Sell: $DEBUG_SELL_COUNT (${DEBUG_SELL_PERCENTAGE}%)" \
+        --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
@@ -1148,13 +1149,6 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
         }
         RESULT="$(wc -l "$LOG_DIR"/leeloo/*/pause 2>/dev/null)"
         display_result 2>/dev/null
-      fi
-
-      # edit pause files
-      if dialog --stdout --title "$PAUSED_MARKET_COUNT Paused Markets edit?" \
-        --backtitle "Edit pause files?" \
-        --yesno "Yes: Edit! No: Exit!" 5 0; then
-        nano "${LOG_DIR:?}"/leeloo/*/pause
       fi
 
       ;;
@@ -1400,6 +1394,7 @@ Yearly TX : $YEARLY_USAGE_TX TB"
 
     WIDTH=$(echo "$(echo "$RESULT" | column -t)" | wc -L)
     WIDTH=$(echo "$WIDTH+5" | bc 2>/dev/null)
+    RESULT="$(echo "$RESULT" |  column -t)"
 
     # display results in a dialog box
     display_result() {
@@ -2026,6 +2021,7 @@ Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROF
       display_result() {
         dialog --title "Open Positions $OPEN_COUNT :: ${OPEN_PERCENTAGE_AVERAGE:?}% :: Age ${OPEN_TOTAL_AGE:?} :: Days ${OPEN_TOTAL_AGE_DAYS:?}" \
           --keep-window \
+          --no-collapse \
           --msgbox "$RESULT" "$LENGTH" "$WIDTH"
       }
       display_result 2>/dev/null
@@ -2115,6 +2111,7 @@ Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROF
 
         display_result() {
           dialog --title "Trade History +$ORDERS_COUNT :: Buy: $BUY_COUNT Sell: $SELL_COUNT (${SELL_COUNT_PERCENTAGE:?}%) Profit: High ${PROFIT_HIGH:?}% Low ${PROFIT_LOW:?}% Average ${PROFIT_AVERAGE:?}%" \
+            --no-collapse \
             --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
@@ -2452,6 +2449,7 @@ $(ls -lSah "${SYS_DIR:?}"/robot/"$STRATEGY_NAME"*.strategy 2>/dev/null | column 
 
         display_result() {
           dialog --title "Robot (screen)" \
+            --no-collapse \
             --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
@@ -3058,6 +3056,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 
         display_result() {
           dialog --title "RSI & EMA Indicator ($COIN_TOKEN)" \
+            --no-collapse \
             --msgbox "$RESULT" "$LENGTH" "$WIDTH"
         }
 
