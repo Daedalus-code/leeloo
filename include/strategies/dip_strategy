@@ -4869,6 +4869,15 @@ DIP_BI_PROFIT_LOSSES_DIFF_YEARLY="$(echo "$DIP_BI_DYNAMIC_SUM-$DIP_BI_STATIC_SUM
 DIP_BI_PL_PERCENTAGE_YEARLY="$(echo "100/$DIP_BI_STATIC_SUM_YEARLY*$DIP_BI_PROFIT_LOSSES_DIFF_YEARLY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
 ################################################################################
+# dynamic tracking (based on weekly data)
+################################################################################
+
+DIP_BI_MONTHLY_DYNAMIC="$(echo "$DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY*4" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+DIP_BI_QUARTER_DYNAMIC="$(echo "$DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY*13.04436425" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+DIP_BI_H_YEAR_DYNAMIC="$(echo "$DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY*26.0887285" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+DIP_BI_YEARLY_DYNAMIC="$(echo "$DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY*52.177457" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+
+################################################################################
 
 # if zero
 if [[ -z "$DIP_BI_PL_PERCENTAGE_WEEKLY" ]] &>/dev/null; then
@@ -4912,10 +4921,10 @@ Market___Balance....: $REFERENCE_BALANCE $DIP_MARKETS ($DIP_BI_DYNAMIC_SUM $DIP_
 Market___Invested...: $DIP_INVESTED_BALANCE $DIP_MARKETS (${DIP_INVESTED_PERCENTAGE:?}%)
 1_Day____Movements..: $DIP_BI_PROFIT_LOSSES_DIFF $DIP_MARKETS (${DIP_BI_PROFIT_LOSSES_PERCENTAGE:?}%)
 1_Week___Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_WEEKLY $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_WEEKLY:?}%)
-1_Month__Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_MONTHLY:?}%)
-3_Month__Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_QUARTER $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_QUARTER:?}%)
-6_Months_Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_H_YEAR $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_H_YEAR:?}%)
-1_Year___Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_YEARLY $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_YEARLY:?}%)
+1_Month__Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_MONTHLY $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_MONTHLY:?}%) Est: $DIP_BI_MONTHLY_DYNAMIC
+3_Month__Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_QUARTER $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_QUARTER:?}%) Est: $DIP_BI_QUARTER_DYNAMIC
+6_Months_Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_H_YEAR $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_H_YEAR:?}%) Est: $DIP_BI_H_YEAR_DYNAMIC
+1_Year___Movements..: $DIP_BI_PROFIT_LOSSES_DIFF_YEARLY $DIP_MARKETS (${DIP_BI_PL_PERCENTAGE_YEARLY:?}%) Est: $DIP_BI_YEARLY_DYNAMIC
 Exchange............: $EXCHANGE_OUTPUT_NAME $EXCHANGE_API
 Orders..............: $DIP_ORDERS_FILE_COUNT | Today: $DIP_DAILY_TARGETS (${DIP_DAILY_POTENTIAL_PERCENTAGE:?}%) Max: $DIP_MAX_ORDERS
 DCA.................: $DIP_DCA_DATA Orders: $DIP_DCA_COUNT
