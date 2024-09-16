@@ -193,8 +193,25 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
         RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
     fi
 
+    # cost (open positions)
+    GRAPH_INVESTED="$(grep -w "${GRAPH_REFERENCE_CURRENCY:?}:" "${SYS_DIR:?}"/robot/pool.view 2>/dev/null | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+
+    # if any data
+    if [[ -n "$GRAPH_INVESTED" ]] &>/dev/null; then
+      # use open positions total cost
+      GRAPH_INVESTED="$GRAPH_INVESTED"
+    else
+      # deposited balance (open orders)
+      GRAPH_INVESTED="$(grep -w "${GRAPH_REFERENCE_CURRENCY:?}:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%.9f\n", $2 }')"
+    fi
+
+    # available balance
+    GRAPH_AVAILABLE="$(grep -w "${GRAPH_REFERENCE_CURRENCY:?}:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%.9f\n", $3 }')"
+    # unconfirmed balance
+    GRAPH_UNCONFIRMED="$(grep -w "${GRAPH_REFERENCE_CURRENCY:?}:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%.9f\n", $4 }')"
+
     # update reference databases
-    rrdtool update "$GRAPH_DB_PATH" N:"$(grep -w "${GRAPH_REFERENCE_CURRENCY:?}:" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{ printf "%.9f:%.9f:%.9f\n", $2, $3, $4 }')" 2>/dev/null
+    rrdtool update "$GRAPH_DB_PATH" N:"$GRAPH_INVESTED":"$GRAPH_AVAILABLE":"$GRAPH_UNCONFIRMED" 2>/dev/null
 
     ############################################################################
 
