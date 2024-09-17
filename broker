@@ -1191,8 +1191,8 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
       0 "Install          Install graph"
       x "Remove           Remove install"
       r "Reset            Reset databases"
+      s "Reset            Reset deposited"
       F "Filter           Filter graphs"
-      s "Spikes           Remove spikes"
       c "Crontab          CRON jobs")
 
     CHOICE=$(dialog --clear \
@@ -1290,19 +1290,9 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       ##########################################################################
 
-    "F")
-
-      # edit graph filter
-      nano "$SYS_DIR"/robot/*_graph.filter
-
-      ;;
-
-      ##########################################################################
-
     "s")
 
       while true; do
-
         # create an array of .rrd files excluding files with 'coins' or 'orders' in their names
         DATABASE_FILES=($(find "${SYS_DIR}/robot" -type f -name "*.rrd" | grep -vE "coins|orders"))
         NUM_FILES="${#DATABASE_FILES[@]}"
@@ -1317,14 +1307,11 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
           FILENAME=$(basename "${DATABASE_FILES[$i]}" 2>/dev/null | egrep -v "coins|orders")
           OPTIONS+=("$((i + 1))" "$FILENAME")
         done
-
         # adjust width based on the length of the longest filename
         WIDTH=$(printf "%s\n" "${OPTIONS[@]}" | awk '{ print length }' | sort -n | tail -1)
         WIDTH=$((WIDTH + 12))
-
         # set the minimum length for the menu
         LENGTH=$((NUM_FILES < 7 ? NUM_FILES : 7))
-
         # if less than n
         if [[ "$LENGTH" -lt "7" ]] &>/dev/null; then
           LENGTH="7"
@@ -1343,7 +1330,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
           RRD_FILE="${SYS_DIR:?}/robot/$FILENAME" # path to your original RRD file
           DUMP_FILE="/tmp/rrd_dump.xml"           # temporary XML file for editing
           NEW_RRD_FILE="/tmp/$FILENAME"           # path to the new RRD file
-          GRAPH_THRESHOLD="0"                     # set the threshold for what constitutes a "spike" (adjust as needed)
+          GRAPH_THRESHOLD="0"                     # set the threshold for what constitutes a "reset"
 
           # output result
           RESULT="$(reset_graph_database)"
@@ -1353,6 +1340,15 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
           break
         fi
       done
+
+      ;;
+
+      ##########################################################################
+
+    "F")
+
+      # edit graph filter
+      nano "$SYS_DIR"/robot/*_graph.filter
 
       ;;
 
