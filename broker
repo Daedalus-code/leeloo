@@ -1301,38 +1301,58 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     "s")
 
-      # prompt user to trim graph spikes
-      if dialog --stdout --title "Trim spikes deposited?" \
-        --backtitle "Spike trimming?" \
-        --yesno "Yes: Trim! No: Go back!" 5 28; then
+      while true; do
 
-        clear
-        # output
-        echo "Initializing graph spikes removal (deposited data)"
-        echo
-        # output list of databases
-        echo "$(ls -l "${SYS_DIR:?}"/robot/*.rrd 2>/dev/null | awk -F.rrd '{ print $1 }' | awk '{ print $NF }' | awk -Frobot '{ print $2 }' | tr -d '/' | egrep -v "coins|orders")"
-        echo
-        # get database name
-        echo "Enter database name:"
-        echo
-        read -r RRD_FILE_NAME
+        # create an array of .rrd files excluding files with 'coins' or 'orders' in their names
+        DATABASE_FILES=($(find "${SYS_DIR}/robot" -type f -name "*.rrd" | grep -vE "coins|orders"))
+        NUM_FILES="${#DATABASE_FILES[@]}"
 
-        # if zero
-        if [[ -z "$RRD_FILE_NAME" ]] &>/dev/null; then
-          echo "Nothing found!"
-          sleep 1
-        else
-          # define variables
-          RRD_FILE="${SYS_DIR:?}/robot/$RRD_FILE_NAME.rrd" # path to your original RRD file
-          DUMP_FILE="/tmp/rrd_dump.xml"                    # temporary XML file for editing
-          NEW_RRD_FILE="/tmp/xeggex_BTC.rrd"               # path to the new RRD file
-          SPIKE_THRESHOLD="0"                              # set the threshold for what constitutes a "spike" (adjust as needed)
-          # remove graph spikes function
-          remove_graph_spikes
-          sleep 1
+        if [ "$NUM_FILES" -eq 0 ]; then
+          echo "Error: No database files found in $SYS_DIR/robot"
+          exit 1
         fi
-      fi
+
+        OPTIONS=()
+        for ((i = 0; i < NUM_FILES; i++)); do
+          FILENAME=$(basename "${DATABASE_FILES[$i]}" 2>/dev/null | egrep -v "coins|orders")
+          OPTIONS+=("$((i + 1))" "$FILENAME")
+        done
+
+        # adjust width based on the length of the longest filename
+        WIDTH=$(printf "%s\n" "${OPTIONS[@]}" | awk '{ print length }' | sort -n | tail -1)
+        WIDTH=$((WIDTH + 12))
+
+        # set the minimum length for the menu
+        LENGTH=$((NUM_FILES < 7 ? NUM_FILES : 7))
+
+        # if less than n
+        if [[ "$LENGTH" -lt "7" ]] &>/dev/null; then
+          LENGTH="7"
+        fi
+
+        CHOICE=$(dialog --clear --title "Database data" --menu "Choose one database:" "$LENGTH" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+        if [ -n "$CHOICE" ]; then
+          SELECTED_FILE="${DATABASE_FILES[$((CHOICE - 1))]}"
+          display_result() {
+            dialog --title "$(echo "$(ls -l "$SELECTED_FILE" 2>/dev/null | awk '{ print $8" :: "$NF }')")" \
+              --msgbox "$RESULT" 0 0
+          }
+
+          # define variables
+          RRD_FILE="${SYS_DIR:?}/robot/$FILENAME" # path to your original RRD file
+          DUMP_FILE="/tmp/rrd_dump.xml"           # temporary XML file for editing
+          NEW_RRD_FILE="/tmp/$FILENAME"           # path to the new RRD file
+          GRAPH_THRESHOLD="0"                     # set the threshold for what constitutes a "spike" (adjust as needed)
+
+          # output result
+          RESULT="$(reset_graph_database)"
+          display_result 2>/dev/null
+          break
+        else
+          break
+        fi
+      done
 
       ;;
 
