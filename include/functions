@@ -1663,7 +1663,7 @@ function ema_value_output {
 
 function reset_graph_database {
   # if any data
-  if [[ -n "$RRD_FILE" && -n "$DUMP_FILE" && -n "$NEW_RRD_FILE" && -n "$GRAPH_THRESHOLD" ]] &>/dev/null; then
+  if [[ -n "$RRD_FILE" && -n "$DUMP_FILE" && -n "$NEW_RRD_FILE" && -n "$GRAPH_THRESHOLD" && -n "$DATABASE_CHOICE" ]] &>/dev/null; then
     # check if the RRD file exists
     if [ ! -f "$RRD_FILE" ]; then
       echo "RRD file not found: $RRD_FILE"
@@ -1677,10 +1677,33 @@ function reset_graph_database {
       echo "Failed to dump the RRD file."
       exit 1
     fi
-    # step 2: Modify the XML - Reset database from deposited data (first <v> in each <row>)
-    echo "Reset database (deposited) values..."
-    # reset deposited lines
-    sed -i -E "s/(<row><v>)([0-9.e+-]+)(<\/v>)/\1$(echo "$GRAPH_THRESHOLD" | sed 's/\./\\./')\3/g" "$DUMP_FILE"
+    # step 2: Modify the XML - Reset database from choice data (first <v> in each <row>)
+    echo "Reset database ($DATABASE_CHOICE) values..."
+
+    # if choice
+    if [[ "$DATABASE_CHOICE" == "deposited" ]] &>/dev/null; then
+      # reset 'deposited' values above DEPOSITED_CHOICE
+      sed -i -E "/<row><v>[^<]+<\/v><v>[^<]+<\/v><v>[^<]+<\/v>/ {
+        s/(<row><v>)([0-9.e+-]+)(<\/v><v>[^<]+<\/v><v>[^<]+<\/v>)/\1$(echo "$GRAPH_THRESHOLD" | sed 's/\./\\./')\3/g
+    }" "$DUMP_FILE"
+    fi
+
+    # if choice
+    if [[ "$DATABASE_CHOICE" == "available" ]] &>/dev/null; then
+      # reset 'available' values above AVAILABLE_CHOICE
+      sed -i -E "/<row><v>[^<]+<\/v><v>[^<]+<\/v><v>[^<]+<\/v>/ {
+        s/(<row><v>[^<]+<\/v>)([0-9.e+-]+)(<\/v><v>[^<]+<\/v>)/\1$(echo "$GRAPH_THRESHOLD" | sed 's/\./\\./')\3/g
+    }" "$DUMP_FILE"
+    fi
+
+    # if choice
+    if [[ "$DATABASE_CHOICE" == "unconfirmed" ]] &>/dev/null; then
+      # reset 'unconfirmed' values above UNCONFIRMED_CHOICE
+      sed -i -E "/<row><v>[^<]+<\/v><v>[^<]+<\/v><v>[^<]+<\/v>/ {
+        s/(<row><v>[^<]+<\/v><v>[^<]+<\/v>)([0-9.e+-]+)(<\/v>)/\1$(echo "$GRAPH_THRESHOLD" | sed 's/\./\\./')\3/g
+    }" "$DUMP_FILE"
+    fi
+
     # step 3: Restore the XML back to a new RRD file
     echo "Restoring the modified XML back to a new RRD file..."
     rrdtool restore "$DUMP_FILE" "$NEW_RRD_FILE"
@@ -1694,7 +1717,7 @@ function reset_graph_database {
     mv "$NEW_RRD_FILE" "$RRD_FILE"
     # cleanup
     rm "$DUMP_FILE"
-    echo "Database reset complete. 'deposited' values have been capped at $GRAPH_THRESHOLD."
+    echo "Database reset complete. '$DATABASE_CHOICE' values have been capped at $GRAPH_THRESHOLD."
   fi
 }
 

@@ -1292,6 +1292,48 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     "s")
 
+      HEIGHT="11"
+      WIDTH="23"
+      CHOICE_HEIGHT="4"
+      BACKTITLE="Database data"
+      TITLE="Reset Database"
+      MENU="Choose database:"
+
+      OPTIONS=(1 "Deposited"
+        2 "Unconfirmed"
+        3 "Available")
+
+      CHOICE=$(dialog --clear \
+        --backtitle "$BACKTITLE" \
+        --title "$TITLE" \
+        --menu "$MENU" \
+        $HEIGHT $WIDTH $CHOICE_HEIGHT \
+        "${OPTIONS[@]}" \
+        2>&1 >/dev/tty)
+
+      clear
+      case $CHOICE in
+
+      "1")
+
+        DATABASE_CHOICE="deposited"
+
+        ;;
+
+      "2")
+
+        DATABASE_CHOICE="unconfirmed"
+
+        ;;
+
+      "3")
+
+        DATABASE_CHOICE="available"
+
+        ;;
+
+      esac
+
       while true; do
         # create an array of .rrd files excluding files with 'coins' or 'orders' in their names
         DATABASE_FILES=($(find "${SYS_DIR}/robot" -type f -name "*.rrd" | grep -vE "coins|orders"))
