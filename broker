@@ -1292,7 +1292,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
     "s")
 
-      HEIGHT="11"
+      HEIGHT="10"
       WIDTH="23"
       CHOICE_HEIGHT="4"
       BACKTITLE="Database data"
@@ -1334,56 +1334,60 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       esac
 
-      while true; do
-        # create an array of .rrd files excluding files with 'coins' or 'orders' in their names
-        DATABASE_FILES=($(find "${SYS_DIR}/robot" -type f -name "*.rrd" | grep -vE "coins|orders"))
-        NUM_FILES="${#DATABASE_FILES[@]}"
+      # if any data
+      if [[ -n "$DATABASE_CHOICE" ]] &>/dev/null; then
 
-        if [ "$NUM_FILES" -eq 0 ]; then
-          echo "Error: No database files found in $SYS_DIR/robot"
-          exit 1
-        fi
+        while true; do
+          # create an array of .rrd files excluding files with 'coins' or 'orders' in their names
+          DATABASE_FILES=($(find "${SYS_DIR}/robot" -type f -name "*.rrd" | grep -vE "coins|orders"))
+          NUM_FILES="${#DATABASE_FILES[@]}"
 
-        OPTIONS=()
-        for ((i = 0; i < NUM_FILES; i++)); do
-          FILENAME=$(basename "${DATABASE_FILES[$i]}" 2>/dev/null)
-          OPTIONS+=("$((i + 1))" "$FILENAME")
+          if [ "$NUM_FILES" -eq 0 ]; then
+            echo "Error: No database files found in $SYS_DIR/robot"
+            exit 1
+          fi
+
+          OPTIONS=()
+          for ((i = 0; i < NUM_FILES; i++)); do
+            FILENAME=$(basename "${DATABASE_FILES[$i]}" 2>/dev/null)
+            OPTIONS+=("$((i + 1))" "$FILENAME")
+          done
+          # adjust width based on the length of the longest filename
+          WIDTH=$(printf "%s\n" "${OPTIONS[@]}" | awk '{ print length }' | sort -n | tail -1)
+          WIDTH=$((WIDTH + 12))
+          # set the minimum length for the menu
+          LENGTH=$((NUM_FILES < 7 ? NUM_FILES : 7))
+          # if less than n
+          if [[ "$LENGTH" -lt "7" ]] &>/dev/null; then
+            LENGTH="7"
+          fi
+
+          CHOICE=$(dialog --clear --title "Database data" --menu "Choose one database:" "$LENGTH" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+          if [ -n "$CHOICE" ]; then
+            SELECTED_FILE="${DATABASE_FILES[$((CHOICE - 1))]}"
+            display_result() {
+              dialog --title "$(echo "$(ls -l "$SELECTED_FILE" 2>/dev/null | awk '{ print $8" :: "$NF }')")" \
+                --msgbox "$RESULT" 0 0
+            }
+
+            TEMP_FILE="$(echo "$SELECTED_FILE" | awk -F/ '{ print $NF }')"
+
+            # define variables
+            RRD_FILE="$SELECTED_FILE"      # path to your original RRD file
+            DUMP_FILE="/tmp/rrd_dump.xml"  # temporary XML file for editing
+            NEW_RRD_FILE="/tmp/$TEMP_FILE" # path to the new RRD file
+            GRAPH_THRESHOLD="0"            # set the threshold for what constitutes a "reset"
+
+            # output result
+            RESULT="$(reset_graph_database)"
+            display_result 2>/dev/null
+            break
+          else
+            break
+          fi
         done
-        # adjust width based on the length of the longest filename
-        WIDTH=$(printf "%s\n" "${OPTIONS[@]}" | awk '{ print length }' | sort -n | tail -1)
-        WIDTH=$((WIDTH + 12))
-        # set the minimum length for the menu
-        LENGTH=$((NUM_FILES < 7 ? NUM_FILES : 7))
-        # if less than n
-        if [[ "$LENGTH" -lt "7" ]] &>/dev/null; then
-          LENGTH="7"
-        fi
-
-        CHOICE=$(dialog --clear --title "Database data" --menu "Choose one database:" "$LENGTH" "$WIDTH" 0 "${OPTIONS[@]}" 2>&1 >/dev/tty)
-
-        if [ -n "$CHOICE" ]; then
-          SELECTED_FILE="${DATABASE_FILES[$((CHOICE - 1))]}"
-          display_result() {
-            dialog --title "$(echo "$(ls -l "$SELECTED_FILE" 2>/dev/null | awk '{ print $8" :: "$NF }')")" \
-              --msgbox "$RESULT" 0 0
-          }
-
-          TEMP_FILE="$(echo "$SELECTED_FILE" | awk -F/ '{ print $NF }')"
-
-          # define variables
-          RRD_FILE="$SELECTED_FILE"      # path to your original RRD file
-          DUMP_FILE="/tmp/rrd_dump.xml"  # temporary XML file for editing
-          NEW_RRD_FILE="/tmp/$TEMP_FILE" # path to the new RRD file
-          GRAPH_THRESHOLD="0"            # set the threshold for what constitutes a "reset"
-
-          # output result
-          RESULT="$(reset_graph_database)"
-          display_result 2>/dev/null
-          break
-        else
-          break
-        fi
-      done
+      fi
 
       ;;
 
