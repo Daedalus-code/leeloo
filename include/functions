@@ -1659,6 +1659,45 @@ function ema_value_output {
   )
 }
 
+# remove graph spikes ##########################################################
+
+function remove_graph_spikes {
+  # if any data
+  if [[ -n "$RRD_FILE" && -n "$DUMP_FILE" && -n "$NEW_RRD_FILE" && -n "$SPIKE_THRESHOLD" ]] &>/dev/null; then
+    # check if the RRD file exists
+    if [ ! -f "$RRD_FILE" ]; then
+      echo "RRD file not found: $RRD_FILE"
+      exit 1
+    fi
+    # step 1: Dump the RRD file to XML
+    echo "Dumping the RRD file to XML..."
+    rrdtool dump "$RRD_FILE" >"$DUMP_FILE"
+    # check if the dump was successful
+    if [ $? -ne 0 ]; then
+      echo "Failed to dump the RRD file."
+      exit 1
+    fi
+    # step 2: Modify the XML - Remove spikes from deposited data (first <v> in each <row>)
+    echo "Removing spikes from 'deposited' values..."
+    # use sed to cap spikes by replacing values greater than SPIKE_THRESHOLD with SPIKE_THRESHOLD
+    sed -i -E "s/(<row><v>)([0-9.e+-]+)(<\/v>)/\1$(echo "$SPIKE_THRESHOLD" | sed 's/\./\\./')\3/g" "$DUMP_FILE"
+    # step 3: Restore the XML back to a new RRD file
+    echo "Restoring the modified XML back to a new RRD file..."
+    rrdtool restore "$DUMP_FILE" "$NEW_RRD_FILE"
+    # check if the restore was successful
+    if [ $? -ne 0 ]; then
+      echo "Failed to restore the modified RRD file."
+      exit 1
+    fi
+    # step 4: Optionally replace the original RRD file with the new one
+    echo "Replacing the original RRD file with the new one..."
+    mv "$NEW_RRD_FILE" "$RRD_FILE"
+    # cleanup
+    rm "$DUMP_FILE"
+    echo "Spike removal complete. 'deposited' values have been capped at $SPIKE_THRESHOLD."
+  fi
+}
+
 # cleanup log ##################################################################
 
 function cleanup_log {

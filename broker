@@ -1178,7 +1178,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
   "G")
 
-    HEIGHT="16"
+    HEIGHT="17"
     WIDTH="43"
     BACKTITLE="Leeloo (Multipass)"
     TITLE="Reference Graphs"
@@ -1192,6 +1192,7 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
       x "Remove           Remove install"
       r "Reset            Reset databases"
       F "Filter           Filter graphs"
+      S "Spikes           Remove spikes"
       c "Crontab          CRON jobs")
 
     CHOICE=$(dialog --clear \
@@ -1293,6 +1294,41 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
 
       # edit graph filter
       nano "$SYS_DIR"/robot/*_graph.filter
+
+      ;;
+
+      ##########################################################################
+
+    "s")
+
+      # prompt user to trim graph spikes
+      if dialog --stdout --title "Trim spikes deposited?" \
+        --backtitle "Spike trimming?" \
+        --yesno "Yes: Trim! No: Go back!" 5 28; then
+
+        # output
+        echo "Initializing graph spikes removal (deposited data)"
+        # output list of databases
+        echo "$(ls -l "${SYS_DIR:?}"/robot/*.rrd 2>/dev/null | awk -F.rrd '{ print $1 }' | awk '{ print $NF }' | awk -Frobot '{ print $2 }' | tr -d '/' | egrep -v "coins|orders")"
+
+        # get database name
+        echo "Enter database name:"
+        read -r RRD_FILE_NAME
+
+        # if zero
+        if [[ -z "$RRD_FILE_NAME" ]] &>/dev/null; then
+          echo "Nothing found!"
+          sleep 1
+        else
+          # define variables
+          RRD_FILE="${SYS_DIR:?}/robot/$RRD_FILE_NAME.rrd" # path to your original RRD file
+          DUMP_FILE="/tmp/rrd_dump.xml"                    # temporary XML file for editing
+          NEW_RRD_FILE="/tmp/xeggex_BTC.rrd"               # path to the new RRD file
+          SPIKE_THRESHOLD="0"                              # set the threshold for what constitutes a "spike" (adjust as needed)
+          # remove graph spikes function
+          remove_graph_spikes
+        fi
+      fi
 
       ;;
 
