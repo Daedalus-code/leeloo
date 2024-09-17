@@ -1326,11 +1326,13 @@ Strategy error.log.: ${STRATEGY_ERROR:0:21}"
               --msgbox "$RESULT" 0 0
           }
 
+          TEMP_FILE="$(echo "$SELECTED_FILE" | awk -F/ '{ print $NF }')"
+
           # define variables
-          RRD_FILE="${SYS_DIR:?}/robot/$FILENAME" # path to your original RRD file
-          DUMP_FILE="/tmp/rrd_dump.xml"           # temporary XML file for editing
-          NEW_RRD_FILE="/tmp/$FILENAME"           # path to the new RRD file
-          GRAPH_THRESHOLD="0"                     # set the threshold for what constitutes a "reset"
+          RRD_FILE="$SELECTED_FILE"      # path to your original RRD file
+          DUMP_FILE="/tmp/rrd_dump.xml"  # temporary XML file for editing
+          NEW_RRD_FILE="/tmp/$TEMP_FILE" # path to the new RRD file
+          GRAPH_THRESHOLD="0"            # set the threshold for what constitutes a "reset"
 
           # output result
           RESULT="$(reset_graph_database)"
