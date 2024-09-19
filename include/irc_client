@@ -17,6 +17,16 @@ source /usr/local/bin/include/leeloo/functions
 
 WHOAMI="$(whoami)"
 
+# if root
+if [[ "$WHOAMI" == "root" ]] &>/dev/null; then
+  IRC_CONFIG_CONFIG="/$WHOAMI/.irssi/config"
+  if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+    rm -r /home/"$WHOAMI"/.irssi &>/dev/null
+  fi
+else
+  IRC_CONFIG_CONFIG="/home/$WHOAMI/.irssi/config"
+fi
+
 ################################################################################
 
 system_date
@@ -41,7 +51,7 @@ function no_client_installed() {
 
 function irssi_first_run() {
   # first time startup
-  if [[ ! -f /home/"$WHOAMI"/.irssi/config ]] &>/dev/null; then
+  if [[ ! -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
       echo "Installing configuration, please wait.."
       sleep 1
@@ -56,15 +66,15 @@ function irssi_first_run() {
   # sleep so loc above works.
   sleep 1
   # update default irssi settings, log connections successfully made
-  if [[ -f /home/"$WHOAMI"/.irssi/config ]] &>/dev/null; then
-    if [[ "$(grep "Bearish" /home/"$WHOAMI"/.irssi/config 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
+    if [[ "$(grep "Bearish" -c "$IRC_CONFIG_CONFIG" 2>/dev/null)" -eq "0" ]] &>/dev/null; then
       # get config size by lines
-      CONFIG_SIZE="$(wc -l /home/"$WHOAMI"/.irssi/config 2>/dev/null | awk '{ print $1 }')"
+      CONFIG_SIZE="$(wc -l "$IRC_CONFIG_CONFIG" 2>/dev/null | awk '{ print $1 }')"
       # disregard n last lines from config
-      echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" /home/"$WHOAMI"/.irssi/config)" >/home/"$WHOAMI"/.irssi/config 2>/dev/null
+      echo "$(head -"$(echo "$CONFIG_SIZE-4" | bc 2>/dev/null)" "$IRC_CONFIG_CONFIG")" >"$IRC_CONFIG_CONFIG" 2>/dev/null
       # add new lines to config
       # log all minus public and private
-      cat >>/home/"$WHOAMI"/.irssi/config 2>/dev/null <<'EOF'
+      cat >>"$IRC_CONFIG_CONFIG" 2>/dev/null <<'EOF'
 settings = {
 core = {
 real_name = "Bearish";
@@ -847,7 +857,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
       if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
-        nano /home/"$WHOAMI"/.irssi/config
+        nano "$IRC_CONFIG_CONFIG"
       else
         no_irssi_no_access
       fi
