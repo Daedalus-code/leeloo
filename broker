@@ -40,8 +40,11 @@ log_date_xargs
 ################################################################################
 
 # ssh port check
-if [[ "$(grep -c " 22 " /etc/ssh/ssh*_config 2>/dev/null)" -gt "0" ]] &>/dev/null; then
-  CHANGE_SSH_PORT="Please change ssh port! (22)"
+if [[ ! -f /tmp/sshchk ]] &>/dev/null; then
+  echo "$(grep -c " 22 " /etc/ssh/ssh*_config 2>/dev/null)" >/tmp/sshchk
+  if [[ "$(cat /tmp/sshchk 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+    CHANGE_SSH_PORT="Please change your ssh port! (22)"
+  fi
 fi
 
 ################################################################################
