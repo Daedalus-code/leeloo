@@ -39,6 +39,13 @@ log_date_xargs
 
 ################################################################################
 
+# ssh port check
+if [[ "$(grep -c " 22 " /etc/ssh/ssh*_config 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+  CHANGE_SSH_PORT="Please change ssh port! (22)"
+fi
+
+################################################################################
+
 clear
 
 # menu
@@ -48,7 +55,7 @@ EXTRA_WIDTH="$(echo "$ERROR_STATUS" | wc -L)"
 HEIGHT="20"
 WIDTH="$(echo "43+$EXTRA_WIDTH" | bc 2>/dev/null)"
 CHOICE_HEIGHT="12"
-BACKTITLE="Leeloo (Multipass)"
+BACKTITLE="Leeloo (Multipass) $CHANGE_SSH_PORT"
 TITLE="Main Menu"
 MENU="Multipass $DATE_XARGS
 Load: $LOAD :: $REPO_HEAD $REPO_DATE"
