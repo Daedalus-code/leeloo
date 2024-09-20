@@ -921,7 +921,7 @@ function search_market() {
       EXCHANGE_API="XGX"
       exchange_template
       SUPPORT_WIDTH="+5"
-      SUPPORT_LENGTH="+6"
+      SUPPORT_LENGTH="+5"
       function result_prices() {
         echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null
       }
@@ -975,21 +975,20 @@ function search_market() {
       WIDTH="77"
     fi
 
-    # format result using column -t
-    RESULT="$(echo "$RESULT" | column -t)"
+    if [[ "$MARKET_COUNT" -eq "0" ]] &>/dev/null; then
+      RESULT="No market was found."
+    else
+      RESULT="Market: Bid Ask Last (%) Volume24Hr
+$MARKET_RESULT"
+      # format result using column -t
+      RESULT="$(echo "$RESULT" | column -t)"
+    fi
 
     display_result() {
       dialog --title "Search $EXCHANGE_API result $MARKET_SEARCH: +$MARKET_COUNT | $DATE | ${MARKET_MOON_VALUE:?}%" \
         --no-collapse \
         --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
-
-    if [[ "$MARKET_COUNT" -eq "0" ]] &>/dev/null; then
-      RESULT="No market was found."
-    else
-      RESULT="Market: Bid Ask Last (%) Volume24Hr
-$MARKET_RESULT"
-    fi
 
     display_result 2>/dev/null
   else
