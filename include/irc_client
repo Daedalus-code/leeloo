@@ -890,30 +890,22 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
   "7")
 
-    if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
-        if dialog --stdout --title "Reset IRC configuration?" \
-          --backtitle "Configuration reset" \
-          --yesno "Yes: Reset!, No: Quit" 5 30; then
-          clear
-          # remove config, default.theme, version, servers
-          if dialog --stdout --title "Reset IRC Servers?" \
-            --backtitle "Server list reset" \
-            --yesno "Yes: Reset!, No: Quit" 5 30; then
-            rm -R "${LOG_DIR:?}"/leeloo/chat/irc.servers &>/dev/null
-          fi
-          rm -R "$IRC_DIRECTORY"/* &>/dev/null
-          rm -R "${LOG_DIR:?}"/leeloo/chat/irc.client &>/dev/null
-          rm -R "${LOG_DIR:?}"/leeloo/chat/tor.client &>/dev/null
-          rm -R "${LOG_DIR:?}"/leeloo/chat/pid.* &>/dev/null
-          irssi_first_run
-          exit
-        fi
-      else
-        no_irssi_no_access
+    if dialog --stdout --title "Reset IRC configuration?" \
+      --backtitle "Configuration reset" \
+      --yesno "Yes: Reset!, No: Quit" 5 30; then
+      clear
+      # remove config, default.theme, version, servers
+      if dialog --stdout --title "Reset IRC Servers?" \
+        --backtitle "Server list reset" \
+        --yesno "Yes: Reset!, No: Quit" 5 30; then
+        rm -R "${LOG_DIR:?}"/leeloo/chat/irc.servers &>/dev/null
       fi
-    else
-      no_client_installed
+      rm -R "$IRC_DIRECTORY"/* &>/dev/null
+      rm -R "${LOG_DIR:?}"/leeloo/chat/irc.client &>/dev/null
+      rm -R "${LOG_DIR:?}"/leeloo/chat/tor.client &>/dev/null
+      rm -R "${LOG_DIR:?}"/leeloo/chat/pid.* &>/dev/null
+      irssi_first_run
+      exit
     fi
 
     ;;
