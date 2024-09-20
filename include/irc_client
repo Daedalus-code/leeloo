@@ -24,6 +24,10 @@ if [[ "$WHOAMI" == "root" ]] &>/dev/null; then
     rm -r /home/"$WHOAMI"/.irssi &>/dev/null
   fi
 else
+  if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+    mkdir /home/"$WHOAMI" &>/dev/null
+    mkdir /home/"$WHOAMI"/.irssi &>/dev/null
+  fi
   IRC_CONFIG_CONFIG="/home/$WHOAMI/.irssi/config"
 fi
 
@@ -99,22 +103,16 @@ if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
   mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
 fi
 
-# .irssi directory
-if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
-  mkdir /home/"$WHOAMI" &>/dev/null
-  mkdir /home/"$WHOAMI"/.irssi &>/dev/null
-fi
-
 ################################################################################
 
 function irssi_files() {
-  IRSSI_IRC_DISCONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  IRSSI_IRC_DISCONNECT="$(cat "$IRC_CONFIG_CONFIG"/irc.disconnect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
   IRSSI_IRC_SERVERS="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-  IRSSI_IRC_CONNECT="$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-  IRSSI_IRC_CONNECT_PORT="$(cat /home/"$WHOAMI"/.irssi/irc.connect_port 2>/dev/null | sed '/^$/d')"
-  IRSSI_IRC_WELCOME="$(cat /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-  IRSSI_IRC_BANNED="$(cat /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
-  IRSSI_IRC_IRCLOGS="$(ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' | sed '/^$/d')"
+  IRSSI_IRC_CONNECT="$(cat "$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  IRSSI_IRC_CONNECT_PORT="$(cat "$IRC_CONFIG_CONFIG"/irc.connect_port 2>/dev/null | sed '/^$/d')"
+  IRSSI_IRC_WELCOME="$(cat "$IRC_CONFIG_CONFIG"/irc.welcome 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  IRSSI_IRC_BANNED="$(cat "$IRC_CONFIG_CONFIG"/irc.banned 2>/dev/null | sed '/^$/d' | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b")"
+  IRSSI_IRC_IRCLOGS="$(ls -l "$IRC_CONFIG_CONFIG"/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' | sed '/^$/d')"
 }
 
 ################################################################################
@@ -222,16 +220,16 @@ function irc_client() {
   ##############################################################################
 
   function welcome_banned() {
-    if [[ -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
+    if [[ -d "$IRC_CONFIG_CONFIG"/irclogs/ ]] &>/dev/null; then
       # welcome on connect
       WELCOME_STRING="Welcome|has joined"
-      if [[ "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep -c "$WELCOME_STRING")" -gt "0" ]] &>/dev/null; then
-        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$WELCOME_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | egrep -v "$NOT_A_SERVER" | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null
+      if [[ "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep -c "$WELCOME_STRING")" -gt "0" ]] &>/dev/null; then
+        echo "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep "$WELCOME_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | egrep -v "$NOT_A_SERVER" | awk '!a[$0]++' | sed '/^$/d')" >"$IRC_CONFIG_CONFIG"/irc.welcome 2>/dev/null
       fi
       # banned on connect
       BANNED_STRING="Banned|banned|Ban|ban|You are not welcome"
-      if [[ "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep -c "$BANNED_STRING")" -gt "0" ]] &>/dev/null; then
-        echo "$(cat /home/"$WHOAMI"/.irssi/irclogs/*/* 2>/dev/null | egrep "$BANNED_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | egrep -v "$NOT_A_SERVER" | awk '!a[$0]++' | sed '/^$/d')" >/home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null
+      if [[ "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep -c "$BANNED_STRING")" -gt "0" ]] &>/dev/null; then
+        echo "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep "$BANNED_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | egrep -v "$NOT_A_SERVER" | awk '!a[$0]++' | sed '/^$/d')" >"$IRC_CONFIG_CONFIG"/irc.banned 2>/dev/null
       fi
     fi
   }
@@ -240,29 +238,29 @@ function irc_client() {
 
   function irc_connect() {
     # check if irc.connect file exists, create it if not
-    if [[ ! -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
-      touch /home/"$WHOAMI"/.irssi/irc.connect &>/dev/null
+    if [[ ! -f "$IRC_CONFIG_CONFIG"/irc.connect ]] &>/dev/null; then
+      touch "$IRC_CONFIG_CONFIG"/irc.connect &>/dev/null
     fi
 
     # list files in irclogs directory and extract their names
-    if [[ -d /home/"$WHOAMI"/.irssi/irclogs/ ]] &>/dev/null; then
-      ls -l /home/"$WHOAMI"/.irssi/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >/home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
+    if [[ -d "$IRC_CONFIG_CONFIG"/irclogs/ ]] &>/dev/null; then
+      ls -l "$IRC_CONFIG_CONFIG"/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >"$IRC_CONFIG_CONFIG"/irclogs.tmp 2>/dev/null
 
       # iterate over the log file names and check if they exist in the connections file
       while read -r LOG_FILE; do
-        MATCH=$(grep -F "$LOG_FILE" /home/"$WHOAMI"/.irssi/connections 2>/dev/null)
+        MATCH=$(grep -F "$LOG_FILE" "$IRC_CONFIG_CONFIG"/connections 2>/dev/null)
         if [[ -n "$MATCH" ]] &>/dev/null; then
           # without port
-          echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
-          echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null | egrep -v "$NOT_A_SERVER" | awk '{ print $1 }' | sed '/^$/d' | sort | awk '!a[$0]++' | sed -r '/^.{,2}$/d')" >/home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null
+          echo "$MATCH" >>"$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null
+          echo "$(cat "$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null | egrep -v "$NOT_A_SERVER" | awk '{ print $1 }' | sed '/^$/d' | sort | awk '!a[$0]++' | sed -r '/^.{,2}$/d')" >"$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null
           # with port
-          echo "$MATCH" >>/home/"$WHOAMI"/.irssi/irc.connect_port 2>/dev/null
-          echo "$(cat /home/"$WHOAMI"/.irssi/irc.connect_port 2>/dev/null | egrep -v "$NOT_A_SERVER" | sed '/^$/d' | sort | awk '!a[$1]++' | sed -r '/^.{,2}$/d')" >/home/"$WHOAMI"/.irssi/irc.connect_port 2>/dev/null
+          echo "$MATCH" >>"$IRC_CONFIG_CONFIG"/irc.connect_port 2>/dev/null
+          echo "$(cat "$IRC_CONFIG_CONFIG"/irc.connect_port 2>/dev/null | egrep -v "$NOT_A_SERVER" | sed '/^$/d' | sort | awk '!a[$1]++' | sed -r '/^.{,2}$/d')" >"$IRC_CONFIG_CONFIG"/irc.connect_port 2>/dev/null
         fi
-      done </home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
+      done <"$IRC_CONFIG_CONFIG"/irclogs.tmp 2>/dev/null
 
       # remove temporary file
-      rm /home/"$WHOAMI"/.irssi/irclogs.tmp 2>/dev/null
+      rm "$IRC_CONFIG_CONFIG"/irclogs.tmp 2>/dev/null
     fi
   }
 
@@ -270,23 +268,23 @@ function irc_client() {
 
   function irc_disconnect() {
     # check if irc.disconnect file exists, create it if not
-    if [[ ! -f /home/"$WHOAMI"/.irssi/irc.disconnect ]] &>/dev/null; then
-      touch /home/"$WHOAMI"/.irssi/irc.disconnect &>/dev/null
+    if [[ ! -f "$IRC_CONFIG_CONFIG"/irc.disconnect ]] &>/dev/null; then
+      touch "$IRC_CONFIG_CONFIG"/irc.disconnect &>/dev/null
     fi
 
     # get the last connected server from connections file
-    IRSSI_CONNECTED="$(tail -n 1 /home/"$WHOAMI"/.irssi/connections 2>/dev/null)"
+    IRSSI_CONNECTED="$(tail -n 1 "$IRC_CONFIG_CONFIG"/connections 2>/dev/null)"
 
     # list files in irclog directory and extract the names of those that contain the last connected server
-    ls -l /home/"$WHOAMI"/.irssi/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/chat/irc.tmp 2>/dev/null
+    ls -l "$IRC_CONFIG_CONFIG"/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/chat/irc.tmp 2>/dev/null
 
     if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/chat/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
       # if the server is not found in the list, append the last connected server to the irc.disconnect file
-      echo "$IRSSI_CONNECTED" 2>/dev/null >>/home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null
+      echo "$IRSSI_CONNECTED" 2>/dev/null >>"$IRC_CONFIG_CONFIG"/irc.disconnect 2>/dev/null
 
       # remove duplicates and empty lines from irc.disconnect file
-      sort /home/"$WHOAMI"/.irssi/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.disconnect.tmp 2>/dev/null
-      mv /home/"$WHOAMI"/.irssi/irc.disconnect.tmp /home/"$WHOAMI"/.irssi/irc.disconnect &>/dev/null
+      sort "$IRC_CONFIG_CONFIG"/irc.disconnect 2>/dev/null | awk '!a[$0]++' | sed '/^$/d' >"$IRC_CONFIG_CONFIG"/irc.disconnect.tmp 2>/dev/null
+      mv "$IRC_CONFIG_CONFIG"/irc.disconnect.tmp "$IRC_CONFIG_CONFIG"/irc.disconnect &>/dev/null
     fi
 
     # remove temporary file
@@ -303,9 +301,9 @@ function irc_client() {
 
   function random_server() {
 
-    echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.servers
-    echo "$IRSSI_IRC_IRCLOGS" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.irclogs
-    echo "$IRSSI_IRC_WELCOME" | sed '/^$/d' >/home/"$WHOAMI"/.irssi/irc.welcome
+    echo "$IRSSI_IRC_SERVERS" | sed '/^$/d' >"$IRC_CONFIG_CONFIG"/irc.servers
+    echo "$IRSSI_IRC_IRCLOGS" | sed '/^$/d' >"$IRC_CONFIG_CONFIG"/irc.irclogs
+    echo "$IRSSI_IRC_WELCOME" | sed '/^$/d' >"$IRC_CONFIG_CONFIG"/irc.welcome
 
     ############################################################################
 
@@ -373,7 +371,7 @@ function irc_client() {
     ############################################################################
 
     function no_list() {
-      if [[ "$(egrep -c "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+      if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.servers 2>/dev/null)" -gt "0" ]] &>/dev/null; then
         irssi_servers_list
       else
         IRSSI_LIST="irc.random"
@@ -398,42 +396,42 @@ function irc_client() {
         no_list
       elif [[ "$RANDOM_SERVER_LIST" -eq "2" ]] &>/dev/null; then
         # random 2 (irc.connect_port) should work
-        if [[ "$(egrep -c "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.connect_port 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.connect_port 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_connect_port
         else
           no_list
         fi
       elif [[ "$RANDOM_SERVER_LIST" -eq "3" ]] &>/dev/null; then
         # random 3 (irc.connect)
-        if [[ "$(egrep -c "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_connect
         else
           no_list
         fi
       elif [[ "$RANDOM_SERVER_LIST" -eq "4" ]] &>/dev/null; then
         # random 4 (irc.welcome)
-        if [[ "$(egrep -c "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.welcome 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_welcome
         else
           no_list
         fi
       elif [[ "$RANDOM_SERVER_LIST" -eq "5" ]] &>/dev/null; then
         # random 5 (irc.banned)
-        if [[ "$(egrep -c "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.banned 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.banned 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_banned
         else
           no_list
         fi
       elif [[ "$RANDOM_SERVER_LIST" -eq "6" ]] &>/dev/null; then
         # random 6 (irc.irclogs)
-        if [[ "$(egrep -c "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.irclogs 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.irclogs 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_irclogs
         else
           no_list
         fi
       elif [[ "$RANDOM_SERVER_LIST" -eq "7" ]] &>/dev/null; then
         # random 7 (irc.servers) again
-        if [[ "$(egrep -c "[Aa0-Zz9]" /home/"$WHOAMI"/.irssi/irc.servers 2>/dev/null)" -gt "0" ]] &>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.servers 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           no_list
         fi
       fi
@@ -509,7 +507,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   "1")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+      if [[ -d "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
 
         irssi_files
 
@@ -614,14 +612,14 @@ COMMANDS.....:  /help")"
           if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
 
             # get connection info
-            echo "$IRSSI_SERVER $IRSSI_PORT" >/home/"$WHOAMI"/.irssi/connections 2>/dev/null
+            echo "$IRSSI_SERVER $IRSSI_PORT" >"$IRC_CONFIG_CONFIG"/connections 2>/dev/null
             # start irssi
             torify irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
             clear
           else
 
             # get connection info
-            echo "$IRSSI_SERVER $IRSSI_PORT" >/home/"$WHOAMI"/.irssi/connections 2>/dev/null
+            echo "$IRSSI_SERVER $IRSSI_PORT" >"$IRC_CONFIG_CONFIG"/connections 2>/dev/null
             # start irssi
             irssi -c "$IRSSI_SERVER" -p "$IRSSI_PORT" -n "$IRSSI_NICKNAME"
             clear
@@ -655,7 +653,7 @@ COMMANDS.....:  /help")"
   "2")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+      if [[ -d "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
         nano "${LOG_DIR:?}"/leeloo/chat/irc.servers
       else
         no_irssi_no_access
@@ -671,7 +669,7 @@ COMMANDS.....:  /help")"
   "3")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+      if [[ -d "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
 
         irssi_files
 
@@ -691,24 +689,24 @@ COMMANDS.....:  /help")"
         ########################################################################
 
         # potential new irc servers from irc.connect
-        if [[ -f /home/"$WHOAMI"/.irssi/irc.connect ]] &>/dev/null; then
-          IRSSI_NEW_CONNECT="$(echo "$(grep -vf /home/"$WHOAMI"/.irssi/irc.servers /home/"$WHOAMI"/.irssi/irc.connect 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
+        if [[ -f "$IRC_CONFIG_CONFIG"/irc.connect ]] &>/dev/null; then
+          IRSSI_NEW_CONNECT="$(echo "$(grep -vf "$IRC_CONFIG_CONFIG"/irc.servers "$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
         fi
         if [[ -z "$IRSSI_NEW_CONNECT" ]] &>/dev/null; then
           IRSSI_NEW_CONNECT="0"
         fi
 
         # potential new irc servers from irc.welcome
-        if [[ -f /home/"$WHOAMI"/.irssi/irc.welcome ]] &>/dev/null; then
-          IRSSI_NEW_WELCOME="$(echo "$(grep -vf /home/"$WHOAMI"/.irssi/irc.servers /home/"$WHOAMI"/.irssi/irc.welcome 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
+        if [[ -f "$IRC_CONFIG_CONFIG"/irc.welcome ]] &>/dev/null; then
+          IRSSI_NEW_WELCOME="$(echo "$(grep -vf "$IRC_CONFIG_CONFIG"/irc.servers "$IRC_CONFIG_CONFIG"/irc.welcome 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
         fi
         if [[ -z "$IRSSI_NEW_WELCOME" ]] &>/dev/null; then
           IRSSI_NEW_WELCOME="0"
         fi
 
         # potential new irc servers from irc.irclogs
-        if [[ -f /home/"$WHOAMI"/.irssi/irc.irclogs ]] &>/dev/null; then
-          IRSSI_NEW_IRCLOGS="$(echo "$(grep -vf /home/"$WHOAMI"/.irssi/irc.servers /home/"$WHOAMI"/.irssi/irc.irclogs 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
+        if [[ -f "$IRC_CONFIG_CONFIG"/irc.irclogs ]] &>/dev/null; then
+          IRSSI_NEW_IRCLOGS="$(echo "$(grep -vf "$IRC_CONFIG_CONFIG"/irc.servers "$IRC_CONFIG_CONFIG"/irc.irclogs 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
         fi
         if [[ -z "$IRSSI_NEW_IRCLOGS" ]] &>/dev/null; then
           IRSSI_NEW_IRCLOGS="0"
@@ -830,7 +828,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
   "5")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+      if [[ -d "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
         if dialog --stdout --title "Remove IRC Client?" \
           --backtitle "Remove client" \
           --yesno "Yes: Remove!, No: Quit" 5 30; then
@@ -838,7 +836,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
           sudo apt-get purge --auto-remove irssi -y
           # remove irc.client, config, default.theme
           rm "${LOG_DIR:?}"/leeloo/chat/irc.client &>/dev/null
-          rm -R /home/"$WHOAMI"/.irssi &>/dev/null
+          rm -R "$IRC_CONFIG_CONFIG" &>/dev/null
           read -r -p "Press Enter to continue" </dev/tty
           echo
         fi
@@ -856,7 +854,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
   "6")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+      if [[ -d "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
         nano "$IRC_CONFIG_CONFIG"
       else
         no_irssi_no_access
@@ -872,7 +870,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
   "7")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
+      if [[ -d "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
         if dialog --stdout --title "Reset IRC configuration?" \
           --backtitle "Configuration reset" \
           --yesno "Yes: Reset!, No: Quit" 5 30; then
@@ -883,7 +881,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
             --yesno "Yes: Reset!, No: Quit" 5 30; then
             rm -R "${LOG_DIR:?}"/leeloo/chat/irc.servers &>/dev/null
           fi
-          rm -R /home/"$WHOAMI"/.irssi/* &>/dev/null
+          rm -R "$IRC_CONFIG_CONFIG"/* &>/dev/null
           rm -R "${LOG_DIR:?}"/leeloo/chat/irc.client &>/dev/null
           rm -R "${LOG_DIR:?}"/leeloo/chat/tor.client &>/dev/null
           rm -R "${LOG_DIR:?}"/leeloo/chat/pid.* &>/dev/null
