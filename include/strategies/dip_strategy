@@ -2657,21 +2657,27 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   decimal_market
 
   # old ask price (trades)
-  DIP_SELLING_OLD_PRICE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$DIP_MARKETS".trades 2>/dev/null | grep "buy" | head -1 | awk '{ print $5 }' | awk '{ printf "%.9f\n", $1 }')"
+  DIP_SELLING_OLD_PRICE=$(awk '/buy/ { print $5; exit }' "${LOG_DIR:?}/leeloo/${EXCHANGE_DIR_NAME}/${LISTING_CURRENCY}_${DIP_MARKETS}.trades" 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
   # new ask price (prices.dip)
-  DIP_SELLING_NEW_PRICE="$(grep -w "$LISTING_CURRENCY/$DIP_MARKETS" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
+  DIP_SELLING_NEW_PRICE=$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${LOG_DIR:?}/leeloo/${EXCHANGE_DIR_NAME}/prices.dip" | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')
 
-  # if buy price are more than price
-  if [[ "$DIP_SELLING_OLD_PRICE" > "$DIP_SELLING_NEW_PRICE" ]] &>/dev/null; then
-    # not sellable
-    DIP_SELLING_ABLE="0"
-    # if buy price are less than price
-  elif [[ "$DIP_SELLING_OLD_PRICE" < "$DIP_SELLING_NEW_PRICE" ]] &>/dev/null; then
-    # sellable
-    DIP_SELLING_ABLE="1"
-    # if buy price equals to price
-  elif [[ "$DIP_SELLING_OLD_PRICE" == "$DIP_SELLING_NEW_PRICE" ]] &>/dev/null; then
-    # not sellable
+  # if both prices are valid
+  if [[ -n "$DIP_SELLING_OLD_PRICE" && -n "$DIP_SELLING_NEW_PRICE" ]]; then
+    # compare prices using bc
+    PRICE_COMPARISON=$(echo "$DIP_SELLING_OLD_PRICE > $DIP_SELLING_NEW_PRICE" | bc 2>/dev/null)
+    # sell or not
+    if [[ "$PRICE_COMPARISON" -eq 1 ]]; then
+      DIP_SELLING_ABLE="0" # not sellable
+    else
+      PRICE_COMPARISON=$(echo "$DIP_SELLING_OLD_PRICE < $DIP_SELLING_NEW_PRICE" | bc 2>/dev/null)
+      # sell or not
+      if [[ "$PRICE_COMPARISON" -eq 1 ]]; then
+        DIP_SELLING_ABLE="1" # sellable
+      else
+        DIP_SELLING_ABLE="0" # prices are equal, not sellable
+      fi
+    fi
+  else
     DIP_SELLING_ABLE="0"
   fi
 
