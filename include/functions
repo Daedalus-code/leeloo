@@ -969,7 +969,14 @@ function search_market() {
     fi
 
     MARKET_SEARCH="$(echo "$MARKET_INPUT" | tr '[:lower:]' '[:upper:]')"
-    MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/*prices* 2>/dev/null | tr '_' '/' | awk '!a[$1]++' | tr -d ':' | grep "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
+
+    # if all search
+    if [[ "$SEARCH_MARKET" == "*" ]] &>/dev/null; then
+      MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/*/*prices* 2>/dev/null | tr '_' '/' | awk '!a[$1]++' | tr -d ':' | grep "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
+    else
+      MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/*prices* 2>/dev/null | tr '_' '/' | awk '!a[$1]++' | tr -d ':' | grep "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
+    fi
+
     MARKET_COUNT="$(echo "$MARKET_RESULT" | sed '/^$/d' | wc -l)"
     MARKET_MOON="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | awk '{ SUM += $1} END { print SUM }')"
     MARKET_MOON_COUNT="$(echo "$MARKET_RESULT" | awk '{ print $5 }' | wc -l)"
