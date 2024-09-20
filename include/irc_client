@@ -17,18 +17,24 @@ source /usr/local/bin/include/leeloo/functions
 
 WHOAMI="$(whoami)"
 
-# default user directory
+# default user config
 IRC_CONFIG_CONFIG="/home/$WHOAMI/.irssi/config"
+# default user directory
+IRC_DIRECTORY="/home/$WHOAMI/.irssi"
 
 # if root
-if [[ "$WHOAMI" == "root" ]] 2>/dev/null; then
+if [[ "$WHOAMI" == "root" ]] &>/dev/null; then
+
   # root directory
   IRC_CONFIG_CONFIG="/$WHOAMI/.irssi/config"
-  if [[ -d /home/"$WHOAMI"/.irssi ]] 2>/dev/null; then
+  # default user directory
+  IRC_DIRECTORY="/$WHOAMI/.irssi"
+
+  if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
     rm -r /home/"$WHOAMI"/.irssi &>/dev/null
   fi
 else
-  if [[ ! -d /home/"$WHOAMI"/.irssi ]] 2>/dev/null; then
+  if [[ ! -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
     mkdir /home/"$WHOAMI" &>/dev/null
     mkdir /home/"$WHOAMI"/.irssi &>/dev/null
   fi
@@ -70,7 +76,7 @@ function no_client_installed() {
 
 function irssi_first_run() {
   # first time startup
-  if [[ ! -f "$IRC_CONFIG_CONFIG" ]] 2>/dev/null; then
+  if [[ ! -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
       echo "Installing configuration, please wait.."
       sleep 1
@@ -85,8 +91,8 @@ function irssi_first_run() {
   # sleep so loc above works.
   sleep 1
   # update default irssi settings, log connections successfully made
-  if [[ -f "$IRC_CONFIG_CONFIG" ]] 2>/dev/null; then
-    if [[ "$(grep "Bearish" -c "$IRC_CONFIG_CONFIG" 2>/dev/null)" -eq "0" ]] 2>/dev/null; then
+  if [[ -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
+    if [[ "$(grep "Bearish" -c "$IRC_CONFIG_CONFIG" 2>/dev/null)" -eq "0" ]] &>/dev/null; then
       # get config size by lines
       CONFIG_SIZE="$(wc -l "$IRC_CONFIG_CONFIG" 2>/dev/null | awk '{ print $1 }')"
       # disregard n last lines from config
@@ -114,7 +120,7 @@ EOF
 ################################################################################
 
 # chat directory
-if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] 2>/dev/null; then
+if [[ ! -d "${LOG_DIR:?}"/leeloo/chat ]] &>/dev/null; then
   mkdir "${LOG_DIR:?}"/leeloo/chat &>/dev/null
 fi
 
@@ -137,10 +143,10 @@ function irc_client() {
 
   if [ -x "$(command -v irssi)" ] &>/dev/null; then
     # get irc server list
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.servers ]] 2>/dev/null; then
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.servers ]] &>/dev/null; then
       echo "Downloading IRC server list.."
       # proxy configuration = true
-      if [[ "$PROXY_CHAT_API" == "true" ]] 2>/dev/null; then
+      if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
         # with proxy
         torify curl -s "https://www.mirc.com/servers.ini" | tr -t ':' ' ' | awk '{ print $3 }' | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.servers 2>/dev/null
       else
@@ -153,7 +159,7 @@ function irc_client() {
 
   function proxy_configuration() {
     # proxy configuration = true
-    if [[ "$PROXY_CHAT_API" == "true" ]] 2>/dev/null; then
+    if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
       PROXY_CONFIG_STATUS="Enabled"
     else
       PROXY_CONFIG_STATUS="Disabled"
@@ -164,7 +170,7 @@ function irc_client() {
 
   function irssi_status() {
     # irssi status
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/pid.irssi ]] 2>/dev/null; then
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/pid.irssi ]] &>/dev/null; then
       touch "${LOG_DIR:?}"/leeloo/chat/pid.irssi &>/dev/null
       echo "0" >"${LOG_DIR:?}"/leeloo/chat/pid.irssi 2>/dev/null
     fi
@@ -173,11 +179,11 @@ function irc_client() {
     FILE_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/chat/pid.irssi 2>/dev/null)))" 2>/dev/null)"
 
     # update file
-    if [[ "$FILE_TIME" -gt "$FILE_TIME_MAX" ]] 2>/dev/null; then
+    if [[ "$FILE_TIME" -gt "$FILE_TIME_MAX" ]] &>/dev/null; then
       echo "$(pidof irssi 2>/dev/null | wc -l)" >"${LOG_DIR:?}"/leeloo/chat/pid.irssi 2>/dev/null
     fi
 
-    if [[ "$(cat "${LOG_DIR:?}"/leeloo/chat/pid.irssi 2>/dev/null)" -gt "0" ]] 2>/dev/null; then
+    if [[ "$(cat "${LOG_DIR:?}"/leeloo/chat/pid.irssi 2>/dev/null)" -gt "0" ]] &>/dev/null; then
       IRSSI_COM_STATUS="Online"
     else
       IRSSI_COM_STATUS="Offline"
@@ -186,7 +192,7 @@ function irc_client() {
 
   function tor_status() {
     # tor status
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/pid.tor ]] 2>/dev/null; then
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/pid.tor ]] &>/dev/null; then
       touch "${LOG_DIR:?}"/leeloo/chat/pid.tor &>/dev/null
       echo "0" >"${LOG_DIR:?}"/leeloo/chat/pid.tor 2>/dev/null
     fi
@@ -195,11 +201,11 @@ function irc_client() {
     FILE_TIME="$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/chat/pid.tor 2>/dev/null)))" 2>/dev/null)"
 
     # update file
-    if [[ "$FILE_TIME" -gt "$FILE_TIME_MAX" ]] 2>/dev/null; then
+    if [[ "$FILE_TIME" -gt "$FILE_TIME_MAX" ]] &>/dev/null; then
       echo "$(pidof tor 2>/dev/null | wc -l)" >"${LOG_DIR:?}"/leeloo/chat/pid.tor 2>/dev/null
     fi
 
-    if [[ "$(cat "${LOG_DIR:?}"/leeloo/chat/pid.tor 2>/dev/null)" -gt "0" ]] 2>/dev/null; then
+    if [[ "$(cat "${LOG_DIR:?}"/leeloo/chat/pid.tor 2>/dev/null)" -gt "0" ]] &>/dev/null; then
       PROXY_COM_STATUS="Online"
     else
       PROXY_COM_STATUS="Offline"
@@ -210,24 +216,24 @@ function irc_client() {
 
   function irssi_version() {
     # get irssi version
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.client ]] 2>/dev/null; then
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/irc.client ]] &>/dev/null; then
       echo "$(irssi -v 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/irc.client 2>/dev/null
     fi
     IRSSI_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/chat/irc.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$2 }')"
     # zero
-    if [[ ! -s "${LOG_DIR:?}"/leeloo/chat/irc.client ]] 2>/dev/null; then
+    if [[ ! -s "${LOG_DIR:?}"/leeloo/chat/irc.client ]] &>/dev/null; then
       IRSSI_CLIENT="Not installed"
     fi
   }
 
   function tor_version() {
     # get tor version
-    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/tor.client ]] 2>/dev/null; then
+    if [[ ! -f "${LOG_DIR:?}"/leeloo/chat/tor.client ]] &>/dev/null; then
       echo "$(tor --version 2>/dev/null)" | sed '/^$/d' >"${LOG_DIR:?}"/leeloo/chat/tor.client 2>/dev/null
     fi
     # zero
     PROXY_CLIENT="$(cat "${LOG_DIR:?}"/leeloo/chat/tor.client 2>/dev/null | xargs | sed '/^$/d' | awk '{ print $1,$NF }')"
-    if [[ ! -s "${LOG_DIR:?}"/leeloo/chat/tor.client ]] 2>/dev/null; then
+    if [[ ! -s "${LOG_DIR:?}"/leeloo/chat/tor.client ]] &>/dev/null; then
       PROXY_CLIENT="Not installed"
     fi
   }
@@ -235,15 +241,15 @@ function irc_client() {
   ##############################################################################
 
   function welcome_banned() {
-    if [[ -d "$IRC_CONFIG_CONFIG"/irclogs/ ]] 2>/dev/null; then
+    if [[ -d "$IRC_DIRECTORY"/irclogs/ ]] &>/dev/null; then
       # welcome on connect
       WELCOME_STRING="Welcome|has joined"
-      if [[ "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep -c "$WELCOME_STRING")" -gt "0" ]] 2>/dev/null; then
+      if [[ "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep -c "$WELCOME_STRING")" -gt "0" ]] &>/dev/null; then
         echo "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep "$WELCOME_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | egrep -v "$NOT_A_SERVER" | awk '!a[$0]++' | sed '/^$/d')" >"$IRC_CONFIG_CONFIG"/irc.welcome 2>/dev/null
       fi
       # banned on connect
       BANNED_STRING="Banned|banned|Ban|ban|You are not welcome"
-      if [[ "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep -c "$BANNED_STRING")" -gt "0" ]] 2>/dev/null; then
+      if [[ "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep -c "$BANNED_STRING")" -gt "0" ]] &>/dev/null; then
         echo "$(cat "$IRC_CONFIG_CONFIG"/irclogs/*/* 2>/dev/null | egrep "$BANNED_STRING" | grep -Eo "\\b[a-zA-Z0-9][a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}( [0-9]+)?\\b" | egrep -v "$NOT_A_SERVER" | awk '!a[$0]++' | sed '/^$/d')" >"$IRC_CONFIG_CONFIG"/irc.banned 2>/dev/null
       fi
     fi
@@ -253,18 +259,18 @@ function irc_client() {
 
   function irc_connect() {
     # check if irc.connect file exists, create it if not
-    if [[ ! -f "$IRC_CONFIG_CONFIG"/irc.connect ]] 2>/dev/null; then
+    if [[ ! -f "$IRC_CONFIG_CONFIG"/irc.connect ]] &>/dev/null; then
       touch "$IRC_CONFIG_CONFIG"/irc.connect &>/dev/null
     fi
 
     # list files in irclogs directory and extract their names
-    if [[ -d "$IRC_CONFIG_CONFIG"/irclogs/ ]] 2>/dev/null; then
+    if [[ -d "$IRC_DIRECTORY"/irclogs/ ]] &>/dev/null; then
       ls -l "$IRC_CONFIG_CONFIG"/irclogs/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | sed 's/.*\s//' >"$IRC_CONFIG_CONFIG"/irclogs.tmp 2>/dev/null
 
       # iterate over the log file names and check if they exist in the connections file
       while read -r LOG_FILE; do
         MATCH=$(grep -F "$LOG_FILE" "$IRC_CONFIG_CONFIG"/connections 2>/dev/null)
-        if [[ -n "$MATCH" ]] 2>/dev/null; then
+        if [[ -n "$MATCH" ]] &>/dev/null; then
           # without port
           echo "$MATCH" >>"$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null
           echo "$(cat "$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null | egrep -v "$NOT_A_SERVER" | awk '{ print $1 }' | sed '/^$/d' | sort | awk '!a[$0]++' | sed -r '/^.{,2}$/d')" >"$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null
@@ -283,7 +289,7 @@ function irc_client() {
 
   function irc_disconnect() {
     # check if irc.disconnect file exists, create it if not
-    if [[ ! -f "$IRC_CONFIG_CONFIG"/irc.disconnect ]] 2>/dev/null; then
+    if [[ ! -f "$IRC_CONFIG_CONFIG"/irc.disconnect ]] &>/dev/null; then
       touch "$IRC_CONFIG_CONFIG"/irc.disconnect &>/dev/null
     fi
 
@@ -293,7 +299,7 @@ function irc_client() {
     # list files in irclog directory and extract the names of those that contain the last connected server
     ls -l "$IRC_CONFIG_CONFIG"/irclog/ 2>/dev/null | egrep -v "total [0-9]+" | awk '{ print $NF }' | grep "$IRSSI_CONNECTED" >"${LOG_DIR:?}"/leeloo/chat/irc.tmp 2>/dev/null
 
-    if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/chat/irc.tmp 2>/dev/null)" -eq "0" ]] 2>/dev/null; then
+    if [[ "$(grep -c "$IRSSI_CONNECTED" "${LOG_DIR:?}"/leeloo/chat/irc.tmp 2>/dev/null)" -eq "0" ]] &>/dev/null; then
       # if the server is not found in the list, append the last connected server to the irc.disconnect file
       echo "$IRSSI_CONNECTED" 2>/dev/null >>"$IRC_CONFIG_CONFIG"/irc.disconnect 2>/dev/null
 
@@ -386,7 +392,7 @@ function irc_client() {
     ############################################################################
 
     function no_list() {
-      if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.servers 2>/dev/null)" -gt "0" ]] 2>/dev/null; then
+      if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.servers 2>/dev/null)" -gt "0" ]] &>/dev/null; then
         irssi_servers_list
       else
         IRSSI_LIST="irc.random"
@@ -395,58 +401,58 @@ function irc_client() {
       fi
     }
 
-    if [[ -z "$IRSSI_LIST" ]] 2>/dev/null; then
+    if [[ -z "$IRSSI_LIST" ]] &>/dev/null; then
       IRSSI_LIST="Configuration"
     fi
 
     ############################################################################
 
     # zero server configuration set
-    if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] 2>/dev/null; then
+    if [[ "$IRSSI_SERVER_STATUS" -eq "0" ]] &>/dev/null; then
       # pick random server list
       RANDOM_SERVER_LIST=$((((RANDOM % 7) + 1)))
 
       # random 1 (irc.servers)
-      if [[ "$RANDOM_SERVER_LIST" -eq "1" ]] 2>/dev/null; then
+      if [[ "$RANDOM_SERVER_LIST" -eq "1" ]] &>/dev/null; then
         no_list
-      elif [[ "$RANDOM_SERVER_LIST" -eq "2" ]] 2>/dev/null; then
+      elif [[ "$RANDOM_SERVER_LIST" -eq "2" ]] &>/dev/null; then
         # random 2 (irc.connect_port) should work
-        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.connect_port 2>/dev/null)" -gt "0" ]] 2>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.connect_port 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_connect_port
         else
           no_list
         fi
-      elif [[ "$RANDOM_SERVER_LIST" -eq "3" ]] 2>/dev/null; then
+      elif [[ "$RANDOM_SERVER_LIST" -eq "3" ]] &>/dev/null; then
         # random 3 (irc.connect)
-        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null)" -gt "0" ]] 2>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_connect
         else
           no_list
         fi
-      elif [[ "$RANDOM_SERVER_LIST" -eq "4" ]] 2>/dev/null; then
+      elif [[ "$RANDOM_SERVER_LIST" -eq "4" ]] &>/dev/null; then
         # random 4 (irc.welcome)
-        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.welcome 2>/dev/null)" -gt "0" ]] 2>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.welcome 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_welcome
         else
           no_list
         fi
-      elif [[ "$RANDOM_SERVER_LIST" -eq "5" ]] 2>/dev/null; then
+      elif [[ "$RANDOM_SERVER_LIST" -eq "5" ]] &>/dev/null; then
         # random 5 (irc.banned)
-        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.banned 2>/dev/null)" -gt "0" ]] 2>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.banned 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_banned
         else
           no_list
         fi
-      elif [[ "$RANDOM_SERVER_LIST" -eq "6" ]] 2>/dev/null; then
+      elif [[ "$RANDOM_SERVER_LIST" -eq "6" ]] &>/dev/null; then
         # random 6 (irc.irclogs)
-        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.irclogs 2>/dev/null)" -gt "0" ]] 2>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.irclogs 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           irssi_servers_irclogs
         else
           no_list
         fi
-      elif [[ "$RANDOM_SERVER_LIST" -eq "7" ]] 2>/dev/null; then
+      elif [[ "$RANDOM_SERVER_LIST" -eq "7" ]] &>/dev/null; then
         # random 7 (irc.servers) again
-        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.servers 2>/dev/null)" -gt "0" ]] 2>/dev/null; then
+        if [[ "$(egrep -c "[Aa0-Zz9]" "$IRC_CONFIG_CONFIG"/irc.servers 2>/dev/null)" -gt "0" ]] &>/dev/null; then
           no_list
         fi
       fi
@@ -480,7 +486,7 @@ function irc_client() {
       IRSSI_PORT="${VALID_PORTS[$IRSSI_INDEX]}"
     fi
     # first time connection
-    if [[ "$(echo "$IRSSI_IRC_DISCONNECT" | grep "$IRSSI_RANDOM_HOST" | grep -c "6667")" -eq "0" ]] 2>/dev/null; then
+    if [[ "$(echo "$IRSSI_IRC_DISCONNECT" | grep "$IRSSI_RANDOM_HOST" | grep -c "6667")" -eq "0" ]] &>/dev/null; then
       IRSSI_PORT="6667"
     fi
   }
@@ -522,7 +528,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
   "1")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d "$IRC_CONFIG_CONFIG" ]] 2>/dev/null; then
+      if [[ -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
 
         irssi_files
 
@@ -550,7 +556,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         ########################################################################
 
         # zero, default port
-        if [[ -z "$IRSSI_PORT" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_PORT" ]] &>/dev/null; then
           IRSSI_PORT="6667"
         fi
 
@@ -558,7 +564,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         # random port
         ########################################################################
 
-        if [[ ! "$RANDOM_SERVER_LIST" -eq "2" ]] 2>/dev/null; then
+        if [[ ! "$RANDOM_SERVER_LIST" -eq "2" ]] &>/dev/null; then
           random_port
         fi
 
@@ -567,7 +573,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         ########################################################################
 
         # zero, default random server
-        if [[ -z "$IRSSI_SERVER" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_SERVER" ]] &>/dev/null; then
           IRSSI_SERVER="$(echo "$IRSSI_IRC_SERVERS" | sort -R | head -1)"
         fi
 
@@ -576,7 +582,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         ########################################################################
 
         # port configuration set
-        if [[ "$IRSSI_PORT_STATUS" -eq "1" ]] 2>/dev/null; then
+        if [[ "$IRSSI_PORT_STATUS" -eq "1" ]] &>/dev/null; then
           IRSSI_PORT="$IRSSI_PORT"
         fi
 
@@ -585,7 +591,7 @@ Client: $IRSSI_COM_STATUS Proxy: $PROXY_COM_STATUS"
         ########################################################################
 
         # zero, default random nickname
-        if [[ -z "$IRSSI_NICKNAME" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_NICKNAME" ]] &>/dev/null; then
           IRSSI_NICKNAME="$(tr -dc '0A-Z9' </dev/urandom 2>/dev/null | head -c 8 | rev)"
         fi
 
@@ -613,7 +619,7 @@ COMMANDS.....:  /help")"
         # confirm start ########################################################
 
         WIDTH="$(echo "$(echo "$IRSSI_SERVER" | wc -L)+18" | bc 2>/dev/null)"
-        if [[ "$WIDTH" -lt "30" ]] 2>/dev/null; then
+        if [[ "$WIDTH" -lt "30" ]] &>/dev/null; then
           WIDTH="30"
         fi
         if dialog --stdout --title "Connect to $IRSSI_SERVER?" \
@@ -624,7 +630,7 @@ COMMANDS.....:  /help")"
           irssi_first_run
 
           # proxy configuration = true
-          if [[ "$PROXY_CHAT_API" == "true" ]] 2>/dev/null; then
+          if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
 
             # get connection info
             echo "$IRSSI_SERVER $IRSSI_PORT" >"$IRC_CONFIG_CONFIG"/connections 2>/dev/null
@@ -644,7 +650,7 @@ COMMANDS.....:  /help")"
 
         else
           # proxy configuration = true
-          if [[ "$PROXY_CHAT_API" == "true" ]] 2>/dev/null; then
+          if [[ "$PROXY_CHAT_API" == "true" ]] &>/dev/null; then
             torify irssi
             clear
           else
@@ -668,7 +674,7 @@ COMMANDS.....:  /help")"
   "2")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d "$IRC_CONFIG_CONFIG" ]] 2>/dev/null; then
+      if [[ -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
         nano "${LOG_DIR:?}"/leeloo/chat/irc.servers
       else
         no_irssi_no_access
@@ -684,7 +690,7 @@ COMMANDS.....:  /help")"
   "3")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d "$IRC_CONFIG_CONFIG" ]] 2>/dev/null; then
+      if [[ -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
 
         irssi_files
 
@@ -704,26 +710,26 @@ COMMANDS.....:  /help")"
         ########################################################################
 
         # potential new irc servers from irc.connect
-        if [[ -f "$IRC_CONFIG_CONFIG"/irc.connect ]] 2>/dev/null; then
+        if [[ -f "$IRC_CONFIG_CONFIG"/irc.connect ]] &>/dev/null; then
           IRSSI_NEW_CONNECT="$(echo "$(grep -vf "$IRC_CONFIG_CONFIG"/irc.servers "$IRC_CONFIG_CONFIG"/irc.connect 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
         fi
-        if [[ -z "$IRSSI_NEW_CONNECT" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_NEW_CONNECT" ]] &>/dev/null; then
           IRSSI_NEW_CONNECT="0"
         fi
 
         # potential new irc servers from irc.welcome
-        if [[ -f "$IRC_CONFIG_CONFIG"/irc.welcome ]] 2>/dev/null; then
+        if [[ -f "$IRC_CONFIG_CONFIG"/irc.welcome ]] &>/dev/null; then
           IRSSI_NEW_WELCOME="$(echo "$(grep -vf "$IRC_CONFIG_CONFIG"/irc.servers "$IRC_CONFIG_CONFIG"/irc.welcome 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
         fi
-        if [[ -z "$IRSSI_NEW_WELCOME" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_NEW_WELCOME" ]] &>/dev/null; then
           IRSSI_NEW_WELCOME="0"
         fi
 
         # potential new irc servers from irc.irclogs
-        if [[ -f "$IRC_CONFIG_CONFIG"/irc.irclogs ]] 2>/dev/null; then
+        if [[ -f "$IRC_CONFIG_CONFIG"/irc.irclogs ]] &>/dev/null; then
           IRSSI_NEW_IRCLOGS="$(echo "$(grep -vf "$IRC_CONFIG_CONFIG"/irc.servers "$IRC_CONFIG_CONFIG"/irc.irclogs 2>/dev/null)" | egrep -c "[Aa0-Zz9]" 2>/dev/null)"
         fi
-        if [[ -z "$IRSSI_NEW_IRCLOGS" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_NEW_IRCLOGS" ]] &>/dev/null; then
           IRSSI_NEW_IRCLOGS="0"
         fi
 
@@ -737,63 +743,63 @@ COMMANDS.....:  /help")"
 
         # servers total + potential new
         IRSSI_SERVER_TOTAL="$(echo "$IRSSI_SERVER_TOTAL+$IRSSI_NEW_CONNECT+$IRSSI_NEW_WELCOME+$IRSSI_NEW_IRCLOGS" | bc 2>/dev/null)"
-        if [[ -z "$IRSSI_SERVER_TOTAL" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_SERVER_TOTAL" ]] &>/dev/null; then
           IRSSI_SERVER_TOTAL="0"
         fi
 
         # total servers * ports
         IRSSI_SERVER_WITH_PORTS=$(echo "$IRSSI_SERVER_TOTAL*$IRSSI_TOTAL_PORTS" | sed '/^$/d' | bc 2>/dev/null)
-        if [[ -z "$IRSSI_SERVER_WITH_PORTS" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_SERVER_WITH_PORTS" ]] &>/dev/null; then
           IRSSI_SERVER_WITH_PORTS="0"
         fi
 
         # connected total
         IRSSI_CONNECTED_TOTAL="$(echo "$IRSSI_IRC_CONNECT" | sed '/^$/d' | wc -l)"
-        if [[ -z "$IRSSI_CONNECTED_TOTAL" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_CONNECTED_TOTAL" ]] &>/dev/null; then
           IRSSI_CONNECTED_TOTAL="0"
         fi
         IRSSI_CONNECTED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_CONNECTED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-        if [[ -z "$IRSSI_CONNECTED_FILTERED_PERCENTAGE" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_CONNECTED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
           IRSSI_CONNECTED_FILTERED_PERCENTAGE="0"
         fi
 
         # disconnect total
         IRSSI_DISCONNECT_TOTAL="$(echo "$IRSSI_IRC_DISCONNECT" | sed '/^$/d' | wc -l)"
-        if [[ -z "$IRSSI_DISCONNECT_TOTAL" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_DISCONNECT_TOTAL" ]] &>/dev/null; then
           IRSSI_DISCONNECT_TOTAL="0"
         fi
         IRSSI_DISCONNECT_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_DISCONNECT_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-        if [[ -z "$IRSSI_DISCONNECT_FILTERED_PERCENTAGE" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_DISCONNECT_FILTERED_PERCENTAGE" ]] &>/dev/null; then
           IRSSI_DISCONNECT_FILTERED_PERCENTAGE="0"
         fi
 
         # banned total
         IRSSI_BANNED_TOTAL="$(echo "$IRSSI_IRC_BANNED" | sed '/^$/d' | wc -l)"
-        if [[ -z "$IRSSI_BANNED_TOTAL" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_BANNED_TOTAL" ]] &>/dev/null; then
           IRSSI_BANNED_TOTAL="0"
         fi
         IRSSI_BANNED_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_BANNED_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-        if [[ -z "$IRSSI_BANNED_FILTERED_PERCENTAGE" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_BANNED_FILTERED_PERCENTAGE" ]] &>/dev/null; then
           IRSSI_BANNED_FILTERED_PERCENTAGE="0"
         fi
 
         # welcome total
         IRSSI_WELCOME_TOTAL="$(echo "$IRSSI_IRC_WELCOME" | sed '/^$/d' | wc -l)"
-        if [[ -z "$IRSSI_WELCOME_TOTAL" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_WELCOME_TOTAL" ]] &>/dev/null; then
           IRSSI_WELCOME_TOTAL="0"
         fi
         IRSSI_WELCOME_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_WELCOME_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-        if [[ -z "$IRSSI_WELCOME_FILTERED_PERCENTAGE" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_WELCOME_FILTERED_PERCENTAGE" ]] &>/dev/null; then
           IRSSI_WELCOME_FILTERED_PERCENTAGE="0"
         fi
 
         # irclogs total
         IRSSI_IRCLOGS_TOTAL="$(echo "$IRSSI_IRC_IRCLOGS" | sed '/^$/d' | wc -l)"
-        if [[ -z "$IRSSI_IRCLOGS_TOTAL" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_IRCLOGS_TOTAL" ]] &>/dev/null; then
           IRSSI_IRCLOGS_TOTAL="0"
         fi
         IRSSI_IRCLOGS_FILTERED_PERCENTAGE="$(echo "100/$IRSSI_SERVER_WITH_PORTS*$IRSSI_IRCLOGS_TOTAL" | bc -l 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
-        if [[ -z "$IRSSI_IRCLOGS_FILTERED_PERCENTAGE" ]] 2>/dev/null; then
+        if [[ -z "$IRSSI_IRCLOGS_FILTERED_PERCENTAGE" ]] &>/dev/null; then
           IRSSI_IRCLOGS_FILTERED_PERCENTAGE="0"
         fi
 
@@ -843,7 +849,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
   "5")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d "$IRC_CONFIG_CONFIG" ]] 2>/dev/null; then
+      if [[ -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
         if dialog --stdout --title "Remove IRC Client?" \
           --backtitle "Remove client" \
           --yesno "Yes: Remove!, No: Quit" 5 30; then
@@ -869,7 +875,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
   "6")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d "$IRC_CONFIG_CONFIG" ]] 2>/dev/null; then
+      if [[ -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
         nano "$IRC_CONFIG_CONFIG"
       else
         no_irssi_no_access
@@ -885,7 +891,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
   "7")
 
     if [ -x "$(command -v irssi)" ] &>/dev/null; then
-      if [[ -d "$IRC_CONFIG_CONFIG" ]] 2>/dev/null; then
+      if [[ -f "$IRC_CONFIG_CONFIG" ]] &>/dev/null; then
         if dialog --stdout --title "Reset IRC configuration?" \
           --backtitle "Configuration reset" \
           --yesno "Yes: Reset!, No: Quit" 5 30; then
@@ -916,7 +922,7 @@ Proxy.Status.: $PROXY_COM_STATUS $PROXY_CONFIG_STATUS"
 
   esac
   # kill irssi process after exit
-  if [[ "$(pidof irssi 2>/dev/null | wc -l)" -gt "0" ]] 2>/dev/null; then
+  if [[ "$(pidof irssi 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
     kill -9 "$(pidof irssi 2>/dev/null)" &>/dev/null
   fi
 }
