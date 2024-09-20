@@ -2658,8 +2658,8 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   # old ask price (trades)
   DIP_SELLING_OLD_PRICE=$(awk '/buy/ { print $5; exit }' "${LOG_DIR:?}/leeloo/${EXCHANGE_DIR_NAME}/${LISTING_CURRENCY}_${DIP_MARKETS}.trades" 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
-  # new ask price (prices.dip)
-  DIP_SELLING_NEW_PRICE=$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${LOG_DIR:?}/leeloo/${EXCHANGE_DIR_NAME}/prices.dip" | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')
+  # new ask price (prices*)
+  DIP_SELLING_NEW_PRICE=$(cat "${LOG_DIR:?}"/leeloo/"${EXCHANGE_DIR_NAME}"/prices* 2>/dev/null | egrep "$LISTING_CURRENCY.$DIP_MARKETS" | awk '!a[$1]++' | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')
 
   # if both prices are valid
   if [[ -n "$DIP_SELLING_OLD_PRICE" && -n "$DIP_SELLING_NEW_PRICE" ]]; then
