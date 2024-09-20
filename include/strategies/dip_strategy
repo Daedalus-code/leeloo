@@ -192,7 +192,7 @@ function time_and_profit() {
       DIP_MAX_SELL_AGE=$(egrep "DIP_MAX_SELL_AGE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }' | awk '{ printf "%.0f\n", $1 }')
 
       # if dynamic age (based on configuration)
-      if [[ "$DIP_DYNAMIC_AGE" == "1" ]] &>/dev/null; then
+      if [[ "$DIP_DYNAMIC_AGE" -eq "1" ]] &>/dev/null; then
         # adjust DIP_MAX_BUY_AGE and DIP_MAX_SELL_AGE using calculated percentages
         DIP_MAX_BUY_AGE=$(echo "$DIP_BUY_EXTRA_TIME+$DIP_MAX_BUY_AGE" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
         DIP_MAX_SELL_AGE=$(echo "$DIP_SELL_EXTRA_TIME+$DIP_MAX_SELL_AGE" | bc -l 2>/dev/null | awk -F. '{ print $1 }')
@@ -203,13 +203,13 @@ function time_and_profit() {
   ##############################################################################
 
   # if zero (ruled by configuration)
-  if [[ -z "$DIP_MAX_BUY_AGE" || "$DIP_MAX_BUY_AGE" == "0" ]] &>/dev/null; then
+  if [[ -z "$DIP_MAX_BUY_AGE" || "$DIP_MAX_BUY_AGE" -eq "0" ]] &>/dev/null; then
     # use default n days
     DIP_MAX_BUY_AGE="7"
   fi
 
   # if zero (ruled by configuration)
-  if [[ -z "$DIP_MAX_SELL_AGE" || "$DIP_MAX_SELL_AGE" == "0" ]] &>/dev/null; then
+  if [[ -z "$DIP_MAX_SELL_AGE" || "$DIP_MAX_SELL_AGE" -eq "0" ]] &>/dev/null; then
     # use default n days
     DIP_MAX_SELL_AGE="14"
   fi
@@ -1055,7 +1055,7 @@ fi
 ################################################################################
 
 # dip chaos configuration
-if [[ "$DIP_CHAOS" == "1" ]] &>/dev/null; then
+if [[ "$DIP_CHAOS" -eq "1" ]] &>/dev/null; then
   # disregard already active bots from market (orders)
   if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)" -gt "0" ]] &>/dev/null; then
 
@@ -1068,7 +1068,7 @@ if [[ "$DIP_CHAOS" == "1" ]] &>/dev/null; then
     fi
 
     # disregard already active markets (positions)
-    if [[ "$RANDOM_CLEARED_MARKET" == "1" ]] &>/dev/null; then
+    if [[ "$RANDOM_CLEARED_MARKET" -eq "1" ]] &>/dev/null; then
 
       # set the paths for the files
       PRICES_FILE="${LOG_DIR}/leeloo/$EXCHANGE_DIR_NAME/prices.dip"
@@ -1093,7 +1093,7 @@ if [[ -z "$DIP_DISREGARD_BOTS" ]] &>/dev/null; then
 fi
 
 # disregard already running bots from market (strategies)
-if [[ "$DIP_DISREGARD_BOTS" == "1" ]] &>/dev/null; then
+if [[ "$DIP_DISREGARD_BOTS" -eq "1" ]] &>/dev/null; then
 
   # set the paths for the files
   ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
@@ -1121,7 +1121,7 @@ if [[ -z "$DIP_ALL_IN" ]] &>/dev/null; then
 fi
 
 # disregard reference as targets (markets)
-if [[ "$DIP_ALL_IN" == "0" ]] &>/dev/null; then
+if [[ "$DIP_ALL_IN" -eq "0" ]] &>/dev/null; then
 
   # set the paths for the files
   PRICES_FILE_RAW="${LOG_DIR}/leeloo/$EXCHANGE_DIR_NAME/prices"
@@ -1740,7 +1740,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     DIP_MIN_SPREAD_CHECK="$(echo "$DIP_MIN_SPREAD" | tr -d '.' | sed 's/^0*//')"
 
     # if any orders with reference, listing currency does not exist, not removed
-    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)" -eq "0" && "$DIP_REMOVED" == "0" ]] &>/dev/null; then
+    if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)" -eq "0" && "$DIP_REMOVED" -eq "0" ]] &>/dev/null; then
       # if profit is greater or equal than minimum spread
       if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -ge "$DIP_MIN_SPREAD_CHECK" ]] &>/dev/null; then
         # has buying power (balance)
@@ -2418,7 +2418,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   fi
 
   # if sellable, spread status is ok, balance has selling power (available), not buying, good enough to sell, not removed
-  if [[ "$DIP_SELLING_ABLE" -eq "1" && "$DIP_LISTING_BALANCE_CHECK" -gt "0" && "$DIP_REMOVED" == "0" ]] &>/dev/null; then
+  if [[ "$DIP_SELLING_ABLE" -eq "1" && "$DIP_LISTING_BALANCE_CHECK" -gt "0" && "$DIP_REMOVED" -eq "0" ]] &>/dev/null; then
 
     ############################################################################
 
@@ -2671,9 +2671,9 @@ bought_sold_age
 time_and_profit
 
 # if not buying
-if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
+if [[ "$DIP_BUYING" -eq "0" ]] &>/dev/null; then
   # if not selling
-  if [[ "$DIP_SELLING" == "0" ]] &>/dev/null; then
+  if [[ "$DIP_SELLING" -eq "0" ]] &>/dev/null; then
     # if any data
     if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
       # if older than n seconds (using max buy age limit on both)
@@ -2749,9 +2749,9 @@ bought_sold_age
 time_and_profit
 
 # if not buying
-if [[ "$DIP_BUYING" == "0" ]] &>/dev/null; then
+if [[ "$DIP_BUYING" -eq "0" ]] &>/dev/null; then
   # if not selling
-  if [[ "$DIP_SELLING" == "0" ]] &>/dev/null; then
+  if [[ "$DIP_SELLING" -eq "0" ]] &>/dev/null; then
     # if any data
     if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
       # if older than n seconds (using max sell age limit on both)
@@ -2846,7 +2846,7 @@ if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_
   # if sold, wait
   if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
     # if any data, not selling
-    if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" && "$DIP_SELLING" == "0" ]] &>/dev/null; then
+    if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" && "$DIP_SELLING" -eq "0" ]] &>/dev/null; then
       # if older than n seconds
       if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$DIP_MAX_BUY_AGE_SECONDS" ]] &>/dev/null; then
         if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$(echo "$DIP_MAX_BUY_AGE_SECONDS+3600" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]] &>/dev/null; then
@@ -3063,7 +3063,7 @@ fi
 ################################################################################
 
 # if sold status equals zero, if selling status equals zero
-if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/dev/null; then
+if [[ "$DIP_SOLD" -eq "0" && "$DIP_SELLING" -eq "0" && "$DIP_BUYING" -eq "0" ]] &>/dev/null; then
 
   decimal_market
 
@@ -3175,11 +3175,20 @@ if [[ "$DIP_SOLD" == "0" && "$DIP_SELLING" == "0" && "$DIP_BUYING" == "0" ]] &>/
       DIP_SOLD_STATUS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"$LISTING_CURRENCY"_"$DIP_MARKETS".sold 2>/dev/null | egrep -c "[0-9]+" || true)"
 
       # if selling has no data, no input
-      if [[ "$DIP_SELLING_STATUS" == "0" && ! -z "$DIP_TARGET_SPREAD_OUTPUT" ]] &>/dev/null; then
+      if [[ "$DIP_SELLING_STATUS" -eq "0" && ! -z "$DIP_TARGET_SPREAD_OUTPUT" ]] &>/dev/null; then
+
         # if less than target, if sell_id is empty, too old, old data
-        if [[ "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" == "0" || "$DIP_OLD_DATA" == "1" || "$DIP_DATA_MISSING" == "1" ]] &>/dev/null; then
+        if [[ "$DIP_IDENTICAL_PRICES" -eq "1" ||
+          "$DIP_SELL_ID_STATUS" -eq "0" ||
+          "$DIP_OLD_DATA" -eq "1" ||
+          "$DIP_DATA_MISSING" -eq "1" ]] &>/dev/null; then
+
           # if sold has no data, is less than target, if sell_id is empty, too old
-          if [[ "$DIP_SOLD_STATUS" == "0" || "$DIP_BOUGHT_IS_LESS" == "1" || "$DIP_IDENTICAL_PRICES" == "1" || "$DIP_SELL_ID_STATUS" == "0" || "$DIP_OLD_DATA" == "1" || "$DIP_DATA_MISSING" == "1" ]] &>/dev/null; then
+          if [[ "$DIP_SOLD_STATUS" -eq "0" ||
+            "$DIP_IDENTICAL_PRICES" -eq "1" ||
+            "$DIP_SELL_ID_STATUS" -eq "0" ||
+            "$DIP_OLD_DATA" -eq "1" ||
+            "$DIP_DATA_MISSING" -eq "1" ]] &>/dev/null; then
 
             # reset broken quest age (bought file)
             echo "$(cat "${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null)" >"${SYS_DIR:?}"/robot/"${BASENAME_STRATEGY}"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought
@@ -3269,12 +3278,12 @@ fi
 ################################################################################
 
 # if zero, if not 1
-if [[ -z "$DIP_DUST" || ! "$DIP_DUST" == "1" ]] &>/dev/null; then
+if [[ -z "$DIP_DUST" || ! "$DIP_DUST" -eq "1" ]] &>/dev/null; then
   DIP_DUST="0"
 fi
 
 # if dusting is active
-if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
+if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
 
   time_and_profit
 
@@ -3498,13 +3507,13 @@ if [[ "$DIP_DUST" == "1" ]] &>/dev/null; then
   fi
 
   # not already spent and did not already fail
-  if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" && "$DIP_SELL_FAILED" == "0" ]] &>/dev/null; then
+  if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" && "$DIP_SELL_FAILED" -eq "0" ]] &>/dev/null; then
     # if dust is old enough (43200 seconds = 1/2 day), or just dust regardless if no bought file
     if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "43200" ]] &>/dev/null; then
       # if dust is old enough (86400 seconds = 1 day), or just dust regardless if no sold file
       if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "86400" ]] &>/dev/null; then
         # if decimal limit is working, dustable
-        if [[ -n "$DECIMAL_LIMIT" && "$DIP_CHANGE_DUSTABLE" == "1" ]] &>/dev/null; then
+        if [[ -n "$DECIMAL_LIMIT" && "$DIP_CHANGE_DUSTABLE" -eq "1" ]] &>/dev/null; then
           # if balance is enough
           if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
             # if prices exist, not zero
@@ -3684,7 +3693,7 @@ fi
 ################################################################################
 
 # if all in has n
-if [[ "$DIP_ALL_IN" == "0" ]] &>/dev/null; then
+if [[ "$DIP_ALL_IN" -eq "0" ]] &>/dev/null; then
   DIP_ALL_IN_DATA="Disabled"
 else
   DIP_ALL_IN_DATA="Enabled"
@@ -3891,7 +3900,7 @@ if [[ "$DUMP_LISTING_BALANCE_CHECK" -gt "0" ]] &>/dev/null; then
     fi
 
     # dump on btc
-    if [[ "$RANDOM_REF_CURRENCY" == "1" ]] &>/dev/null; then
+    if [[ "$RANDOM_REF_CURRENCY" -eq "1" ]] &>/dev/null; then
       DIP_DUMP_MARKETS="BTC"
     fi
     # dump on usdt
@@ -4125,7 +4134,7 @@ if [[ -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".profit ]] &>/dev/null; then
   DIP_PROFIT_COUNT="$(echo "$DIP_CAT_PROFIT" | sed '/^$/d' | wc -l)"
 
   # if zero
-  if [[ "$DIP_PROFIT_COUNT" == "0" ]] &>/dev/null; then
+  if [[ "$DIP_PROFIT_COUNT" -eq "0" ]] &>/dev/null; then
     DIP_PROFIT_FILE_AGE="N/A"
   fi
 fi
