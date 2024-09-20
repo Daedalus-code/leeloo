@@ -17,8 +17,12 @@ source /usr/local/bin/include/leeloo/functions
 
 WHOAMI="$(whoami)"
 
+# default user directory
+IRC_CONFIG_CONFIG="/home/$WHOAMI/.irssi/config"
+
 # if root
 if [[ "$WHOAMI" == "root" ]] &>/dev/null; then
+  # root directory
   IRC_CONFIG_CONFIG="/$WHOAMI/.irssi/config"
   if [[ -d /home/"$WHOAMI"/.irssi ]] &>/dev/null; then
     rm -r /home/"$WHOAMI"/.irssi &>/dev/null
@@ -28,7 +32,6 @@ else
     mkdir /home/"$WHOAMI" &>/dev/null
     mkdir /home/"$WHOAMI"/.irssi &>/dev/null
   fi
-  IRC_CONFIG_CONFIG="/home/$WHOAMI/.irssi/config"
 fi
 
 ################################################################################
@@ -39,6 +42,18 @@ system_date
 
 # disregard non irc servers
 NOT_A_SERVER=".CAIRC|cloak-|tor|tor-exit|-exit|discord.gg|.int|.html|.php|.pdf|.ip|.IP"
+
+################################################################################
+
+# no irssi no access
+function no_irssi_no_access() {
+  display_result() {
+    dialog --title "  No Access" \
+      --msgbox "$RESULT" 5 25
+  }
+  RESULT="$(echo "Client not installed!")"
+  display_result 2>/dev/null
+}
 
 ################################################################################
 
