@@ -597,7 +597,7 @@ function coin_token_price() {
     # search up token coin price in fiat currency
     COIN_TOKEN_PRICE="$(torify curl -s -X "https://min-api.cryptocompare.com/data/price?fsym=$COIN_TOKEN_CURRENCY&tsyms=$FIAT_CURRENCY" | jq -r '."'$FIAT_CURRENCY'"' 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
     # search up token coin data
-    COIN_TOKEN_DATA="$(cat "${LOG_DIR:?}"/leeloo/*/*prices 2>/dev/null | tr '_' '/' | awk '!a[$1]++' | tr -d ':' | grep -w "$COIN_TOKEN_CURRENCY" | awk -F: '{ print $2,$3,$4,$5 }' | sort -n -k 2 -r | head -225)"
+    COIN_TOKEN_DATA="$(cat "${LOG_DIR:?}"/leeloo/*/*.prices 2>/dev/null | tr '_' '/' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$COIN_TOKEN_CURRENCY" | awk -F: '{ print $2,$3,$4,$5 }' | sort -n -k 2 -r | head -225)"
     # search count
     COIN_TOKEN_COUNT="$(echo "$COIN_TOKEN_DATA" | wc -l)"
 
@@ -972,9 +972,9 @@ function search_market() {
 
     # if all search
     if [[ "$SEARCH_MARKET" == "*" ]] &>/dev/null; then
-      MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/*/*prices 2>/dev/null | tr '_' '/' | awk '!a[$1,$2,$3,$4,$5,$6]++' | tr -d ':' | grep -w "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
+      MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/*/*.prices 2>/dev/null | tr '_' '/' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
     else
-      MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/*prices 2>/dev/null | tr '_' '/' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
+      MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/*.prices 2>/dev/null | tr '_' '/' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
     fi
 
     MARKET_COUNT="$(echo "$MARKET_RESULT" | sed '/^$/d' | wc -l)"
