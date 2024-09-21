@@ -2906,6 +2906,12 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
   "X")
 
+    # default
+    BAILOUT_ALL_ORDERS="0"
+    BAILOUT_BUY_ORDERS="0"
+    BAILOUT_SELL_ORDERS="0"
+
+    # bailout function
     function bailout_orders {
 
       BAIL_COUNT_BUYS="$(grep -c "buy" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
@@ -2913,20 +2919,43 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
       BAIL_COUNT_TOTAL="$(echo "$BAIL_COUNT_BUYS+$BAIL_COUNT_SELL" | bc 2>/dev/null)"
 
       if dialog --stdout --title "Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL Total: $BAIL_COUNT_TOTAL" \
-        --backtitle "BAILOUT" \
+        --backtitle "BAILOUT ALL ORDERS" \
         --yesno "Yes: BAILOUT ORDERS!! No: Go back!" 5 40; then
 
         # if xeggex
         if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
-          getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' 2>/dev/null | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac >/tmp/getXGXorders.tmp
+          getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' 2>/dev/null | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac >/tmp/get."$EXCHANGE_DIR_NAME".orders.tmp
         fi
         # if nonkyc
         if [[ "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
-          getOrders_nky | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' 2>/dev/null | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac >/tmp/getNKYorders.tmp
+          getOrders_nky | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' 2>/dev/null | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac >/tmp/get."$EXCHANGE_DIR_NAME".orders.tmp
         fi
 
-        # create file based on orders found
-        echo "$(cat /tmp/get*orders.tmp 2>/dev/null | awk -F: '{ print $1 }' | egrep "[0a-z9]+")" >/tmp/bto.tmp
+        ########################################################################
+
+        # if all orders
+        if [[ "$BAILOUT_ALL_ORDERS" -eq "1" ]] &>/dev/null; then
+          # output
+          BAILOUT_OUTPUT="(all)"
+          # create file based on orders found
+          echo "$(cat /tmp/get."$EXCHANGE_DIR_NAME".orders.tmp 2>/dev/null | awk -F: '{ print $1 }' | egrep "[0a-z9]+")" >/tmp/bto.tmp
+        fi
+        # if buy orders
+        if [[ "$BAILOUT_BUY_ORDERS" -eq "1" ]] &>/dev/null; then
+          # output
+          BAILOUT_OUTPUT="buy"
+          # create file based on orders found
+          echo "$(cat /tmp/get."$EXCHANGE_DIR_NAME".orders.tmp 2>/dev/null | grep "buy" | awk -F: '{ print $1 }' | egrep "[0a-z9]+")" >/tmp/bto.tmp
+        fi
+        # if sell orders
+        if [[ "$BAILOUT_SELL_ORDERS" -eq "1" ]] &>/dev/null; then
+          # output
+          BAILOUT_OUTPUT="sell"
+          # create file based on orders found
+          echo "$(cat /tmp/get."$EXCHANGE_DIR_NAME".orders.tmp 2>/dev/null | grep "sell" | awk -F: '{ print $1 }' | egrep "[0a-z9]+")" >/tmp/bto.tmp
+        fi
+
+        ########################################################################
 
         # read the list of IDs from orders
         while IFS= read -r BAIL_ORDER_ID; do
@@ -2935,22 +2964,23 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
           if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
             cancelOrder "$BAIL_ORDER_ID" >>/tmp/btolist.tmp
             if [[ "$(echo "$BAIL_ORDER_ID" | egrep -c "[0a-z9]+")" -eq "1" ]] &>/dev/null; then
-              echo "Cancel order id: $BAIL_ORDER_ID - ($(date | xargs))"
+              echo "Cancel ${EXCHANGE_DIR_NAME} ${BAILOUT_OUTPUT} order id: $BAIL_ORDER_ID - ($(date | xargs))"
             fi
             sleep 0.5
           fi
-
-          ######################################################################
 
           # if nonkyc
           if [[ "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
             cancelOrder_nky "$BAIL_ORDER_ID" >>/tmp/btolist.tmp
             if [[ "$(echo "$BAIL_ORDER_ID" | egrep -c "[0a-z9]+")" -eq "1" ]] &>/dev/null; then
-              echo "Cancel order id: $BAIL_ORDER_ID - ($(date | xargs))"
+              echo "Cancel $EXCHANGE_DIR_NAME order id: $BAIL_ORDER_ID - ($(date | xargs))"
             fi
             sleep 0.5
           fi
         done </tmp/bto.tmp
+
+        echo
+        read -r -p "Press Enter to continue" </dev/tty
 
         ########################################################################
 
@@ -2960,37 +2990,48 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
         ########################################################################
 
-        echo
-        echo "Total: $BAIL_COUNT_TOTAL - Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL"
-        echo "Error: $BAIL_COUNT_ERROR - Success: $BAIL_COUNT_SUCCESS"
-        echo
+        # if any data
+        if [[ -n "$BAIL_COUNT_ERROR" && -n "$BAIL_COUNT_SUCCESS" && -n "$BAIL_COUNT_TOTAL" ]] &>/dev/null; then
+
+          # output result
+          RESULT="Total   : $BAIL_COUNT_TOTAL
+  Buy     : $BAIL_COUNT_BUYS
+  Sell    : $BAIL_COUNT_SELL
+  Error   : $BAIL_COUNT_ERROR
+  Success : $BAIL_COUNT_SUCCESS"
+
+          ######################################################################
+
+          display_result() {
+            dialog --title "BAILOUT DATA: T${BAIL_COUNT_TOTAL}B${BAIL_COUNT_BUYS}S${BAIL_COUNT_SELL}E${BAIL_COUNT_ERROR}S${BAIL_COUNT_SUCCESS}" \
+              --no-collapse \
+              --msgbox "$(echo "$RESULT" | column -t)" 0 0
+          }
+
+          display_result 2>/dev/null
+        fi
 
         ########################################################################
 
         # remove old files
-        rm /tmp/get*orders.tmp &>/dev/null
+        rm /tmp/get."$EXCHANGE_DIR_NAME".orders.tmp &>/dev/null
         rm /tmp/btolist.tmp &>/dev/null
         rm /tmp/bto.tmp &>/dev/null
-
-        ########################################################################
-
-        read -r -p "Press Enter to continue" </dev/tty
       fi
     }
 
     ############################################################################
 
-    HEIGHT="11"
+    HEIGHT="10"
     WIDTH="21"
-    CHOICE_HEIGHT="4"
-    BACKTITLE="BAILOUT ALL OPEN ORDERS"
+    CHOICE_HEIGHT="3"
+    BACKTITLE="BAILOUT OPEN ORDERS"
     TITLE="BAILOUT"
     MENU="Bailout options:"
 
-    OPTIONS=(1 "Poloniex"
-      2 "StakeCube"
-      3 "XeggeX"
-      4 "nonkyc")
+    OPTIONS=(1 "All"
+      2 "Buy Orders"
+      3 "Sell Orders")
 
     CHOICE=$(dialog --clear \
       --backtitle "$BACKTITLE" \
@@ -3005,28 +3046,175 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
     "1")
 
-      EXCHANGE_DIR_NAME="poloniex"
-      bailout_orders
+      # bailout all orders
+      BAILOUT_ALL_ORDERS="1"
+      HEIGHT="11"
+      WIDTH="21"
+      CHOICE_HEIGHT="4"
+      BACKTITLE="BAILOUT ALL OPEN ORDERS"
+      TITLE="BAILOUT"
+      MENU="Bailout options:"
+
+      OPTIONS=(1 "Poloniex"
+        2 "StakeCube"
+        3 "XeggeX"
+        4 "nonkyc")
+
+      CHOICE=$(dialog --clear \
+        --backtitle "$BACKTITLE" \
+        --title "$TITLE" \
+        --menu "$MENU" \
+        $HEIGHT $WIDTH $CHOICE_HEIGHT \
+        "${OPTIONS[@]}" \
+        2>&1 >/dev/tty)
+
+      clear
+      case $CHOICE in
+
+      "1")
+
+        EXCHANGE_DIR_NAME="poloniex"
+        bailout_orders
+        ;;
+
+      "2")
+
+        EXCHANGE_DIR_NAME="stakecube"
+        bailout_orders
+
+        ;;
+
+      "3")
+
+        EXCHANGE_DIR_NAME="xeggex"
+        bailout_orders
+
+        ;;
+
+      "4")
+
+        EXCHANGE_DIR_NAME="nonkyc"
+        bailout_orders
+
+        ;;
+
+      esac
+
       ;;
 
     "2")
 
-      EXCHANGE_DIR_NAME="stakecube"
-      bailout_orders
+      # bailout all buy orders
+      BAILOUT_BUY_ORDERS="1"
+      HEIGHT="11"
+      WIDTH="21"
+      CHOICE_HEIGHT="4"
+      BACKTITLE="BAILOUT OPEN BUY ORDERS"
+      TITLE="BAILOUT"
+      MENU="Bailout options:"
+
+      OPTIONS=(1 "Poloniex"
+        2 "StakeCube"
+        3 "XeggeX"
+        4 "nonkyc")
+
+      CHOICE=$(dialog --clear \
+        --backtitle "$BACKTITLE" \
+        --title "$TITLE" \
+        --menu "$MENU" \
+        $HEIGHT $WIDTH $CHOICE_HEIGHT \
+        "${OPTIONS[@]}" \
+        2>&1 >/dev/tty)
+
+      clear
+      case $CHOICE in
+
+      "1")
+
+        EXCHANGE_DIR_NAME="poloniex"
+        bailout_orders
+        ;;
+
+      "2")
+
+        EXCHANGE_DIR_NAME="stakecube"
+        bailout_orders
+
+        ;;
+
+      "3")
+
+        EXCHANGE_DIR_NAME="xeggex"
+        bailout_orders
+
+        ;;
+
+      "4")
+
+        EXCHANGE_DIR_NAME="nonkyc"
+        bailout_orders
+
+        ;;
+
+      esac
 
       ;;
 
     "3")
 
-      EXCHANGE_DIR_NAME="xeggex"
-      bailout_orders
+      # bailout all sell orders
+      BAILOUT_SELL_ORDERS="1"
+      HEIGHT="11"
+      WIDTH="21"
+      CHOICE_HEIGHT="4"
+      BACKTITLE="BAILOUT OPEN SELL ORDERS"
+      TITLE="BAILOUT"
+      MENU="Bailout options:"
 
-      ;;
+      OPTIONS=(1 "Poloniex"
+        2 "StakeCube"
+        3 "XeggeX"
+        4 "nonkyc")
 
-    "4")
+      CHOICE=$(dialog --clear \
+        --backtitle "$BACKTITLE" \
+        --title "$TITLE" \
+        --menu "$MENU" \
+        $HEIGHT $WIDTH $CHOICE_HEIGHT \
+        "${OPTIONS[@]}" \
+        2>&1 >/dev/tty)
 
-      EXCHANGE_DIR_NAME="nonkyc"
-      bailout_orders
+      clear
+      case $CHOICE in
+
+      "1")
+
+        EXCHANGE_DIR_NAME="poloniex"
+        bailout_orders
+        ;;
+
+      "2")
+
+        EXCHANGE_DIR_NAME="stakecube"
+        bailout_orders
+
+        ;;
+
+      "3")
+
+        EXCHANGE_DIR_NAME="xeggex"
+        bailout_orders
+
+        ;;
+
+      "4")
+
+        EXCHANGE_DIR_NAME="nonkyc"
+        bailout_orders
+
+        ;;
+
+      esac
 
       ;;
 
