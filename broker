@@ -2918,7 +2918,24 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
       BAIL_COUNT_SELL="$(grep -c "sell" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null)"
       BAIL_COUNT_TOTAL="$(echo "$BAIL_COUNT_BUYS+$BAIL_COUNT_SELL" | bc 2>/dev/null)"
 
-      if dialog --stdout --title "Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL Total: $BAIL_COUNT_TOTAL" \
+      ##########################################################################
+
+      # if all orders
+      if [[ "$BAILOUT_ALL_ORDERS" -eq "1" ]] &>/dev/null; then
+        BAILOUT_TITLE_OUTPUT="Buy: $BAIL_COUNT_BUYS Sell: $BAIL_COUNT_SELL Total: $BAIL_COUNT_TOTAL"
+      fi
+      # if buy orders
+      if [[ "$BAILOUT_BUY_ORDERS" -eq "1" ]] &>/dev/null; then
+        BAILOUT_TITLE_OUTPUT="Buy: $BAIL_COUNT_BUYS"
+      fi
+      # if sell orders
+      if [[ "$BAILOUT_SELL_ORDERS" -eq "1" ]] &>/dev/null; then
+        BAILOUT_TITLE_OUTPUT="Sell: $BAIL_COUNT_SELL"
+      fi
+
+      ##########################################################################
+
+      if dialog --stdout --title "$BAILOUT_TITLE_OUTPUT" \
         --backtitle "BAILOUT ALL ORDERS" \
         --yesno "Yes: BAILOUT ORDERS!! No: Go back!" 5 40; then
 
