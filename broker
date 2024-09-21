@@ -2939,6 +2939,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         --backtitle "BAILOUT ALL ORDERS" \
         --yesno "Yes: BAILOUT ORDERS!! No: Go back!" 5 40; then
 
+        clear
+
         # if xeggex
         if [[ "$EXCHANGE_DIR_NAME" == "xeggex" ]] &>/dev/null; then
           getOrders | jq -r '.[] | "\(.id): \(.side) \(.remainQuantity) \(.quantity) \(.price) \(.market.symbol) \(.updatedAt)"' 2>/dev/null | awk '{printf "%s %s %s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, strftime("%Y-%m-%dT%H:%M:%S", $7/1000)}' 2>/dev/null | column -t | sed "s/\// /g" | tac >/tmp/get."$EXCHANGE_DIR_NAME".orders.tmp
@@ -2995,7 +2997,6 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
             sleep 0.5
           fi
         done </tmp/bto.tmp
-
         echo
         read -r -p "Press Enter to continue" </dev/tty
 
