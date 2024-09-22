@@ -947,9 +947,17 @@ function search_market() {
       EXCHANGE_API="ALL"
       SUPPORT_WIDTH="+5"
       SUPPORT_LENGTH="+5"
+      SEARCH_MARKET="*"
+      MARKET_SEARCH="$MARKET_INPUT"
       function result_prices() {
-        SEARCH_MARKET="*"
-        MARKET_SEARCH="$MARKET_INPUT"
+        source /usr/local/bin/include/leeloo/api/poloniex/public_API
+        source /usr/local/bin/include/leeloo/api/stakecube/public_API
+        source /usr/local/bin/include/leeloo/api/xeggex/public_API
+        source /usr/local/bin/include/leeloo/api/nonkyc/public_API
+        echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
+        echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
+        echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
+        echo "$(tickers_nky | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
       }
     fi
 
