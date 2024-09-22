@@ -2394,13 +2394,21 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
+  # get available balance
+  DIP_SELLING_AVAILABLE_BALANCE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -w "$LISTING_CURRENCY" | awk '{ print $3 }')"
+
+  # if greater than n
+  if [[ "$DIP_LEFTOVER_SOLD_CHECK" -gt "0" ]] &>/dev/null; then
+    DIP_SELLING_AVAILABLE_BALANCE="$DIP_LEFTOVER_SOLD"
+  fi
+
   # get buy trades
   DIP_SELLING_OLD_PRICE_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$DIP_MARKETS".trades 2>/dev/null | grep "buy" | awk '{ print $5, $6 }')"
 
   ##############################################################################
 
   # if any data
-  if [[ -n "$DIP_SELLING_OLD_PRICE_TRADES" && -n "$DIP_LEFTOVER_SOLD" ]] &>/dev/null; then
+  if [[ -n "$DIP_SELLING_OLD_PRICE_TRADES" && -n "$DIP_SELLING_AVAILABLE_BALANCE" ]] &>/dev/null; then
 
     # default values
     ACCUMULATED_AMOUNT="0"
@@ -2409,13 +2417,13 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     # iterate over each buy trade
     while read -r PRICE AMOUNT; do
       # if adding this amount exceeds the available balance, calculate the weighted sum for the partial amount
-      if (($(echo "$ACCUMULATED_AMOUNT + $AMOUNT > $DIP_LEFTOVER_SOLD" | bc -l 2>/dev/null))); then
+      if (($(echo "$ACCUMULATED_AMOUNT + $AMOUNT > $DIP_SELLING_AVAILABLE_BALANCE" | bc -l 2>/dev/null))); then
         # calculate partial amount
-        PARTIAL_AMOUNT=$(echo "$DIP_LEFTOVER_SOLD - $ACCUMULATED_AMOUNT" | bc -l 2>/dev/null)
+        PARTIAL_AMOUNT=$(echo "$DIP_SELLING_AVAILABLE_BALANCE - $ACCUMULATED_AMOUNT" | bc -l 2>/dev/null)
         # calculate weighted sum
         WEIGHTED_SUM=$(echo "$WEIGHTED_SUM + ($PRICE * $PARTIAL_AMOUNT)" | bc -l 2>/dev/null)
         # accumulated amount
-        ACCUMULATED_AMOUNT=$DIP_LEFTOVER_SOLD
+        ACCUMULATED_AMOUNT=$DIP_SELLING_AVAILABLE_BALANCE
         break
       fi
       # accumulate the amount and weighted sum
