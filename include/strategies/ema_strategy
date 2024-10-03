@@ -325,6 +325,8 @@ function rogue_buying() {
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # createorder buy market #############################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
+          # debug line #########################################################
+          echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY buy market $ROGUE_LISTING_AMOUNT '' false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
 
@@ -332,6 +334,8 @@ function rogue_buying() {
         if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
           # createorder buy market #############################################
           PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
+          # debug line #########################################################
+          echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY buy market $ROGUE_LISTING_AMOUNT '' false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
 
@@ -354,6 +358,8 @@ function rogue_buying() {
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # createorder buy limit ##############################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+          # debug line #########################################################
+          echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY buy limit $ROGUE_LISTING_AMOUNT $LISTING_PRICE false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
 
@@ -361,6 +367,8 @@ function rogue_buying() {
         if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
           # createorder buy limit ##############################################
           PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "buy" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+          # debug line #########################################################
+          echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY buy limit $ROGUE_LISTING_AMOUNT $LISTING_PRICE false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
 
@@ -392,6 +400,8 @@ function rogue_selling() {
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # CreateOrder market #################################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
+          # debug line #########################################################
+          echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell market $ROGUE_LISTING_AMOUNT '' false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
 
@@ -399,6 +409,8 @@ function rogue_selling() {
         if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
           # CreateOrder market #################################################
           PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "market" "$ROGUE_LISTING_AMOUNT" "" "false")"
+          # debug line #########################################################
+          echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell market $ROGUE_LISTING_AMOUNT '' false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
 
@@ -421,6 +433,8 @@ function rogue_selling() {
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # createorder sell limit #############################################
           PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+          # debug line #########################################################
+          echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell limit $ROGUE_LISTING_AMOUNT $LISTING_PRICE false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
 
@@ -428,6 +442,8 @@ function rogue_selling() {
         if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
           # createorder sell limit #############################################
           PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "sell" "limit" "$ROGUE_LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+          # debug line #########################################################
+          echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell limit $ROGUE_LISTING_AMOUNT $LISTING_PRICE false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
 
@@ -947,6 +963,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
 
         signal_age_buying
 
+        # buy order ############################################################
+
+        TYPE="buy"
+        DEBUG_TYPE="Buying"
+
+        ########################################################################
+
         # ready to buy (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
@@ -960,11 +983,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
                 # remove old signal_order
                 rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
 
-                # buy order ####################################################
-
-                TYPE="buy"
-                AMOUNT_IN_REFERENCE_CURRENCY="false"
-
                 ################################################################
                 ################################################################
 
@@ -972,6 +990,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # createorder buy market #####################################
                   PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "" "false")"
+                  # debug line #################################################
+                  echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY $TYPE market $LISTING_AMOUNT '' false <--- $DEBUG_TYPE asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                   ##############################################################
                 fi
 
@@ -979,6 +999,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
                 if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
                   # createorder buy market #####################################
                   PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "" "false")"
+                  # debug line #################################################
+                  echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY $TYPE market $LISTING_AMOUNT '' false <--- $DEBUG_TYPE asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                   ##############################################################
                 fi
 
@@ -1014,6 +1036,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # createorder buy limit ######################################
                   PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+                  # debug line #################################################
+                  echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY $TYPE market $LISTING_AMOUNT $LISTING_PRICE false <--- $DEBUG_TYPE asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                   ##############################################################
                 fi
 
@@ -1021,6 +1045,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
                 if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
                   # createorder buy limit ######################################
                   PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+                  # debug line #################################################
+                  echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY $TYPE market $LISTING_AMOUNT $LISTING_PRICE false <--- $DEBUG_TYPE asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                   ##############################################################
                 fi
 
@@ -1161,6 +1187,13 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
 
         signal_age_selling
 
+        # sell order ###########################################################
+
+        TYPE="sell"
+        DEBUG_TYPE="Selling"
+
+        ########################################################################
+
         # ready to sell (signal age)
         if [[ "$SIGNAL_ORDER_AGE" -gt "$SIGNAL_AGE_SECONDS" ]] 2>>"${LOG_ERROR:?}"; then
 
@@ -1174,11 +1207,6 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
                 # remove old signal_order
                 rm "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>>"${LOG_ERROR:?}"
 
-                # sell order ###################################################
-
-                TYPE="sell"
-                AMOUNT_IN_REFERENCE_CURRENCY="false"
-
                 ################################################################
                 ################################################################
 
@@ -1186,6 +1214,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # createorder sell market ####################################
                   PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "market" "$LISTING_AMOUNT" "" "false")"
+                  # debug line #################################################
+                  echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY $TYPE market $LISTING_AMOUNT '' false <--- $DEBUG_TYPE asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                   ##############################################################
                 fi
 
@@ -1228,6 +1258,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
                 if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
                   # createorder sell limit #####################################
                   PLACE_ORDER="$(CreateOrder "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+                  # debug line #################################################
+                  echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY $TYPE limit $LISTING_AMOUNT $LISTING_PRICE false <--- $DEBUG_TYPE asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                   ##############################################################
                 fi
 
@@ -1235,6 +1267,8 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
                 if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
                   # createorder sell limit #####################################
                   PLACE_ORDER="$(CreateOrder_nky "" "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "$TYPE" "limit" "$LISTING_AMOUNT" "$LISTING_PRICE" "false")"
+                  # debug line #################################################
+                  echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY $TYPE limit $LISTING_AMOUNT $LISTING_PRICE false <--- $DEBUG_TYPE asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
                   ##############################################################
                 fi
 
