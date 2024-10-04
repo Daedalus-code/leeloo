@@ -920,8 +920,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bullish" || "$EMA_REAL_SIGNAL" == "Bullish" && "$SI
                   if [[ "$LISTING_ALL_DIFF_CHECK" -gt "0" ]] &>/dev/null; then
 
                     # new listing amount (missing difference)
-                    LISTING_AMOUNT="$REFERENCE_AMOUNT_FOMO"
-
+                    LISTING_AMOUNT="$(echo "$REFERENCE_AMOUNT_FOMO" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
                     # new bullish output
                     BULLISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: FOMO : Bullish+Signal : Buying $LISTING_AMOUNT $LISTING_CURRENCY $LISTING_ALLOCATED_REAL_CHECK+$LISTING_ALL_DIFF_CHECK% > ${LISTING_ALLOCATED:?}%"
 
@@ -1144,8 +1143,7 @@ if [[ "$EMA_REAL_SIGNAL" == "Bearish" || "$EMA_REAL_SIGNAL" == "Bearish" && "$SI
                   if [[ "$REFERENCE_ALL_DIFF_CHECK" -gt "0" ]] &>/dev/null; then
 
                     # new listing amount (missing difference)
-                    LISTING_AMOUNT="$LISTING_AMOUNT_FOMO"
-
+                    LISTING_AMOUNT="$(echo "$LISTING_AMOUNT_FOMO" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
                     # new bearish output
                     BEARISH_EMA_SIGNAL="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: FOMO : Bearish+Signal : Selling $LISTING_AMOUNT $LISTING_CURRENCY $REFERENCE_ALLOCATED_REAL_CHECK+$REFERENCE_ALL_DIFF_CHECK% > ${REFERENCE_ALLOCATED:?}%"
 
