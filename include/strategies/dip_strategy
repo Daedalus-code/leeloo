@@ -2905,8 +2905,16 @@ fi
 
 bought_sold_age
 
+# older than max + a day
+if [[ "$DIP_BOUGHT_FILE_AGE_SECONDS" -gt "$(echo "$DIP_MAX_BUY_AGE_SECONDS+86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]] &>/dev/null; then
+  if [[ "$DIP_SOLD_FILE_AGE_SECONDS" -gt "$(echo "$DIP_MAX_SELL_AGE_SECONDS+86400" | bc -l 2>/dev/null | awk '{ printf "%.0f\n", $1 }')" ]] &>/dev/null; then
+    # remove old regardless
+    REMOVE_OLD_REGARDLESS="1"
+  fi
+fi
+
 # if still selling, wait
-if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
+if [[ "$REMOVE_OLD_REGARDLESS" == "1" || "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".selling 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
   # if sold, wait
   if [[ "$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
     # if any data, not selling
