@@ -3596,8 +3596,13 @@ if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
                       # track possible dusting
                       DIP_POSSIBLE_DUSTING="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $DIP_REFERENCE_NAME ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT ($DIP_CHANGE_PROFIT_LOSS/${DIP_DUST_PROFIT:?})"
 
+                      # dip change profit loss check
+                      DIP_CHANGE_PROFIT_LOSS_CHECK="$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+                      # dip dust profit check
+                      DIP_DUST_PROFIT_CHECK="$(echo "$DIP_DUST_PROFIT" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+
                       # if profit are adequate (above minimum dust profit, ruled by configuration)
-                      if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "${DIP_DUST_PROFIT:?}" ]] &>/dev/null; then
+                      if [[ "$DIP_CHANGE_PROFIT_LOSS_CHECK" -gt "$DIP_DUST_PROFIT_CHECK" ]] &>/dev/null; then
                         # if limit
                         if [[ "$DIP_DUST_TYPE" == "limit" ]] &>/dev/null; then
                           DUST_LIM_MAR_OUTPUT="Dusting!"
@@ -3621,8 +3626,13 @@ if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
                         DIP_DUST_PROFIT="10"
                       fi
 
+                      # dip change profit loss check
+                      DIP_CHANGE_PROFIT_LOSS_CHECK="$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+                      # dip dust profit check
+                      DIP_DUST_PROFIT_CHECK="$(echo "$DIP_DUST_PROFIT" | awk '{ printf "%.2f\n", $1 }' | tr -d '.' | sed 's/^0*//')"
+
                       # if profit are adequate (above minimum dust profit, ruled by configuration)
-                      if [[ "$(echo "$DIP_CHANGE_PROFIT_LOSS" | awk -F. '{ print $1 }')" -gt "${DIP_DUST_PROFIT:?}" ]] &>/dev/null; then
+                      if [[ "$DIP_CHANGE_PROFIT_LOSS_CHECK" -gt "$DIP_DUST_PROFIT_CHECK" ]] &>/dev/null; then
 
                         ########################################################
                         ########################################################
