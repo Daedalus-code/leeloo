@@ -100,17 +100,30 @@ decimal_market          # decimal market
 function cancel_old_orders {
   # if any data
   if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-    # ema old orders
-    EMA_OLD_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null | awk -F: '{ print $1 }')"
+
+    # if buy order
+    if [[ "$TYPE" == "buy" ]] &>/dev/null; then
+      # ema sell orders
+      EMA_OLD_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null | grep "sell" | awk -F: '{ print $1 }')"
+    fi
+
+    # if sell order
+    if [[ "$TYPE" == "sell" ]] &>/dev/null; then
+      # ema buy orders
+      EMA_OLD_ORDERS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".orders 2>/dev/null | grep "buy" | awk -F: '{ print $1 }')"
+    fi
+
     # if any data
     if [[ -n "$EMA_OLD_ORDERS" ]] &>/dev/null; then
       # cancel old orders
       echo "$EMA_OLD_ORDERS" | while IFS= read -r ORDER_ID; do
+
         # if xeggex cancelorder
         if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
           # cancel ghost order
           cancelOrder "$ORDER_ID" 2>>"${LOG_ERROR:?}"
         fi
+
         # if nonkyc cancelorder
         if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
           # cancel ghost order
