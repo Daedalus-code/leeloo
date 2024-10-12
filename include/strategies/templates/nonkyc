@@ -177,6 +177,29 @@ function isDelisting() {
 
 ################################################################################
 
+function trades_data {
+  # trades data
+  TRADES="$(cat "$LOG_DIR"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null)"
+  # buying
+  BUY_PRICE="$(echo "$TRADES" | grep "buy" | awk '{ print $5 }')"
+  BUY_AMOUNT="$(echo "$TRADES" | grep "buy" | awk '{ print $6 }')"
+  BUY_TOTAL_AMOUNT="$(echo "$BUY_AMOUNT" | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+  BUY_PRICE_TOTAL_AMOUNT="$(echo "$BUY_PRICE" | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+  BUY_COUNT="$(echo "$BUY_PRICE" | wc -l)"
+  AVERAGE_BUY_PRICE="$(echo "$BUY_PRICE_TOTAL_AMOUNT/$BUY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  AVERAGE_BUY_AMOUNT="$(echo "$BUY_TOTAL_AMOUNT/$BUY_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  # selling
+  SELL_PRICE="$(echo "$TRADES" | grep "sell" | awk '{ print $5 }')"
+  SELL_AMOUNT="$(echo "$TRADES" | grep "sell" | awk '{ print $6 }')"
+  SELL_TOTAL_AMOUNT="$(echo "$SELL_AMOUNT" | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+  SELL_PRICE_TOTAL_AMOUNT="$(echo "$SELL_PRICE" | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
+  SELL_COUNT="$(echo "$SELL_PRICE" | wc -l)"
+  AVERAGE_SELL_PRICE="$(echo "$SELL_PRICE_TOTAL_AMOUNT/$SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  AVERAGE_SELL_AMOUNT="$(echo "$SELL_TOTAL_AMOUNT/$SELL_COUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+}
+
+################################################################################
+
 function decimal_market() {
   # default decimal
   DECIMAL_LIMIT="9"

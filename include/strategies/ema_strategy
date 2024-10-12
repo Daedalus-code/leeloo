@@ -94,6 +94,7 @@ insufficient_funds      # check for available funds
 listing_fomo            # listing fomo
 reference_fomo          # reference fomo
 decimal_market          # decimal market
+trades_data             # trades data
 
 ################################################################################
 
@@ -228,6 +229,10 @@ EMA_Strength..........: ${GET_PERCENTAGE:?}%
 EMA_FOMO..............: $EMA_FOMO_DATA
 EMA_Total_Value.......: $TOTAL_EMA_VALUE $REFERENCE_CURRENCY
 Price.................: $LISTING_PRICE $LISTING_CURRENCY
+Average_Buy_Price.....: $AVERAGE_BUY_PRICE $REFERENCE_CURRENCY
+Average_Sell_Price....: $AVERAGE_SELL_PRICE $REFERENCE_CURRENCY
+Average_Buy_Amount....: $AVERAGE_BUY_AMOUNT $LISTING_CURRENCY
+Average_Sell_Amount...: $AVERAGE_SELL_AMOUNT $LISTING_CURRENCY
 Listing_Allocated.....: ${LISTING_ALLOCATED_REAL_CHECK:?}%/${LISTING_ALLOCATED:?}%/Diff:${LISTING_ALL_DIFF_CHECK:?}%=$REFERENCE_AMOUNT_FOMO $LISTING_CURRENCY
 Listing_Amount........: $LISTING_AMOUNT $LISTING_CURRENCY ($LISTING_AMOUNT_VALUED $REFERENCE_CURRENCY)
 Listing_Available.....: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY ($LISTING_AVAILABLE_VALUED $REFERENCE_CURRENCY)
@@ -265,8 +270,9 @@ ROGUE_STATUS_NOW="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".statu
 ################################################################################
 ################################################################################
 
-ROGUE_TIMER="3600" # n seconds (default: 3600 seconds/1 hour cooldown)
-ROGUE_HOURS="6"    # n hours of data (default: 6 hours)
+ROGUE_TIMER="3600"                                             # n seconds (default: 3600 seconds/1 hour cooldown)
+ROGUE_HOURS="6"                                                # n hours of data (default: 6 hours)
+ROGUE_AMOUNT="$(echo "$ROGUE_AMOUNT/100" | bc -l 2>/dev/null)" # n amount calculated in percentage
 
 ################################################################################
 ################################################################################
