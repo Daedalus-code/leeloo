@@ -102,91 +102,103 @@ fi
 
 # stakecube ####################################################################
 
-# balances & price age (seconds)
-SCE_BALANCES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/balances.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-SCE_PRICES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/prices.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-# balances & price format
-SCE_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%60")))
-SCE_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%60")))
+# if any data
+if [[ -f "${LOG_DIR:?}"/leeloo/stakecube/balances.bkp ]] &>/dev/null; then
 
-# get active robot
-SCE_ROBOT_API="$(grep -c "SCE" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
+  # balances & price age (seconds)
+  SCE_BALANCES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/balances.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  SCE_PRICES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/prices.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # balances & price format
+  SCE_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%60")))
+  SCE_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%60")))
 
-if [[ -z "$SCE_ROBOT_API" ]] &>/dev/null; then
-  SCE_ROBOT_API="0"
-fi
+  # get active robot
+  SCE_ROBOT_API="$(grep -c "SCE" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
 
-# active robot
-if [[ "$SCE_ROBOT_API" -gt "0" ]] &>/dev/null; then
-  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-    echo "$LOG_DATE : SCE : KEK : Balances is empty using backup! Age: $SCE_BALANCES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    # use backup
-    cp "${LOG_DIR:?}"/leeloo/stakecube/balances.bkp "${LOG_DIR:?}"/leeloo/stakecube/balances &>/dev/null
+  if [[ -z "$SCE_ROBOT_API" ]] &>/dev/null; then
+    SCE_ROBOT_API="0"
   fi
-  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-    echo "$LOG_DATE : SCE : KEK : Prices is empty using backup! Age: $SCE_PRICES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    # use backup
-    cp "${LOG_DIR:?}"/leeloo/stakecube/prices.bkp "${LOG_DIR:?}"/leeloo/stakecube/prices &>/dev/null
+
+  # active robot
+  if [[ "$SCE_ROBOT_API" -gt "0" ]] &>/dev/null; then
+    if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/stakecube/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      echo "$LOG_DATE : SCE : KEK : Balances is empty using backup! Age: $SCE_BALANCES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+      # use backup
+      cp "${LOG_DIR:?}"/leeloo/stakecube/balances.bkp "${LOG_DIR:?}"/leeloo/stakecube/balances &>/dev/null
+    fi
+    if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      echo "$LOG_DATE : SCE : KEK : Prices is empty using backup! Age: $SCE_PRICES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+      # use backup
+      cp "${LOG_DIR:?}"/leeloo/stakecube/prices.bkp "${LOG_DIR:?}"/leeloo/stakecube/prices &>/dev/null
+    fi
   fi
 fi
 
 # xeggex #######################################################################
 
-# balances & price age (seconds)
-XGX_BALANCES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-XGX_PRICES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/prices.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-# balances & price format
-XGX_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%60")))
-XGX_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%60")))
+# if any data
+if [[ -f "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp ]] &>/dev/null; then
 
-# get active robot
-XGX_ROBOT_API="$(grep -c "XGX" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
+  # balances & price age (seconds)
+  XGX_BALANCES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  XGX_PRICES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/prices.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # balances & price format
+  XGX_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%60")))
+  XGX_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%60")))
 
-if [[ -z "$XGX_ROBOT_API" ]] &>/dev/null; then
-  XGX_ROBOT_API="0"
-fi
+  # get active robot
+  XGX_ROBOT_API="$(grep -c "XGX" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
 
-# active robot
-if [[ "$XGX_ROBOT_API" -gt "0" ]] &>/dev/null; then
-  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-    echo "$LOG_DATE : XGX : KEK : Balances is empty using backup! Age: $XGX_BALANCES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    # use backup
-    cp "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp "${LOG_DIR:?}"/leeloo/xeggex/balances &>/dev/null
+  if [[ -z "$XGX_ROBOT_API" ]] &>/dev/null; then
+    XGX_ROBOT_API="0"
   fi
-  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-    echo "$LOG_DATE : XGX : KEK : Prices is empty using backup! Age: $XGX_PRICES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    # use backup
-    cp "${LOG_DIR:?}"/leeloo/xeggex/prices.bkp "${LOG_DIR:?}"/leeloo/xeggex/prices &>/dev/null
+
+  # active robot
+  if [[ "$XGX_ROBOT_API" -gt "0" ]] &>/dev/null; then
+    if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      echo "$LOG_DATE : XGX : KEK : Balances is empty using backup! Age: $XGX_BALANCES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+      # use backup
+      cp "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp "${LOG_DIR:?}"/leeloo/xeggex/balances &>/dev/null
+    fi
+    if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      echo "$LOG_DATE : XGX : KEK : Prices is empty using backup! Age: $XGX_PRICES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+      # use backup
+      cp "${LOG_DIR:?}"/leeloo/xeggex/prices.bkp "${LOG_DIR:?}"/leeloo/xeggex/prices &>/dev/null
+    fi
   fi
 fi
 
 # nonkyc #######################################################################
 
-# balances & price age (seconds)
-NKY_BALANCES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-NKY_PRICES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
-# balances & price format
-NKY_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%60")))
-NKY_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%60")))
+# if any data
+if [[ -f "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp ]] &>/dev/null; then
 
-# get active robot
-NKY_ROBOT_API="$(grep -c "NKY" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
+  # balances & price age (seconds)
+  NKY_BALANCES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  NKY_PRICES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+  # balances & price format
+  NKY_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%60")))
+  NKY_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%60")))
 
-if [[ -z "$NKY_ROBOT_API" ]] &>/dev/null; then
-  NKY_ROBOT_API="0"
-fi
+  # get active robot
+  NKY_ROBOT_API="$(grep -c "NKY" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
 
-# active robot
-if [[ "$NKY_ROBOT_API" -gt "0" ]] &>/dev/null; then
-  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-    echo "$LOG_DATE : NKY : KEK : Balances is empty using backup! Age: $NKY_BALANCES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    # use backup
-    cp "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp "${LOG_DIR:?}"/leeloo/nonkyc/balances &>/dev/null
+  if [[ -z "$NKY_ROBOT_API" ]] &>/dev/null; then
+    NKY_ROBOT_API="0"
   fi
-  if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
-    echo "$LOG_DATE : NKY : KEK : Prices is empty using backup! Age: $NKY_PRICES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
-    # use backup
-    cp "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp "${LOG_DIR:?}"/leeloo/nonkyc/prices &>/dev/null
+
+  # active robot
+  if [[ "$NKY_ROBOT_API" -gt "0" ]] &>/dev/null; then
+    if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      echo "$LOG_DATE : NKY : KEK : Balances is empty using backup! Age: $NKY_BALANCES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+      # use backup
+      cp "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp "${LOG_DIR:?}"/leeloo/nonkyc/balances &>/dev/null
+    fi
+    if [[ "$(egrep -c "[0-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null)" -eq "0" ]] &>/dev/null; then
+      echo "$LOG_DATE : NKY : KEK : Prices is empty using backup! Age: $NKY_PRICES_FORMAT" >>"${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null
+      # use backup
+      cp "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp "${LOG_DIR:?}"/leeloo/nonkyc/prices &>/dev/null
+    fi
   fi
 fi
 
