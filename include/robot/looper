@@ -105,16 +105,30 @@ fi
 # if any data
 if [[ -f "${LOG_DIR:?}"/leeloo/stakecube/balances.bkp ]] &>/dev/null; then
 
-  # balances & price age (seconds)
+  # balances age (seconds)
   SCE_BALANCES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/balances.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$SCE_BALANCES_AGE" ]] &>/dev/null; then
+    SCE_BALANCES_AGE="0"
+  fi
+
+  # price age (seconds)
   SCE_PRICES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/prices.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$SCE_PRICES_AGE" ]] &>/dev/null; then
+    SCE_PRICES_AGE="0"
+  fi
+
   # balances & price format
   SCE_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%60")))
-  SCE_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%60")))
+  SCE_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_AGE:?}" 2>&1)%60")))
 
   # get active robot
   SCE_ROBOT_API="$(grep -c "SCE" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
 
+  # if zero
   if [[ -z "$SCE_ROBOT_API" ]] &>/dev/null; then
     SCE_ROBOT_API="0"
   fi
@@ -139,16 +153,30 @@ fi
 # if any data
 if [[ -f "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp ]] &>/dev/null; then
 
-  # balances & price age (seconds)
+  # balances age (seconds)
   XGX_BALANCES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/balances.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$XGX_BALANCES_AGE" ]] &>/dev/null; then
+    XGX_BALANCES_AGE="0"
+  fi
+
+  # price age (seconds)
   XGX_PRICES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/prices.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$XGX_PRICES_AGE" ]] &>/dev/null; then
+    XGX_PRICES_AGE="0"
+  fi
+
   # balances & price format
-  XGX_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%60")))
-  XGX_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%60")))
+  XGX_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${XGX_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${XGX_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${XGX_BALANCES_AGE:?}" 2>&1)%60")))
+  XGX_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${XGX_PRICES_AGE:?}" 2>&1)/3600")) $(("$(echo "${XGX_PRICES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${XGX_PRICES_AGE:?}" 2>&1)%60")))
 
   # get active robot
   XGX_ROBOT_API="$(grep -c "XGX" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
 
+  # if zero
   if [[ -z "$XGX_ROBOT_API" ]] &>/dev/null; then
     XGX_ROBOT_API="0"
   fi
@@ -173,16 +201,30 @@ fi
 # if any data
 if [[ -f "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp ]] &>/dev/null; then
 
-  # balances & price age (seconds)
+  # balances age (seconds)
   NKY_BALANCES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$NKY_BALANCES_AGE" ]] &>/dev/null; then
+    NKY_BALANCES_AGE="0"
+  fi
+
+  # price age (seconds)
   NKY_PRICES_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+
+  # if zero
+  if [[ -z "$NKY_PRICES_AGE" ]] &>/dev/null; then
+    NKY_PRICES_AGE="0"
+  fi
+
   # balances & price format
-  NKY_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_BALANCES_AGE:?}" 2>&1)%60")))
-  NKY_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)/3600")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%3600/60")) $(("$(echo "${SCE_PRICES_FORMAT:?}" 2>&1)%60")))
+  NKY_BALANCES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${NKY_BALANCES_AGE:?}" 2>&1)/3600")) $(("$(echo "${NKY_BALANCES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${NKY_BALANCES_AGE:?}" 2>&1)%60")))
+  NKY_PRICES_FORMAT=$(printf '%dh:%dm:%ds\n' $(("$(echo "${NKY_PRICES_AGE:?}" 2>&1)/3600")) $(("$(echo "${NKY_PRICES_AGE:?}" 2>&1)%3600/60")) $(("$(echo "${NKY_PRICES_AGE:?}" 2>&1)%60")))
 
   # get active robot
   NKY_ROBOT_API="$(grep -c "NKY" "${LOG_DIR:?}"/leeloo/robots 2>/dev/null)"
 
+  # if zero
   if [[ -z "$NKY_ROBOT_API" ]] &>/dev/null; then
     NKY_ROBOT_API="0"
   fi
