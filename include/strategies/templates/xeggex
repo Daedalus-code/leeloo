@@ -922,7 +922,8 @@ function cost_price() {
 
   ##############################################################################
 
-  if [[ ! -z "$LISTING_PRICE_ASK" ]] &>/dev/null; then
+  # if any data
+  if [[ -n "$LISTING_PRICE_ASK" ]] &>/dev/null; then
     # listing
     echo "$LISTING_AVAILABLE_ASK_VALUED" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_cost 2>/dev/null
     echo "$LISTING_PRICE_ASK" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
@@ -987,8 +988,8 @@ function incoming_listing() {
       LISTING_PRICE="$(cat "${LOG_DIR:?}"/leeloo/xeggex/*prices* 2>/dev/null | tr '/' ' ' | tr '_' ' ' | awk '!a[$1,$2]++' | tr -d ':' | grep -w "${LISTING_CURRENCY:?}" | grep -w "${REFERENCE_CURRENCY:?}" | awk '{ print $3 }')"
       LISTING_AVAILABLE_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
-      # if not zero
-      if [[ ! -z "$LISTING_PRICE" ]] &>/dev/null; then
+      # if any data
+      if [[ -n "$LISTING_PRICE" ]] &>/dev/null; then
         # listing
         echo "$LISTING_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_price 2>/dev/null
         # listing output
@@ -1046,8 +1047,8 @@ function incoming_reference() {
       REFERENCE_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | awk '{ print $2 }')"
       REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
-      # if not zero
-      if [[ ! -z "$REFERENCE_PRICE" ]] &>/dev/null; then
+      # if any data
+      if [[ -n "$REFERENCE_PRICE" ]] &>/dev/null; then
         # reference
         echo "$REFERENCE_PRICE" >"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".ref_price 2>/dev/null
         # reference output
@@ -1287,7 +1288,8 @@ function setup_market_order {
       3>&1 1>&2 2>&3 3>&-
   )
 
-  if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+  # if any data
+  if [[ -n "$LISTING_CURRENCY" ]] &>/dev/null; then
 
     REFERENCE_CURRENCY=$(
       dialog --title "Reference Currency (USDT)" \
@@ -1295,7 +1297,8 @@ function setup_market_order {
         3>&1 1>&2 2>&3 3>&-
     )
 
-    if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    # if any data
+    if [[ -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
       # currency
       LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
@@ -1323,7 +1326,8 @@ function setup_limit_order {
       3>&1 1>&2 2>&3 3>&-
   )
 
-  if [[ ! -z "$LISTING_CURRENCY" ]] &>/dev/null; then
+  # if any data
+  if [[ -n "$LISTING_CURRENCY" ]] &>/dev/null; then
 
     REFERENCE_CURRENCY=$(
       dialog --title "Reference Currency (USDT)" \
@@ -1331,7 +1335,8 @@ function setup_limit_order {
         3>&1 1>&2 2>&3 3>&-
     )
 
-    if [[ ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+    # if any data
+    if [[ -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
 
       # currency
       LISTING_CURRENCY="$(echo "$LISTING_CURRENCY" | tr '[:lower:]' '[:upper:]')"
@@ -1350,8 +1355,8 @@ $LISTING_CURRENCY_AMOUNT $REFERENCE_CURRENCY_AMOUNT" 8 40 \
           3>&1 1>&2 2>&3 3>&-
       )
 
-      # if not zero
-      if [[ ! -z "$AMOUNT" ]] &>/dev/null; then
+      # if any data
+      if [[ -n "$AMOUNT" ]] &>/dev/null; then
         # ask price
         PRICE=$(
           dialog --title "Price $LISTING_CURRENCY/$REFERENCE_CURRENCY" \
