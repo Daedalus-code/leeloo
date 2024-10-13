@@ -203,7 +203,7 @@ function trades_data {
   LOSS_PROFIT_PERCENTAGE="$(echo "100/$AVERAGE_BUY_PRICE*$LOSS_PROFIT_DIFFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   # if sell count is zero
-  if [[ "$SELL_COUNT" -eq "0" ]] &>/dev/null; then
+  if [[ "$SELL_COUNT" -eq "0" || "$(echo "$AVERAGE_SELL_PRICE" | awk -F. '{ print $1 }')" -eq "0" ]] &>/dev/null; then
     LOSS_PROFIT_PERCENTAGE="0"
   fi
 
