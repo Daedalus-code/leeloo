@@ -2465,18 +2465,22 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     PRICE_COMPARISON=$(echo "$DIP_SELLING_OLD_PRICE > $DIP_SELLING_NEW_PRICE" | bc 2>/dev/null)
     # sell or not
     if [[ "$PRICE_COMPARISON" -eq "1" ]] &>/dev/null; then
-      DIP_SELLABLE="0" # not sellable
+      DIP_SELLABLE="0" # prices are equal, not sellable
+      DIP_DUSTABLE="0" # prices are equal, not dustable
     else
       PRICE_COMPARISON=$(echo "$DIP_SELLING_OLD_PRICE < $DIP_SELLING_NEW_PRICE" | bc 2>/dev/null)
       # sell or not
       if [[ "$PRICE_COMPARISON" -eq "1" ]] &>/dev/null; then
         DIP_SELLABLE="1" # prices are correct, sellable
+        DIP_DUSTABLE="1" # prices are correct, dustable
       else
         DIP_SELLABLE="0" # prices are equal, not sellable
+        DIP_DUSTABLE="0" # prices are equal, not dustable
       fi
     fi
   else
-    DIP_SELLABLE="0"
+    DIP_SELLABLE="0" # prices are equal, not sellable
+    DIP_DUSTABLE="0" # prices are equal, not dustable
   fi
 
   ##############################################################################
@@ -3370,7 +3374,7 @@ if [[ -z "$DIP_DUST" || ! "$DIP_DUST" -eq "1" ]] &>/dev/null; then
 fi
 
 # if dusting is active & if sellable
-if [[ "$DIP_DUST" -eq "1" && "$DIP_SELLABLE" -eq "1" ]] &>/dev/null; then
+if [[ "$DIP_DUST" -eq "1" && "$DIP_DUSTABLE" -eq "1" ]] &>/dev/null; then
 
   time_and_profit
 
