@@ -1092,6 +1092,8 @@ function signal_age() {
   SIGNAL_ORDER_AGE="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".signal_order 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
   # calculate seconds into hours
   SIGNAL_ORDER_AGE_HOURS="$(echo "$SIGNAL_ORDER_AGE/3600" | bc 2>/dev/null)"
+  # calculate hours into days
+  SIGNAL_ORDER_AGE_DAYS="$(echo "$SIGNAL_ORDER_AGE_HOURS/24" | bc 2>/dev/null)"
 }
 
 ################################################################################
