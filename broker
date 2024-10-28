@@ -2139,9 +2139,10 @@ Buy Date....: $LAST_COIN_BUY_DATE
 Buy Value...: $LAST_COIN_BUY_VALUE $LAST_COIN_PRICE_REFERENCE @ $LAST_COIN_PRICE_BUY
 Value Now...: $LAST_COIN_VALUE_NOW $LAST_COIN_PRICE_REFERENCE @ $LAST_COIN_PRICE_NOW $LAST_COIN_PRICE_REFERENCE
 Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROFIT_LOSS_PERC:?}%"
+
           RESULT_COUNT="0"
-          WIDTH="0"
           LENGTH="0"
+          WIDTH="0"
         fi
       fi
 
@@ -2149,8 +2150,19 @@ Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROF
 
       # if zero
       if [[ -z "$(echo "$RESULT" | tail -1)" || -z "$COIN_TOKEN" ]] &>/dev/null; then
+        # no data output
+        OPEN_PERCENTAGE_AVERAGE="0"
+        OPEN_TOTAL_AGE_DAYS="0"
+        OPEN_TOTAL_AGE="0"
+        OPEN_COUNT="0"
+
+        # if zero
+        if [[ -z "$COIN_TOKEN" ]] &>/dev/null; then
+          COIN_TOKEN="Coin/Token"
+        fi
         RESULT="No $COIN_TOKEN Position found!"
       fi
+
       # if no result but found coin data
       if [[ -z "$(echo "$(grep -w "$COIN_TOKEN" "${SYS_DIR:?}"/robot/pool.view)" | tail -1)" && -n "$LOG_SEARCH_COIN_DATA" ]] &>/dev/null; then
         # default (no column)
