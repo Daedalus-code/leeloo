@@ -1522,11 +1522,13 @@ function order_history {
 
     # format result using column -t
     RESULT="$(echo "$RESULT" | column -t)"
+    WIDTH="$(echo "$RESULT" | wc -L)"
+    LENGTH="$(echo "$RESULT" | wc -l)"
 
     display_result() {
       dialog --title "Order history: +$ORDER_HISTORY_TOTAL :: Buy: $ORDER_HISTORY_TOTAL_BUY (${ORDER_HISTORY_PERCENTAGE_BUY:?}%) :: Sell: $ORDER_HISTORY_TOTAL_SELL (${ORDER_HISTORY_PERCENTAGE_SELL:?}%)" \
         --no-collapse \
-        --msgbox "$RESULT" 0 0
+        --msgbox "$RESULT" "$LENGTH" "$WIDTH"
     }
 
     display_result 2>/dev/null
