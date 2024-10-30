@@ -295,25 +295,27 @@ fi
 
 ################################################################################
 
+# low (bid)
+BST_SPREAD_LOW="$LISTING_PRICE"
+# high (ask)
+BST_SPREAD_HIGH="$LISTING_PRICE_ASK"
+# get difference
+BST_SPREAD_DIFF="$(echo "$BST_SPREAD_HIGH-$BST_SPREAD_LOW" | bc -l 2>/dev/null)"
+# calculate percentage
+BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+
+# if zero
+if [[ -z "$BST_DIFF_PERCENTAGE" ]] &>/dev/null; then
+  BST_DIFF_PERCENTAGE="0"
+fi
+
+################################################################################
+
 # take profit enabled
 if [[ "$BST_TAKE_PROFIT" == "1" ]] 2>>"${LOG_ERROR:?}"; then
 
   # disable normal trigger
   TX_TIME="0"
-
-  # low (bid)
-  BST_SPREAD_LOW="$LISTING_PRICE"
-  # high (ask)
-  BST_SPREAD_HIGH="$LISTING_PRICE_ASK"
-  # get difference
-  BST_SPREAD_DIFF="$(echo "$BST_SPREAD_HIGH-$BST_SPREAD_LOW" | bc -l 2>/dev/null)"
-  # calculate percentage
-  BST_DIFF_PERCENTAGE="$(echo "100/$LISTING_PRICE*$BST_SPREAD_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
-
-  # if zero
-  if [[ -z "$BST_DIFF_PERCENTAGE" ]] &>/dev/null; then
-    BST_DIFF_PERCENTAGE="0"
-  fi
 
   # bst spread without decimal (n%)
   BST_SPREAD="$(echo "$BST_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')"
