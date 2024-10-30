@@ -176,6 +176,9 @@ function isDelisting() {
 
 function trades_data {
 
+  # calculate the age of target orders file in seconds
+  TARGET_ORDERS_AGE_SECONDS=$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades 2>/dev/null || echo 0)
+
   # check if target orders data is old enough or doesn't exist
   if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/xeggex/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades ]]; then
     # get trades data and format it
