@@ -2466,22 +2466,23 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
     # sell or not
     if [[ "$PRICE_COMPARISON" -eq "1" ]] &>/dev/null; then
       DIP_SELLABLE="0" # prices are equal, not sellable
-      DIP_DUSTABLE="0" # prices are equal, not dustable
     else
       PRICE_COMPARISON=$(echo "$DIP_SELLING_OLD_PRICE < $DIP_SELLING_NEW_PRICE" | bc 2>/dev/null)
       # sell or not
       if [[ "$PRICE_COMPARISON" -eq "1" ]] &>/dev/null; then
         DIP_SELLABLE="1" # prices are correct, sellable
-        DIP_DUSTABLE="1" # prices are correct, dustable
       else
         DIP_SELLABLE="0" # prices are equal, not sellable
-        DIP_DUSTABLE="0" # prices are equal, not dustable
       fi
     fi
   else
     DIP_SELLABLE="0" # prices are equal, not sellable
-    DIP_DUSTABLE="0" # prices are equal, not dustable
   fi
+
+  ##############################################################################
+
+  # dustable check before ownership check
+  DIP_DUSTABLE="$DIP_SELLABLE"
 
   ##############################################################################
 
@@ -3522,11 +3523,11 @@ if [[ "$DIP_DUST" -eq "1" && "$DIP_DUSTABLE" -eq "1" ]] &>/dev/null; then
 
   ##############################################################################
 
-  # if buy price are more than price
+  # if buy price are more than new price
   if [[ "$DIP_CHANGE_OLD_PRICE" > "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
     # not dustable
     DIP_CHANGE_DUSTABLE="0"
-    # if buy price are less than price
+    # if buy price are less than new price
   elif [[ "$DIP_CHANGE_OLD_PRICE" < "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
     # dustable
     DIP_CHANGE_DUSTABLE="1"
