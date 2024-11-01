@@ -498,38 +498,41 @@ $COIN_TOKEN_SEARCH"
       dialog --title "Updating Leeloo (Multipass)" \
         --msgbox "$RESULT" 0 0
     }
+
     cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && git pull >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
+
     # any updates relating to the auto strategies system, restart
     UPDATE_KEYS="looper|leeloo|functions|private_API|public_API"
+
     if [[ "$(egrep "$UPDATE_KEYS" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | grep '[+-]' | wc -l)" -gt "0" ]] &>/dev/null; then
       ROBOT_UPDATES="$(egrep "$UPDATE_KEYS" "${LOG_DIR:?}"/leeloo/updating 2>/dev/null | awk '{ print $3,$4 }')"
       echo " New updates! $ROBOT_UPDATES" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
       if [[ "$(echo "$SCREEN_LIST" | grep "leeloo" 2>/dev/null | wc -l)" -eq "1" ]] &>/dev/null; then
+        # updating data
         echo " Robot stopping! --" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
-        # kill leeloo pid (shell)
-        echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
-        LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
-        kill -9 "$LEELOO_PID" &>/dev/null
-        # kill screen
-        screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit &>/dev/null
-        sleep 1
-        # start looper
-        bash "${SYS_DIR:?}"/robot/looper
+        # restart
+        restart_leeloo
+        # updating data
         echo " Robot starting! ++" >>"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
       fi
     fi
+
     # if any updates, skip
     if [[ ! "$(grep "Updating" "${LOG_DIR:?}"/leeloo/updating | wc -l)" -gt "0" ]] &>/dev/null; then
       echo "
 $(echo "$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null) $REPO_HEAD")" >"${LOG_DIR:?}"/leeloo/updating 2>/dev/null
     fi
+
     RESULT="$(cat "${LOG_DIR:?}"/leeloo/updating 2>/dev/null)"
     display_result 2>/dev/null
+
     cd || exit && cd "${HOME_DIR:?}"/leeloo || exit && bash include/install 2>/dev/null
     rm "${LOG_DIR:?}"/leeloo/repo &>/dev/null
     cd "${HOME_DIR:?}"/leeloo || exit && git rev-parse --short HEAD 2>&1 | grep -Eo '[a0-z9]{7}' 2>&1 | head -1 >"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
     cd "${HOME_DIR:?}"/leeloo || exit && git log -1 --format="%at" | xargs -I{} date -d @{} '+%Y' >>"${LOG_DIR:?}"/leeloo/repo 2>/dev/null
+
     clear
+
     if [[ ! "$(grep "Already up to date." "${LOG_DIR:?}"/leeloo/updating | wc -l)" -gt "0" ]] &>/dev/null; then
       exit
     fi
@@ -2679,41 +2682,8 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         if dialog --stdout --title "RESTART WARNING!" \
           --backtitle "Restarting auto trading" \
           --yesno "Yes: Restart! No: Go back!" 5 30; then
-
-          # leeloo pid (shell)
-          echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
-          # pid variables
-          LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
-          ALL_BASH_PID="$(pidof bash 2>/dev/null)"
-
-          # if any data
-          if [[ -n "$LEELOO_PID" ]] &>/dev/null; then
-            kill -9 "$LEELOO_PID" 2>/dev/null
-            echo "leeloo PID killed"
-            sleep 1
-          fi
-
-          # if any data
-          if [[ -n "$ALL_BASH_PID" ]] &>/dev/null; then
-            kill -9 "$ALL_BASH_PID" 2>/dev/null
-            echo "bash PID killed"
-            sleep 1
-          fi
-
-          # if any screen running
-          if [[ "$(echo "$SCREEN_LIST" | grep -c "leeloo")" -gt "0" ]] &>/dev/null; then
-            # kill screen
-            screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit &>/dev/null
-            echo "screen killed"
-            sleep 1
-            # wipe dead screens
-            screen -wipe &>/dev/null
-            echo "wipe dead screen"
-            sleep 1
-          fi
-
-          # start looper
-          bash "${SYS_DIR:?}"/robot/looper
+          # restart
+          restart_leeloo
         fi
 
         ;;
