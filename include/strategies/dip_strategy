@@ -2493,16 +2493,16 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   if [[ -n "$DIP_LAST_BUY_OWNER" ]] &>/dev/null; then
     # same owner
     if [[ "$DIP_LAST_BUY_OWNER" == "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-      DIP_SELLABLE="1" # same owner, sellable
+      DIP_OWNER="1" # same owner, sellable
     else
-      DIP_SELLABLE="0" # not same owner, not sellable
+      DIP_OWNER="0" # not same owner, not sellable
     fi
   fi
 
   ##############################################################################
 
-  # if sellable, spread status is ok, balance has selling power (available), not buying, good enough to sell, not removed
-  if [[ "$DIP_SELLABLE" -eq "1" && "$DIP_LISTING_BALANCE_CHECK" -gt "0" && "$DIP_REMOVED" -eq "0" ]] &>/dev/null; then
+  # if sellable, same owner, spread status is ok, balance has selling power (available), not buying, good enough to sell, not removed
+  if [[ "$DIP_SELLABLE" -eq "1" && "$DIP_OWNER" -eq "1" && "$DIP_LISTING_BALANCE_CHECK" -gt "0" && "$DIP_REMOVED" -eq "0" ]] &>/dev/null; then
 
     ############################################################################
 
