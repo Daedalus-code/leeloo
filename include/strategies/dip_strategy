@@ -1799,7 +1799,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
     if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$DIP_MARKETS" || true)" -eq "0" && "$DIP_REMOVED" -eq "0" ]] &>/dev/null; then
       # if profit is greater or equal than minimum spread
       if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -ge "$DIP_MIN_SPREAD_CHECK" ]] &>/dev/null; then
-        # has buying power (balance), btc not overbought
+        # has buying power (balance) & btc not overbought
         if [[ "$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" && "$DIP_BTC_OVERBOUGHT" == "0" ]] &>/dev/null; then
 
           log_date
@@ -2557,7 +2557,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
 
   ##############################################################################
 
-  # if sellable, same owner, spread status is ok, balance has selling power (available), not buying, good enough to sell, not removed, btc not oversold
+  # if sellable, same owner, spread status is ok, balance has selling power (available), not buying, good enough to sell, not removed & btc not oversold
   if [[ "$DIP_SELLABLE" -eq "1" && "$DIP_OWNER" -eq "1" && "$DIP_LISTING_BALANCE_CHECK" -gt "0" && "$DIP_REMOVED" -eq "0" && "$DIP_BTC_OVERSOLD" == "0" ]] &>/dev/null; then
 
     ############################################################################
@@ -3430,8 +3430,8 @@ if [[ -z "$DIP_DUST" || ! "$DIP_DUST" -eq "1" ]] &>/dev/null; then
   DIP_DUST="0"
 fi
 
-# if dusting is active & if dustable
-if [[ "$DIP_DUST" -eq "1" && "$DIP_DUSTABLE" -eq "1" ]] &>/dev/null; then
+# if dusting is active & if dustable & btc not oversold
+if [[ "$DIP_DUST" -eq "1" && "$DIP_DUSTABLE" -eq "1" && "$DIP_BTC_OVERSOLD" == "0" ]] &>/dev/null; then
 
   time_and_profit
 
