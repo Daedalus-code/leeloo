@@ -265,31 +265,32 @@ function pool_duration {
 ################################################################################
 
 function restart_leeloo {
-  # update restart log
-  echo "$(date | xargs) - $(uptime | xargs) : Leeloo did a restart!" >>"${SYS_DIR:?}"/robot/restart
-  # leeloo pid (shell)
-  echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
-
-  # pid variables
-  LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
-  ALL_BASH_PID="$(pidof bash 2>/dev/null)"
-
-  # if any data
-  if [[ -n "$LEELOO_PID" ]] &>/dev/null; then
-    kill -9 "$LEELOO_PID" 2>/dev/null
-  fi
-
-  # if any data
-  if [[ -n "$ALL_BASH_PID" ]] &>/dev/null; then
-    kill -9 "$ALL_BASH_PID" 2>/dev/null
-  fi
 
   # if any screen running
   if [[ "$(echo "$SCREEN_LIST" | grep -c "leeloo")" -gt "0" ]] &>/dev/null; then
     # kill screen
-    screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit &>/dev/null
+    screen -X -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)" quit &>/dev/null
     # wipe dead screens
     screen -wipe &>/dev/null
+  fi
+
+  # if still any data
+  if [[ -n "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)" ]]; then
+    # update restart log
+    echo "$(date | xargs) - $(uptime | xargs) : Leeloo did a restart!" >>"${SYS_DIR:?}"/robot/restart
+    # leeloo pid (shell)
+    echo "$(ps aux 2>/dev/null | grep "leeloo" | awk '{ print $2 }' | xargs)" >"${LOG_DIR:?}"/leeloo/ps_aux
+    # pid variables
+    LEELOO_PID="$(cat "${LOG_DIR:?}"/leeloo/ps_aux 2>/dev/null)"
+    ALL_BASH_PID="$(pidof bash 2>/dev/null)"
+    # if any data
+    if [[ -n "$LEELOO_PID" ]] &>/dev/null; then
+      kill -9 "$LEELOO_PID" 2>/dev/null
+    fi
+    # if any data
+    if [[ -n "$ALL_BASH_PID" ]] &>/dev/null; then
+      kill -9 "$ALL_BASH_PID" 2>/dev/null
+    fi
   fi
 
   # start looper
