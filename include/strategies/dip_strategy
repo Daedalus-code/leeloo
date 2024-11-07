@@ -117,35 +117,34 @@ REFERENCE_CURRENCY="$DIP_MARKETS"
 
 # find btc, usd market
 BTC_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | grep "BTC" | egrep "BTC/|BTC_" | egrep "/USD.|_USD." | grep -v ".BTC" | head -1)"
+
 # market listing
 RSI_DATA_LISTING="$(echo "$BTC_RSI_DATA" | awk -F_ '{ print $1 }')"
 # market reference
 RSI_DATA_REFERENCE="$(echo "$BTC_RSI_DATA" | awk -F_ '{ print $2 }' | awk '{ print $1 }' | tr -d ':')"
 
 # rsi ruler age (seconds)
-DIP_RSI_RULER_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/indicators/rsi_ruler 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+DIP_RSI_RULER_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_LISTING"_rsi_"$RSI_DATA_REFERENCE" 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # if less than n, if missing
-if [[ "$DIP_RSI_RULER_AGE" -gt "1800" || ! -f "${LOG_DIR:?}"/leeloo/indicators/rsi_ruler ]] &>/dev/null; then
+if [[ "$DIP_RSI_RULER_AGE" -gt "1800" || ! -f "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_LISTING"_rsi_"$RSI_DATA_REFERENCE" ]] &>/dev/null; then
   # if xeggex rsi
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
     # rsi ruler data (using rsi xeggex) ########################################
-    echo "$(get_rsi_xgx "$RSI_DATA_LISTING" "$RSI_DATA_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/rsi_ruler
+    echo "$(get_rsi_xgx "$RSI_DATA_LISTING" "$RSI_DATA_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_LISTING"_rsi_"$RSI_DATA_REFERENCE"
     ############################################################################
   fi
 
   # if nonkyc rsi
   if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
     # rsi ruler data (using rsi xeggex) ########################################
-    echo "$(get_rsi_nky "$RSI_DATA_LISTING" "$RSI_DATA_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/rsi_ruler
+    echo "$(get_rsi_nky "$RSI_DATA_LISTING" "$RSI_DATA_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_LISTING"_rsi_"$RSI_DATA_REFERENCE"
     ############################################################################
   fi
 fi
 
-################################################################################
-
 # rsi status data
-DIP_RSI_STATUS="$(cat "${LOG_DIR:?}"/leeloo/indicators/rsi_ruler 2>/dev/null | awk '{ print $1 }')"
+DIP_RSI_STATUS="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_LISTING"_rsi_"$RSI_DATA_REFERENCE" 2>/dev/null | awk '{ print $1 }')"
 
 # default
 DIP_BTC_OVERBOUGHT="0"
