@@ -126,7 +126,7 @@ RSI_DATA_REFERENCE="$(echo "$BTC_RSI_DATA" | awk -F_ '{ print $2 }' | awk '{ pri
 DIP_RSI_RULER_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/indicators/rsi_ruler 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # if less than n, if missing
-if [[ "$DIP_RSI_RULER_AGE" -lt "900" || ! -f "${LOG_DIR:?}"/leeloo/indicators/rsi_ruler ]] &>/dev/null; then
+if [[ "$DIP_RSI_RULER_AGE" -gt "1800" || ! -f "${LOG_DIR:?}"/leeloo/indicators/rsi_ruler ]] &>/dev/null; then
   # if xeggex rsi
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
     # rsi ruler data (using rsi xeggex) ########################################
