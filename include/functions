@@ -277,27 +277,19 @@ function restart_leeloo {
   # if any data
   if [[ -n "$LEELOO_PID" ]] &>/dev/null; then
     kill -9 "$LEELOO_PID" 2>/dev/null
-    echo "leeloo PID killed"
-    sleep 1
   fi
 
   # if any data
   if [[ -n "$ALL_BASH_PID" ]] &>/dev/null; then
     kill -9 "$ALL_BASH_PID" 2>/dev/null
-    echo "bash PID killed"
-    sleep 1
   fi
 
   # if any screen running
   if [[ "$(echo "$SCREEN_LIST" | grep -c "leeloo")" -gt "0" ]] &>/dev/null; then
     # kill screen
     screen -S "$(echo "$SCREEN_LIST" | grep "leeloo" | awk -F. '{ print $1 }' | head -1 | xargs)".leeloo -p 0 -X quit &>/dev/null
-    echo "screen killed"
-    sleep 1
     # wipe dead screens
     screen -wipe &>/dev/null
-    echo "wipe dead screen"
-    sleep 1
   fi
 
   # start looper
