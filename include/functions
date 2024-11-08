@@ -1122,6 +1122,11 @@ function last_log_robot {
   ROBOT_LOG_REMOVING_BUY="$(echo "$ROBOT_LOG_DATA" | grep "Removing" | grep "buy" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
   ROBOT_LOG_REMOVING_SELL="$(echo "$ROBOT_LOG_DATA" | grep "Removing" | grep "sell" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
 
+  # calculate percentage
+  ROBOT_LOG_BUY_PERCENTAGE="$(echo "100/$(echo "$ROBOT_LOG_BUY+$ROBOT_LOG_SELL+$ROBOT_LOG_DUSTING" | bc 2>/dev/null)*$ROBOT_LOG_BUY" | bc -l 2>/dev/null)"
+  ROBOT_LOG_SELL_PERCENTAGE="$(echo "100/$(echo "$ROBOT_LOG_BUY+$ROBOT_LOG_SELL+$ROBOT_LOG_DUSTING" | bc 2>/dev/null)*$ROBOT_LOG_SELL" | bc -l 2>/dev/null)"
+  ROBOT_LOG_DUST_PERCENTAGE="$(echo "100/$(echo "$ROBOT_LOG_BUY+$ROBOT_LOG_SELL+$ROBOT_LOG_DUSTING" | bc 2>/dev/null)*$ROBOT_LOG_DUSTING" | bc -l 2>/dev/null)"
+
   # if zero
   if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
     LENGTH="21"
@@ -1149,7 +1154,7 @@ function last_log_robot {
   fi
 
   display_result() {
-    dialog --title "Robot Log: $LOG_COUNT :: Buy: $ROBOT_LOG_BUY Sell: $ROBOT_LOG_SELL Dust: $ROBOT_LOG_DUSTING Buy Removed: $ROBOT_LOG_REMOVING_BUY Sell Removed: $ROBOT_LOG_REMOVING_SELL" \
+    dialog --title "Robot Log: $LOG_COUNT :: Buy: $ROBOT_LOG_BUY ${ROBOT_LOG_BUY_PERCENTAGE}% Sell: $ROBOT_LOG_SELL ${ROBOT_LOG_SELL_PERCENTAGE}% Dust: $ROBOT_LOG_DUSTING ${ROBOT_LOG_DUST_PERCENTAGE}% Buy Removed: $ROBOT_LOG_REMOVING_BUY Sell Removed: $ROBOT_LOG_REMOVING_SELL" \
       --tailbox "$RESULT" "$LENGTH" "$WIDTH"
   }
   RESULT="${LOG_DIR:?}/leeloo/robot.log"
