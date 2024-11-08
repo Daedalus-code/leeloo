@@ -1123,9 +1123,9 @@ function last_log_robot {
   ROBOT_LOG_REMOVING_SELL="$(echo "$ROBOT_LOG_DATA" | grep "Removing" | grep "sell" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
 
   # calculate percentage
-  ROBOT_LOG_BUY_PERCENTAGE="$(echo "100/$(echo "$ROBOT_LOG_BUY+$ROBOT_LOG_SELL+$ROBOT_LOG_DUSTING" | bc 2>/dev/null)*$ROBOT_LOG_BUY" | bc -l 2>/dev/null)"
-  ROBOT_LOG_SELL_PERCENTAGE="$(echo "100/$(echo "$ROBOT_LOG_BUY+$ROBOT_LOG_SELL+$ROBOT_LOG_DUSTING" | bc 2>/dev/null)*$ROBOT_LOG_SELL" | bc -l 2>/dev/null)"
-  ROBOT_LOG_DUST_PERCENTAGE="$(echo "100/$(echo "$ROBOT_LOG_BUY+$ROBOT_LOG_SELL+$ROBOT_LOG_DUSTING" | bc 2>/dev/null)*$ROBOT_LOG_DUSTING" | bc -l 2>/dev/null)"
+  ROBOT_LOG_BUY_PERCENTAGE="$(echo "100/$(echo "$ROBOT_LOG_BUY+$ROBOT_LOG_SELL+$ROBOT_LOG_DUSTING" | bc 2>/dev/null)*$ROBOT_LOG_BUY" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  ROBOT_LOG_SELL_PERCENTAGE="$(echo "100/$(echo "$ROBOT_LOG_BUY+$ROBOT_LOG_SELL+$ROBOT_LOG_DUSTING" | bc 2>/dev/null)*$ROBOT_LOG_SELL" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+  ROBOT_LOG_DUST_PERCENTAGE="$(echo "100/$(echo "$ROBOT_LOG_BUY+$ROBOT_LOG_SELL+$ROBOT_LOG_DUSTING" | bc 2>/dev/null)*$ROBOT_LOG_DUSTING" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   # if zero
   if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
