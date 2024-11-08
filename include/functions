@@ -1119,7 +1119,8 @@ function last_log_robot {
   ROBOT_LOG_BUY="$(echo "$ROBOT_LOG_DATA" | grep "Buy" | grep "for" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
   ROBOT_LOG_SELL="$(echo "$ROBOT_LOG_DATA" | grep "Sell" | grep "for" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
   ROBOT_LOG_DUSTING="$(echo "$ROBOT_LOG_DATA" | grep "Dusting" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
-  ROBOT_LOG_REMOVING="$(echo "$ROBOT_LOG_DATA" | grep "Removing" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
+  ROBOT_LOG_REMOVING_BUY="$(echo "$ROBOT_LOG_DATA" | grep "Removing" | grep "buy" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
+  ROBOT_LOG_REMOVING_SELL="$(echo "$ROBOT_LOG_DATA" | grep "Removing" | grep "sell" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
 
   # if zero
   if [[ -z "$LOG_LENGTH" ]] &>/dev/null; then
@@ -1148,7 +1149,7 @@ function last_log_robot {
   fi
 
   display_result() {
-    dialog --title "Robot Log: $LOG_COUNT :: Buy: $ROBOT_LOG_BUY Sell: $ROBOT_LOG_SELL Dust: $ROBOT_LOG_DUSTING Removed: $ROBOT_LOG_REMOVING" \
+    dialog --title "Robot Log: $LOG_COUNT :: Buy: $ROBOT_LOG_BUY Sell: $ROBOT_LOG_SELL Dust: $ROBOT_LOG_DUSTING Removed: B$ROBOT_LOG_REMOVING_BUY/S$ROBOT_LOG_REMOVING_SELL" \
       --tailbox "$RESULT" "$LENGTH" "$WIDTH"
   }
   RESULT="${LOG_DIR:?}/leeloo/robot.log"
