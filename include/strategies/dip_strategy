@@ -144,24 +144,24 @@ if [[ "$DIP_RSI_RULER_AGE" -gt "1800" || ! -f "${LOG_DIR:?}"/leeloo/indicators/c
 fi
 
 # rsi status data
-DIP_RSI_STATUS="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING" 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+DIP_RSI_BTC_VALUE="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING" 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')"
 
 # default
 DIP_BTC_OVERBOUGHT="0"
 DIP_BTC_OVERSOLD="0"
 
 # don't buy any more, overbought
-if [[ "$DIP_RSI_STATUS" -gt "80" ]] &>/dev/null; then
+if [[ "$DIP_RSI_BTC_VALUE" -gt "80" ]] &>/dev/null; then
   DIP_BTC_OVERBOUGHT="1"
 fi
 
 # don't sell anymore, oversold
-if [[ "$DIP_RSI_STATUS" -lt "40" ]] &>/dev/null; then
+if [[ "$DIP_RSI_BTC_VALUE" -lt "40" ]] &>/dev/null; then
   DIP_BTC_OVERSOLD="1"
 fi
 
 # if zero or neutral
-if [[ -z "$DIP_RSI_STATUS" || "$DIP_RSI_STATUS" -lt "80" && "$DIP_RSI_STATUS" -gt "40" ]] &>/dev/null; then
+if [[ -z "$DIP_RSI_BTC_VALUE" || "$DIP_RSI_BTC_VALUE" -lt "80" && "$DIP_RSI_BTC_VALUE" -gt "40" ]] &>/dev/null; then
   # default
   DIP_BTC_OVERBOUGHT="0"
   DIP_BTC_OVERSOLD="0"
@@ -1424,13 +1424,34 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
                       POTENTIAL_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/indicators/get_rsi_nky 2>/dev/null)"
                     fi
 
+                    ############################################################
+                    ############################################################
+
                     # potential rsi status
                     POTENTIAL_RSI_STATUS="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $1 }')"
                     # potential rsi value
                     POTENTIAL_RSI_VALUE="$(echo "$POTENTIAL_RSI_DATA" | awk '{ print $NF }' | awk '{ printf "%.2f\n", $1 }')"
+                    # potential rsi value + bitcoin rsi value
+                    POTENTIAL_RSI_VALUE="$(echo "$POTENTIAL_RSI_VALUE+$DIP_RSI_BTC_VALUE" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
+                    # calculate average rsi value
+                    POTENTIAL_RSI_VALUE="$(echo "$POTENTIAL_RSI_VALUE/2" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
                     # potential rsi value check
                     POTENTIAL_RSI_VALUE_CHECK="$(echo "$POTENTIAL_RSI_VALUE" | awk -F. '{ print $1 }')"
 
+                    ############################################################
+
+                    # re-calculate all rsi based on bitcoin
+                    if [[ "$POTENTIAL_RSI_VALUE_CHECK" -lt "30" ]] &>/dev/null; then
+                      POTENTIAL_RSI_STATUS="Overbought"
+                    fi
+                    if [[ "$POTENTIAL_RSI_VALUE_CHECK" -gt "30" && "$POTENTIAL_RSI_VALUE_CHECK" -lt "70" ]] &>/dev/null; then
+                      POTENTIAL_RSI_STATUS="Neutral"
+                    fi
+                    if [[ "$POTENTIAL_RSI_VALUE_CHECK" -gt "70" ]] &>/dev/null; then
+                      POTENTIAL_RSI_STATUS="Oversold"
+                    fi
+
+                    ############################################################
                     ############################################################
 
                     # if target overbought
