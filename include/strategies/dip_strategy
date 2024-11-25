@@ -144,24 +144,24 @@ if [[ "$DIP_RSI_RULER_AGE" -gt "1800" || ! -f "${LOG_DIR:?}"/leeloo/indicators/c
 fi
 
 # rsi status data
-DIP_RSI_STATUS="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING" 2>/dev/null | awk '{ print $1 }')"
+DIP_RSI_STATUS="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING" 2>/dev/null | awk '{ print $NF }')"
 
 # default
 DIP_BTC_OVERBOUGHT="0"
 DIP_BTC_OVERSOLD="0"
 
 # don't buy any more, overbought
-if [[ "$DIP_RSI_STATUS" == "Overbought" ]] &>/dev/null; then
+if [[ "$DIP_RSI_STATUS" -gt "80" ]] &>/dev/null; then
   DIP_BTC_OVERBOUGHT="1"
 fi
 
 # don't sell anymore, oversold
-if [[ "$DIP_RSI_STATUS" == "Oversold" ]] &>/dev/null; then
+if [[ "$DIP_RSI_STATUS" -lt "40" ]] &>/dev/null; then
   DIP_BTC_OVERSOLD="1"
 fi
 
 # if zero or neutral
-if [[ -z "$DIP_RSI_STATUS" || "$DIP_RSI_STATUS" == "Neutral" ]] &>/dev/null; then
+if [[ -z "$DIP_RSI_STATUS" || "$DIP_RSI_STATUS" -lt "80" && "$DIP_RSI_STATUS" -gt "40" ]] &>/dev/null; then
   # default
   DIP_BTC_OVERBOUGHT="0"
   DIP_BTC_OVERSOLD="0"
