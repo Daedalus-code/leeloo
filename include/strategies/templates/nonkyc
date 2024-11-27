@@ -913,20 +913,9 @@ function tx_id_data {
 ################################################################################
 
 function cost_price() {
-  # update balances, prices after last order
-  echo "$(Balances_nky | jq -r '.[] | "\(.asset): \(.held) \(.available) \(.pending)"' 2>/dev/null | awk '{printf "%s %.8f %.8f %.8f\n", $1, $2, $3, $4}' | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null
-  echo "$(tickers_nky | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
-
   # backup balances, prices
   backup_balances
   backup_prices
-
-  # listing available balance
-  LISTING_AVAILABLE_BALANCE="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
-  # listing price
-  LISTING_PRICE_ASK="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | awk '{ print $3 }')"
-  # listing value
-  LISTING_AVAILABLE_ASK_VALUED="$(echo "$LISTING_AVAILABLE_BALANCE*$LISTING_PRICE_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   # average listing price
   echo "$LISTING_PRICE_ASK" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
