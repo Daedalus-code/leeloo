@@ -89,6 +89,10 @@ if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
         # minimum decimal calculation
         MCS_MINIMUM_LISTING_AMOUNT="$(echo "$MCS_MINIMUM_LISTING_AMOUNT-1" | bc -l 2>/dev/null)"
       fi
+      # if negative n
+      if [[ "$MCS_MINIMUM_LISTING_AMOUNT" == "-1" ]] &>/dev/null; then
+        MCS_MINIMUM_LISTING_AMOUNT="1"
+      fi
       # set minimum listing amount
       LISTING_AMOUNT="$(echo "0" | awk '{ printf "%.'$MCS_MINIMUM_LISTING_AMOUNT'f\n", $1 }')1"
       # calculate minimum valued
