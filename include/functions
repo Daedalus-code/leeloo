@@ -805,19 +805,9 @@ $MARKET_RESULT"
   display_result 2>/dev/null
 }
 
-# observe all markets ##########################################################
+# update all markets ###########################################################
 
-function observe_all_market() {
-
-  # exchanges, includes functions
-  source /usr/local/bin/include/leeloo/strategies/templates/exchanges
-
-  ##############################################################################
-
-  install_exchange_dir
-
-  ##############################################################################
-
+function update_all_markets {
   # update data every n seconds
   if [[ ! -f "${LOG_DIR:?}"/leeloo/prices.all || "$(echo "$(($(date +%s) - $(date +%s -r "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)))" 2>/dev/null)" -gt "$BOT_TIMER" ]] &>/dev/null; then
     # exchange balances
@@ -843,6 +833,22 @@ function observe_all_market() {
     # all markets
     echo "$(cat "${LOG_DIR:?}"/leeloo/*/prices 2>/dev/null | tr '_' '/' | column -t)" >"${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null
   fi
+}
+
+# observe all markets ##########################################################
+
+function observe_all_market() {
+
+  # exchanges, includes functions
+  source /usr/local/bin/include/leeloo/strategies/templates/exchanges
+
+  ##############################################################################
+
+  install_exchange_dir
+
+  ##############################################################################
+
+  update_all_markets
 
   ##############################################################################
 
@@ -905,6 +911,10 @@ function search_market() {
   ##############################################################################
 
   install_exchange_dir
+
+  ##############################################################################
+
+  update_all_markets
 
   ##############################################################################
   # exchange format
