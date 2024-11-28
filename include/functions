@@ -810,32 +810,36 @@ $MARKET_RESULT"
 function update_all_markets {
   # display progress bar
   {
+
+    # api price age limit (seconds)
+    API_PRICE_AGE_LIMIT="25"
+
     ############################################################################
     echo "$(awk 'BEGIN {srand(); printf "%d\n", int(1 + rand() * (8 - 1))}')"
     sleep 0.1
     ############################################################################
-    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
+    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "$API_PRICE_AGE" ]]; then
       echo "$(getPrices | column -t)" >"${LOG_DIR:?}"/leeloo/poloniex/prices 2>/dev/null
     fi
     ############################################################################
     echo "$(awk 'BEGIN {srand(); printf "%d\n", int(20 + rand() * (16 - 8))}')"
     sleep 0.1
     ############################################################################
-    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
+    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "$API_PRICE_AGE_LIMIT" ]]; then
       echo "$(getMarkets | column -t)" >"${LOG_DIR:?}"/leeloo/stakecube/prices 2>/dev/null
     fi
     ############################################################################
     echo "$(awk 'BEGIN {srand(); printf "%d\n", int(40 + rand() * (32 - 16))}')"
     sleep 0.1
     ############################################################################
-    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
+    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "$API_PRICE_AGE_LIMIT" ]]; then
       echo "$(tickers | column -t)" >"${LOG_DIR:?}"/leeloo/xeggex/prices 2>/dev/null
     fi
     ############################################################################
     echo "$(awk 'BEGIN {srand(); printf "%d\n", int(50 + rand() * (42 - 32))}')"
     sleep 0.1
     ############################################################################
-    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "5" ]]; then
+    if [[ "$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)" -gt "$API_PRICE_AGE_LIMIT" ]]; then
       echo "$(tickers_nky | column -t)" >"${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null
     fi
     ############################################################################
