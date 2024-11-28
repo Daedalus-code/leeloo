@@ -1145,12 +1145,11 @@ function last_log {
 function last_log_robot {
 
   # trading data
-  ROBOT_LOG_DATA="$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null)"
-  ROBOT_LOG_BUY="$(echo "$ROBOT_LOG_DATA" | grep "Buy" | grep "for" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
-  ROBOT_LOG_SELL="$(echo "$ROBOT_LOG_DATA" | grep "Sell" | grep "for" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
-  ROBOT_LOG_DUSTING="$(echo "$ROBOT_LOG_DATA" | grep "Dusting" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
-  ROBOT_LOG_REMOVING_BUY="$(echo "$ROBOT_LOG_DATA" | grep "Removing" | grep "buy" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
-  ROBOT_LOG_REMOVING_SELL="$(echo "$ROBOT_LOG_DATA" | grep "Removing" | grep "sell" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
+  ROBOT_LOG_BUY="$(grep "Buy" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "for" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
+  ROBOT_LOG_SELL="$(grep "Sell" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "for" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
+  ROBOT_LOG_DUSTING="$(grep "Dusting" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
+  ROBOT_LOG_REMOVING_BUY="$(grep "Removing" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "buy" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
+  ROBOT_LOG_REMOVING_SELL="$(grep "Removing" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "sell" | awk '{gsub(/^[ \t]+|[ \t]+$/, "", $7); if (!seen[$7]++) print $0}' | wc -l)"
   ROBOT_LOG_REAL_BUY="$(echo "$ROBOT_LOG_BUY-$ROBOT_LOG_REMOVING_BUY" | bc 2>/dev/null)"
   ROBOT_LOG_REAL_SELL="$(echo "$ROBOT_LOG_SELL-$ROBOT_LOG_REMOVING_SELL" | bc 2>/dev/null)"
 
@@ -1186,11 +1185,10 @@ function last_log_robot {
   fi
 
   display_result() {
-    dialog --title "Log: $LOG_COUNT - Buy: $ROBOT_LOG_REAL_BUY (${ROBOT_LOG_BUY_PERCENTAGE}%) - Sell: $ROBOT_LOG_REAL_SELL (${ROBOT_LOG_SELL_PERCENTAGE}%) - Dust: $ROBOT_LOG_DUSTING (${ROBOT_LOG_DUST_PERCENTAGE}%) - Buy Removed: $ROBOT_LOG_REMOVING_BUY - Sell Removed: $ROBOT_LOG_REMOVING_SELL" \
+    dialog --title "Log: $LOG_COUNT - Buy: $ROBOT_LOG_REAL_BUY (${ROBOT_LOG_BUY_PERCENTAGE}%) - Sell: $ROBOT_LOG_REAL_SELL (${ROBOT_LOG_SELL_PERCENTAGE}%) - Dust: $ROBOT_LOG_DUSTING (${ROBOT_LOG_DUST_PERCENTAGE}%) - Buy R: $ROBOT_LOG_REMOVING_BUY - Sell R: $ROBOT_LOG_REMOVING_SELL" \
       --tailbox "$RESULT" "$LENGTH" "$WIDTH"
   }
-  echo "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/t-robot.log
-  RESULT="${LOG_DIR:?}/leeloo/t-robot.log"
+  RESULT="${LOG_DIR:?}/leeloo/robot.log"
   display_result 2>/dev/null
 }
 
