@@ -176,7 +176,7 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     fi
 
     # update hodl databases
-    rrdtool update "$GRAPH_DB_HODL_PATH" N:"$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" 2>/dev/null
+    rrdtool update "$GRAPH_DB_HODL_PATH" N:"$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0' | wc -l)" 2>/dev/null
 
     ############################################################################
     # graph reference accounts with balance

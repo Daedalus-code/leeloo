@@ -61,11 +61,11 @@ function backup_balances() {
     touch "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp &>/dev/null
   fi
   # backup file
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0' | wc -l)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/nonkyc/balances "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp &>/dev/null
   fi
   # restore file with backup
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}' | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0' | wc -l)" -eq "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp "${LOG_DIR:?}"/leeloo/nonkyc/balances &>/dev/null
   fi
 }

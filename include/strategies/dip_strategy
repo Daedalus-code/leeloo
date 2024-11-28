@@ -3463,7 +3463,7 @@ if [[ "$DIP_DUST" -eq "1" && "$DIP_DUSTABLE" -eq "1" && "$DIP_BTC_OVERSOLD" == "
   # extract active markets (orders)
   DIP_ACTIVE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | awk '{ print $6 }' | awk '!a[$1]++')"
   # balances, disregard with dip_active_orders, dip_active_balances markets and DIP_MARKETS
-  DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "$DIP_MARKETS:" | awk '{for(i=2;i<=NF;i++) if($i>0) {print; break}}')"
+  DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "$DIP_MARKETS:" | awk '$2 != 0 || $3 != 0 || $4 != 0')"
 
   ##############################################################################
 
