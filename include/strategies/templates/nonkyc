@@ -1290,12 +1290,14 @@ function last_orders {
 
 function robot_Log_cleanup() {
   # keep n lines (log)
-  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+  LOG_LENGTH_PLUS="$(echo "$LOG_LENGTH+1001" | bc 2>/dev/null)"
+  # keep n lines (log)
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$LOG_LENGTH_PLUS" ]] &>/dev/null; then
     echo "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     echo "$LOG_DATE : LOG : KEK : LogReset : $(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }') lines down to > $LOG_LENGTH lines." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   fi
   # keep n lines (ssr)
-  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr | awk '{ print $1 }')" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr | awk '{ print $1 }')" -gt "$LOG_LENGTH_PLUS" ]] &>/dev/null; then
     echo "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null
     echo "$LOG_DATE : LOG : KEK : LogReset : $(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }') lines down to > $LOG_LENGTH lines." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null
   fi
