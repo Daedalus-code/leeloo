@@ -55,17 +55,12 @@ function robot_log() {
 ################################################################################
 
 function backup_balances() {
-  # if not found
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/nonkyc/balances || ! -f "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp ]] &>/dev/null; then
-    touch "${LOG_DIR:?}"/leeloo/nonkyc/balances &>/dev/null
-    touch "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp &>/dev/null
-  fi
   # backup file
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0' | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/nonkyc/balances "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp &>/dev/null
   fi
   # restore file with backup
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0' | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/nonkyc/balances.bkp "${LOG_DIR:?}"/leeloo/nonkyc/balances &>/dev/null
   fi
 }
@@ -73,17 +68,12 @@ function backup_balances() {
 ################################################################################
 
 function backup_prices() {
-  # if not found
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/nonkyc/prices || ! -f "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp ]] &>/dev/null; then
-    touch "${LOG_DIR:?}"/leeloo/nonkyc/prices &>/dev/null
-    touch "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp &>/dev/null
-  fi
   # backup file
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/nonkyc/prices "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp &>/dev/null
   fi
   # restore file with backup
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/nonkyc/prices.bkp "${LOG_DIR:?}"/leeloo/nonkyc/prices &>/dev/null
   fi
 }
@@ -91,17 +81,12 @@ function backup_prices() {
 ################################################################################
 
 function backup_orders() {
-  # if not found
-  if [[ ! -f "${LOG_DIR:?}"/leeloo/nonkyc/orders || ! -f "${LOG_DIR:?}"/leeloo/nonkyc/orders.bkp ]] &>/dev/null; then
-    touch "${LOG_DIR:?}"/leeloo/nonkyc/orders &>/dev/null
-    touch "${LOG_DIR:?}"/leeloo/nonkyc/orders.bkp &>/dev/null
-  fi
   # backup file
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null | wc -l)" -gt "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null || true)" -gt "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/nonkyc/orders "${LOG_DIR:?}"/leeloo/nonkyc/orders.bkp &>/dev/null
   fi
   # restore file with backup
-  if [[ "$(egrep "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
+  if [[ "$(egrep -c "[1-9]+.[1-9]+" "${LOG_DIR:?}"/leeloo/nonkyc/orders 2>/dev/null || true)" -eq "0" ]] &>/dev/null; then
     cp "${LOG_DIR:?}"/leeloo/nonkyc/orders.bkp "${LOG_DIR:?}"/leeloo/nonkyc/orders &>/dev/null
   fi
 }
