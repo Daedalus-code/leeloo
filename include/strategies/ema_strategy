@@ -327,11 +327,28 @@ function rogue_stealth() {
 }
 
 ################################################################################
+################################################################################
 
 function rogue_buying() {
 
-  # if market order
-  if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+  # default
+  MINIMUM_AMOUNT_REACHED="0"
+  # amount check with decimal_market
+  AMOUNT_DECIMAL_CHECK="$(echo "$ROGUE_LISTING_AMOUNT" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
+  # if zero
+  if [[ -z "$AMOUNT_DECIMAL_CHECK" ]] &>/dev/null; then
+    # minimum amount reached, do not buy
+    MINIMUM_AMOUNT_REACHED="1"
+  fi
+
+  ##############################################################################
+
+  # if market order, if minimum amount not reached
+  if [[ "$MARKET_LIMIT" == "market" && "$MINIMUM_AMOUNT_REACHED" == "0" ]] &>/dev/null; then
+
+    ############################################################################
+    ############################################################################
+
     # balance check
     if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
       # if insufficient funds from last order
@@ -340,7 +357,6 @@ function rogue_buying() {
         # buy output
         echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Cheap Shot successfully! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
-        ########################################################################
         ########################################################################
 
         # if xeggex order
@@ -360,9 +376,6 @@ function rogue_buying() {
           echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY buy market $ROGUE_LISTING_AMOUNT '' false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
-
-        ########################################################################
-        ########################################################################
       fi
     fi
     # if limit order
@@ -393,9 +406,6 @@ function rogue_buying() {
           echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY buy limit $ROGUE_LISTING_AMOUNT $LISTING_PRICE false <--- Buying asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
-
-        ########################################################################
-        ########################################################################
       fi
     fi
   fi
@@ -405,8 +415,24 @@ function rogue_buying() {
 
 function rogue_selling() {
 
-  # if market order
-  if [[ "$MARKET_LIMIT" == "market" ]] &>/dev/null; then
+  # default
+  MINIMUM_AMOUNT_REACHED="0"
+  # amount check with decimal_market
+  AMOUNT_DECIMAL_CHECK="$(echo "$ROGUE_LISTING_AMOUNT" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
+  # if zero
+  if [[ -z "$AMOUNT_DECIMAL_CHECK" ]] &>/dev/null; then
+    # minimum amount reached, do not sell
+    MINIMUM_AMOUNT_REACHED="1"
+  fi
+
+  ##############################################################################
+
+  # if market order, if minimum amount not reached
+  if [[ "$MARKET_LIMIT" == "market" && "$MINIMUM_AMOUNT_REACHED" == "0" ]] &>/dev/null; then
+
+    ############################################################################
+    ############################################################################
+
     # balance check
     if [[ "$LISTING_AVAILABLE_BALANCE_NR" -gt "0" || "$REFERENCE_AVAILABLE_BALANCE_NR" -gt "0" ]] 2>>"${LOG_ERROR:?}"; then
       # if insufficient funds from last order
@@ -415,7 +441,6 @@ function rogue_selling() {
         # sell output
         echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Pick Pocket successfully! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
 
-        ########################################################################
         ########################################################################
 
         # if xeggex order
@@ -435,11 +460,9 @@ function rogue_selling() {
           echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell market $ROGUE_LISTING_AMOUNT '' false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
-
-        ########################################################################
-        ########################################################################
       fi
     fi
+
     # if limit order
   elif [[ "$MARKET_LIMIT" == "limit" ]] &>/dev/null; then
 
@@ -468,9 +491,6 @@ function rogue_selling() {
           echo "$LOG_DATE : DebugOrder '' $LISTING_CURRENCY/$REFERENCE_CURRENCY sell limit $ROGUE_LISTING_AMOUNT $LISTING_PRICE false <--- Selling asset" >>"${LOG_DIR:?}"/leeloo/"$BASENAME_STRATEGY".debug
           ######################################################################
         fi
-
-        ########################################################################
-        ########################################################################
       fi
     fi
   fi
