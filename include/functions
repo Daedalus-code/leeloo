@@ -1823,10 +1823,9 @@ function reset_graph_database {
 # cleanup log ##################################################################
 
 function cleanup_log {
-  # reset broker.log
-  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
-    echo "$(tail -"$(echo "$MAX_LOG/3" | bc 2>/dev/null)" "${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/broker.log 2>/dev/null
-    echo "$DATE :: LogReset! :: Line $MAX_LOG" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  # truncate broker.log (ruled by configuration)
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/broker.log | awk '{ print $1 }')" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+    echo "$DATE :: LogReset! :: Line $LOG_LENGTH" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   fi
 }
 

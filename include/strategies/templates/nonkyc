@@ -1280,28 +1280,24 @@ function save_orders() {
 ################################################################################
 
 function last_orders {
-  # new orders output
-  NEW_ORDERS="256"
   # keep n lines
-  if [[ "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
-    echo "$(tail -"$NEW_ORDERS" "${SYS_DIR:?}"/robot/orders)" >"${SYS_DIR:?}"/robot/orders
+  if [[ "$(wc -l "${SYS_DIR:?}"/robot/orders | awk '{ print $1 }')" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+    echo "$(tail -"$LOG_LENGTH" "${SYS_DIR:?}"/robot/orders)" >"${SYS_DIR:?}"/robot/orders
   fi
 }
 
 ################################################################################
 
 function robot_Log_cleanup() {
-  # new log output
-  NEW_LOG="256"
   # keep n lines (log)
-  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
-    echo "$(tail -"$NEW_LOG" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
-    echo "$LOG_DATE : LOG : KEK : LogReset : $MAX_LOG lines down to > $NEW_LOG lines." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+    echo "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    echo "$LOG_DATE : LOG : KEK : LogReset : $(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }') lines down to > $LOG_LENGTH lines." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
   fi
   # keep n lines (ssr)
-  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr | awk '{ print $1 }')" -gt "$MAX_LOG" ]] &>/dev/null; then
-    echo "$(tail -"$NEW_LOG" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null
-    echo "$LOG_DATE : LOG : KEK : LogReset : $MAX_LOG lines down to > $NEW_LOG lines." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null
+  if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr | awk '{ print $1 }')" -gt "$LOG_LENGTH" ]] &>/dev/null; then
+    echo "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null
+    echo "$LOG_DATE : LOG : KEK : LogReset : $(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }') lines down to > $LOG_LENGTH lines." >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".ssr 2>/dev/null
   fi
 }
 
