@@ -1289,8 +1289,8 @@ function last_orders {
 ################################################################################
 
 function robot_Log_cleanup() {
-  # keep n lines (log)
-  LOG_LENGTH_PLUS="$(echo "$LOG_LENGTH+1001" | bc 2>/dev/null)"
+  # log length + n
+  LOG_LENGTH_PLUS="$(echo "$LOG_LENGTH+1440" | bc 2>/dev/null)"
   # keep n lines (log)
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | awk '{ print $1 }')" -gt "$LOG_LENGTH_PLUS" ]] &>/dev/null; then
     echo "$(tail -"$LOG_LENGTH" "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null)" >"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
