@@ -311,45 +311,46 @@ fi
 
 ################################################################################
 
-# take profit enabled
-if [[ "$BST_TAKE_PROFIT" == "1" ]] 2>>"${LOG_ERROR:?}"; then
+# bst spread without decimal (n%)
+BST_SPREAD="$(echo "$BST_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')"
+# profit without decimal (n%)
+LISTING_OPEN_RESULT_OK="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }')"
 
+# if zero
+if [[ -z "$BST_SPREAD" ]] &>/dev/null; then
+  BST_SPREAD="0"
+fi
+# if zero
+if [[ -z "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
+  BST_PROFIT_AMOUNT="0"
+fi
+
+SPREAD_OK="NO"
+PROFIT_OK="NO"
+
+# profit greater or equal than n%
+if [[ "$LISTING_OPEN_RESULT_OK" -ge "$BST_PROFIT_AMOUNT" ]] 2>>"${LOG_ERROR:?}"; then
+  PROFIT_OK="OK"
+fi
+# spread less than n%
+if [[ "$BST_SPREAD" -lt "$BST_SPREAD_LIMIT" ]] 2>>"${LOG_ERROR:?}"; then
+  SPREAD_OK="OK"
+fi
+
+# take profit enabled without cooldown
+if [[ "$BST_TAKE_PROFIT" == "1" ]] 2>>"${LOG_ERROR:?}"; then
   # disable normal trigger
   TX_TIME="0"
-
-  # bst spread without decimal (n%)
-  BST_SPREAD="$(echo "$BST_DIFF_PERCENTAGE" | awk -F. '{ print $1 }')"
-
-  # profit without decimal (n%)
-  LISTING_OPEN_RESULT_OK="$(echo "$LISTING_OPEN_RESULT" | awk -F. '{ print $1 }')"
-
-  # if zero
-  if [[ -z "$BST_SPREAD" ]] &>/dev/null; then
-    BST_SPREAD="0"
-  fi
-
-  # if zero
-  if [[ -z "$BST_PROFIT_AMOUNT" ]] &>/dev/null; then
-    BST_PROFIT_AMOUNT="0"
-  fi
-
-  SPREAD_OK="NO"
-  PROFIT_OK="NO"
-
-  # profit greater or equal than n%
-  if [[ "$LISTING_OPEN_RESULT_OK" -ge "$BST_PROFIT_AMOUNT" ]] 2>>"${LOG_ERROR:?}"; then
-    PROFIT_OK="OK"
-  fi
-  # spread less than n%
-  if [[ "$BST_SPREAD" -lt "$BST_SPREAD_LIMIT" ]] 2>>"${LOG_ERROR:?}"; then
-    SPREAD_OK="OK"
-  fi
-
-  # trigger everything
+  # trigger everything without cooldown (ruled by random profit)
   if [[ "$PROFIT_OK" == "OK" ]] && [[ "$SPREAD_OK" == "OK" ]]; then
-    COOLDOWN_SECONDS="0" # less
-    TX_TIME="1"          # greater
+    COOLDOWN_SECONDS="0" # less than tx_time
+    TX_TIME="1"          # greater than cooldown_seconds
     TOTAL_TRIGGER="1"    # trigger take profit
+  fi
+else
+  # trigger everything with cooldown (ruled by configuration)
+  if [[ "$PROFIT_OK" == "OK" ]] && [[ "$SPREAD_OK" == "OK" ]]; then
+    TOTAL_TRIGGER="1" # trigger take profit
   fi
 fi
 
