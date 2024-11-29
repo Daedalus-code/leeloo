@@ -337,6 +337,8 @@ function rogue_buying() {
   AMOUNT_DECIMAL_CHECK="$(echo "$ROGUE_LISTING_AMOUNT" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
   # if zero
   if [[ -z "$AMOUNT_DECIMAL_CHECK" ]] &>/dev/null; then
+    # output minimum reached
+    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Don't buy, minimum amount reached! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     # minimum amount reached, do not buy
     MINIMUM_AMOUNT_REACHED="1"
   fi
@@ -421,6 +423,8 @@ function rogue_selling() {
   AMOUNT_DECIMAL_CHECK="$(echo "$ROGUE_LISTING_AMOUNT" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')"
   # if zero
   if [[ -z "$AMOUNT_DECIMAL_CHECK" ]] &>/dev/null; then
+    # output minimum reached
+    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Don't sell, minimum amount reached! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     # minimum amount reached, do not sell
     MINIMUM_AMOUNT_REACHED="1"
   fi
