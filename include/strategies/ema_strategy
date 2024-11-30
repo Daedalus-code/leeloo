@@ -338,7 +338,7 @@ function rogue_buying() {
   # if zero
   if [[ -z "$AMOUNT_DECIMAL_CHECK" ]] &>/dev/null; then
     # output minimum reached
-    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Don't buy, minimum amount reached! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Don't buy, minimum amount reached! $ROGUE_LISTING_AMOUNT $REFERENCE_CURRENCY @ $REFERENCE_PRICE $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     # minimum amount reached, do not buy
     MINIMUM_AMOUNT_REACHED="1"
   fi
@@ -424,7 +424,7 @@ function rogue_selling() {
   # if zero
   if [[ -z "$AMOUNT_DECIMAL_CHECK" ]] &>/dev/null; then
     # output minimum reached
-    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Don't sell, minimum amount reached! $ROGUE_LISTING_AMOUNT @ $REFERENCE_PRICE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
+    echo "$LOG_DATE : $EXCHANGE_API : RGP : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Don't sell, minimum amount reached! $ROGUE_LISTING_AMOUNT $REFERENCE_CURRENCY @ $REFERENCE_PRICE $LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>/dev/null
     # minimum amount reached, do not sell
     MINIMUM_AMOUNT_REACHED="1"
   fi
@@ -788,8 +788,8 @@ RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/
   # wait on call shot
   if [[ "$(echo "$ROGUE_SYNCED_PERCENTAGE" | awk -F. '{ print $1 }')" -gt "99" ]] &>/dev/null; then
 
-    # rogue_selling config n% of allocated n%
-    if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -gt "70" ]] &>/dev/null; then
+    # rogue_selling config n% of allocated n%, if minimum amount not reached
+    if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -gt "70" && "$MINIMUM_AMOUNT_REACHED" == "0" ]] &>/dev/null; then
       # overbought, pick pocket at top!
       if [[ "$(tail -"$ROGUE_BUYS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "SOLD")" -lt "$ROGUE_BUYS" ]] &>/dev/null; then
         rogue_selling
@@ -812,8 +812,8 @@ RPI       $ROGUE_REFERENCE_RPI ($ROGUE_REFERENCE_RPI_NR)" >"${SYS_DIR:?}"/robot/
     MARKET_RGP_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $TYPE :: $LISTING_OPEN_CURRENCY :: $LISTING_OPEN_AMOUNT $LISTING_OPEN_BALANCE ${LISTING_OPEN_RESULT:?}% $LISTING_OPEN_AMOUNT_AGE"
     MARKET_RGP_STATUS_BOUGHT="BOUGHT @ $ROGUE_LISTING_PRICE / $ROGUE_REFERENCE_PRICE :: $(date | xargs)"
 
-    # rogue_buying config n% of allocated n%
-    if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -lt "30" ]] &>/dev/null; then
+    # rogue_buying config n% of allocated n%, if minimum amount not reached
+    if [[ "$(echo "$ROGUE_LISTING_RPI_NR" | awk -F. '{ print $1 }')" -lt "30" && "$MINIMUM_AMOUNT_REACHED" == "0" ]] &>/dev/null; then
       # oversold, cheap shot at bottom!
       if [[ "$(tail -"$ROGUE_BUYS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".status | grep -c "BOUGHT")" -lt "$ROGUE_BUYS" ]] &>/dev/null; then
         rogue_buying
