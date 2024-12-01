@@ -960,7 +960,6 @@ function target_profit() {
 
           # total market data combined
           DIP_TOTAL_MARKET_DATA="$(echo "$EFFICIENT_MARKET_CALCULATED+$INEFFECTIVE_MARKET" | bc 2>/dev/null)"
-
           # market above output (log)
           DIP_FAST_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Market above: x$DIP_TOTAL_MARKET_DATA - x${INEFFECTIVE_MARKET:?} = x${EFFICIENT_MARKET_CALCULATED:?} : Increased from ${DIP_ALLOCATED_ORIGINAL:?}% to ${DIP_ALLOCATED:?}%"
           # create allocated list data
@@ -1039,7 +1038,6 @@ function bought_sold_age() {
 
     # bought file age (days)
     DIP_BOUGHT_FILE_AGE_DAYS="$(echo "$DIP_BOUGHT_FILE_AGE_SECONDS/86400" | bc 2>/dev/null)"
-
     # sold file age (seconds)
     DIP_SOLD_FILE_AGE_SECONDS="$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".sold 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
@@ -1092,10 +1090,8 @@ fi
 ################################################################################
 
 CAT_PRICES_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null)"
-
 # create price.dip file, only print lines with bids that are less than ask
 echo "$(echo "$CAT_PRICES_FILE" | awk '{if ($2 < $3) print}')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null
-
 # prices file output (RAW)
 CAT_PRICES_DIP_FILE="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices.dip 2>/dev/null)"
 
@@ -1125,16 +1121,12 @@ if [[ "$DIP_CHAOS" -eq "1" ]] &>/dev/null; then
 
     # disregard already active markets (positions)
     if [[ "$RANDOM_CLEARED_MARKET" -eq "1" ]] &>/dev/null; then
-
       # set the paths for the files
       PRICES_FILE="${LOG_DIR}/leeloo/$EXCHANGE_DIR_NAME/prices.dip"
-
       # extract the active markets from active file
       ALREADY_ACTIVE_BOTS="$(egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active)"
-
       # filter out markets with found data
       grep -vf <(echo "$ALREADY_ACTIVE_BOTS") "$PRICES_FILE" >"${PRICES_FILE}.temp" 2>/dev/null
-
       # replace the original prices file with the filtered version
       mv "${PRICES_FILE}.temp" "$PRICES_FILE"
     fi
