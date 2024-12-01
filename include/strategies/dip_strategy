@@ -1148,7 +1148,7 @@ if [[ "$DIP_DISREGARD_BOTS" -eq "1" ]] &>/dev/null; then
     ROBOT_LOG="${LOG_DIR}/leeloo/robot.log"
     PRICES_FILE="${LOG_DIR}/leeloo/$EXCHANGE_DIR_NAME/prices.dip"
     # extract the running markets from robot.log file
-    ALREADY_RUNNING_BOTS=$(tail -1000 "$ROBOT_LOG" 2>/dev/null | awk '!/All|DIP/ {print $7}' | awk '!a[$0]++' | egrep -o "[A-Z]+/[A-Z]+|[0-9]+/[0-9]+|[A-Z]+[0-9]+/[A-Z]+[0-9]+|[0-9]+[A-Z]+/[0-9]+[A-Z]+")
+    ALREADY_RUNNING_BOTS=$(tail -1000 "$ROBOT_LOG" 2>/dev/null | egrep "ALL|DIP" | awk '{ print $7 }' | awk '!a[$0]++' | egrep -o "/.*")
     # if any data
     if [[ -n "$ALREADY_RUNNING_BOTS" ]] &>/dev/null; then
       # filter out markets with found data
