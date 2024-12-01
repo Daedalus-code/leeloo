@@ -66,8 +66,6 @@ REFERENCE_CURRENCY="$(egrep "REFERENCE_CURRENCY=" "${SYS_DIR:?}"/robot/"$BASENAM
 REFERENCE_TRIGGER="$(egrep "REFERENCE_TRIGGER=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 # account allocated (n%)
 REFERENCE_ALLOCATED="$(egrep "REFERENCE_ALLOCATED=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
-# use market chaser average price if available (default: 0)
-MCS_AVERAGE_PRICE="$(egrep "MCS_AVERAGE_PRICE=" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".config | awk -F= '{ print $2 }' | tr -d '"' | awk '{ print $1 }')"
 
 ################################################################################
 # exchange template
@@ -165,41 +163,35 @@ fi
 
 ################################################################################
 
-# if zero
-if [[ -z "$MCS_AVERAGE_PRICE" ]] &>/dev/null; then
-  MCS_AVERAGE_PRICE="0"
-fi
+# get buy trades
+BST_BUY_TRADES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/"$LISTING_CURRENCY"_"$REFERENCE_CURRENCY".trades 2>/dev/null | grep "buy" | awk '{ print $5, $6 }')"
 
-# if enabled
-if [[ "$MCS_AVERAGE_PRICE" == "1" ]] &>/dev/null; then
-  # if not zero
-  if [[ ! -z "$EXCHANGE_API" || ! -z "$LISTING_CURRENCY" || ! -z "$REFERENCE_CURRENCY" ]] &>/dev/null; then
-    # if any market chasers (mcs) has any price average available, use it
-    MCS_AVG_PRICE_DATA="$(cat "${SYS_DIR:?}"/robot/open.MCS*"$EXCHANGE_API"*"$LISTING_CURRENCY"*"$REFERENCE_CURRENCY"*.list_avg_price 2>/dev/null | tail -1)"
-    # if average price has data
-    if [[ -n "$MCS_AVG_PRICE_DATA" ]] &>/dev/null; then
-      # if the same, skip
-      if [[ ! "$MCS_AVG_PRICE_DATA" == "$(tail -1 "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null)" ]] &>/dev/null; then
-        # track market chaser average price
-        echo "$MCS_AVG_PRICE_DATA" >>"${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null
-      fi
-    fi
+# default values
+ACCUMULATED_AMOUNT="0"
+WEIGHTED_SUM="0"
+
+# iterate over each buy trade
+while read -r PRICE AMOUNT; do
+  # if adding this amount exceeds the available balance, calculate the weighted sum for the partial amount
+  if (($(echo "$ACCUMULATED_AMOUNT + $AMOUNT > $LISTING_AVAILABLE_BALANCE" | bc -l 2>/dev/null))); then
+    # calculate partial amount
+    PARTIAL_AMOUNT=$(echo "$LISTING_AVAILABLE_BALANCE - $ACCUMULATED_AMOUNT" | bc -l 2>/dev/null)
+    # calculate weighted sum
+    WEIGHTED_SUM=$(echo "$WEIGHTED_SUM + ($PRICE * $PARTIAL_AMOUNT)" | bc -l 2>/dev/null)
+    # accumulated amount
+    ACCUMULATED_AMOUNT=$LISTING_AVAILABLE_BALANCE
+    break
   fi
-  # if lines greater than n
-  if [[ "$(wc -l "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price | awk '{ print $1 }')" -gt "18" ]] &>/dev/null; then
-    # keep n lines
-    cleanup_avg_price_buy
-  fi
-fi
+  # accumulate the amount and weighted sum
+  ACCUMULATED_AMOUNT=$(echo "$ACCUMULATED_AMOUNT + $AMOUNT" | bc -l 2>/dev/null)
+  # calculate weighted sum
+  WEIGHTED_SUM=$(echo "$WEIGHTED_SUM + ($PRICE * $AMOUNT)" | bc -l 2>/dev/null)
+done <<<"$BST_BUY_TRADES"
+
+# calculate the average buy price based on the accumulated amount
+LISTING_PRICE_AVG_BUY=$(echo "$WEIGHTED_SUM / $ACCUMULATED_AMOUNT" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')
 
 ################################################################################
-
-# if average price exist
-if [[ -f "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price ]] &>/dev/null; then
-  # use average price from last buys
-  LISTING_OPEN_AVG_PRICE_SUM="$(cat "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price 2>/dev/null | awk '{ SUM += $1} END { print SUM }' | awk '{ printf "%.9f\n", $1 }')"
-  LISTING_PRICE_AVG_BUY="$(echo "$LISTING_OPEN_AVG_PRICE_SUM/$(egrep -c "[0-9]+" "${SYS_DIR:?}"/robot/open."$BASENAME_STRATEGY".list_avg_price || true)" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-fi
 
 # if zero
 if [[ -z "$LISTING_PRICE_AVG_BUY" ]] &>/dev/null; then
