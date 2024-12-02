@@ -135,7 +135,7 @@ function find_insufficient_files {
 # system #######################################################################
 
 function system_load() {
-  LOAD="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
+  LOAD="$(awk '{ print $1,$2,$3 }' /proc/loadavg 2>/dev/null)"
 }
 
 # screen -list #################################################################
@@ -509,22 +509,22 @@ function exchange_balance() {
     sleep 1
   done
 
+  # file time
   FILE_TIME="$(ls -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '{ print $8 }')"
   if [[ -z "$FILE_TIME" ]] &>/dev/null; then
     FILE_TIME="00:00"
   fi
-
+  # if no balance
   if [[ "$(wc -l "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances | awk '{ print $1 }')" -lt "2" ]] &>/dev/null; then
     LENGTH="5"
     RESULT="No balance"
   else
     # keep lines with n, disregard zeros
     RESULT="Coins: Deposited Available Unconfirmed
-  $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0')"
+  $(awk '$2 != 0 || $3 != 0 || $4 != 0' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
   fi
-
   # asset count, disregard zeros
-  EXCHANGE_ASSETS="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0' | wc -l)"
+  EXCHANGE_ASSETS="$(awk '$2 != 0 || $3 != 0 || $4 != 0' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | wc -l)"
 
   ##############################################################################
 
@@ -563,7 +563,7 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
     LENGTH="0"
 
     # if no lines has n
-    if [[ "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0' | wc -l)" -eq "0" ]] &>/dev/null; then
+    if [[ "$(awk '$2 != 0 || $3 != 0 || $4 != 0' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | wc -l)" -eq "0" ]] &>/dev/null; then
       WIDTH="45"
       LENGTH="5"
       RESULT="No Balance available"
@@ -574,7 +574,7 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
     if [[ "$EXCHANGE_BALANCE" == "xeggex" ]] &>/dev/null; then
       # keep lines with n
       RESULT="Coins: Deposited Available Unconfirmed
-    $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0')"
+    $(awk '$2 != 0 || $3 != 0 || $4 != 0' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
       WIDTH="$(echo "$(echo "$RESULT" | column -t | wc -L)+4" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$RESULT" | column -t | wc -l)+4" | bc 2>/dev/null)"
     fi
@@ -584,7 +584,7 @@ $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
     if [[ "$EXCHANGE_BALANCE" == "nonkyc" ]] &>/dev/null; then
       # keep lines with n
       RESULT="Coins: Deposited Available Unconfirmed
-    $(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null | awk '$2 != 0 || $3 != 0 || $4 != 0')"
+    $(awk '$2 != 0 || $3 != 0 || $4 != 0' "${LOG_DIR:?}"/leeloo/"$EXCHANGE_BALANCE"/balances 2>/dev/null)"
       WIDTH="$(echo "$(echo "$RESULT" | column -t | wc -L)+4" | bc 2>/dev/null)"
       LENGTH="$(echo "$(echo "$RESULT" | column -t | wc -l)+4" | bc 2>/dev/null)"
     fi
@@ -754,6 +754,7 @@ function observe_market() {
     result_prices
   fi
 
+  # exchange prices
   CAT_EXCHANGE_PRICES="$(cat "${LOG_DIR:?}"/leeloo/"$OBSERVE_MARKET"/prices 2>/dev/null)"
 
   # 225 max before dialog breaks
@@ -870,6 +871,7 @@ function observe_all_market() {
 
   USER_TIMER="$(echo "$BOT_TIMER*3.5" | bc 2>/dev/null | awk -F. '{ print $1 }')"
 
+  # exchange prices.all
   CAT_EXCHANGE_PRICES="$(cat "${LOG_DIR:?}"/leeloo/prices.all 2>/dev/null)"
 
   # 225 max before dialog breaks
@@ -1039,13 +1041,14 @@ function search_market() {
     # if all search
     if [[ "$SEARCH_MARKET" == "*" ]] &>/dev/null; then
       # combine exchange prices
-      grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/poloniex/prices >/tmp/cps.tmp
-      grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/stakecube/prices >>/tmp/cps.tmp
-      grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/xeggex/prices >>/tmp/cps.tmp
-      grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/nonkyc/prices >>/tmp/cps.tmp
-      # search markets
-      MARKET_RESULT="$(cat /tmp/cps.tmp 2>/dev/null | tr '_' '/' | tr -d ':' | grep -w "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
+      grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/poloniex/prices >"${LOG_DIR:?}"/cps.tmp
+      grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/stakecube/prices >>"${LOG_DIR:?}"/cps.tmp
+      grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/xeggex/prices >>"${LOG_DIR:?}"/cps.tmp
+      grep "$MARKET_SEARCH" "${LOG_DIR:?}"/leeloo/nonkyc/prices >>"${LOG_DIR:?}"/cps.tmp
+      # search all markets
+      MARKET_RESULT="$(cat "${LOG_DIR:?}"/cps.tmp 2>/dev/null | tr '_' '/' | tr -d ':' | grep -w "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
     else
+      # search specific market
       MARKET_RESULT="$(cat "${LOG_DIR:?}"/leeloo/"$SEARCH_MARKET"/prices 2>/dev/null | tr '_' '/' | awk '!a[$1,$2]++' | tr -d ':' | grep "$MARKET_SEARCH" | sort -k2 -n -r 2>/dev/null)"
     fi
 
@@ -1628,19 +1631,16 @@ function order_history_data {
 
   # if greater than n
   if [[ "$TARGET_ORDERS_AGE_SECONDS" -gt "180" || ! -f "${LOG_DIR:?}"/leeloo/orders/history ]] &>/dev/null; then
-
     # if xeggex order
     if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
       # fetch latest orders
       getTrades >"${LOG_DIR:?}"/leeloo/orders/raw.trades 2>/dev/null
     fi
-
     # if nonkyc order
     if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
       # fetch latest orders
       getTrades_nky >"${LOG_DIR:?}"/leeloo/orders/raw.trades 2>/dev/null
     fi
-
     # create a copy of history (orders)
     cat "${LOG_DIR:?}"/leeloo/*/*.trades 2>/dev/null | awk '!a[$1]++' | tr -d '{}"' | tr ',:' ' ' | awk '{ print $1,$3,$5,$6,$7,$8,$9,$NF }' | column -t | sort -n -k 8 | tac >"${LOG_DIR:?}"/leeloo/orders/history 2>/dev/null
     # remove old file
