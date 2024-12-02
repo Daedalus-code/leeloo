@@ -34,31 +34,17 @@ account_private_api
 account_public_api
 repo_head_data
 system_load
-system_date
-log_date_xargs
-
-################################################################################
-
-# ssh port check
-if [[ ! -f /tmp/sshchk ]] &>/dev/null; then
-  echo "$(grep -c " 22 " /etc/ssh/ssh*_config 2>/dev/null)" >/tmp/sshchk
-  if [[ "$(cat /tmp/sshchk 2>/dev/null)" -gt "0" ]] &>/dev/null; then
-    CHANGE_SSH_PORT="Please change your ssh port! (22)"
-  fi
-fi
 
 ################################################################################
 
 clear
 
 # menu
-
 EXTRA_WIDTH="$(echo "$ERROR_STATUS" | wc -L)"
-
 HEIGHT="19"
 WIDTH="$(echo "42+$EXTRA_WIDTH" | bc 2>/dev/null)"
 CHOICE_HEIGHT="12"
-BACKTITLE="Leeloo (Multipass) $CHANGE_SSH_PORT"
+BACKTITLE="Leeloo (Multipass)"
 TITLE="Main Menu"
 MENU="Load: $LOAD :: $REPO_HEAD $REPO_DATE"
 
@@ -3525,7 +3511,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 
 "0")
   # exit menu
-  # Kill background jobs (if you want to terminate them instead)
+  # kill background jobs (if you want to terminate them instead)
   kill $(jobs -p) >/dev/null 2>&1
   # clear any terminal artifacts
   clear
@@ -3535,7 +3521,7 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 
 esac
 # restart the script by exec
-exec /bin/bash "$0" "$@" # this replaces the current process with a fresh instance of the script
+exec /bin/bash "$0" "$@"
 clear
 
 # I'll not rest till I have me gold
