@@ -3459,13 +3459,13 @@ if [[ "$DIP_DUST" -eq "1" && "$DIP_BTC_OVERSOLD" == "0" ]] &>/dev/null; then
   # last reference check
   DIP_LAST_REFERENCE_CHECK="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/check.dust 2>/dev/null)"
 
-  # if any data
-  if [[ -n "$DIP_LAST_REFERENCE_CHECK" ]] &>/dev/null; then
-    # balances, disregard with dip_active_orders, dip_active_balances markets and DIP_MARKETS, last reference check
-    DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "${DIP_MARKETS}:" | grep -v "${DIP_ACTIVE_REFERENCE}" | grep -v "$DIP_LAST_REFERENCE_CHECK" | awk '$2 != 0 || $3 != 0 || $4 != 0')"
-  else
+  # if zero
+  if [[ -z "$DIP_LAST_REFERENCE_CHECK" ]] &>/dev/null; then
     # balances, disregard with dip_active_orders, dip_active_balances markets and DIP_MARKETS
     DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "${DIP_MARKETS}:" | grep -v "${DIP_ACTIVE_REFERENCE}" | awk '$2 != 0 || $3 != 0 || $4 != 0')"
+  else
+    # balances, disregard with dip_active_orders, dip_active_balances markets and DIP_MARKETS, last reference check
+    DIP_CHANGE_BALANCES="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/balances 2>/dev/null | grep -v "$DIP_ACTIVE_ORDERS" | grep -v "$DIP_ACTIVE_BALANCES" | grep -v "${DIP_MARKETS}:" | grep -v "${DIP_ACTIVE_REFERENCE}" | grep -v "$DIP_LAST_REFERENCE_CHECK" | awk '$2 != 0 || $3 != 0 || $4 != 0')"
   fi
 
   ##############################################################################
