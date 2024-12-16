@@ -3363,9 +3363,11 @@ $(get_ema 5 13 "$COIN_TOKEN" 2>/dev/null)
 $(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)
 $(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)
 $(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)
+$(get_ema 10 25 "$COIN_TOKEN" 2>/dev/null)
 $(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)
 $(get_ema 20 200 "$COIN_TOKEN" 2>/dev/null)
 $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
+$(get_ema 100 200 "$COIN_TOKEN" 2>/dev/null)
 -"
 
       echo "$RESULT_RAW" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
@@ -3393,10 +3395,13 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
 
       ##########################################################################
 
+      # bullish count
       BULLISH_SIGNAL="$(echo "$RESULT_RAW" | egrep "Short_EMA|Long_EMA" | grep -c "Bullish" || true)"
+      # bullish signal
       BULLISH_SIGNAL="$(echo "$BULLISH_SIGNAL+$FOURTEEN_SIGNAL_RSI+$TWENTYONE_SIGNAL_RSI" | bc 2>/dev/null)"
-
+      # bearish count
       BEARISH_SIGNAL="$(echo "$RESULT_RAW" | egrep "Short_EMA|Long_EMA" | grep -c "Bearish" || true)"
+      # bearish signal
       BEARISH_SIGNAL="$(echo "$BEARISH_SIGNAL" | bc 2>/dev/null)"
 
       TOTAL_SIGNAL="$(echo "$BEARISH_SIGNAL+$BULLISH_SIGNAL" | bc 2>/dev/null)"
@@ -3416,8 +3421,6 @@ $(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
       RESULT="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" 2>/dev/null)"
 
       if [[ ! "$(grep "EMA" "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $5 }' | head -1)" == "0.00000000" ]] &>/dev/null; then
-        LENGTH="$(echo "$(wc -l "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
-        WIDTH="$(echo "$(wc -L "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN" | awk '{ print $1 }')+5" | bc 2>/dev/null)"
         TITLE="RSI & EMA Indicator ($COIN_TOKEN)"
       else
         TITLE="Market info (404)"
