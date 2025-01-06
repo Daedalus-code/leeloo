@@ -169,10 +169,13 @@ function trades_data {
 
   # check if target orders data is old enough or doesn't exist
   if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades ]]; then
-    # get trades data and format it
-    getTrades_nky "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades
-    # get orders data, remove duplicate ID
-    cat "${LOG_DIR:?}"/leeloo/nonkyc/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".orders
+    # if any data
+    if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+      # get trades data and format it
+      getTrades_nky "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades
+      # get orders data, remove duplicate ID
+      cat "${LOG_DIR:?}"/leeloo/nonkyc/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".orders
+    fi
   fi
 
   # trades data
@@ -603,10 +606,13 @@ function target_order_status() {
 
     # check if target orders data is old enough or doesn't exist
     if ((TARGET_ORDERS_AGE_SECONDS > 180)) || [[ ! -f "${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades ]]; then
-      # get trades data and format it
-      getTrades_nky "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades
-      # get orders data, remove duplicate ID
-      cat "${LOG_DIR:?}"/leeloo/nonkyc/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".orders
+      # if any data
+      if [[ -n "$LISTING_CURRENCY" && -n "$REFERENCE_CURRENCY" ]] &>/dev/null; then
+        # get trades data and format it
+        getTrades_nky "$LISTING_CURRENCY" "$REFERENCE_CURRENCY" | jq -r '.[]? | "\(.id): \(.market) \(.orderid) \(.side) \(.price) \(.quantity) \(.createdAt) \(.updatedAt)"' 2>/dev/null | column -t >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".trades
+        # get orders data, remove duplicate ID
+        cat "${LOG_DIR:?}"/leeloo/nonkyc/orders* 2>/dev/null | grep -w "$LISTING_CURRENCY" | grep -w "$REFERENCE_CURRENCY" | awk '!a[$1]++' >"${LOG_DIR:?}"/leeloo/nonkyc/"${LISTING_CURRENCY:?}"_"${REFERENCE_CURRENCY:?}".orders
+      fi
     fi
 
     # extract relevant information
