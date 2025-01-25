@@ -2916,13 +2916,6 @@ fi
 # if not already dusted
 DIP_ALREADY_DUSTED="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null | awk '{ print $NF }' | tail -1 | grep -c "Dusting!")"
 
-# dusted order check
-if [[ "$DIP_ALREADY_DUSTED" -eq "1" ]] &>/dev/null; then
-  # not removing dusted sell order output (log)
-  DIP_DUSTED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Not removing dusted sell order: ${ORDER_ID:0:9}$DIP_ORDER_ID_SELL_DOTS Age: $DIP_BOUGHT_AGE_OUTPUT (Old) Spread: ${DIP_TARGET_SPREAD:?}%"
-  echo "$DIP_DUSTED_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
-fi
-
 # if not buying
 if [[ "$DIP_BUYING" -eq "0" ]] &>/dev/null; then
   # if not selling, not already dusted
