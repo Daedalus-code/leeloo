@@ -2905,10 +2905,13 @@ fi
 bought_sold_age
 time_and_profit
 
+# if not already dusted
+DIP_ALREADY_DUSTED="$(grep "$LISTING_CURRENCY/$REFERENCE_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null | awk '{ print $NF }' | tail -1 | grep -c "Dusting!")"
+
 # if not buying
 if [[ "$DIP_BUYING" -eq "0" ]] &>/dev/null; then
-  # if not selling
-  if [[ "$DIP_SELLING" -eq "0" ]] &>/dev/null; then
+  # if not selling, not already dusted
+  if [[ "$DIP_SELLING" -eq "0" && "$DIP_ALREADY_DUSTED" -eq "0" ]] &>/dev/null; then
     # if any data
     if [[ -n "$DIP_BOUGHT_FILE_AGE_SECONDS" && -n "$DIP_SOLD_FILE_AGE_SECONDS" ]] &>/dev/null; then
       # if older than n seconds (using max sell age limit on both)
