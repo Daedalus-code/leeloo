@@ -2905,6 +2905,14 @@ fi
 bought_sold_age
 time_and_profit
 
+# old order id (sell)
+DIP_ORDER_ID_SELL="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$DIP_MARKETS" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
+# order n greater than n
+if [[ "$(echo "$(echo "$DIP_ORDER_ID_SELL" | tail -1)" | wc -L)" -gt "9" ]] &>/dev/null; then
+  DIP_ORDER_ID_SELL_DOTS=".."
+else
+  DIP_ORDER_ID_SELL_DOTS=""
+fi
 # if not already dusted
 DIP_ALREADY_DUSTED="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null | awk '{ print $NF }' | tail -1 | grep -c "Dusting!")"
 
@@ -2929,9 +2937,6 @@ if [[ "$DIP_BUYING" -eq "0" ]] &>/dev/null; then
 
             # if specific market exist in orders file (sell)
             if [[ "$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders 2>/dev/null | grep -w "$DIP_MARKETS" | grep -c "sell" || true)" -gt "0" ]] &>/dev/null; then
-
-              # old order id (sell)
-              DIP_ORDER_ID_SELL="$(grep -w "$LISTING_CURRENCY" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -w "$DIP_MARKETS" | grep "sell" | awk '{ print $1 }' | tr -d ':')"
 
               # order id found
               if [[ -n "$DIP_ORDER_ID_SELL" ]] &>/dev/null; then
@@ -2966,13 +2971,6 @@ if [[ "$DIP_BUYING" -eq "0" ]] &>/dev/null; then
                 fi
 
                 log_date
-
-                # order n greater than n
-                if [[ "$(echo "$(echo "$DIP_ORDER_ID_SELL" | tail -1)" | wc -L)" -gt "9" ]] &>/dev/null; then
-                  DIP_ORDER_ID_SELL_DOTS=".."
-                else
-                  DIP_ORDER_ID_SELL_DOTS=""
-                fi
 
                 # reset active
                 reset_active_market_list
