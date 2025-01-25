@@ -2768,7 +2768,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
               tx_id
 
               # selling output (log)
-              DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Sell $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $DIP_MARKETS"
+              DIP_SELL_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Sell $LISTING_BALANCE $LISTING_CURRENCY for $DIP_SELL_AMOUNT_REFERENCE $DIP_MARKETS - ($DIP_BTC_OVERSOLD_LOG)"
               echo "$DIP_SELL_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
               # filled output (log)
               DIP_FILLED_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$DIP_MARKETS :: Sell ${DIP_LEFTOVER_SIZE_OUTPUT:?}% Selling: ${DIP_LEFTOVER_TOTAL:?}% Filled: ${DIP_LEFTOVER_FILLED:?}%"
@@ -3777,6 +3777,19 @@ if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
                       if [[ "$DIP_CHANGE_PROFIT_LOSS_CHECK" -gt "$DIP_DUST_PROFIT_CHECK" ]] &>/dev/null; then
 
                         ########################################################
+
+                        # if bitcoin rsi is very high, run half of intitial amount
+                        if [[ "$DIP_BTC_OVERSOLD" == "1" ]] &>/dev/null; then
+                          # dust half
+                          DIP_CHANGE_ASSET_BALANCE="$(echo "$DIP_CHANGE_ASSET_BALANCE/2" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+                          # output half order
+                          DIP_BTC_OVERSOLD_LOG="Half"
+                        else
+                          # output full order
+                          DIP_BTC_OVERSOLD_LOG="Full"
+                        fi
+
+                        ########################################################
                         ########################################################
 
                         # if xeggex order
@@ -3835,7 +3848,7 @@ if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
                         DIP_LIMIT_POSITION="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : dust :: $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME :: $DIP_CHANGE_ASSET_BALANCE $DIP_REFERENCE_BALANCE ${DIP_CHANGE_PROFIT_LOSS:?}% $DIP_BOUGHT_FILE_AGE"
                         echo "$DIP_LIMIT_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
                         # dusting output (log)
-                        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME Profit: ${DIP_CHANGE_PROFIT_LOSS:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
+                        DIP_CLEANUP_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME :: Dusting $DIP_CHANGE_ASSET_BALANCE $DIP_CHANGE_NAME - ($DIP_BTC_OVERSOLD_LOG) Profit: ${DIP_CHANGE_PROFIT_LOSS:?}% Age: $DIP_BOUGHT_AGE_OUTPUT"
                         echo "$DIP_CLEANUP_OUTPUT" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
                         # profit output (log)
                         DIP_SOLD_PROFIT_OUTPUT="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $DIP_CHANGE_NAME/$DIP_REFERENCE_NAME :: Profit: $DIP_CHANGE_PROFIT_LOSS_AMOUNT $DIP_REFERENCE_NAME ${DIP_CHANGE_PROFIT_LOSS:?}% after $DIP_BOUGHT_AGE_OUTPUT"
