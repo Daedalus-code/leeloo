@@ -1823,8 +1823,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
         # has buying power (balance)
         if [[ "$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
 
+          ######################################################################
+
           # if bitcoin rsi is very high, run half of intitial amount
           if [[ "$DIP_BTC_OVERBOUGHT" == "1" ]] &>/dev/null; then
+            # spend half
             DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_LISTING/2" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
             # output half order
             DIP_BTC_OVERBOUGHT_LOG="Half"
@@ -1832,6 +1835,8 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             # output full order
             DIP_BTC_OVERBOUGHT_LOG="Full"
           fi
+
+          ######################################################################
 
           log_date
 
@@ -2716,6 +2721,19 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         if [[ "$DIP_SELL_AMOUNT_PROFIT_CHECK" -gt "$DIP_MAKER_TAKER_CHECK" ]] &>/dev/null; then
           if [[ ! "$DIP_TARGET_SELL_STATUS" == "[o0]" ]] &>/dev/null; then
             if [[ ! "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
+
+              ##################################################################
+
+              # if bitcoin rsi is very high, run half of intitial amount
+              if [[ "$DIP_BTC_OVERSOLD" == "1" ]] &>/dev/null; then
+                # spend half
+                LISTING_BALANCE="$(echo "$LISTING_BALANCE/2" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+                # output half order
+                DIP_BTC_OVERSOLD_LOG="Half"
+              else
+                # output full order
+                DIP_BTC_OVERSOLD_LOG="Full"
+              fi
 
               ##################################################################
 
