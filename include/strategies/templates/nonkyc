@@ -1060,7 +1060,7 @@ function incoming_reference() {
 
       REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
       REFERENCE_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | awk '{ print $2 }')"
-      REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+      REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
       # if any data
       if [[ -n "$REFERENCE_PRICE" ]] &>/dev/null; then
@@ -1142,7 +1142,7 @@ function open_positions() {
   REFERENCE_OPEN_CURRENCY="$LISTING_CURRENCY/$REFERENCE_CURRENCY"
   REFERENCE_PRICE="$(grep -w "${LISTING_CURRENCY:?}_${REFERENCE_CURRENCY:?}" "${LOG_DIR:?}"/leeloo/nonkyc/prices 2>/dev/null | awk '{ print $2 }')"
   REFERENCE_AVAILABLE_BALANCE="$(grep -w "$REFERENCE_CURRENCY" "${LOG_DIR:?}"/leeloo/nonkyc/balances 2>/dev/null | awk '{ print $3 }' | awk '{ printf "%.9f\n", $1 }')"
-  REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE*$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
+  REFERENCE_AVAILABLE_VALUED="$(echo "$REFERENCE_AVAILABLE_BALANCE/$REFERENCE_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
   REFERENCE_OPEN_AMOUNT="$REFERENCE_AVAILABLE_BALANCE"
 
   if [[ -z "$REFERENCE_OPEN_AMOUNT" ]] &>/dev/null; then
