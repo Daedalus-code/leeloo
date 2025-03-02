@@ -478,24 +478,25 @@ function cat_active_target() {
 # cat active, target data
 cat_active_target
 
-# market does not exist ########################################################
+################################################################################
 
 # if missing
 if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null ]] &>/dev/null; then
   touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null &>/dev/null
 fi
 
-# ghost data
-GHOST_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)"
+# txid null data
+TXID_NULL_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)"
 
 # if zero
-if [[ -z "$GHOST_DATA" ]] &>/dev/null; then
-  GHOST_DATA="null"
+if [[ -z "$TXID_NULL_DATA" ]] &>/dev/null; then
+  TXID_NULL_DATA="null"
 fi
 
+# market does not exist ########################################################
 GHOST_ACTIVE="$(grep -c "$GHOST_TARGET" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active || true)"
-GHOST_MARKET="$(echo "$GHOST_DATA" | grep -c "Market Not Found" || true)"
-GHOST_TARGET="$(echo "$GHOST_DATA" | awk '{ print $7 }')"
+GHOST_MARKET="$(echo "$TXID_NULL_DATA" | grep -c "Market Not Found" || true)"
+GHOST_TARGET="$(echo "$TXID_NULL_DATA" | awk '{ print $7 }')"
 GHOST_TARGET_LISTING="$(echo "$GHOST_TARGET" | awk '{ print $1 }' | awk -F/ '{ print $1 }')"
 GHOST_TARGET_REFERENCE="$(echo "$GHOST_TARGET" | awk '{ print $1 }' | awk -F/ '{ print $2 }')"
 GHOST_ORDERS="$(grep "$GHOST_TARGET_LISTING" "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/orders | grep -c "$GHOST_TARGET_REFERENCE" || true)"
@@ -779,7 +780,7 @@ function target_data() {
   # if target spread has a negative
   if [[ "$(echo "$DIP_TARGET_SPREAD" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then
     # if target spread is missing data
-    if [[ "$(echo "$DIP_TARGET_SPREAD" | egrep -c ".100.00")" ]] &>/dev/null; then
+    if [[ "$(echo "$DIP_TARGET_SPREAD" | egrep -c ".100.00" || true)" ]] &>/dev/null; then
       # target spread from bought
       DIP_TARGET_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
       # if zero
@@ -1838,6 +1839,17 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           ######################################################################
 
+          # if market has txid error
+          if [[ "$(echo "$TXID_NULL_DATA" | tail -1 | grep -c "$LISTING_CURRENCY/$DIP_MARKETS" || true)" -gt "0" ]] &>/dev/null; then
+            # if minimum quantity is not met
+            if [[ "$(echo "$TXID_NULL_DATA" | tail -1 | grep -c "Minimum quantity for this market is" || true)" -gt "0" ]] &>/dev/null; then
+              # fetch correct minimum quantity for market
+              DIP_BUY_AMOUNT_LISTING="$(echo "$TXID_NULL_DATA" | grep "Minimum quantity for this market is" 2>/dev/null | awk '{ print $NF }' | tail -1)"
+            fi
+          fi
+
+          ######################################################################
+
           log_date
 
           ######################################################################
@@ -2084,7 +2096,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
   # if target spread has a negative
   if [[ "$(echo "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" | grep -c "-" || true)" -eq "1" ]] &>/dev/null; then
     # if target spread is missing data
-    if [[ "$(echo "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" | egrep -c ".100.00")" ]] &>/dev/null; then
+    if [[ "$(echo "$DIP_ACTIVE_FILE_AVERAGE_SPREAD" | egrep -c ".100.00" || true)" ]] &>/dev/null; then
       # target spread from bought
       DIP_ACTIVE_FILE_AVERAGE_SPREAD="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null | awk '{ print $NF }' | tr -d '%' | awk '{ printf "%.2f\n", $1 }')"
     fi
@@ -2942,7 +2954,7 @@ else
   DIP_ORDER_ID_SELL_DOTS=""
 fi
 # if not already dusted
-DIP_ALREADY_DUSTED="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null | awk '{ print $NF }' | tail -1 | grep -c "Dusting!")"
+DIP_ALREADY_DUSTED="$(grep "$LISTING_CURRENCY/$DIP_MARKETS" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".dust 2>/dev/null | awk '{ print $NF }' | tail -1 | grep -c "Dusting!" || true)"
 
 # if not buying
 if [[ "$DIP_BUYING" -eq "0" ]] &>/dev/null; then
