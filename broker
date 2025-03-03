@@ -2306,10 +2306,27 @@ Profit/Loss.: $LAST_COIN_PROFIT_LOSS $LAST_COIN_PRICE_REFERENCE ${LAST_COIN_PROF
     ROBOT_BUYS="$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "Buy " | grep "for")"
     ROBOT_SELL="$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "Sell " | grep "for")"
     ROBOT_DUST="$(cat "${LOG_DIR:?}"/leeloo/robot.log 2>/dev/null | grep "Dusting " | grep "Profit")"
-    # count
-    ROBOT_BUYS_COUNT="$(echo "$ROBOT_BUYS" | wc -l)"
-    ROBOT_SELL_COUNT="$(echo "$ROBOT_SELL" | wc -l)"
-    ROBOT_DUST_COUNT="$(echo "$ROBOT_DUST" | wc -l)"
+
+    # if zero
+    if [[ -z "$ROBOT_BUYS" ]] &>/dev/null; then
+      ROBOT_BUYS_COUNT="0"
+    else
+      ROBOT_BUYS_COUNT="$(echo "$ROBOT_BUYS" | wc -l)"
+    fi
+    # if zero
+    if [[ -z "$ROBOT_SELL" ]] &>/dev/null; then
+      ROBOT_SELL_COUNT="0"
+    else
+      ROBOT_SELL_COUNT="$(echo "$ROBOT_SELL" | wc -l)"
+    fi
+    # if zero
+    if [[ -z "$ROBOT_DUST" ]] &>/dev/null; then
+      ROBOT_DUST_COUNT="0"
+    else
+      ROBOT_DUST_COUNT="$(echo "$ROBOT_DUST" | wc -l)"
+    fi
+
+    # calculate total
     ROBOT_TOTAL_EXECUTIONS="$(echo "$ROBOT_BUYS_COUNT+$ROBOT_SELL_COUNT+$ROBOT_DUST_COUNT" | bc 2>/dev/null)"
 
     RESULT="Buys: $ROBOT_BUYS_COUNT
