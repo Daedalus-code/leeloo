@@ -3406,22 +3406,79 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
 
     if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
 
-      RESULT_RAW="-
-RSI
-$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)
-$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)
--
-EMA
-$(get_ema 5 13 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 10 25 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 20 200 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)
-$(get_ema 100 200 "$COIN_TOKEN" 2>/dev/null)
--"
+      # display progress bar
+      {
+        {
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(1 + rand() * (8 - 1))}')"
+          sleep 0.1
+          ######################################################################
+          echo "-" >/tmp/irsi_tmp
+          echo "RSI" >>/tmp/irsi_tmp
+          echo "$(get_rsi 14 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(20 + rand() * (16 - 8))}')"
+          sleep 0.1
+          ######################################################################
+          echo "$(get_rsi 21 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(40 + rand() * (32 - 16))}')"
+          sleep 0.1
+          ######################################################################
+          echo "-" >/tmp/irsi_tmp
+          echo "EMA" >/tmp/irsi_tmp
+          "$(get_ema 5 13 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(50 + rand() * (42 - 32))}')"
+          sleep 0.1
+          ######################################################################
+          "$(get_ema 6 20 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(60 + rand() * (52 - 42))}')"
+          sleep 0.1
+          ######################################################################
+          "$(get_ema 8 20 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(60 + rand() * (63 - 52))}')"
+          sleep 0.1
+          ######################################################################
+          "$(get_ema 10 38 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(60 + rand() * (74 - 63))}')"
+          sleep 0.1
+          ######################################################################
+          "$(get_ema 10 25 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(60 + rand() * (85 - 74))}')"
+          sleep 0.1
+          ######################################################################
+          "$(get_ema 12 26 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(60 + rand() * (91 - 85))}')"
+          sleep 0.1
+          ######################################################################
+          "$(get_ema 20 200 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(60 + rand() * (94 - 91))}')"
+          sleep 0.1
+          ######################################################################
+          "$(get_ema 50 200 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "$(awk 'BEGIN {srand(); printf "%d\n", int(60 + rand() * (99 - 94))}')"
+          sleep 0.1
+          ######################################################################
+          "$(get_ema 100 200 "$COIN_TOKEN" 2>/dev/null)" >>/tmp/irsi_tmp
+          ######################################################################
+          echo "100"
+          sleep 0.05
+          ######################################################################
+          echo "-" >>/tmp/irsi_tmp
+          ######################################################################
+        } | dialog --title "RSI & EMA Data" --gauge " Fetching RSI and EMA data for ${COIN_TOKEN}." 6 60 0
+      }
+
+      # result
+      RESULT_RAW="$(cat /tmp/irsi_tmp 2>/dev/null)"
 
       echo "$RESULT_RAW" >"${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null
       RESULT_RAW="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_rsi_ema_"$COIN_TOKEN".tmp 2>/dev/null)"
