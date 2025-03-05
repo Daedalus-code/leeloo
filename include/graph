@@ -208,9 +208,9 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     ############################################################################
 
     # load
-    if [ ! -f "/home/${WHOAMI:?}/stats/load.rrd" ] &>/dev/null; then
+    if [ ! -f "${SYS_DIR:?}/robot/load.rrd" ] &>/dev/null; then
       printf '%b' "${LOG_DATE:?} Status() rrdtoolStats() Creating load-15.rrd! ${CY:?}<>${N0:?}\n" >>"${WALLET_LOG_DIR:?}"/debug.log 2>&1
-      rrdtool create /home/"${WHOAMI:?}"/stats/load.rrd \
+      rrdtool create "${SYS_DIR:?}"/robot/load.rrd \
         --step=60 \
         DS:load:GAUGE:300:U:U \
         DS:load5:GAUGE:300:U:U \
@@ -221,9 +221,7 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     SYS_LOADAVG="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
 
     # update order databases
-    rrdtool update "${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load.rrd N:"$(echo "$SYS_LOADAVG" | sed 's/\,/./' 2>&1 | awk '{ print $1 }' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)" 2>/dev/null
-    rrdtool update "${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load5.rrd N:"$(echo "$SYS_LOADAVG " | awk '{ print $2 }' 2>&1 | sed 's/\,/./' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)" 2>/dev/null
-    rrdtool update "${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load15.rrd N:"$(echo "$SYS_LOADAVG" | awk '{ print $3 }' 2>&1 | sed 's/\,/./' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)" 2>/dev/null
+    rrdtool update "${SYS_DIR:?}"/robot/load.rrd N:"$(echo "$SYS_LOADAVG" | sed 's/\,/./' 2>&1 | awk '{ print $1 }' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)":"$(echo "$SYS_LOADAVG " | awk '{ print $2 }' 2>&1 | sed 's/\,/./' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)":"$(echo "$SYS_LOADAVG" | awk '{ print $3 }' 2>&1 | sed 's/\,/./' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)"
 
     ############################################################################
 
@@ -313,9 +311,9 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     --color SHADEA#565875 \
     --color SHADEB#565875 \
     --end now --start end-"${GRAPH_TIME:?}" \
-    DEF:load="${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load.rrd:load:LAST \
-    DEF:load5="${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load5.rrd:load5:LAST \
-    DEF:load15="${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load15.rrd:load15:LAST \
+    DEF:load="${SYS_DIR:?}"/robot/load.rrd:load:LAST \
+    DEF:load5="${SYS_DIR:?}"/robot/load.rrd:load5:LAST \
+    DEF:load15="${SYS_DIR:?}"/robot/load.rrd:load15:LAST \
     LINE1:load#45DC63:" Load 1m          " GPRINT:load:LAST:"%.2lf\n" \
     LINE2:load5#FFE000:" Load 5m          " GPRINT:load5:LAST:"%.2lf\n" \
     LINE2:load15#FF5100:" Load 15m         " GPRINT:load15:LAST:"%.2lf\n"
