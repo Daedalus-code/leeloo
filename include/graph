@@ -333,8 +333,9 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     DEF:load="${SYS_DIR:?}"/robot/load.rrd:load:LAST \
     DEF:load5="${SYS_DIR:?}"/robot/load.rrd:load5:LAST \
     DEF:load15="${SYS_DIR:?}"/robot/load.rrd:load15:LAST \
-    DEF:mem_used="${SYS_DIR:?}"/robot/memory.rrd:used:LAST \
-    DEF:mem_total="${SYS_DIR:?}"/robot/memory.rrd:total:LAST \
+    DEF:free="${SYS_DIR:?}"/robot/memory.rrd:free:LAST \
+    DEF:total="${SYS_DIR:?}"/robot/memory.rrd:total:LAST \
+    CDEF:mem_used=mem_total,mem_free,- \
     CDEF:mem_perc=mem_used,mem_total,/,100,* \
     LINE1:load#45DC63:" Load 1m  " \
     GPRINT:load:LAST:"%.2lf\n" \
