@@ -204,6 +204,28 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     rrdtool update "$GRAPH_DB_PATH" N:"$GRAPH_INVESTED":"$GRAPH_AVAILABLE":"$GRAPH_UNCONFIRMED" 2>/dev/null
 
     ############################################################################
+    # graph system load and memory
+    ############################################################################
+
+    # load
+    if [ ! -f "/home/${WHOAMI:?}/stats/load.rrd" ] &>/dev/null; then
+      printf '%b' "${LOG_DATE:?} Status() rrdtoolStats() Creating load-15.rrd! ${CY:?}<>${N0:?}\n" >>"${WALLET_LOG_DIR:?}"/debug.log 2>&1
+      rrdtool create /home/"${WHOAMI:?}"/stats/load.rrd \
+        --step=60 \
+        DS:load:GAUGE:300:U:U \
+        DS:load5:GAUGE:300:U:U \
+        DS:load15:GAUGE:300:U:U \
+        RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
+    fi
+    # loadavg
+    SYS_LOADAVG="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
+
+    # update order databases
+    rrdtool update "${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load.rrd N:"$(echo "$SYS_LOADAVG" | sed 's/\,/./' 2>&1 | awk '{ print $1 }' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)" 2>/dev/null
+    rrdtool update "${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load5.rrd N:"$(echo "$SYS_LOADAVG " | awk '{ print $2 }' 2>&1 | sed 's/\,/./' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)" 2>/dev/null
+    rrdtool update "${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load15.rrd N:"$(echo "$SYS_LOADAVG" | awk '{ print $3 }' 2>&1 | sed 's/\,/./' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)" 2>/dev/null
+
+    ############################################################################
 
     # if xeggex, nonkyc
     if [[ "$EXCHANGE_DIR_NAME" == "xeggex" || "$EXCHANGE_DIR_NAME" == "nonkyc" ]] &>/dev/null; then
@@ -277,6 +299,28 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     GPRINT:coins_tokens:LAST:"%.0lf\n"
 
   ##############################################################################
+
+  # loadavg 1,5,15m and memory
+  rrdtool graph /var/www/html/system_memory.png \
+    -w 400 -h 150 -a PNG \
+    --slope-mode \
+    --vertical-label "System Load & Memory" \
+    --color BACK#565875 \
+    --color FONT#FFFFFF \
+    --color CANVAS#42445F \
+    --color GRID#565875 \
+    --color FRAME#565875 \
+    --color SHADEA#565875 \
+    --color SHADEB#565875 \
+    --end now --start end-"${GRAPH_TIME:?}" \
+    DEF:load="${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load.rrd:load:LAST \
+    DEF:load5="${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load5.rrd:load5:LAST \
+    DEF:load15="${SYS_DIR:?}"/robot/"${EXCHANGE_DIR_NAME:?}"_load15.rrd:load15:LAST \
+    LINE1:load#45DC63:" Load 1m          " GPRINT:load:LAST:"%.2lf\n" \
+    LINE2:load5#FFE000:" Load 5m          " GPRINT:load5:LAST:"%.2lf\n" \
+    LINE2:load15#FF5100:" Load 15m         " GPRINT:load15:LAST:"%.2lf\n"
+
+  ##############################################################################
   # PHP generating
   ##############################################################################
 
@@ -290,11 +334,14 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
   // Graphs
 EOF
 
-  # generate exchange orders at the beginning
+  # generate system load & memory at the beginning
+  echo "  echo '<img src=\"/var/www/html/system_memory.png\" alt=\"${EXCHANGE_DIR_NAME} Load & Memory\" style=\"max-width: 100%; height: auto;\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
+
+  # generate exchange orders
   GRAPH_PNG_ORDERS_PATH="${EXCHANGE_DIR_NAME:?}_orders.png"
   echo "  echo '<img src=\"${GRAPH_PNG_ORDERS_PATH:?}\" alt=\"${EXCHANGE_DIR_NAME} Orders\" style=\"max-width: 100%; height: auto;\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
 
-  # generate exchange coins / tokens at the beginning
+  # generate exchange coins / tokens
   GRAPH_PNG_HODL_PATH="${EXCHANGE_DIR_NAME:?}_coins_tokens.png"
   echo "  echo '<img src=\"${GRAPH_PNG_HODL_PATH:?}\" alt=\"${EXCHANGE_DIR_NAME} Coins Tokens\" style=\"max-width: 100%; height: auto;\" />';" >>/var/www/html/"$EXCHANGE_DIR_NAME".php
 
