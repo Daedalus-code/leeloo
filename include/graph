@@ -300,7 +300,7 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
 
   # loadavg 1,5,15m and memory
   rrdtool graph /var/www/html/system_memory.png \
-    -w 400 -h 160 -a PNG \
+    -w 400 -h "$HEIGHT" -a PNG \
     --slope-mode \
     --vertical-label "System Load & Memory" \
     --color BACK#565875 \
@@ -315,8 +315,11 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     DEF:load5="${SYS_DIR:?}"/robot/load.rrd:load5:LAST \
     DEF:load15="${SYS_DIR:?}"/robot/load.rrd:load15:LAST \
     LINE1:load#45DC63:" Load 1m          " GPRINT:load:LAST:"%.2lf\n" \
+    GPRINT:load:LAST:"%.0lf\n" \
     LINE2:load5#FFE000:" Load 5m          " GPRINT:load5:LAST:"%.2lf\n" \
-    LINE2:load15#FF5100:" Load 15m         " GPRINT:load15:LAST:"%.2lf\n"
+    GPRINT:load5:LAST:"%.0lf\n" \
+    LINE2:load15#FF5100:" Load 15m         " GPRINT:load15:LAST:"%.2lf\n" \
+    GPRINT:load15:LAST:"%.0lf\n"
 
   ##############################################################################
   # PHP generating
