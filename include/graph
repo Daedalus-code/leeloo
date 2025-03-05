@@ -217,11 +217,30 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
         DS:load15:GAUGE:300:U:U \
         RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
     fi
+
+    # memory
+    if [ ! -f "${SYS_DIR:?}/robot/memory.rrd" ] &>/dev/null; then
+      printf '%b' '%s Status() rrdtoolStats() Creating memory.rrd! <>\n' "$(date "+%Y-%m-%d %H:%M:%S")" >>"${LOG_DIR:?}"/leeloo/graph.log 2>&1
+      rrdtool create "${SYS_DIR:?}"/robot/memory.rrd \
+        --step=60 \
+        DS:total:GAUGE:300:U:U \
+        DS:free:GAUGE:300:U:U \
+        RRA:AVERAGE:0.5:1:"$GRAPH_DATA" # ruled by configuration
+    fi
+
     # loadavg
     SYS_LOADAVG="$(cat /proc/loadavg 2>/dev/null | awk '{ print $1,$2,$3 }')"
 
-    # update order databases
+    # memory total
+    SYS_MEMORY_TOTAL="$(echo "$(grep "MemTotal" /proc/meminfo 2>/dev/null | awk '{ print $2 }')/1024" | bc 2>/dev/null)"
+    # memory free
+    SYS_MEMORY_FREE="$(echo "$(grep "MemFree" /proc/meminfo 2>/dev/null | awk '{ print $2 }')/1024" | bc 2>/dev/null)"
+
+    # update load databases
     rrdtool update "${SYS_DIR:?}"/robot/load.rrd N:"$(echo "$SYS_LOADAVG" | sed 's/\,/./' 2>&1 | awk '{ print $1 }' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)":"$(echo "$SYS_LOADAVG " | awk '{ print $2 }' 2>&1 | sed 's/\,/./' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)":"$(echo "$SYS_LOADAVG" | awk '{ print $3 }' 2>&1 | sed 's/\,/./' 2>&1 | awk '{ printf "%.8f\n", $1 }' 2>&1)"
+
+    # update memory databases
+    rrdtool update "${SYS_DIR:?}"/robot/memory.rrd N:"$SYS_MEMORY_TOTAL":"$SYS_MEMORY_FREE"
 
     ############################################################################
 
@@ -298,7 +317,6 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
 
   ##############################################################################
 
-  # loadavg 1,5,15m and memory
   rrdtool graph /var/www/html/system_memory.png \
     -w 400 -h "$HEIGHT" -a PNG \
     --slope-mode \
@@ -315,12 +333,18 @@ if [[ "$WCL_BALANCES" -gt "0" && "$WCL_PRICES" -gt "0" && "$WCL_ORDERS" -gt "0" 
     DEF:load="${SYS_DIR:?}"/robot/load.rrd:load:LAST \
     DEF:load5="${SYS_DIR:?}"/robot/load.rrd:load5:LAST \
     DEF:load15="${SYS_DIR:?}"/robot/load.rrd:load15:LAST \
+    DEF:mem_used="${SYS_DIR:?}"/robot/memory.rrd:used:LAST \
+    DEF:mem_total="${SYS_DIR:?}"/robot/memory.rrd:total:LAST \
+    CDEF:mem_perc=mem_used,mem_total,/,100,* \
     LINE1:load#45DC63:" Load 1m  " \
     GPRINT:load:LAST:"%.2lf\n" \
     LINE2:load5#FFE000:" Load 5m  " \
     GPRINT:load5:LAST:"%.2lf\n" \
     LINE2:load15#FF5100:" Load 15m " \
-    GPRINT:load15:LAST:"%.2lf\n"
+    GPRINT:load15:LAST:"%.2lf\n" \
+    HRULE:0#FFFFFF:"----------------------" \
+    AREA:mem_perc#4287f5:" Memory Usage % " \
+    GPRINT:mem_perc:LAST:"%.2lf%%\n"
 
   ##############################################################################
   # PHP generating
