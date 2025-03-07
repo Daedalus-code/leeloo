@@ -1206,8 +1206,8 @@ function open_positions() {
   LISTING_OPEN_RESULT="$(echo "$(echo "100/$LISTING_OPEN_PRICE*$LISTING_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')-100" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
   # if zero
-  if [[ -z "$LISTING_OPEN_RESULT" ]] &>/dev/null; then
-    LISTING_OPEN_RESULT="0.00"
+  if [[ -z "$LISTING_OPEN_RESULT" || "$LISTING_OPEN_RESULT" == "-100" ]] &>/dev/null; then
+    LISTING_OPEN_RESULT="0"
   fi
 
   ##############################################################################
