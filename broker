@@ -2340,16 +2340,18 @@ $ROBOT_DUST"
 
     WIDTH="$(echo "$(echo "$RESULT" | wc -L)+4" | bc 2>/dev/null)"
     HEIGHT="$(echo "$(echo "$RESULT" | wc -l)+5" | bc 2>/dev/null)"
+    EXECUTED_TITLE="Executed Orders - Buys: $ROBOT_BUYS_COUNT Sell: $ROBOT_SELL_COUNT Dust: $ROBOT_DUST_COUNT Total: $ROBOT_TOTAL_EXECUTIONS"
 
     # if no data
     if [[ "$HEIGHT" -lt "20" && "$WIDTH" -lt "15" ]] &>/dev/null; then
+      EXECUTED_TITLE="No data found"
       RESULT="Waiting on log data.."
       WIDTH="$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
       HEIGHT="5"
     fi
 
     display_result() {
-      dialog --title "Executed Orders - Buys: $ROBOT_BUYS_COUNT Sell: $ROBOT_SELL_COUNT Dust: $ROBOT_DUST_COUNT Total: $ROBOT_TOTAL_EXECUTIONS" \
+      dialog --title "$EXECUTED_TITLE" \
         --no-collapse \
         --msgbox "$RESULT" "$HEIGHT" "$WIDTH"
     }
