@@ -1837,7 +1837,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
               # output minimum order
               DIP_BTC_OVERBOUGHT_LOG="Minimum"
               # fetch correct minimum quantity for market
-              DIP_BUY_AMOUNT_LISTING="$(echo "$TXID_NULL_DATA" | grep "Minimum quantity for this market is" 2>/dev/null | awk '{ print $NF }' | tail -1)"
+              DIP_BUY_AMOUNT_LISTING="$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep "Minimum quantity for this market is" 2>/dev/null | awk '{ print $NF }' | tail -1)"
             fi
           else
             # output full order
@@ -1849,7 +1849,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
           # if minimum quantity is not met
           if [[ "$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep -c "Minimum quantity for this market is" || true)" -gt "0" ]] &>/dev/null; then
             # fetch correct minimum quantity for market
-            DIP_BUY_AMOUNT_LISTING="$(echo "$TXID_NULL_DATA" | grep "Minimum quantity for this market is" 2>/dev/null | awk '{ print $NF }' | tail -1)"
+            DIP_BUY_AMOUNT_LISTING="$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep "Minimum quantity for this market is" 2>/dev/null | awk '{ print $NF }' | tail -1)"
           fi
 
           ######################################################################
@@ -2751,7 +2751,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
                   # output minimum order
                   DIP_BTC_OVERSOLD_LOG="Minimum"
                   # fetch correct minimum quantity for market
-                  LISTING_BALANCE="$(echo "$TXID_NULL_DATA" | grep "Minimum quantity for this market is" 2>/dev/null | awk '{ print $NF }' | tail -1)"
+                  LISTING_BALANCE="$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep "Minimum quantity for this market is" 2>/dev/null | awk '{ print $NF }' | tail -1)"
                 fi
               else
                 # output full order
@@ -3812,7 +3812,7 @@ if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
                             # output minimum order
                             DIP_BTC_OVERSOLD_LOG="Minimum"
                             # fetch correct minimum quantity for market
-                            DIP_CHANGE_ASSET_BALANCE="$(echo "$TXID_NULL_DATA" | grep "Minimum quantity for this market is" 2>/dev/null | awk '{ print $NF }' | tail -1)"
+                            DIP_CHANGE_ASSET_BALANCE="$(echo "$TXID_NULL_DATA" | grep "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" | grep "Minimum quantity for this market is" 2>/dev/null | awk '{ print $NF }' | tail -1)"
                           fi
                         else
                           # output full order
