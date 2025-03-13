@@ -1812,7 +1812,7 @@ ${G1}$REF_NONKYC${N0}
     1 "Data           - Strategy data"
     2 "Positions      - Open positions"
     H "History        - Robot history"
-    A "Orders         - Executed orders"
+    A "Executed       - Executed orders"
     3 "Config         - Configurations"
     4 "Setup          - Setup strategy"
     C "Control        - Robot controller"
@@ -2340,6 +2340,13 @@ $ROBOT_DUST"
 
     HEIGHT="$(echo "$(echo "$RESULT" | wc -L)+4" | bc 2>/dev/null)"
     WIDTH="$(echo "$(echo "$RESULT" | wc -l)+5" | bc 2>/dev/null)"
+
+    # if no data
+    if [[ "$HEIGHT" -lt "20" && "$WIDTH" -lt "10" ]] &>/dev/null; then
+      RESULT="Waiting on log data.."
+      WIDTH="$(echo "$(echo "$RESULT" | wc -L)+5" | bc 2>/dev/null)"
+      HEIGHT="5"
+    fi
 
     display_result() {
       dialog --title "Executed Orders - Buys: $ROBOT_BUYS_COUNT Sell: $ROBOT_SELL_COUNT Dust: $ROBOT_DUST_COUNT Total: $ROBOT_TOTAL_EXECUTIONS" \
