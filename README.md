@@ -8,7 +8,7 @@ Embrace the chaos, adapt to the shadows, may the odds ever be in your favor.
 
 Multipass
 
-This script was built on a Ubuntu Linux System. 
+This script was built on a Ubuntu Linux System.
 
 First time use:  
 ```
@@ -28,7 +28,7 @@ API Status:
 StakeCube    : Balance, Search market
 Poloniex     : Search market
 XeggeX       : Balance, Search market, Trade, Autotrade
-nonkyc       : Balance, Search market, Trade, Autotrade
+NonKYC       : Balance, Search market, Trade, Autotrade
 ```
 [StakeCube](https://stakecube.net)  
 [Poloniex](https://poloniex.com/signup?c=R2LDDSXB)  
