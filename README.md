@@ -33,4 +33,4 @@ NonKYC       : Balance, Search market, Trade, Autotrade
 [StakeCube](https://stakecube.net)  
 [Poloniex](https://poloniex.com/signup?c=R2LDDSXB)  
 [XeggeX](https://xeggex.com?ref=650e9399625501b3b53b1172)  
-[nonkyc](https://nonkyc.io?ref=66a730caaee63aa82784b011)  
+[NonKYC](https://nonkyc.io?ref=66a730caaee63aa82784b011)  
