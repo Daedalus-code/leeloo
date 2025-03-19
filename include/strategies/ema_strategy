@@ -292,6 +292,14 @@ if [[ "$GET_EMA_SIGNAL" == "Bearish" ]] &>/dev/null; then
   ROGUE_LISTING_AMOUNT="$(echo "$ROGUE_AMOUNT*$REFERENCE_AVAILABLE_VALUED" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }' | head -1)"
 fi
 
+# minimum amount
+EMA_MINIMUM_AMOUNT="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null | grep "Minimum" | awk '{ print $NF }')"
+# if rogue listing amount is less than minimum
+if [[ "$EMA_MINIMUM_AMOUNT" > "$ROGUE_LISTING_AMOUNT" ]] &>/dev/null; then
+  # use minimum
+  ROGUE_LISTING_AMOUNT="$EMA_MINIMUM_AMOUNT"
+fi
+
 ################################################################################
 
 # missing
