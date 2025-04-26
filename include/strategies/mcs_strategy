@@ -225,7 +225,7 @@ open_positions
 ################################################################################
 
 # market balance output
-MARKET_MCS_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Balance: $LISTING_BALANCE $LISTING_CURRENCY / $REFERENCE_BALANCE $REFERENCE_CURRENCY"
+MARKET_MCS_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Balance: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY / $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY"
 # executing output
 MARKET_MCS_EXECUTE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Buying $LISTING_AMOUNT $LISTING_CURRENCY @ $REFERENCE_MCS_PRICE_ASK $REFERENCE_CURRENCY"
 # position output
@@ -263,10 +263,10 @@ if [[ ! -z "$REFERENCE_MCS_PRICE_ASK" ]] &>/dev/null; then
         ########################################################################
         ########################################################################
 
-        echo "$MARKET_MCS_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         echo "$MARKET_MCS_EXECUTE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         tx_id
         cost_price
+        echo "$MARKET_MCS_BALANCE" >>"${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log 2>>"${LOG_ERROR:?}"
         cleanup_avg_price_buy
         echo "$MARKET_MCS_POSITION" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".orders 2>>"${LOG_ERROR:?}"
 
