@@ -224,6 +224,18 @@ open_positions
 
 ################################################################################
 
+# if big numbers
+if [[ "$(echo "$LISTING_AVAILABLE_BALANCE" | awk -F. '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+  LISTING_AVAILABLE_BALANCE="$(echo "$LISTING_AVAILABLE_BALANCE" | awk '{ printf "%.2f\n", $1 }')"
+fi
+
+# if big numbers
+if [[ "$(echo "$REFERENCE_AVAILABLE_BALANCE" | awk -F. '{ print $1 }')" -gt "0" ]] &>/dev/null; then
+  REFERENCE_AVAILABLE_BALANCE="$(echo "$REFERENCE_AVAILABLE_BALANCE" | awk '{ printf "%.2f\n", $1 }')"
+fi
+
+################################################################################
+
 # market balance output
 MARKET_MCS_BALANCE="$LOG_DATE : $EXCHANGE_API : $STRATEGY_TYPE : $LISTING_CURRENCY/$REFERENCE_CURRENCY :: Balance: $LISTING_AVAILABLE_BALANCE $LISTING_CURRENCY / $REFERENCE_AVAILABLE_BALANCE $REFERENCE_CURRENCY"
 # executing output
