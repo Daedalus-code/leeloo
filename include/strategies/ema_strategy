@@ -302,15 +302,10 @@ fi
 
 ################################################################################
 
-# missing
-if [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
-  touch "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue &>/dev/null
-fi
-
-################################################################################
-
 # get_rsi n
 function rsi_data() {
+
+  rm "${LOG_DIR:?}"/leeloo/indicators/check_"$REFERENCE_CURRENCY"_rsi_"$LISTING_CURRENCY" &>/dev/null
 
   # if xeggex rsi
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
@@ -318,6 +313,8 @@ function rsi_data() {
     sleep 1
     echo "R $REFERENCE_CURRENCY $(get_rsi_xgx "$REFERENCE_CURRENCY" "USDT")" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue 2>/dev/null
   fi
+
+  rm "${LOG_DIR:?}"/leeloo/indicators/check_"$REFERENCE_CURRENCY"_rsi_"$LISTING_CURRENCY" &>/dev/null
 
   # if nonkyc rsi
   if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
