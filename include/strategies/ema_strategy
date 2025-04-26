@@ -527,9 +527,13 @@ function rogue_clean_lines() {
 
 if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
 
-  # update data every n seconds
+  # update data every n/100 seconds
   if [[ "$ROGUE_TIMER_NOW" -gt "$(echo "$ROGUE_TIMER/100" | bc 2>/dev/null)" ]] &>/dev/null; then
     rsi_data
+  fi
+
+  # update data every n seconds
+  if [[ "$ROGUE_TIMER_NOW" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
     rogue_stealth
     rogue_clean_lines
     # update data if missing
