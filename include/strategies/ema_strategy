@@ -310,7 +310,7 @@ fi
 ################################################################################
 
 # get_rsi n
-function rogue_data() {
+function rsi_data() {
 
   # if xeggex rsi
   if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
@@ -528,18 +528,18 @@ function rogue_clean_lines() {
 if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
 
   # update data every n seconds
-  if [[ "$ROGUE_TIMER_NOW" -gt "$ROGUE_TIMER" ]] &>/dev/null; then
-    rogue_data
+  if [[ "$ROGUE_TIMER_NOW" -gt "$(echo "$ROGUE_TIMER/100" | bc 2>/dev/null)" ]] &>/dev/null; then
+    rsi_data
     rogue_stealth
     rogue_clean_lines
     # update data if missing
   elif [[ ! -f "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
-    rogue_data
+    rsi_data
     rogue_stealth
     rogue_clean_lines
     # update data if empty
   elif [[ ! -s "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".rogue ]] &>/dev/null; then
-    rogue_data
+    rsi_data
     rogue_stealth
     rogue_clean_lines
   fi
