@@ -116,7 +116,7 @@ REFERENCE_CURRENCY="$DIP_MARKETS"
 ################################################################################
 
 # find btc, usd market
-BTC_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | grep "BTC" | egrep "BTC/|BTC_" | egrep "/USD.|_USD." | grep -v ".BTC" | head -1)"
+BTC_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | grep "BTC" | egrep "BTC/|BTC_" | egrep "/USD.|_USD." | egrep -v ".BTC|0.000000000" | head -1)"
 
 # market listing
 RSI_DATA_LISTING="$(echo "$BTC_RSI_DATA" | awk -F_ '{ print $1 }')"
@@ -151,7 +151,7 @@ DIP_BTC_OVERBOUGHT="0"
 DIP_BTC_OVERSOLD="0"
 
 # don't buy any more, overbought
-if [[ "$DIP_RSI_BTC_VALUE" -gt "80" ]] &>/dev/null; then
+if [[ "$DIP_RSI_BTC_VALUE" -gt "70" ]] &>/dev/null; then
   DIP_BTC_OVERBOUGHT="1"
 fi
 
