@@ -649,15 +649,17 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
     ROGUE_RPI_AVG_BUYS="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".buy_rpi 2>/dev/null)"
     ROGUE_RPI_AVG_SELL="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".sell_rpi 2>/dev/null)"
 
-    # buy ######################################################################
+    ############################################################################
+    # rpi buy diff
     ROGUE_LISTING_RPI_B_DIFF="$(echo "$ROGUE_LISTING_RPI-$ROGUE_RPI_AVG_BUYS" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-    # add to listing rpi limit
+    # subtract from listing rpi sell limit (70)
     ROGUE_LISTING_RPI_S_LIMIT="$(echo "$ROGUE_LISTING_RPI-$ROGUE_LISTING_RPI_B_DIFF" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
-
-    # sell #####################################################################
+    ############################################################################
+    # rpi sell diff
     ROGUE_LISTING_RPI_S_DIFF="$(echo "$ROGUE_LISTING_RPI-$ROGUE_RPI_AVG_SELL" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
-    # add to listing rpi limit
+    # add to listing rpi buy limit (30)
     ROGUE_LISTING_RPI_B_LIMIT="$(echo "$ROGUE_LISTING_RPI+$ROGUE_LISTING_RPI_S_DIFF" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+    ############################################################################
   fi
 
   # default rpi buy limit
