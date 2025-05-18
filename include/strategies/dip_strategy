@@ -3210,8 +3210,8 @@ if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
                     fi
                   fi
 
-                  # if zero, if negative
-                  if [[ -z "$DIP_GET_RATIO_PROFIT" || "$DIP_GET_RATIO_PROFIT" -lt "0" ]] &>/dev/null; then
+                  # if zero, if negative, if -100%
+                  if [[ -z "$DIP_GET_RATIO_PROFIT" || "$DIP_GET_RATIO_PROFIT" -lt "0" || "$DIP_GET_RATIO_PROFIT" == "-100.00" ]] &>/dev/null; then
                     DIP_GET_RATIO_PROFIT="0.00"
                   fi
 
@@ -5086,8 +5086,8 @@ function open_dip_position() {
     # amount to profit (reference percentage)
     RESULT_PROFIT="$(echo "100/$COST_BUY*$RESULT_DIFF" | bc -l 2>/dev/null | awk '{ printf "%.2f\n", $1 }')"
 
-    # if zero
-    if [[ -z "$RESULT_PROFIT" ]] &>/dev/null; then
+    # if zero, if -100%
+    if [[ -z "$RESULT_PROFIT" || "$RESULT_PROFIT" == "-100.00" ]] &>/dev/null; then
       RESULT_PROFIT="0"
     fi
 
