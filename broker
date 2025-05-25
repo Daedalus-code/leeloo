@@ -208,8 +208,8 @@ $COIN_TOKEN_SEARCH"
 
 "2")
 
-  HEIGHT="12"
-  WIDTH="42"
+  HEIGHT="11"
+  WIDTH="39"
   BACKTITLE="Leeloo (Multipass)"
   TITLE="Market Prices"
   MENU=""
@@ -269,39 +269,9 @@ $COIN_TOKEN_SEARCH"
 
     ;;
 
-    # all prices ###############################################################
-
   "A")
 
     observe_all_market
-
-    ;;
-
-    # search prices ############################################################
-
-  "0")
-
-    coin_token_search
-    ema_value_output
-
-    GET_EMA=echo "$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
-    WIDTH="$(echo "$(echo "$GET_EMA" | wc -L)+4" | bc 2>/dev/null)"
-
-    if [[ -z "$WIDTH" ]] &>/dev/null; then
-      WIDTH="50"
-    fi
-
-    if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
-      if [[ ! -z "$GET_EMA" ]] &>/dev/null; then
-        display_result() {
-          dialog --title "EMA $COIN_TOKEN" \
-            --msgbox "$RESULT" 5 "$WIDTH"
-        }
-
-        RESULT="$GET_EMA"
-        display_result 2>/dev/null
-      fi
-    fi
 
     ;;
 
@@ -3609,6 +3579,32 @@ $(echo "$SCREEN_LIST" | grep "leeloo" | xargs)"
         }
 
         RESULT="$GET_RSI"
+        display_result 2>/dev/null
+      fi
+    fi
+
+    ;;
+
+  "3")
+
+    coin_token_search
+    ema_value_output
+
+    GET_EMA=echo "$(get_ema "$EMA_SHORT_OUTPUT" "$EMA_LONG_OUTPUT" "$COIN_TOKEN" 2>/dev/null)"
+    WIDTH="$(echo "$(echo "$GET_EMA" | wc -L)+4" | bc 2>/dev/null)"
+
+    if [[ -z "$WIDTH" ]] &>/dev/null; then
+      WIDTH="50"
+    fi
+
+    if [[ ! -z "$COIN_TOKEN" ]] &>/dev/null; then
+      if [[ ! -z "$GET_EMA" ]] &>/dev/null; then
+        display_result() {
+          dialog --title "EMA $COIN_TOKEN" \
+            --msgbox "$RESULT" 5 "$WIDTH"
+        }
+
+        RESULT="$GET_EMA"
         display_result 2>/dev/null
       fi
     fi
