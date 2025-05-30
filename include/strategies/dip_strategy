@@ -505,10 +505,16 @@ fi
 
 # txid null data
 TXID_NULL_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null 2>/dev/null)"
+# txid null log data
+TXID_NULL_LOG_DATA="$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".null.log 2>/dev/null)"
 
 # if zero
 if [[ -z "$TXID_NULL_DATA" ]] &>/dev/null; then
   TXID_NULL_DATA="null"
+fi
+# if zero
+if [[ -z "$TXID_NULL_LOG_DATA" ]] &>/dev/null; then
+  TXID_NULL_LOG_DATA="null"
 fi
 
 # market does not exist ########################################################
@@ -1846,11 +1852,11 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
 
           minimum_not_met() {
             # if more than n fail
-            if [[ "$(echo "$TXID_NULL_DATA" | grep -c "$LISTING_CURRENCY/$DIP_MARKETS")" -gt "2" ]] &>/dev/null; then
+            if [[ "$(echo "$TXID_NULL_LOG_DATA" | grep -c "$LISTING_CURRENCY/$DIP_MARKETS")" -gt "2" ]] &>/dev/null; then
               # pause the market
               echo "$LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
-              # remove duplicates
-              echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause 2>/dev/null | awk '!a[$0]++')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+              # remove duplicates, empty lines
+              echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
             fi
           }
 
