@@ -645,12 +645,8 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
     # keep n lines
     echo "$(tail -21 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".buy_rpi 2>/dev/null)" >"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".buy_rpi
     # average buy rpi
-    AVERAGE_BUY_RPI="$(awk '{ sum += $1; n++ } END { if (n > 0) print sum / n; }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".buy_rpi | awk '{ printf "%.4f\n", $1 }')"
-    # if not identical
-    if [[ ! "$AVERAGE_BUY_RPI" == "$(tail -1 "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".buy_rpi | awk '{ printf "%.4f\n", $1 }')" ]] &>/dev/null; then
-      # combine and get average
-      echo "${AVERAGE_BUY_RPI}0" >>"${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".buy_rpi
-    fi
+    AVERAGE_BUY_RPI="$(awk '{ sum += $1; n++ } END { if (n > 0) print sum / n; }' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".buy_rpi 2>/dev/null | awk '{ printf "%.4f\n", $1 }')"
+    # output average buy rpi
     ROGUE_RPI_AVG_BUYS="$AVERAGE_BUY_RPI"
   fi
 
