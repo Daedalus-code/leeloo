@@ -115,17 +115,36 @@ REFERENCE_CURRENCY="$DIP_MARKETS"
 # follow bitcoin (market backbone)
 ################################################################################
 
+# find btc, usd market
+BTC_RSI_DATA="$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/prices 2>/dev/null | grep "BTC" | egrep "BTC/|BTC_" | egrep "/USD.|_USD." | egrep -v ".BTC|0.000000000" | head -1)"
+
+# market listing
+RSI_DATA_LISTING="$(echo "$BTC_RSI_DATA" | awk -F_ '{ print $1 }')"
+# market reference
+RSI_DATA_REFERENCE="$(echo "$BTC_RSI_DATA" | awk -F_ '{ print $2 }' | awk '{ print $1 }' | tr -d ':')"
+
 # rsi ruler age (seconds)
-DIP_RSI_RULER_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/indicators/check_USDT_rsi_BTC 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
+DIP_RSI_RULER_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING" 2>/dev/null | while read lastedit; do echo "$(($(date +%s) - $lastedit))"; done)"
 
 # if less than n, if missing
-if [[ "$DIP_RSI_RULER_AGE" -gt "1800" || ! -f "${LOG_DIR:?}"/leeloo/indicators/check_USDT_rsi_BTC ]] &>/dev/null; then
-  # rsi ruler data (using rsi xeggex) ##########################################
-  echo "$(get_rsi 14 "BTC")" >"${LOG_DIR:?}"/leeloo/indicators/check_USDT_rsi_BTC
+if [[ "$DIP_RSI_RULER_AGE" -gt "1800" || ! -f "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING" ]] &>/dev/null; then
+  # if xeggex rsi
+  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
+    # rsi ruler data (using rsi xeggex) ########################################
+    echo "$(get_rsi_xgx "$RSI_DATA_LISTING" "$RSI_DATA_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING"
+    ############################################################################
+  fi
+
+  # if nonkyc rsi
+  if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
+    # rsi ruler data (using rsi xeggex) ########################################
+    echo "$(get_rsi_nky "$RSI_DATA_LISTING" "$RSI_DATA_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING"
+    ############################################################################
+  fi
 fi
 
 # rsi status data
-DIP_RSI_BTC_VALUE="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_USDT_rsi_BTC 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')"
+DIP_RSI_BTC_VALUE="$(cat "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING" 2>/dev/null | awk '{ print $NF }' | awk -F. '{ print $1 }')"
 
 # default
 DIP_BTC_OVERBOUGHT="0"
@@ -1855,7 +1874,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # if profit is greater or equal than minimum spread
       if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -ge "$DIP_MIN_SPREAD_CHECK" ]] &>/dev/null; then
         # has buying power (balance)
-        if [[ "$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" &&  "$DIP_ENOUGH_BALANCE" == "OK" ]] &>/dev/null; then
+        if [[ "$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" && "$DIP_ENOUGH_BALANCE" == "OK" ]] &>/dev/null; then
 
           ######################################################################
 
