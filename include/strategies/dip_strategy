@@ -422,11 +422,17 @@ function amount_to_buy_sell() {
 
   decimal_market
 
+  DIP_ENOUGH_BALANCE=""
+
   # amount for buy (reference)
   DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
   # if using usdt
   if [[ "$REFERENCE_CURRENCY" == "BTC" ]] &>/dev/null; then
+    # if enough to spend
+    if [[ "$REFERENCE_BALANCE" > "0.00001" ]] &>/dev/null; then
+      DIP_ENOUGH_BALANCE="OK"
+    fi
     # if amount to buy is less than n
     if [[ "$DIP_BUY_AMOUNT_REFERENCE" < "0.00001" ]] &>/dev/null; then
       # use n
@@ -444,6 +450,10 @@ function amount_to_buy_sell() {
 
   # if using usdt
   if [[ "$LISTING_CURRENCY" == "USDT" ]] &>/dev/null; then
+    # if enough to spend
+    if [[ "$LISTING_BALANCE" > "1" ]] &>/dev/null; then
+      DIP_ENOUGH_BALANCE="OK"
+    fi
     # if amount to buy is less than n
     if [[ "$DIP_BUY_AMOUNT_LISTING" < "1" ]] &>/dev/null; then
       # use n
@@ -1864,7 +1874,7 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       # if profit is greater or equal than minimum spread
       if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -ge "$DIP_MIN_SPREAD_CHECK" ]] &>/dev/null; then
         # has buying power (balance)
-        if [[ "$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" ]] &>/dev/null; then
+        if [[ "$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" &&  "$DIP_ENOUGH_BALANCE" == "OK" ]] &>/dev/null; then
 
           ######################################################################
 
@@ -2782,7 +2792,7 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
         # if spread is ok & if profit is greater than maker taker fee
         if [[ "$DIP_SELL_AMOUNT_PROFIT_CHECK" -gt "$DIP_MAKER_TAKER_CHECK" ]] &>/dev/null; then
           if [[ ! "$DIP_TARGET_SELL_STATUS" == "[o0]" ]] &>/dev/null; then
-            if [[ ! "$DIP_TARGET_SPREAD_STATUS" == "[N0]" ]] &>/dev/null; then
+            if [[ ! "$DIP_TARGET_SPREAD_STATUS" == "[N0]" && "$DIP_ENOUGH_BALANCE" == "OK" ]] &>/dev/null; then
 
               ##################################################################
 
