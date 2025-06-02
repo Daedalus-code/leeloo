@@ -1871,26 +1871,12 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
             DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_LISTING/2" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
             # output half order
             DIP_BTC_OVERBOUGHT_LOG="Half"
-            # if minimum quantity is not met
-            if [[ "$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | egrep -c "Minimum quantity for this market is|Minimum order value for this market is" || true)" -gt "0" ]] &>/dev/null; then
-              # output minimum order
-              DIP_BTC_OVERBOUGHT_LOG="Minimum"
-              # fetch correct minimum quantity for market
-              DIP_BUY_AMOUNT_LISTING="$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | egrep "Minimum quantity for this market is|Minimum order value for this market is" 2>/dev/null | egrep -o "[0-9]+.[0-9]+" | tail -1)"
-              # calculate new listing amount
-              DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_LISTING/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
-              minimum_not_met
-            fi
           fi
 
           ######################################################################
 
           # if minimum quantity is not met
           if [[ "$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | egrep -c "Minimum quantity for this market is|Minimum order value for this market is" || true)" -gt "0" ]] &>/dev/null; then
-            # fetch correct minimum quantity for market
-            DIP_BUY_AMOUNT_LISTING="$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | egrep "Minimum quantity for this market is|Minimum order value for this market is" 2>/dev/null | egrep -o "[0-9]+.[0-9]+" | tail -1)"
-            # calculate new listing amount
-            DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_LISTING/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
             minimum_not_met
           fi
 
@@ -2791,16 +2777,13 @@ if [[ "$(cat "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY".active 2>/dev/null | sed 
                 LISTING_BALANCE="$(echo "$LISTING_BALANCE/2" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
                 # output half order
                 DIP_BTC_OVERSOLD_LOG="Half"
-                # if minimum quantity is not met
-                if [[ "$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | egrep -c "Minimum quantity for this market is|Minimum order value for this market is" || true)" -gt "0" ]] &>/dev/null; then
-                  # output minimum order
-                  DIP_BTC_OVERSOLD_LOG="Minimum"
-                  # fetch correct minimum quantity for market
-                  LISTING_BALANCE="$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | egrep "Minimum quantity for this market is|Minimum order value for this market is" 2>/dev/null | egrep -o "[0-9]+.[0-9]+" | tail -1)"
-                  # calculate new listing amount
-                  LISTING_BALANCE="$(echo "$LISTING_BALANCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
-                  minimum_not_met
-                fi
+              fi
+
+              ##################################################################
+
+              # if minimum quantity is not met
+              if [[ "$(echo "$TXID_NULL_DATA" | grep "$LISTING_CURRENCY/$DIP_MARKETS" | egrep -c "Minimum quantity for this market is|Minimum order value for this market is" || true)" -gt "0" ]] &>/dev/null; then
+                minimum_not_met
               fi
 
               ##################################################################
@@ -3855,16 +3838,13 @@ if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
                           DIP_CHANGE_ASSET_BALANCE="$(echo "$DIP_CHANGE_ASSET_BALANCE/2" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
                           # output half order
                           DIP_BTC_OVERSOLD_LOG="Half"
-                          # if minimum quantity is not met
-                          if [[ "$(echo "$TXID_NULL_DATA" | grep "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" | egrep -c "Minimum quantity for this market is|Minimum order value for this market is" || true)" -gt "0" ]] &>/dev/null; then
-                            # output minimum order
-                            DIP_BTC_OVERSOLD_LOG="Minimum"
-                            # fetch correct minimum quantity for market
-                            DIP_CHANGE_ASSET_BALANCE="$(echo "$TXID_NULL_DATA" | grep "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" | egrep "Minimum quantity for this market is|Minimum order value for this market is" 2>/dev/null | egrep -o "[0-9]+.[0-9]+" | tail -1)"
-                            # calculate new listing amount
-                            DIP_CHANGE_ASSET_BALANCE="$(echo "$DIP_CHANGE_ASSET_BALANCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
-                            minimum_not_met
-                          fi
+                        fi
+
+                        ########################################################
+
+                        # if minimum quantity is not met
+                        if [[ "$(echo "$TXID_NULL_DATA" | grep "$DIP_CHANGE_NAME/$DIP_REFERENCE_NAME" | egrep -c "Minimum quantity for this market is|Minimum order value for this market is" || true)" -gt "0" ]] &>/dev/null; then
+                          minimum_not_met
                         fi
 
                         ########################################################
