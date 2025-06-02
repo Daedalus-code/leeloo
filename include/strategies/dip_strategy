@@ -425,6 +425,15 @@ function amount_to_buy_sell() {
   # amount for buy (reference)
   DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
+  # if using usdt
+  if [[ "$REFERENCE_CURRENCY" == "BTC" ]] &>/dev/null; then
+    # if amount to buy is less than n
+    if [[ "$DIP_BUY_AMOUNT_REFERENCE" < "0.00001" ]] &>/dev/null; then
+      # use n
+      DIP_BUY_AMOUNT_REFERENCE="0.00001"
+    fi
+  fi
+
   # if zero
   if [[ -z "$DIP_BUY_AMOUNT_REFERENCE" ]] &>/dev/null; then
     DIP_BUY_AMOUNT_REFERENCE="0"
@@ -432,6 +441,15 @@ function amount_to_buy_sell() {
 
   # amount to buy (listing)
   DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+
+  # if using usdt
+  if [[ "$LISTING_CURRENCY" == "USDT" ]] &>/dev/null; then
+    # if amount to buy is less than n
+    if [[ "$DIP_BUY_AMOUNT_LISTING" < "1" ]] &>/dev/null; then
+      # use n
+      DIP_BUY_AMOUNT_LISTING="1"
+    fi
+  fi
 
   # if zero
   if [[ -z "$DIP_BUY_AMOUNT_LISTING" ]] &>/dev/null; then
