@@ -128,19 +128,8 @@ DIP_RSI_RULER_AGE="$(stat -c '%Y' "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_D
 
 # if less than n, if missing
 if [[ "$DIP_RSI_RULER_AGE" -gt "1800" || ! -f "${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING" ]] &>/dev/null; then
-  # if xeggex rsi
-  if [[ "$EXCHANGE_API" == "XGX" ]] &>/dev/null; then
-    # rsi ruler data (using rsi xeggex) ########################################
-    echo "$(get_rsi_xgx "$RSI_DATA_LISTING" "$RSI_DATA_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING"
-    ############################################################################
-  fi
-
-  # if nonkyc rsi
-  if [[ "$EXCHANGE_API" == "NKY" ]] &>/dev/null; then
-    # rsi ruler data (using rsi xeggex) ########################################
-    echo "$(get_rsi_nky "$RSI_DATA_LISTING" "$RSI_DATA_REFERENCE")" >"${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING"
-    ############################################################################
-  fi
+  # rsi ruler data (using rsi) #################################################
+  echo "$(get_rsi 14 "BTC")" >"${LOG_DIR:?}"/leeloo/indicators/check_"$RSI_DATA_REFERENCE"_rsi_"$RSI_DATA_LISTING"
 fi
 
 # rsi status data
