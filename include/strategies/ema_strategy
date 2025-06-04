@@ -680,12 +680,20 @@ if [[ "$ROGUE_PROFIT" -eq "1" ]] &>/dev/null; then
   if [[ -n "$ROGUE_RPI_AVG_BUYS" ]] &>/dev/null; then
     # add to sell limit
     ROGUE_LISTING_RPI_S_LIMIT="$(echo "$ROGUE_RPI_AVG_BUYS+40" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+    # if same
+    if [[ "$ROGUE_LISTING_RPI_S_LIMIT" == "40" ]] &>/dev/null; then
+      ROGUE_LISTING_RPI_S_LIMIT="70"
+    fi
   fi
   ##############################################################################
   # if any data
   if [[ -n "$ROGUE_RPI_AVG_SELL" ]] &>/dev/null; then
     # subtract from buy limit
     ROGUE_LISTING_RPI_B_LIMIT="$(echo "$ROGUE_RPI_AVG_SELL-40" | bc -l 2>/dev/null | awk -F. '{ print $1 }')"
+    # if same
+    if [[ "$ROGUE_LISTING_RPI_B_LIMIT" == "-40" ]] &>/dev/null; then
+      ROGUE_LISTING_RPI_B_LIMIT="30"
+    fi
   fi
   ##############################################################################
   # default rpi buy limit
