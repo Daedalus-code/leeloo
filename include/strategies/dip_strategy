@@ -411,53 +411,51 @@ function amount_to_buy_sell() {
 
   decimal_market
 
-  DIP_ENOUGH_BALANCE=""
-
   ##############################################################################
+
+  DIP_ENOUGH_BALANCE=""
 
   # amount for buy (reference)
   DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
-  # if using btc or usdt
-  if [[ "$REFERENCE_CURRENCY" == "BTC" || "$REFERENCE_CURRENCY" == "USDT" ]] &>/dev/null; then
-
-    # btc reference
-    if [[ "$REFERENCE_CURRENCY" == "BTC" ]] &>/dev/null; then
-      # if enough to spend
-      if [[ "$REFERENCE_BALANCE" > "0.00001" ]] &>/dev/null; then
-        DIP_ENOUGH_BALANCE="OK"
-      fi
-      # if amount to buy is less than n
-      if [[ "$DIP_BUY_AMOUNT_REFERENCE" < "0.00001" ]] &>/dev/null; then
-        # use n
-        DIP_BUY_AMOUNT_REFERENCE="0.00001"
-      fi
+  # if using usdt
+  if [[ "$DIP_MARKETS" == "BTC" ]] &>/dev/null; then
+    # if enough to spend
+    if [[ "$REFERENCE_BALANCE" > "0.00001" ]] &>/dev/null; then
+      DIP_ENOUGH_BALANCE="OK"
     fi
-
-    ############################################################################
-
-    # usdt reference
-    if [[ "$REFERENCE_CURRENCY" == "USDT" ]] &>/dev/null; then
-      # if enough to spend
-      if [[ "$REFERENCE_BALANCE" > "1" ]] &>/dev/null; then
-        DIP_ENOUGH_BALANCE="OK"
-      fi
-      # if amount to buy is less than n
-      if [[ "$DIP_BUY_AMOUNT_REFERENCE" < "1" ]] &>/dev/null; then
-        # use n
-        DIP_BUY_AMOUNT_REFERENCE="1"
-      fi
+    # if amount to buy is less than n
+    if [[ "$DIP_BUY_AMOUNT_REFERENCE" < "0.00001" ]] &>/dev/null; then
+      # use n
+      DIP_BUY_AMOUNT_REFERENCE="0.00001"
     fi
   fi
-
-  ##############################################################################
 
   # if zero
   if [[ -z "$DIP_BUY_AMOUNT_REFERENCE" ]] &>/dev/null; then
     DIP_BUY_AMOUNT_REFERENCE="0"
   fi
 
-  ##############################################################################
+  # amount to buy (listing)
+  DIP_BUY_AMOUNT_LISTING="$(echo "$DIP_BUY_AMOUNT_REFERENCE/$DIP_TARGET_BID" | bc -l 2>/dev/null | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }')"
+
+  # if using usdt
+  if [[ "$DIP_MARKETS" == "USDT" ]] &>/dev/null; then
+    # if enough to spend
+    if [[ "$LISTING_BALANCE" > "1" ]] &>/dev/null; then
+      DIP_ENOUGH_BALANCE="OK"
+    fi
+    # if amount to buy is less than n
+    if [[ "$DIP_BUY_AMOUNT_LISTING" < "1" ]] &>/dev/null; then
+      # use n
+      DIP_BUY_AMOUNT_LISTING="1"
+    fi
+  fi
+
+  # if zero
+  if [[ -z "$DIP_BUY_AMOUNT_LISTING" ]] &>/dev/null; then
+    DIP_BUY_AMOUNT_LISTING="0"
+  fi
 
   # amount to recieve (reference)
   DIP_GET_AMOUNT_REFERENCE="$(echo "$DIP_BUY_AMOUNT_LISTING*$DIP_TARGET_ASK" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
@@ -466,6 +464,8 @@ function amount_to_buy_sell() {
   if [[ -z "$DIP_GET_AMOUNT_REFERENCE" ]] &>/dev/null; then
     DIP_GET_AMOUNT_REFERENCE="0"
   fi
+
+  ##############################################################################
 
   # amount to profit (reference)
   DIP_GET_AMOUNT_PROFIT="$(echo "$DIP_GET_AMOUNT_REFERENCE-$DIP_BUY_AMOUNT_REFERENCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
@@ -1605,18 +1605,6 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
   fi
 
   ##############################################################################
-
-  minimum_not_met() {
-    # if more than n fail
-    if [[ "$(echo "$TXID_NULL_LOG_DATA" | grep -c "$LISTING_CURRENCY/$DIP_MARKETS")" -gt "4" ]] &>/dev/null; then
-      # pause the market
-      echo "$LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
-      # remove duplicates, empty lines
-      echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
-    fi
-  }
-
-  ##############################################################################
   # potential buy target
   ##############################################################################
 
@@ -1880,6 +1868,18 @@ if [[ "$DIP_MARKET_FILE_AGE" -gt "$DIP_MAX_AGE" ]] &>/dev/null; then
       if [[ "$DIP_GET_RATIO_PROFIT_CHECK" -ge "$DIP_MIN_SPREAD_CHECK" ]] &>/dev/null; then
         # has buying power (balance)
         if [[ "$(echo "$REFERENCE_BALANCE" | tr -d '.' | sed 's/^0*//')" -gt "0" && "$DIP_ENOUGH_BALANCE" == "OK" ]] &>/dev/null; then
+
+          ######################################################################
+
+          minimum_not_met() {
+            # if more than n fail
+            if [[ "$(echo "$TXID_NULL_LOG_DATA" | grep -c "$LISTING_CURRENCY/$DIP_MARKETS")" -gt "4" ]] &>/dev/null; then
+              # pause the market
+              echo "$LISTING_CURRENCY" >>"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+              # remove duplicates, empty lines
+              echo "$(cat "${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause 2>/dev/null | awk '!a[$0]++' | sed '/^$/d')" >"${LOG_DIR:?}"/leeloo/"$EXCHANGE_DIR_NAME"/pause
+            fi
+          }
 
           ######################################################################
 
