@@ -438,8 +438,8 @@ function amount_to_buy_sell() {
   # if using usdt
   if [[ "$DIP_MARKETS" == "USDT" ]] &>/dev/null; then
     # if enough to spend
-    if [[ "$DIP_BUY_AMOUNT_LISTING" > "1" ]] &>/dev/null; then
-      DIP_BUY_AMOUNT_LISTING="1"
+    if [[ "$DIP_BUY_AMOUNT_LISTING" > "1.12345678" ]] &>/dev/null; then
+      DIP_BUY_AMOUNT_LISTING="1.12345678"
       DIP_ENOUGH_BALANCE="OK"
     fi
   fi
@@ -3778,6 +3778,28 @@ if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
     fi
   fi
 
+  ##############################################################################
+
+  DIP_ENOUGH_DUST=""
+
+  # 1 dollar trading limits (USDT)
+  if [[ "$DIP_REFERENCE_NAME" == "BTC" ]] &>/dev/null; then
+    # greater than n
+    if [[ "$DIP_CHANGE_ASSET_BALANCE" > "0.000012345" ]] &>/dev/null; then
+      DIP_ENOUGH_DUST="OK"
+    fi
+  fi
+
+  # 1 dollar trading limits (BTC)
+  if [[ "$DIP_REFERENCE_NAME" == "USDT" ]] &>/dev/null; then
+    # greater than n
+    if [[ "$DIP_CHANGE_ASSET_BALANCE" > "1.12345678" ]] &>/dev/null; then
+      DIP_ENOUGH_DUST="OK"
+    fi
+  fi
+
+  ##############################################################################
+
   # not already spent and did not already fail
   if [[ "$DIP_CHANGE_ALREADY_SPENT" -eq "0" && "$DIP_SELL_FAILED" -eq "0" ]] &>/dev/null; then
     # if dust is old enough (43200 seconds = 1/2 day), or just dust regardless if no bought file
@@ -3787,7 +3809,7 @@ if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
         # if decimal limit is working, dustable
         if [[ -n "$DECIMAL_LIMIT" && "$DIP_CHANGE_DUSTABLE" -eq "1" ]] &>/dev/null; then
           # if balance is enough
-          if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
+          if [[ "$DIP_ENOUGH_DUST" == "OK" && "$(echo "$DIP_CHANGE_ASSET_BALANCE" | awk '{ printf "%." '$DECIMAL_LIMIT' "f\n", int($0 * 10^'$DECIMAL_LIMIT') / 10^'$DECIMAL_LIMIT' }' | tr -d '.' | sed 's/^0*//')" -gt "1" ]] &>/dev/null; then
             # if any data
             if [[ -n "$DIP_CHANGE_NEW_PRICE" && -n "$DIP_CHANGE_OLD_PRICE" && -n "$DIP_CHANGE_NEW_PRICE" ]] &>/dev/null; then
               # if market exist
