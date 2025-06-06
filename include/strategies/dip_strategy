@@ -3154,8 +3154,8 @@ fi
 # selling status
 LOG_SELLING_STATUS="$(tail -11 "${LOG_DIR:?}"/leeloo/robot."$BASENAME_STRATEGY".log | grep "$LISTING_CURRENCY/$DIP_MARKETS" | grep -c "Selling" || true)"
 
-# if target has bought data
-if [[ -n "$DIP_TARGET_BOUGHT_DATA" ]] &>/dev/null; then
+# if target has bought data, not negative
+if [[ -n "$DIP_TARGET_BOUGHT_DATA" && "$DIP_GET_AMOUNT_PROFIT" > "0" ]] &>/dev/null; then
   # if target is active
   if [[ "$DIP_ACTIVE_TARGET" -eq "1" ]] &>/dev/null; then
     # if target has not already sold
