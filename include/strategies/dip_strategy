@@ -438,8 +438,8 @@ function amount_to_buy_sell() {
   # if using usdt
   if [[ "$DIP_MARKETS" == "USDT" ]] &>/dev/null; then
     # if enough to spend
-    if [[ "$DIP_BUY_AMOUNT_LISTING" > "1.12345678" ]] &>/dev/null; then
-      DIP_BUY_AMOUNT_LISTING="1.12345678"
+    if [[ "$DIP_BUY_AMOUNT_LISTING" > "1.123456789" ]] &>/dev/null; then
+      DIP_BUY_AMOUNT_LISTING="1.123456789"
       DIP_ENOUGH_BALANCE="OK"
     fi
   fi
@@ -3753,25 +3753,31 @@ if [[ "$DIP_DUST" -eq "1" ]] &>/dev/null; then
   fi
 
   ##############################################################################
+  ##############################################################################
 
   DIP_ENOUGH_DUST=""
 
-  # 1 dollar trading limits (USDT)
-  if [[ "$DIP_REFERENCE_NAME" == "BTC" ]] &>/dev/null; then
-    # greater than n
-    if [[ "$DIP_CHANGE_ASSET_BALANCE" > "0.000012345" ]] &>/dev/null; then
-      DIP_ENOUGH_DUST="OK"
-    fi
-  fi
+  ##############################################################################
 
   # 1 dollar trading limits (BTC)
-  if [[ "$DIP_REFERENCE_NAME" == "USDT" ]] &>/dev/null; then
-    # greater than n
-    if [[ "$DIP_CHANGE_ASSET_BALANCE" > "1.12345678" ]] &>/dev/null; then
+  if [[ "$DIP_REFERENCE_NAME" == "BTC" ]] &>/dev/null; then
+    # greater than n based on new price
+    if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE*$DIP_CHANGE_NEW_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')" > "0.000012345" ]] &>/dev/null; then
       DIP_ENOUGH_DUST="OK"
     fi
   fi
 
+  ##############################################################################
+
+  # 1 dollar trading limits (USDT)
+  if [[ "$DIP_REFERENCE_NAME" == "USDT" ]] &>/dev/null; then
+    # greater than n based on new price
+    if [[ "$(echo "$DIP_CHANGE_ASSET_BALANCE*$DIP_CHANGE_NEW_PRICE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')" > "1.123456789" ]] &>/dev/null; then
+      DIP_ENOUGH_DUST="OK"
+    fi
+  fi
+
+  ##############################################################################
   ##############################################################################
 
   # not already spent and did not already fail
