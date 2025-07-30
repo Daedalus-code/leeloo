@@ -3405,9 +3405,14 @@ if [[ "$DIP_SOLD" -eq "0" && "$DIP_SELLING" -eq "0" && "$DIP_BUYING" -eq "0" ]] 
       if [[ -n "$LISTING_CURRENCY" && -n "$DIP_MARKETS" ]] &>/dev/null; then
         # if data is missing (bought)
         if [[ "$(grep "$LISTING_CURRENCY" "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought | grep -c "$DIP_MARKETS" || true)" -eq "0" ]] &>/dev/null; then
-          reset_sell_data
-          DIP_DATA_MISSING="1"
-          DIP_TARGET_SPREAD_OUTPUT="Missing data"
+          # data missing age (seconds)
+          DIP_DATA_MISSING_AGE=$(stat -c '%Y' "${SYS_DIR:?}"/robot/"$BASENAME_STRATEGY"/"${LISTING_CURRENCY}"_"${DIP_MARKETS}".bought 2>/dev/null || echo 0)
+          # if older than 24h
+          if [[ "$DIP_DATA_MISSING_AGE" -gt "86400" ]] &>/dev/null; then
+            reset_sell_data
+            DIP_DATA_MISSING="1"
+            DIP_TARGET_SPREAD_OUTPUT="Missing data"
+          fi
         fi
       fi
 
