@@ -418,11 +418,17 @@ function amount_to_buy_sell() {
   # amount for buy (reference)
   DIP_BUY_AMOUNT_REFERENCE="$(echo "$REFERENCE_ALLOCATED*$REFERENCE_BALANCE" | bc -l 2>/dev/null | awk '{ printf "%.9f\n", $1 }')"
 
-  # if using usdt
+  # if using btc
   if [[ "$DIP_MARKETS" == "BTC" ]] &>/dev/null; then
     # if enough to spend
     if [[ "$REFERENCE_BALANCE" > "0.000013456" ]] &>/dev/null; then
       DIP_BUY_AMOUNT_REFERENCE="0.000013456"
+
+      # if minimum still not met
+      if [[ "$(grep "Minimum order value for this market" /usr/local/bin/include/leeloo/robot/DIP*.null.log 2>/dev/null | grep "$LISTING_CURRENCY/$DIP_MARKETS" | wc -l)" -gt "0" ]] &>/dev/null; then
+        DIP_BUY_AMOUNT_REFERENCE="$(grep "Minimum order value for this market" /usr/local/bin/include/leeloo/robot/DIP*.null.log 2>/dev/null | grep "$LISTING_CURRENCY/$DIP_MARKETS" | tail -1 | rev | awk '{ print $2 }' | rev)"
+      fi
+
       DIP_ENOUGH_BALANCE="OK"
     fi
   fi
@@ -440,6 +446,12 @@ function amount_to_buy_sell() {
     # if enough to spend
     if [[ "$DIP_BUY_AMOUNT_LISTING" > "1.123456789" ]] &>/dev/null; then
       DIP_BUY_AMOUNT_LISTING="1.123456789"
+
+      # if minimum still not met
+      if [[ "$(grep "Minimum order value for this market" /usr/local/bin/include/leeloo/robot/DIP*.null.log 2>/dev/null | grep "$LISTING_CURRENCY/$DIP_MARKETS" | wc -l)" -gt "0" ]] &>/dev/null; then
+        DIP_BUY_AMOUNT_LISTING="$(grep "Minimum order value for this market" /usr/local/bin/include/leeloo/robot/DIP*.null.log 2>/dev/null | grep "$LISTING_CURRENCY/$DIP_MARKETS" | tail -1 | rev | awk '{ print $2 }' | rev)"
+      fi
+
       DIP_ENOUGH_BALANCE="OK"
     fi
   fi
